@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-01-30 18:38:54
+ Generated: 2026-02-04 15:00:14
 ===========================================================
 
 Authors:
@@ -32,9 +32,7 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ff=Feedforward(
-                kS=0.16638794376789204, kV=0.15732144931968844, kA=0.010207614450276913
-            ),
+            ff=Feedforward(kS=0.1, kV=0.15732144931968844, kA=0.010207614450276913),
             pid=PidGains(kp=10.0, ki=10.0, kd=0.8325887354457593),
             ticks_to_rad=0.0042169,
             vel_lpf_alpha=0.8,
@@ -44,7 +42,7 @@ class Defs:
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.06955937236541831, kV=0.20358700173069277, kA=0.02),
+            ff=Feedforward(kS=0.1, kV=0.20358700173069277, kA=0.02),
             pid=PidGains(kp=10.0, ki=10.0, kd=0.7396889543836078),
             ticks_to_rad=0.0039843,
             vel_lpf_alpha=0.8,
@@ -54,9 +52,7 @@ class Defs:
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ff=Feedforward(
-                kS=0.18875435545013933, kV=0.18692403983703706, kA=0.015871817084935565
-            ),
+            ff=Feedforward(kS=0.1, kV=0.18692403983703706, kA=0.015871817084935565),
             pid=PidGains(kp=10.0, ki=10.0, kd=1.1202285674265806),
             ticks_to_rad=0.0040148,
             vel_lpf_alpha=0.8,
@@ -66,9 +62,7 @@ class Defs:
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ff=Feedforward(
-                kS=0.21364794864228304, kV=0.16253475305629306, kA=0.010956222915881436
-            ),
+            ff=Feedforward(kS=0.1, kV=0.16253475305629306, kA=0.010956222915881436),
             pid=PidGains(kp=10.0, ki=10.0, kd=1.2985250608993861),
             ticks_to_rad=0.0041638,
             vel_lpf_alpha=0.8,
