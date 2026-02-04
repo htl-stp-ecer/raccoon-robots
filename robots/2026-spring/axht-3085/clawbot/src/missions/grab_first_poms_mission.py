@@ -17,6 +17,8 @@ Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
 from libstp import *
+from libstp.step.parallel import parallel
+
 from src.hardware.defs import *
 from src.steps.drive_over_step import frontside_forward_move_over_line
 from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
@@ -28,11 +30,10 @@ class GrabFirstPomsMission(Mission):
         return seq([
             # drive infront of poms
             turn_left(90, 0.5),
-            drive_backward(cm=2),
-            #TODO use a linup, but until this shit wokes our robot will alighn it self on hops an prayers and the broken imu shit :(
+            drive_backward(cm=5),
             #frontside_forward_lineup_on_black(),
-            #drive_backward(cm=3),
-            strafe_left(cm=13),
+            #drive_backward(cm=7),
+            strafe_left(cm=11),
 
             # push poms back
             drive_forward(cm=35),
@@ -46,16 +47,25 @@ class GrabFirstPomsMission(Mission):
             #follow_line
 
             #get poms and close claw
-            drive_forward(cm=70),
+            #drive_forward(cm=20),
+            #put the following 3 commands in a parallel if parallel is fixed
+            #strafe_until_black(Defs.front_left_light_sensor, 1.0),
+            #seq([
+            #    servo_pom_grab_close(),
+            #    servo_pom_grab_open(),
+            #]),
+            # ---
+            drive_forward(cm=50),
+
+            strafe_until_black(Defs.front_left_light_sensor, 1.0),
             servo_pom_grab_close(),
             servo_pom_arm_up(),
+            strafe_left(cm=7),
 
             #drop cube down
-            strafe_right(cm=20),
-            drive_forward(cm=10),
-
-            strafe_left(cm=20),
+            #strafe_right(cm=16),
+            #drive_forward(cm=10),
 
             #TODO do som align on balck line to do shit right?
-            strafe_left(cm=20),
+            #strafe_left(cm=16),
         ])
