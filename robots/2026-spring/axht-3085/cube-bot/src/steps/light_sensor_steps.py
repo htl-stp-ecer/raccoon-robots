@@ -1,8 +1,8 @@
 from libstp import *
 from src.hardware.defs import *
 
-def frontside_forward_lineup_on_black():
-    return forward_lineup_on_black(Defs.front_left_light_sensor, Defs.front_right_light_sensor)
+def frontside_forward_lineup_on_black(threshold = 0.4):
+    return forward_lineup_on_black(Defs.front_left_light_sensor, Defs.front_right_light_sensor, detection_threshold=threshold)
 
 def frontside_forward_lineup_on_white():
     return forward_lineup_on_white(Defs.front_left_light_sensor, Defs.front_right_light_sensor)
