@@ -103,7 +103,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 0.8325887354457593
-      ticks_to_rad: 0.004519607826616701
+      ticks_to_rad: 0.004571296732530407
       vel_lpf_alpha: 0.8
   front_right_motor:
     type: Motor
@@ -118,7 +118,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 0.7396889543836078
-      ticks_to_rad: 0.004252822700557518
+      ticks_to_rad: 0.004430656516057428
       vel_lpf_alpha: 0.8
   rear_left_motor:
     type: Motor
@@ -133,7 +133,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 1.1202285674265806
-      ticks_to_rad: 0.0043432497284286165
+      ticks_to_rad: 0.004526420134867507
       vel_lpf_alpha: 0.8
   rear_right_motor:
     type: Motor
@@ -148,7 +148,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 1.2985250608993861
-      ticks_to_rad: 0.004375755013929672
+      ticks_to_rad: 0.0044907556323119545
       vel_lpf_alpha: 0.8
   imu:
     type: IMU
