@@ -1,12 +1,7 @@
-from .missions.setup_mission import SetupMission
-from .missions.shutdown_mission import ShutdownMission
-from .missions.grab_first_poms_mission import GrabFirstPomsMission
-from .missions.push_crate_mission import PushCrateMission
-from .missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-01-29 14:21:31
+ Generated: 2026-02-06 16:39:07
  Tool:      Raccoon IDE
  Platform:  StpOS – Robotics Operating System
 ===========================================================
@@ -21,10 +16,19 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
+from os import wait
 
-from src.hardware.robot import Robot
+from libstp import Mission, Sequential, seq, strafe_until_black, strafe_left, drive_until_black, drive_forward, \
+    strafe_right_until_black, strafe_left_until_black
 
-robot = Robot()
+from src.hardware.defs import Defs
 
-if __name__ == "__main__":
-   robot.start()
+
+class DriveDownAccesRampMission(Mission):
+    def sequence(self) -> Sequential:
+        return seq([
+            strafe_left_until_black(Defs.front_left_light_sensor, 0.5),
+            wait(1),
+            strafe_left(1, 0.5),
+            drive_forward(115.0,0.5)
+        ])
