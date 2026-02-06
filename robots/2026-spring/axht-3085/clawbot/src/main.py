@@ -1,6 +1,8 @@
 from .missions.setup_mission import SetupMission
 from .missions.shutdown_mission import ShutdownMission
 from .missions.grab_first_poms_mission import GrabFirstPomsMission
+from .missions.push_crate_mission import PushCrateMission
+from .missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
 """
 ===========================================================
  Project:   PackingBot
@@ -23,9 +25,6 @@ claimed over the generated code itself.
 from src.hardware.robot import Robot
 
 robot = Robot()
-robot.missions = [
-   GrabFirstPomsMission()
-]
 
 if __name__ == "__main__":
    robot.start()
