@@ -18,4 +18,4 @@ def servo_pom_grab_close():
     return slow_servo(Defs.pom_grab, 0, 0.7)
 
 def servo_pom_grab_open():
-    return slow_servo(Defs.pom_grab, 80, 0.7)
+    return slow_servo(Defs.pom_grab, 70, 0.7)
