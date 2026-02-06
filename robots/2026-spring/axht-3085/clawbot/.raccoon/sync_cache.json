@@ -109,11 +109,6 @@
     "mtime": 1769855137.8122253,
     "size": 285
   },
-  "raccoon.project.yml": {
-    "hash": "5cf2542193dd2887031aad7214b3e22f763ad8d4b30a5637c7a88b307f8a6673",
-    "mtime": 1769855138.3071587,
-    "size": 2516
-  },
   ".mission_snapshots/test.json": {
     "hash": "2ec3d1a49ca5861da9eeae8ec856ae62b8dfc71538c9c80ef3ca9989740608d5",
     "mtime": 1769855137.949926,
@@ -123,5 +118,10 @@
     "hash": "78c09f58cb2bc910b2b6bc18fe5ef8f5958ef1d17754ab8a47cde9d43e52884f",
     "mtime": 1769855138.0507083,
     "size": 978
+  },
+  "raccoon.project.yml": {
+    "hash": "e0b51b3fd8218d03337ad13ac3df9c219bb005fbb0e51a93b25a06fd97aa3317",
+    "mtime": 1770384683.4998748,
+    "size": 3882
   }
 }

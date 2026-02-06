@@ -1,5 +1,17 @@
 {
   "missions": {
+    "PushCrateMission": {
+      "positions": {
+        "1": {
+          "x": 298.0,
+          "y": 120.0
+        },
+        "2": {
+          "x": 344.9999999999991,
+          "y": 261.7500000000004
+        }
+      }
+    },
     "SetupMission": {
       "positions": {
         "1": {
