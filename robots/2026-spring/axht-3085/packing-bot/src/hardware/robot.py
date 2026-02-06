@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-06 10:29:38
+ Generated: 2026-02-06 16:59:23
 ===========================================================
 
 Authors:
@@ -15,6 +15,7 @@ Authors:
 from libstp import (
     Drive,
     FusedOdometry,
+    FusedOdometryConfig,
     GenericRobot,
     MecanumKinematics,
     MotionLimits,
@@ -29,6 +30,8 @@ from src.hardware.defs import Defs
 from src.missions.setup_mission import SetupMission
 from src.missions.shutdown_mission import ShutdownMission
 from src.missions.grab_first_poms_mission import GrabFirstPomsMission
+from src.missions.push_crate_mission import PushCrateMission
+from src.missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
 
 
 class Robot(GenericRobot):
@@ -48,7 +51,9 @@ class Robot(GenericRobot):
         kinematics=kinematics,
         chassis_lim=MotionLimits(max_omega=200000000.0, max_v=20000000.0),
     )
-    odometry = FusedOdometry(imu=defs.imu, kinematics=kinematics)
+    odometry = FusedOdometry(
+        imu=defs.imu, kinematics=kinematics, config=FusedOdometryConfig(bemf_trust=0.9)
+    )
     motion_pid_config = UnifiedMotionPidConfig(
         angle_tolerance_rad=0.02,
         derivative_lpf_alpha=0.1,
@@ -82,7 +87,7 @@ class Robot(GenericRobot):
         saturation_min_scale=0.1,
         saturation_recovery_rate=0.02,
     )
-    missions = [GrabFirstPomsMission()]
+    missions = [GrabFirstPomsMission(), PushCrateMission(), DriveDownAccesRampMission()]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
     width_cm = 23.6

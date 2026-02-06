@@ -18,6 +18,8 @@ robot:
       max_omega: 200000000.0
   odometry:
     type: FusedOdometry
+    config:
+      bemf_trust: 0.9
   motion_pid:
     distance:
       kp: 2.0
@@ -86,6 +88,8 @@ missions:
 - SetupMission: setup
 - ShutdownMission: shutdown
 - GrabFirstPomsMission
+- PushCrateMission
+- DriveDownAccesRampMission
 definitions:
   button:
     type: DigitalSensor
@@ -103,7 +107,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 0.8325887354457593
-      ticks_to_rad: 0.004571296732530407
+      ticks_to_rad: 0.004298002396376741
       vel_lpf_alpha: 0.8
   front_right_motor:
     type: Motor
@@ -118,7 +122,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 0.7396889543836078
-      ticks_to_rad: 0.004430656516057428
+      ticks_to_rad: 0.004548198190734201
       vel_lpf_alpha: 0.8
   rear_left_motor:
     type: Motor
@@ -133,7 +137,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 1.1202285674265806
-      ticks_to_rad: 0.004526420134867507
+      ticks_to_rad: 0.004662694163885725
       vel_lpf_alpha: 0.8
   rear_right_motor:
     type: Motor
@@ -148,7 +152,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 1.2985250608993861
-      ticks_to_rad: 0.0044907556323119545
+      ticks_to_rad: 0.0042051511756393736
       vel_lpf_alpha: 0.8
   imu:
     type: IMU
