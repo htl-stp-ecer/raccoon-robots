@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-04 13:47:09
+ Generated: 2026-02-06 10:29:38
 ===========================================================
 
 Authors:
@@ -15,12 +15,13 @@ Authors:
 from libstp import (
     Drive,
     FusedOdometry,
+    GenericRobot,
     MecanumKinematics,
     MotionLimits,
+    SensorPosition,
     UnifiedMotionPidConfig,
+    WheelPosition,
 )
-
-from libstp import GenericRobot
 
 from src.hardware.defs import Defs
 
@@ -41,7 +42,7 @@ class Robot(GenericRobot):
         max_velocity=5339999999993.333,
         track_width=0.2,
         wheel_radius=0.0375,
-        wheelbase=0.12,
+        wheelbase=0.12300000000000001,
     )
     drive = Drive(
         kinematics=kinematics,
@@ -84,6 +85,30 @@ class Robot(GenericRobot):
     missions = [GrabFirstPomsMission()]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
+    width_cm = 23.6
+    length_cm = 30.0
+    rotation_center_forward_cm = 2.15
+    rotation_center_strafe_cm = 0.0
+    _sensor_positions = {
+        defs.rear_right_light_sensor: SensorPosition(
+            forward_cm=-11.0, strafe_cm=-8.5, clearance_cm=1.0
+        ),
+        defs.rear_left_light_sensor: SensorPosition(
+            forward_cm=-11.0, strafe_cm=8.5, clearance_cm=1.0
+        ),
+        defs.front_right_light_sensor: SensorPosition(
+            forward_cm=14.0, strafe_cm=-8.5, clearance_cm=1.0
+        ),
+        defs.front_left_light_sensor: SensorPosition(
+            forward_cm=14.0, strafe_cm=8.5, clearance_cm=1.0
+        ),
+    }
+    _wheel_positions = {
+        defs.front_left_motor: WheelPosition(forward_cm=6.15, strafe_cm=10.0),
+        defs.front_right_motor: WheelPosition(forward_cm=6.15, strafe_cm=-10.0),
+        defs.rear_left_motor: WheelPosition(forward_cm=-6.15, strafe_cm=10.0),
+        defs.rear_right_motor: WheelPosition(forward_cm=-6.15, strafe_cm=-10.0),
+    }
 
 
 __all__ = ["Robot"]
