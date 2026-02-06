@@ -55,17 +55,9 @@ class GrabFirstPomsMission(Mission):
             #    servo_pom_grab_open(),
             #]),
             # ---
-            drive_forward(cm=50),
+            drive_forward(cm=51),
 
-            #strafe_until_black(Defs.front_left_light_sensor, 1.0),
             servo_pom_grab_close(),
             servo_pom_arm_up(),
-            #strafe_left(cm=7),
 
-            #drop cube down
-            #strafe_right(cm=16),
-            #drive_forward(cm=10),
-
-            #TODO do som align on balck line to do shit right?
-            #strafe_left(cm=16),
         ])
