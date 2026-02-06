@@ -23,8 +23,11 @@ claimed over the generated code itself.
 """
 
 from src.hardware.robot import Robot
+import libstp.foundation as logging
 
 robot = Robot()
+
+#logging.set_file_level("fused_odometry.cpp", logging.Level.trace),
 
 if __name__ == "__main__":
    robot.start()

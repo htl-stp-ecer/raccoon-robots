@@ -1,9 +1,17 @@
+from libstp import strafe_left_lineup_on_black, strafe_right_until_black, forward_lineup_on_black, drive_until_black, \
+    drive_forward_until_black
 from libstp.mission.api import Mission
 from libstp.step.sequential import Sequential, seq
-from libstp.step.motion.drive import drive_forward
+from libstp import *
+from src.hardware.defs import Defs
 
 class TestMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drive_forward(cm=10, velocity=1)
+            #strafe_left_lineup_on_black(Defs.front_left_light_sensor, Defs.rear_left_light_sensor, 0.4),
+            #strafe_right_until_black([Defs.front_left_light_sensor, Defs.rear_left_light_sensor], 1.0),
+            drive_forward_until_black([Defs.front_left_light_sensor, Defs.front_right_light_sensor]),
+            wait(10),
+            drive_forward(10, 1.0),
+            drive_backward_until_black([Defs.front_left_light_sensor, Defs.front_right_light_sensor]),
         ])

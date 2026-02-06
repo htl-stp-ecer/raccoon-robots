@@ -29,15 +29,16 @@ class GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # drive infront of poms
-            turn_left(90, 0.5),
+            turn_left(90, 1.0),
+            strafe_left(11, 1.0),
             drive_backward(cm=5),
             frontside_forward_lineup_on_black(),
-            drive_backward(cm=7),
-            strafe_left(cm=11),
+            drive_forward(5,1.0),
+            drive_backward(13, 1.0),
 
             # push poms back
-            drive_forward(cm=35),
-            drive_backward(cm=35),
+            #drive_forward(cm=35),
+            #drive_backward(cm=35),
 
             servo_pom_grab_open(),
             servo_pom_arm_down(),
