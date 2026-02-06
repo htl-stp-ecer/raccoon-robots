@@ -11,6 +11,6 @@ class PushCrateMission(Mission):
             strafe_until_black(sensor=Defs.front_left_light_sensor, strafe_speed=1.0, confidence_threshold=0.4),
             #strafe_until_white(sensor=Defs.front_left_light_sensor, strafe_speed=1.0),
             wait(1),
-            drive_forward(40.0, speed=0.5),
-            drive_backward(10.0, speed=0.5),
+            drive_forward(40.0, speed=1.0),
+            drive_backward(10.0, speed=1.0),
         ])
