@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-06 20:28:17
+ Generated: 2026-02-07 14:57:46
 ===========================================================
 
 Authors:
@@ -32,9 +32,9 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.1, kV=0.15732144931968844, kA=0.010207614450276913),
-            pid=PidGains(kp=10.0, ki=10.0, kd=0.8325887354457593),
-            ticks_to_rad=0.004265830618156932,
+            ff=Feedforward(kS=0.165, kV=0.16505993860636586, kA=1e-06),
+            pid=PidGains(kp=10.0, ki=10.0, kd=2.0),
+            ticks_to_rad=0.004463102469338597,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -42,9 +42,9 @@ class Defs:
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.1, kV=0.20358700173069277, kA=0.02),
-            pid=PidGains(kp=10.0, ki=10.0, kd=0.7396889543836078),
-            ticks_to_rad=0.004401838419134014,
+            ff=Feedforward(kS=0.22, kV=0.1415650287290876, kA=1e-06),
+            pid=PidGains(kp=10.0, ki=10.0, kd=2.0),
+            ticks_to_rad=0.004434681801506975,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -52,9 +52,9 @@ class Defs:
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.1, kV=0.18692403983703706, kA=0.015871817084935565),
-            pid=PidGains(kp=10.0, ki=10.0, kd=1.1202285674265806),
-            ticks_to_rad=0.004591833661091449,
+            ff=Feedforward(kS=0.17, kV=0.16154924342153362, kA=1e-06),
+            pid=PidGains(kp=10.0, ki=10.0, kd=2.0),
+            ticks_to_rad=0.004624068630573387,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -62,9 +62,9 @@ class Defs:
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.1, kV=0.16253475305629306, kA=0.010956222915881436),
-            pid=PidGains(kp=10.0, ki=10.0, kd=1.2985250608993861),
-            ticks_to_rad=0.00423491675000475,
+            ff=Feedforward(kS=0.18, kV=0.10116544412095624, kA=0.004394658054609205),
+            pid=PidGains(kp=10.0, ki=10.0, kd=2.0),
+            ticks_to_rad=0.0044333016794217694,
             vel_lpf_alpha=0.8,
         ),
     )
