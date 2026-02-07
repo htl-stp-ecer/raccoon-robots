@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-06 20:28:19
+ Generated: 2026-02-07 14:57:48
 ===========================================================
 
 Authors:
@@ -29,7 +29,9 @@ from src.hardware.defs import Defs
 
 from src.missions.setup_mission import SetupMission
 from src.missions.shutdown_mission import ShutdownMission
-from src.missions.test_mission import TestMission
+from src.missions.grab_first_poms_mission import GrabFirstPomsMission
+from src.missions.push_crate_mission import PushCrateMission
+from src.missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
 
 
 class Robot(GenericRobot):
@@ -53,8 +55,8 @@ class Robot(GenericRobot):
         imu=defs.imu, kinematics=kinematics, config=FusedOdometryConfig(bemf_trust=0.9)
     )
     motion_pid_config = UnifiedMotionPidConfig(
-        angle_tolerance_rad=0.02,
-        derivative_lpf_alpha=0.1,
+        angle_tolerance_rad=0.01,
+        derivative_lpf_alpha=0.5,
         distance_kd=0.0,
         distance_ki=0.0,
         distance_kp=2.0,
@@ -77,7 +79,7 @@ class Robot(GenericRobot):
         max_angular_acceleration=3.0,
         max_heading_rate=3.0,
         max_linear_acceleration=1.0,
-        min_angular_rate=0.1,
+        min_angular_rate=0.001,
         min_speed_mps=0.05,
         output_max=10.0,
         output_min=-10.0,
@@ -85,7 +87,7 @@ class Robot(GenericRobot):
         saturation_min_scale=0.1,
         saturation_recovery_rate=0.02,
     )
-    missions = [TestMission()]
+    missions = [GrabFirstPomsMission(), PushCrateMission(), DriveDownAccesRampMission()]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
     width_cm = 23.6
@@ -94,10 +96,10 @@ class Robot(GenericRobot):
     rotation_center_strafe_cm = 0.0
     _sensor_positions = {
         defs.rear_right_light_sensor: SensorPosition(
-            forward_cm=-11.0, strafe_cm=-8.5, clearance_cm=1.0
+            forward_cm=-11.0, strafe_cm=-8.2, clearance_cm=1.0
         ),
         defs.rear_left_light_sensor: SensorPosition(
-            forward_cm=-11.0, strafe_cm=8.5, clearance_cm=1.0
+            forward_cm=-11.0, strafe_cm=8.2, clearance_cm=1.0
         ),
         defs.front_right_light_sensor: SensorPosition(
             forward_cm=14.0, strafe_cm=-8.5, clearance_cm=1.0

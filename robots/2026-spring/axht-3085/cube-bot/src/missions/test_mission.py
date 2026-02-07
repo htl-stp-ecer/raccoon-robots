@@ -4,14 +4,22 @@ from libstp.mission.api import Mission
 from libstp.step.sequential import Sequential, seq
 from libstp import *
 from src.hardware.defs import Defs
+from src.steps.light_sensor_steps import *
+
 
 class TestMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            #strafe_left_lineup_on_black(Defs.front_left_light_sensor, Defs.rear_left_light_sensor, 0.4),
+            strafe_left_lineup_on_black(Defs.front_left_light_sensor, Defs.rear_left_light_sensor, 0.9),
             #strafe_right_until_black([Defs.front_left_light_sensor, Defs.rear_left_light_sensor], 1.0),
-            drive_forward_until_black([Defs.front_left_light_sensor, Defs.front_right_light_sensor]),
-            wait(10),
-            drive_forward(10, 1.0),
-            drive_backward_until_black([Defs.front_left_light_sensor, Defs.front_right_light_sensor]),
+
+            #simpl_frontside_forward_lineup_on_black(),
+            #drive_forward_until_black([Defs.front_left_light_sensor, Defs.front_right_light_sensor]),
+            #wait(10),
+            #drive_forward(10, 1.0),
+            #drive_backward_until_black([Defs.front_left_light_sensor, Defs.front_right_light_sensor]),
+
+            #frontside_forward_lineup_on_black(),
+
+            #drive_forward(20,0.1),
         ])

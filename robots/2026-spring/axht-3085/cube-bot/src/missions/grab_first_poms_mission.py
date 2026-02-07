@@ -21,7 +21,7 @@ from libstp.step.parallel import parallel
 
 from src.hardware.defs import *
 from src.steps.drive_over_step import frontside_forward_move_over_line
-from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
+from src.steps.light_sensor_steps import *
 from src.steps.servo_steps import *
 
 
@@ -30,15 +30,11 @@ class GrabFirstPomsMission(Mission):
         return seq([
             # drive infront of poms
             turn_left(90, 1.0),
-            strafe_left(11, 1.0),
             drive_backward(cm=5),
-            frontside_forward_lineup_on_black(),
-            drive_forward(5,1.0),
-            drive_backward(13, 1.0),
-
-            # push poms back
-            #drive_forward(cm=35),
-            #drive_backward(cm=35),
+            strafe_left(11, 1.0),
+            simpl_frontside_forward_lineup_on_black(),
+            drive_forward(20,1.0),
+            drive_backward(30, 1.0),
 
             servo_pom_grab_open(),
             servo_pom_arm_down(),
