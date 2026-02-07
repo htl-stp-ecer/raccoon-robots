@@ -16,19 +16,16 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
-from os import wait
-
-from libstp import Mission, Sequential, seq, strafe_until_black, strafe_left, drive_until_black, drive_forward, \
-    strafe_right_until_black, strafe_left_until_black
-
+from libstp import *
 from src.hardware.defs import Defs
 
 
 class DriveDownAccesRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            strafe_left_until_black(Defs.front_left_light_sensor, 0.5),
+            #strafe_left_until_black(Defs.front_left_light_sensor, 0.5),
+            strafe_left_lineup_on_black(Defs.front_left_light_sensor, Defs.rear_left_light_sensor, 0.4),
+            strafe_left(5, 1.0),
             wait(1),
-            strafe_left(1, 0.5),
             drive_forward(115.0,0.5)
         ])
