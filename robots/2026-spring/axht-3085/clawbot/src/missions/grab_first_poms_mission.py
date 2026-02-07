@@ -34,7 +34,7 @@ class GrabFirstPomsMission(Mission):
             strafe_left(11, 1.0),
             simpl_frontside_forward_lineup_on_black(),
             drive_forward(20,1.0),
-            drive_backward(30, 1.0),
+            drive_backward(25, 1.0),
 
             servo_pom_grab_open(),
             servo_pom_arm_down(),

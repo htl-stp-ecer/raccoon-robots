@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-07 14:57:48
+ Generated: 2026-02-07 17:07:59
 ===========================================================
 
 Authors:
@@ -29,9 +29,7 @@ from src.hardware.defs import Defs
 
 from src.missions.setup_mission import SetupMission
 from src.missions.shutdown_mission import ShutdownMission
-from src.missions.grab_first_poms_mission import GrabFirstPomsMission
-from src.missions.push_crate_mission import PushCrateMission
-from src.missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
+from src.missions.grab_second_poms_mission import GrabSecondPomsMission
 
 
 class Robot(GenericRobot):
@@ -52,7 +50,7 @@ class Robot(GenericRobot):
         chassis_lim=MotionLimits(max_omega=200000000.0, max_v=20000000.0),
     )
     odometry = FusedOdometry(
-        imu=defs.imu, kinematics=kinematics, config=FusedOdometryConfig(bemf_trust=0.9)
+        imu=defs.imu, kinematics=kinematics, config=FusedOdometryConfig(bemf_trust=1.0)
     )
     motion_pid_config = UnifiedMotionPidConfig(
         angle_tolerance_rad=0.01,
@@ -63,7 +61,7 @@ class Robot(GenericRobot):
         distance_tolerance_m=0.01,
         heading_kd=0.0,
         heading_ki=0.0,
-        heading_kp=3.0,
+        heading_kp=1.0,
         heading_min_scale=0.25,
         heading_recovery_error_rad=0.005,
         heading_saturation_derating_factor=0.85,
@@ -87,7 +85,7 @@ class Robot(GenericRobot):
         saturation_min_scale=0.1,
         saturation_recovery_rate=0.02,
     )
-    missions = [GrabFirstPomsMission(), PushCrateMission(), DriveDownAccesRampMission()]
+    missions = [GrabSecondPomsMission()]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
     width_cm = 23.6

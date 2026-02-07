@@ -7,7 +7,7 @@ class SetupMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #set servos to start pos
-            servo_pom_arm_start(),
+            servo_pom_arm_up(),
             servo_pom_grab_close(),
 
             calibrate(distance_cm=50),

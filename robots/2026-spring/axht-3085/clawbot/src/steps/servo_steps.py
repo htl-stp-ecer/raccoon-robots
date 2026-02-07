@@ -19,8 +19,8 @@ def servo_pom_arm_start():
 # --- pom grab ---
 @dsl
 def servo_pom_grab_close():
-    return slow_servo(Defs.pom_grab, 0, 1.5)
+    return slow_servo(Defs.pom_grab, 30, 1.5)
 
 @dsl
 def servo_pom_grab_open():
-    return slow_servo(Defs.pom_grab, 70, 1.5)
+    return slow_servo(Defs.pom_grab, 100, 1.5)
