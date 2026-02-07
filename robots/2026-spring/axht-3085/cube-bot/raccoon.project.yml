@@ -38,7 +38,7 @@ robot:
       max_angular_acceleration: 3.0
     integral_max: 10.0
     integral_deadband: 0.01
-    derivative_lpf_alpha: 0.1
+    derivative_lpf_alpha: 0.5
     output_min: -10.0
     output_max: 10.0
     saturation:
@@ -51,10 +51,10 @@ robot:
       recovery_rate: 0.05
     tolerances:
       distance_m: 0.01
-      angle_rad: 0.02
+      angle_rad: 0.01
     rate_limits:
       max_heading_rate: 3.0
-      min_angular_rate: 0.1
+      min_angular_rate: 0.001
     lateral_drift:
       heading_bias_gain: 0.5
       reorient_threshold_m: 0.15
@@ -64,11 +64,11 @@ robot:
   physical:
     sensors:
     - name: rear_right_light_sensor
-      x_cm: 20.3
+      x_cm: 20.0
       y_cm: 3.999999999999999
       clearance_cm: 1.0
     - name: rear_left_light_sensor
-      x_cm: 3.3
+      x_cm: 3.5999999999999996
       y_cm: 3.999999999999999
       clearance_cm: 1.0
     - name: front_right_light_sensor
@@ -87,7 +87,9 @@ robot:
 missions:
 - SetupMission: setup
 - ShutdownMission: shutdown
-- TestMission
+- GrabFirstPomsMission
+- PushCrateMission
+- DriveDownAccesRampMission
 definitions:
   button:
     type: DigitalSensor
@@ -98,14 +100,14 @@ definitions:
     inverted: false
     calibration:
       ff:
-        kS: 0.1
-        kV: 0.15732144931968844
-        kA: 0.010207614450276913
+        kS: 0.165
+        kV: 0.16505993860636586
+        kA: 1.0e-06
       pid:
         kp: 10.0
         ki: 10.0
-        kd: 0.8325887354457593
-      ticks_to_rad: 0.004319414766043186
+        kd: 2.0
+      ticks_to_rad: 0.004460586386840088
       vel_lpf_alpha: 0.8
   front_right_motor:
     type: Motor
@@ -113,14 +115,14 @@ definitions:
     inverted: true
     calibration:
       ff:
-        kS: 0.1
-        kV: 0.20358700173069277
-        kA: 0.02
+        kS: 0.22
+        kV: 0.1415650287290876
+        kA: 1.0e-06
       pid:
         kp: 10.0
         ki: 10.0
-        kd: 0.7396889543836078
-      ticks_to_rad: 0.004380371629148165
+        kd: 2.0
+      ticks_to_rad: 0.0044380499134436795
       vel_lpf_alpha: 0.8
   rear_left_motor:
     type: Motor
@@ -128,14 +130,14 @@ definitions:
     inverted: false
     calibration:
       ff:
-        kS: 0.1
-        kV: 0.18692403983703706
-        kA: 0.015871817084935565
+        kS: 0.17
+        kV: 0.16154924342153362
+        kA: 1.0e-06
       pid:
         kp: 10.0
         ki: 10.0
-        kd: 1.1202285674265806
-      ticks_to_rad: 0.004554113039012492
+        kd: 2.0
+      ticks_to_rad: 0.004606266174013008
       vel_lpf_alpha: 0.8
   rear_right_motor:
     type: Motor
@@ -143,14 +145,14 @@ definitions:
     inverted: true
     calibration:
       ff:
-        kS: 0.1
-        kV: 0.16253475305629306
-        kA: 0.010956222915881436
+        kS: 0.18
+        kV: 0.10116544412095624
+        kA: 0.004394658054609205
       pid:
         kp: 10.0
         ki: 10.0
-        kd: 1.2985250608993861
-      ticks_to_rad: 0.004304271201251803
+        kd: 2.0
+      ticks_to_rad: 0.004423598194512395
       vel_lpf_alpha: 0.8
   imu:
     type: IMU
