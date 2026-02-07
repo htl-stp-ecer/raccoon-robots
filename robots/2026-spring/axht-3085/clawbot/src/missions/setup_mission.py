@@ -10,7 +10,8 @@ class SetupMission(Mission):
             servo_pom_arm_start(),
             servo_pom_grab_close(),
 
-            calibrate_distance(distance_cm=50, calibrate_light_sensors=True),
+            calibrate(distance_cm=50),
             wait_for_button(),
+
             #calibrate_wait_for_light(Defs.wait_for_light_sensor),
         ])
