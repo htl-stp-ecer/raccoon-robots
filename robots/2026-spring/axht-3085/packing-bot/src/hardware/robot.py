@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-07 17:07:59
+ Generated: 2026-02-07 20:38:40
 ===========================================================
 
 Authors:
@@ -29,6 +29,8 @@ from src.hardware.defs import Defs
 
 from src.missions.setup_mission import SetupMission
 from src.missions.shutdown_mission import ShutdownMission
+from src.missions.grab_first_poms_mission import GrabFirstPomsMission
+from src.missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
 from src.missions.grab_second_poms_mission import GrabSecondPomsMission
 
 
@@ -85,7 +87,11 @@ class Robot(GenericRobot):
         saturation_min_scale=0.1,
         saturation_recovery_rate=0.02,
     )
-    missions = [GrabSecondPomsMission()]
+    missions = [
+        GrabFirstPomsMission(),
+        DriveDownAccesRampMission(),
+        GrabSecondPomsMission(),
+    ]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
     width_cm = 23.6
