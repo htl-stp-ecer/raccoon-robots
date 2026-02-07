@@ -3,6 +3,7 @@ from .missions.shutdown_mission import ShutdownMission
 from .missions.grab_first_poms_mission import GrabFirstPomsMission
 from .missions.push_crate_mission import PushCrateMission
 from .missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
+from .missions.grab_second_poms_mission import GrabSecondPomsMission
 """
 ===========================================================
  Project:   PackingBot

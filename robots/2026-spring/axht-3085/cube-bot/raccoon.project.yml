@@ -19,14 +19,14 @@ robot:
   odometry:
     type: FusedOdometry
     config:
-      bemf_trust: 0.9
+      bemf_trust: 1.0
   motion_pid:
     distance:
       kp: 2.0
       ki: 0.0
       kd: 0.0
     heading:
-      kp: 3.0
+      kp: 1.0
       ki: 0.0
       kd: 0.0
     lateral:
@@ -107,7 +107,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 2.0
-      ticks_to_rad: 0.004460586386840088
+      ticks_to_rad: 0.0046508836591738385
       vel_lpf_alpha: 0.8
   front_right_motor:
     type: Motor
@@ -122,7 +122,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 2.0
-      ticks_to_rad: 0.0044380499134436795
+      ticks_to_rad: 0.004542696247883404
       vel_lpf_alpha: 0.8
   rear_left_motor:
     type: Motor
@@ -137,7 +137,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 2.0
-      ticks_to_rad: 0.004606266174013008
+      ticks_to_rad: 0.004770059821266062
       vel_lpf_alpha: 0.8
   rear_right_motor:
     type: Motor
@@ -152,7 +152,7 @@ definitions:
         kp: 10.0
         ki: 10.0
         kd: 2.0
-      ticks_to_rad: 0.004423598194512395
+      ticks_to_rad: 0.004406758974993002
       vel_lpf_alpha: 0.8
   imu:
     type: IMU
