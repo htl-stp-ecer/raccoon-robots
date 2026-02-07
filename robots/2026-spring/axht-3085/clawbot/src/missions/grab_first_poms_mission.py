@@ -31,7 +31,7 @@ class GrabFirstPomsMission(Mission):
             # drive infront of poms
             turn_left(90, 1.0),
             drive_backward(cm=5),
-            strafe_left(11, 1.0),
+            strafe_left(15, 1.0),
             simpl_frontside_forward_lineup_on_black(),
             drive_forward(20,1.0),
             drive_backward(25, 1.0),

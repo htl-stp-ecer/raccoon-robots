@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-06 16:39:07
+ Generated: 2026-02-07 17:09:49
  Tool:      Raccoon IDE
  Platform:  StpOS – Robotics Operating System
 ===========================================================
@@ -16,17 +16,15 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
-from libstp import *
+from libstp import Mission, Sequential, seq, turn_right, strafe_right_until_black, drive_backward
+
 from src.hardware.defs import Defs
 
 
-class DriveDownAccesRampMission(Mission):
+class GrabSecondPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # commentet things for align may not be needed
-            #strafe_left_lineup_on_black(Defs.front_left_light_sensor, Defs.rear_left_light_sensor, 0.4),
-            #strafe_left(5, 1.0),
-            #wait(1),
-            strafe_left(cm=5, speed=1.0),
-            drive_forward(140.0,0.5)
-        ]) 
+            turn_right(90,1.0),
+            strafe_right_until_black(Defs.front_right_light_sensor, 1.0),
+            drive_backward(10, 1.0)
+        ])
