@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-07 20:38:38
+ Generated: 2026-02-08 18:13:52
 ===========================================================
 
 Authors:
@@ -33,8 +33,8 @@ class Defs:
         inverted=False,
         calibration=MotorCalibration(
             ff=Feedforward(kS=0.165, kV=0.16505993860636586, kA=1e-06),
-            pid=PidGains(kp=10.0, ki=2.0, kd=0.0),
-            ticks_to_rad=0.004588993179715786,
+            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
+            ticks_to_rad=0.0043936514061409864,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -43,8 +43,8 @@ class Defs:
         inverted=True,
         calibration=MotorCalibration(
             ff=Feedforward(kS=0.22, kV=0.1415650287290876, kA=1e-06),
-            pid=PidGains(kp=10.0, ki=2.0, kd=0.0),
-            ticks_to_rad=0.004625234492863835,
+            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
+            ticks_to_rad=0.004961728419819521,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -53,8 +53,8 @@ class Defs:
         inverted=False,
         calibration=MotorCalibration(
             ff=Feedforward(kS=0.17, kV=0.16154924342153362, kA=1e-06),
-            pid=PidGains(kp=10.0, ki=2.0, kd=0.0),
-            ticks_to_rad=0.004694008928832124,
+            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
+            ticks_to_rad=0.00486099756898262,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -63,8 +63,8 @@ class Defs:
         inverted=True,
         calibration=MotorCalibration(
             ff=Feedforward(kS=0.18, kV=0.10116544412095624, kA=0.004394658054609205),
-            pid=PidGains(kp=10.0, ki=2.0, kd=0.0),
-            ticks_to_rad=0.0044833336420213536,
+            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
+            ticks_to_rad=0.004326040048754677,
             vel_lpf_alpha=0.8,
         ),
     )
