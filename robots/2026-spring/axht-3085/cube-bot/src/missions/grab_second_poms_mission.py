@@ -16,15 +16,31 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
-from libstp import Mission, Sequential, seq, turn_right, strafe_right_until_black, drive_backward
+from libstp import *
 
 from src.hardware.defs import Defs
+from src.steps.light_sensor_steps import simple_backside_backward_lineup_on_black, frontside_forward_drive_until_line
+from src.steps.servo_steps import *
 
 
 class GrabSecondPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            turn_right(90,1.0),
-            strafe_right_until_black(Defs.front_right_light_sensor, 1.0),
-            drive_backward(10, 1.0)
+            parallel( #align on poms and put the claw down
+                strafe_left_until_white(Defs.front_right_light_sensor, 0.3),
+                servo_pom_arm_above_pom(speed=200),
+            ),
+            servo_pom_grab_slightly_open(speed=300),
+
+            parallel(
+                servo_pom_arm_down(),
+                servo_pom_grab_open(),
+            ),
+
+            parallel(
+                servo_pom_grab_pom_width(),
+                frontside_forward_drive_until_line(),
+            ),
+
+            servo_pom_grab_close(),
         ])

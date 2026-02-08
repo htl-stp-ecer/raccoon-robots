@@ -22,15 +22,15 @@ robot:
       bemf_trust: 1.0
   motion_pid:
     distance:
-      kp: 2.0
+      kp: 10.0
       ki: 0.0
       kd: 0.0
     heading:
-      kp: 3.0
-      ki: 0.0
+      kp: 20.0
+      ki: 1.0
       kd: 0.0
     lateral:
-      kp: 2.0
+      kp: 10.0
       ki: 0.0
       kd: 0.0
     profile:
@@ -90,6 +90,8 @@ missions:
 - GrabFirstPomsMission
 - DriveDownAccesRampMission
 - GrabSecondPomsMission
+- AlignForLastPomsMission
+- CollectLastPomsMission
 definitions:
   button:
     type: DigitalSensor
@@ -107,7 +109,7 @@ definitions:
         kp: 10.0
         ki: 1.0
         kd: 0.0
-      ticks_to_rad: 0.004583961315167175
+      ticks_to_rad: 0.004360246538044619
       vel_lpf_alpha: 0.8
   front_right_motor:
     type: Motor
@@ -122,7 +124,7 @@ definitions:
         kp: 10.0
         ki: 1.0
         kd: 0.0
-      ticks_to_rad: 0.004622763830209301
+      ticks_to_rad: 0.004995402097655988
       vel_lpf_alpha: 0.8
   rear_left_motor:
     type: Motor
@@ -137,7 +139,7 @@ definitions:
         kp: 10.0
         ki: 1.0
         kd: 0.0
-      ticks_to_rad: 0.004699587042756567
+      ticks_to_rad: 0.004859123704491675
       vel_lpf_alpha: 0.8
   rear_right_motor:
     type: Motor
@@ -152,7 +154,7 @@ definitions:
         kp: 10.0
         ki: 1.0
         kd: 0.0
-      ticks_to_rad: 0.004476623512240227
+      ticks_to_rad: 0.004335920341820582
       vel_lpf_alpha: 0.8
   imu:
     type: IMU

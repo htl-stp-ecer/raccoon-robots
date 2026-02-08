@@ -30,31 +30,27 @@ class GrabFirstPomsMission(Mission):
         return seq([
             # drive infront of poms
             turn_left(90, 1.0),
-            drive_backward(cm=5),
-            strafe_left(15, 1.0),
-            simpl_frontside_forward_lineup_on_black(),
-            drive_forward(20,1.0),
-            drive_backward(25, 1.0),
+            drive_backward(3, 1.0),
+            strafe_left(14, 1.0),
+            # TODO use the nixe funciton here
+            #simpl_frontside_forward_lineup_on_black(),
+            #drive_forward(20,1.0),
+            # FIXME delete the simple drive forward to be more accurate
+            drive_forward(25,1.0),
 
-            servo_pom_grab_open(),
+            parallel(
+                seq([ #drives backwards to prepear to set down the the claw
+                    drive_backward(25, 1.0),
+                ]),
+                seq([ #repears the servo to move down while moving bacwards
+                    servo_pom_arm_up(),
+                    servo_pom_grab_open(),
+                ]),
+            ),
             servo_pom_arm_down(),
 
-            # TODO: use the nice funktions
-            #frontside_forward_move_over_line(forward_speed=1.0),
-            #follow_line
+            #the poms collectin is done simultanisosly with
+            #the drive_down_acces_ramp mission
 
-            #get poms and close claw
-            #drive_forward(cm=20),
-            #put the following 3 commands in a parallel if parallel is fixed
-            #strafe_until_black(Defs.front_left_light_sensor, 1.0),
-            #seq([
-            #    servo_pom_grab_close(),
-            #    servo_pom_grab_open(),
-            #]),
-            # ---
-            drive_forward(cm=51),
-
-            servo_pom_grab_close(),
-            servo_pom_arm_up(),
 
         ])
