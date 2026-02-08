@@ -4,6 +4,8 @@ from .missions.grab_first_poms_mission import GrabFirstPomsMission
 from .missions.push_crate_mission import PushCrateMission
 from .missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
 from .missions.grab_second_poms_mission import GrabSecondPomsMission
+from .missions.align_for_last_poms_mission import AlignForLastPomsMission
+from .missions.collect_last_poms_mission import CollectLastPomsMission
 """
 ===========================================================
  Project:   PackingBot

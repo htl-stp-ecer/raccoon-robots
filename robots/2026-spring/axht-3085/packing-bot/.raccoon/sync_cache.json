@@ -39,11 +39,6 @@
     "mtime": 1769855138.5546281,
     "size": 682
   },
-  "logs/step_timing.db": {
-    "hash": "fd69c060e4daf90352192d773428c3ac01c64c6d470cd194aeb8f3304e5cf5b4",
-    "mtime": 1769855138.218349,
-    "size": 106496
-  },
   "src/hardware/defs.py": {
     "hash": "c3ebf1903b1bd73c8a81344475a79c1ce6d58e14887fbb4151dcef17d568bb5f",
     "mtime": 1769855138.440872,
@@ -123,5 +118,10 @@
     "hash": "b84de4b08db63c9754a21104227ac2c465b83ac85201a7a9da176b11022fc378",
     "mtime": 1770490891.9012513,
     "size": 3906
+  },
+  "logs/step_timing.db": {
+    "hash": "5a676556a6a7dc7e246f4e968b6a8bd16e2737586dd9b0c80608515ab8d72a2d",
+    "mtime": 1770565965.5840747,
+    "size": 745472
   }
 }

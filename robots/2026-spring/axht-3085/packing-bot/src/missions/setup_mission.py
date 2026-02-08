@@ -8,7 +8,7 @@ class SetupMission(Mission):
         return seq([
             #set servos to start pos
             servo_pom_arm_start(),
-            servo_pom_grab_close(),
+            servo_pom_grab_start(),
 
             calibrate(distance_cm=50),
             wait_for_button(),

@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-06 16:39:07
+ Generated: 2026-02-08 15:37:25
  Tool:      Raccoon IDE
  Platform:  StpOS – Robotics Operating System
 ===========================================================
@@ -17,30 +17,28 @@ Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
 from libstp import *
-from src.hardware.defs import Defs
-from src.steps.servo_steps import *
+
+from src.steps.light_sensor_steps import frontside_forward_lineup_on_black, frontside_forward_drive_until_line
+from src.hardware.defs import *
+from src.steps.servo_steps import servo_pom_arm_up
 
 
-class DriveDownAccesRampMission(Mission):
+class AlignForLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-
-
-            # get poms and close claw
+            drive_forward(20, 1.0),
+            #push a blue pom to collect it later
             parallel(
-                drive_forward(cm=185), #drives down acces ramp
+                turn_right(90, speed=1.0),
                 seq([
-                    #close the claw a bit, so fully closing it is faster
-                    servo_pom_grab_slightly_open(999),
-                    #wait until we have collected all poms
-                    wait(3),
-                    servo_pom_grab_close(999),
+                    wait(1),
                     servo_pom_arm_up(),
                 ]),
             ),
 
-            # drive infornt of poms
-            turn_right(90, 1.0),
-            strafe_right_until_black(Defs.front_right_light_sensor, 0.3),
-            wall_align_backward(1.0, 0.3),
+            #TODO may do the backward driving with a linefollow if it exists
+            drive_backward(25, 1.0),
+            wall_align_backward(1.0, 0.4)
+
+            #align on black line
         ])

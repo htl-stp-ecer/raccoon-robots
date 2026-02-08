@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-07 20:38:40
+ Generated: 2026-02-08 18:13:55
 ===========================================================
 
 Authors:
@@ -32,6 +32,8 @@ from src.missions.shutdown_mission import ShutdownMission
 from src.missions.grab_first_poms_mission import GrabFirstPomsMission
 from src.missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
 from src.missions.grab_second_poms_mission import GrabSecondPomsMission
+from src.missions.align_for_last_poms_mission import AlignForLastPomsMission
+from src.missions.collect_last_poms_mission import CollectLastPomsMission
 
 
 class Robot(GenericRobot):
@@ -59,11 +61,11 @@ class Robot(GenericRobot):
         derivative_lpf_alpha=0.5,
         distance_kd=0.0,
         distance_ki=0.0,
-        distance_kp=2.0,
+        distance_kp=10.0,
         distance_tolerance_m=0.01,
         heading_kd=0.0,
-        heading_ki=0.0,
-        heading_kp=1.0,
+        heading_ki=1.0,
+        heading_kp=20.0,
         heading_min_scale=0.25,
         heading_recovery_error_rad=0.005,
         heading_saturation_derating_factor=0.85,
@@ -74,7 +76,7 @@ class Robot(GenericRobot):
         lateral_heading_bias_gain=0.5,
         lateral_kd=0.0,
         lateral_ki=0.0,
-        lateral_kp=2.0,
+        lateral_kp=10.0,
         lateral_reorient_threshold_m=0.15,
         max_angular_acceleration=3.0,
         max_heading_rate=3.0,
@@ -91,6 +93,8 @@ class Robot(GenericRobot):
         GrabFirstPomsMission(),
         DriveDownAccesRampMission(),
         GrabSecondPomsMission(),
+        AlignForLastPomsMission(),
+        CollectLastPomsMission(),
     ]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
