@@ -29,24 +29,21 @@ class GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # drive infront of poms
-            turn_left(90, 1.0),
-            drive_backward(3, 1.0),
-            strafe_left(14, 1.0),
-            # TODO use the nixe funciton here
-            #simpl_frontside_forward_lineup_on_black(),
-            #drive_forward(20,1.0),
-            # FIXME delete the simple drive forward to be more accurate
-            drive_forward(25,1.0),
+            strafe_right(20, 100.0),
+            servo_shild_up(999),
+            strafe_left(20, 100.0),
 
             parallel(
-                seq([ #drives backwards to prepear to set down the the claw
-                    drive_backward(25, 1.0),
+                seq([ #turn and prepear to set down the the claw
+                    turn_right(90, 1.0),
                 ]),
                 seq([ #repears the servo to move down while moving bacwards
                     servo_pom_arm_up(),
                     servo_pom_grab_open(),
                 ]),
             ),
+            wall_align_backward(0.4, 1),
+            simpl_frontside_forward_lineup_on_black(),
             servo_pom_arm_down(),
 
             #the poms collectin is done simultanisosly with
