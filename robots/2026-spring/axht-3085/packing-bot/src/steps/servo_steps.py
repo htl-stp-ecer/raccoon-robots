@@ -43,4 +43,13 @@ def servo_pom_grab_open(speed = 120):
 
 @dsl
 def servo_pom_grab_wide_open(speed = 120):
-    return slow_servo(Defs.pom_grab, 130, speed)
+    return slow_servo(Defs.pom_grab, 125, speed)
+
+# --- shild servo ---
+@dsl
+def servo_shild_down(speed = 300):
+    return slow_servo(Defs.shild, 71, speed)
+
+@dsl
+def servo_shild_up(speed = 300):
+    return slow_servo(Defs.shild, 17, speed)

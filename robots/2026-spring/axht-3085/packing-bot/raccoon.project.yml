@@ -109,7 +109,7 @@ definitions:
         kp: 10.0
         ki: 1.0
         kd: 0.0
-      ticks_to_rad: 0.004360246538044619
+      ticks_to_rad: 0.004389158658701119
       vel_lpf_alpha: 0.8
   front_right_motor:
     type: Motor
@@ -124,7 +124,7 @@ definitions:
         kp: 10.0
         ki: 1.0
         kd: 0.0
-      ticks_to_rad: 0.004995402097655988
+      ticks_to_rad: 0.005048203479108399
       vel_lpf_alpha: 0.8
   rear_left_motor:
     type: Motor
@@ -139,7 +139,7 @@ definitions:
         kp: 10.0
         ki: 1.0
         kd: 0.0
-      ticks_to_rad: 0.004859123704491675
+      ticks_to_rad: 0.004847434106446888
       vel_lpf_alpha: 0.8
   rear_right_motor:
     type: Motor
@@ -154,7 +154,7 @@ definitions:
         kp: 10.0
         ki: 1.0
         kd: 0.0
-      ticks_to_rad: 0.004335920341820582
+      ticks_to_rad: 0.004426911441724527
       vel_lpf_alpha: 0.8
   imu:
     type: IMU
@@ -173,6 +173,9 @@ definitions:
   front_left_light_sensor:
     type: IRSensor
     port: 5
+  shild:
+    type: Servo
+    port: 0
   pom_arm:
     type: Servo
     port: 1
