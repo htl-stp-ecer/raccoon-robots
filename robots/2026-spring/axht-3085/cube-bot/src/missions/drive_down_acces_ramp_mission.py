@@ -27,7 +27,9 @@ class DriveDownAccesRampMission(Mission):
 
 
             # get poms and close claw
+            wall_align_strafe_left(0.2, 1.0),
             parallel(
+
                 drive_forward(cm=185), #drives down acces ramp
                 seq([
                     #close the claw a bit, so fully closing it is faster

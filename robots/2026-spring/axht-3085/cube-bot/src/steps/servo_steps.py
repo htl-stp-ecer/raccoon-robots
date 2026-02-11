@@ -39,7 +39,7 @@ def servo_pom_grab_slightly_open(speed = 120):
 
 @dsl
 def servo_pom_grab_open(speed = 120):
-    return slow_servo(Defs.pom_grab, 100, speed)
+    return slow_servo(Defs.pom_grab, 120, speed)
 
 @dsl
 def servo_pom_grab_wide_open(speed = 120):

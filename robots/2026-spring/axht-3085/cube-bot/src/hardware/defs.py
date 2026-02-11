@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-10 19:58:31
+ Generated: 2026-02-11 17:40:21
 ===========================================================
 
 Authors:
@@ -34,7 +34,7 @@ class Defs:
         calibration=MotorCalibration(
             ff=Feedforward(kS=0.165, kV=0.16505993860636586, kA=1e-06),
             pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
-            ticks_to_rad=0.004398904189771733,
+            ticks_to_rad=0.004358603458214727,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -44,7 +44,7 @@ class Defs:
         calibration=MotorCalibration(
             ff=Feedforward(kS=0.22, kV=0.1415650287290876, kA=1e-06),
             pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
-            ticks_to_rad=0.0050683096878656065,
+            ticks_to_rad=0.0049803776405655765,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -54,7 +54,7 @@ class Defs:
         calibration=MotorCalibration(
             ff=Feedforward(kS=0.17, kV=0.16154924342153362, kA=1e-06),
             pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
-            ticks_to_rad=0.004865895040625675,
+            ticks_to_rad=0.004708033357019507,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -64,7 +64,7 @@ class Defs:
         calibration=MotorCalibration(
             ff=Feedforward(kS=0.18, kV=0.10116544412095624, kA=0.004394658054609205),
             pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
-            ticks_to_rad=0.004458505502410719,
+            ticks_to_rad=0.004374158169361072,
             vel_lpf_alpha=0.8,
         ),
     )
