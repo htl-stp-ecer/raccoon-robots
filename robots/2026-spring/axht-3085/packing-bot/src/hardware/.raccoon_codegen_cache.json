@@ -1,14 +1,14 @@
 {
   "entries": {
     "defs.py": {
-      "config_hash": "79fd5ed4b7ad17d491fa10a698615f075600873eb478835bcef1e8416244696b",
-      "fingerprint": "ffb1720a5cadbda854d59554c0eea171c674709d0b8a611532dd3407eeba7b06",
+      "config_hash": "4562a83a5414a961b2df7ba0c7799794b909a797450c8b46e6d2b203c4133573",
+      "fingerprint": "53641e253742305a094819b64936a5e5561e9fe3eae9ba65a1c20ff70a038e8e",
       "format_code": true,
       "generator_source": "6b4454ea4f2c179dd093606039d35cf09f3628e5833f5674b66b16758bd47aac"
     },
     "robot.py": {
-      "config_hash": "6450e76e117ef36e7420d40ea85e341423fcccb59dc2e99b692d80bd85175b67",
-      "fingerprint": "ae6b76a7c582e2f845bfd6f5fa73d16d5c9a2c2bcbc152db20f1dec88895d4fa",
+      "config_hash": "9c103b1651e84fd019d03fdea0be45b512aebc590cf104a106959a128e98acd9",
+      "fingerprint": "457af7cb78c0840144a2bedbcef8ef27d56c8d1b80e3c763ce2eaa8e393c9d0b",
       "format_code": true,
       "generator_source": "f0027498279a194b0a7dd9c4790294e022ff9eea5a021df9cf9194444e035a36"
     }

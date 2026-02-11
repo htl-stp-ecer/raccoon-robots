@@ -43,7 +43,7 @@ class GrabFirstPomsMission(Mission):
                 ]),
             ),
             wall_align_backward(0.4, 1),
-            simpl_frontside_forward_lineup_on_black(),
+            #simpl_frontside_forward_lineup_on_black(),
             servo_pom_arm_down(),
 
             #the poms collectin is done simultanisosly with
