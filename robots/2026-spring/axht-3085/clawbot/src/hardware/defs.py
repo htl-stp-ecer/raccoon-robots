@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-17 12:42:02
+ Generated: 2026-02-11 17:40:21
 ===========================================================
 
 Authors:
@@ -12,7 +12,16 @@ Authors:
    You are free to modify it as needed. Regeneration may overwrite changes.
 """
 
-from libstp import AnalogSensor, DigitalSensor, IRSensor, Motor, MotorCalibration, Servo
+from libstp import (
+    AnalogSensor,
+    DigitalSensor,
+    Feedforward,
+    IRSensor,
+    Motor,
+    MotorCalibration,
+    PidGains,
+    Servo,
+)
 from libstp import IMU as Imu
 
 
@@ -23,28 +32,40 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=0.004466155691818877, vel_lpf_alpha=0.8
+            ff=Feedforward(kS=0.165, kV=0.16505993860636586, kA=1e-06),
+            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
+            ticks_to_rad=0.004358603458214727,
+            vel_lpf_alpha=0.8,
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=0.004415457507265901, vel_lpf_alpha=0.8
+            ff=Feedforward(kS=0.22, kV=0.1415650287290876, kA=1e-06),
+            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
+            ticks_to_rad=0.0049803776405655765,
+            vel_lpf_alpha=0.8,
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=0.004538669922954123, vel_lpf_alpha=0.8
+            ff=Feedforward(kS=0.17, kV=0.16154924342153362, kA=1e-06),
+            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
+            ticks_to_rad=0.004708033357019507,
+            vel_lpf_alpha=0.8,
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=0.004482416511271493, vel_lpf_alpha=0.8
+            ff=Feedforward(kS=0.18, kV=0.10116544412095624, kA=0.004394658054609205),
+            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
+            ticks_to_rad=0.004374158169361072,
+            vel_lpf_alpha=0.8,
         ),
     )
     rear_right_light_sensor = IRSensor(port=0)
@@ -52,6 +73,7 @@ class Defs:
     wait_for_light_sensor = AnalogSensor(port=2)
     front_right_light_sensor = IRSensor(port=4)
     front_left_light_sensor = IRSensor(port=5)
+    shild = Servo(port=0)
     pom_arm = Servo(port=1)
     pom_grab = Servo(port=3)
     analog_sensors = [
