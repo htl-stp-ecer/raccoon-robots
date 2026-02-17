@@ -1,7 +1,7 @@
 from libstp import seq, Mission, wait_for_checkpoint
 
-from steps.drum_collector import drum_retreat
-from steps.drum_pusher_servo import open_drum_pusher, close_drum_pusher
+from src.steps.drum_collector import drum_retreat
+from src.steps.drum_pusher_servo import open_drum_pusher, close_drum_pusher
 
 
 class PotatoMission(Mission):

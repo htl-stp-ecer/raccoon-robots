@@ -19,6 +19,8 @@ claimed over the generated code itself.
 
 from libstp import Mission, Sequential, seq, wait_for_button
 
+from steps.drum_collector import calibrate_drum_collector
+
 
 class SetupMission(Mission):
     def sequence(self) -> Sequential:
@@ -28,5 +30,6 @@ class SetupMission(Mission):
             # ),
 
             # calibrate_wait_for_light(Defs.front_left_ir_sensor)
+            calibrate_drum_collector(calibration_time=2.0),
             wait_for_button()
         ])
