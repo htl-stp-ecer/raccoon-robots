@@ -1,7 +1,9 @@
-from libstp import *
-from src.hardware.defs import *
-from typing import *
 from dataclasses import dataclass
+from libstp import *
+from typing import *
+
+from src.hardware.defs import *
+
 
 @dataclass
 class AdvancedMoveUntilConfig:
@@ -10,9 +12,10 @@ class AdvancedMoveUntilConfig:
     target: SurfaceColor
     forward_speed: float = 0.0  # m/s, positive = forward
     angular_speed: float = 0.0  # rad/s, positive = CCW
-    strafe_speed: float = 0.0   # m/s, positive = left
+    strafe_speed: float = 0.0  # m/s, positive = left
     confidence_threshold: float = 0.7
     scale_speed_on_approach: bool = True  # slow down as we approach target
+
 
 class AdvancedMoveUntil(MoveUntil):
 
@@ -31,6 +34,7 @@ class AdvancedMoveUntil(MoveUntil):
                 return True
 
         return False
+
 
 def frontside_forward_move_over_line(forward_speed: float, confidence_threshold: float = 0.7) -> Step:
     return seq([
