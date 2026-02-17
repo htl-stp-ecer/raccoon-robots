@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-11 17:40:23
+ Generated: 2026-02-17 12:52:22
 ===========================================================
 
 Authors:
@@ -13,12 +13,17 @@ Authors:
 """
 
 from libstp import (
+    AxisConstraints,
+    AxisVelocityControlConfig,
+    ChassisVelocityControlConfig,
     Drive,
+    Feedforward,
     FusedOdometry,
     FusedOdometryConfig,
     GenericRobot,
     MecanumKinematics,
-    MotionLimits,
+    PidConfig,
+    PidGains,
     SensorPosition,
     UnifiedMotionPidConfig,
     WheelPosition,
@@ -36,6 +41,17 @@ from src.missions.align_for_last_poms_mission import AlignForLastPomsMission
 from src.missions.collect_last_poms_mission import CollectLastPomsMission
 
 
+def _build_chassis_vel_config(vx=None, vy=None, wz=None):
+    cfg = ChassisVelocityControlConfig()
+    if vx is not None:
+        cfg.vx = vx
+    if vy is not None:
+        cfg.vy = vy
+    if wz is not None:
+        cfg.wz = wz
+    return cfg
+
+
 class Robot(GenericRobot):
     defs = Defs()
     kinematics = MecanumKinematics(
@@ -43,51 +59,74 @@ class Robot(GenericRobot):
         back_right_motor=defs.rear_right_motor,
         front_left_motor=defs.front_left_motor,
         front_right_motor=defs.front_right_motor,
-        max_acceleration=42999999966.667,
-        max_velocity=5339999999993.333,
         track_width=0.2,
         wheel_radius=0.0375,
-        wheelbase=0.12300000000000001,
+        wheelbase=0.123,
     )
     drive = Drive(
         kinematics=kinematics,
-        chassis_lim=MotionLimits(max_omega=200000000.0, max_v=20000000.0),
+        vel_config=_build_chassis_vel_config(
+            vx=AxisVelocityControlConfig(
+                pid=PidGains(kp=0.0, ki=0.0, kd=0.0),
+                ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
+            ),
+            vy=AxisVelocityControlConfig(
+                pid=PidGains(kp=0.0, ki=0.0, kd=0.0),
+                ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
+            ),
+            wz=AxisVelocityControlConfig(
+                pid=PidGains(kp=0.65, ki=0.0, kd=0.0),
+                ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
+            ),
+        ),
+        imu=defs.imu,
     )
     odometry = FusedOdometry(
         imu=defs.imu, kinematics=kinematics, config=FusedOdometryConfig(bemf_trust=1.0)
     )
     motion_pid_config = UnifiedMotionPidConfig(
-        angle_tolerance_rad=0.01,
-        derivative_lpf_alpha=0.5,
-        distance_kd=0.0,
-        distance_ki=0.0,
-        distance_kp=10.0,
-        distance_tolerance_m=0.01,
-        heading_kd=0.0,
-        heading_ki=1.0,
-        heading_kp=20.0,
-        heading_min_scale=0.25,
-        heading_recovery_error_rad=0.005,
-        heading_saturation_derating_factor=0.85,
-        heading_saturation_error_rad=0.01,
-        heading_saturation_recovery_rate=0.05,
-        integral_deadband=0.01,
-        integral_max=10.0,
-        lateral_heading_bias_gain=0.5,
-        lateral_kd=0.0,
-        lateral_ki=0.0,
-        lateral_kp=10.0,
-        lateral_reorient_threshold_m=0.15,
-        max_angular_acceleration=3.0,
-        max_heading_rate=3.0,
-        max_linear_acceleration=1.0,
-        min_angular_rate=0.001,
-        min_speed_mps=0.05,
-        output_max=10.0,
-        output_min=-10.0,
+        distance=PidConfig(
+            kp=1.0,
+            ki=0.0,
+            kd=0.5,
+            integral_max=10.0,
+            integral_deadband=0.01,
+            derivative_lpf_alpha=0.5,
+            output_min=-10.0,
+            output_max=10.0,
+        ),
+        heading=PidConfig(
+            kp=1.0,
+            ki=0.0,
+            kd=0.2,
+            integral_max=10.0,
+            integral_deadband=0.01,
+            derivative_lpf_alpha=0.5,
+            output_min=-10.0,
+            output_max=10.0,
+        ),
+        velocity_ff=1.0,
+        distance_tolerance_m=0.005,
+        angle_tolerance_rad=0.017,
         saturation_derating_factor=0.85,
-        saturation_min_scale=0.1,
+        saturation_min_scale=0.2,
         saturation_recovery_rate=0.02,
+        saturation_hold_cycles=5,
+        saturation_recovery_threshold=0.95,
+        heading_saturation_derating_factor=0.85,
+        heading_min_scale=0.25,
+        heading_recovery_rate=0.05,
+        heading_saturation_error_rad=0.01,
+        heading_recovery_error_rad=0.005,
+        linear=AxisConstraints(
+            max_velocity=0.2153, acceleration=0.3333, deceleration=0.6229
+        ),
+        lateral=AxisConstraints(
+            max_velocity=0.2145, acceleration=0.3922, deceleration=0.6504
+        ),
+        angular=AxisConstraints(
+            max_velocity=1.5864, acceleration=1.8933, deceleration=7.754
+        ),
     )
     missions = [
         GrabFirstPomsMission(),
@@ -98,30 +137,6 @@ class Robot(GenericRobot):
     ]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
-    width_cm = 23.6
-    length_cm = 30.0
-    rotation_center_forward_cm = 2.15
-    rotation_center_strafe_cm = 0.0
-    _sensor_positions = {
-        defs.rear_right_light_sensor: SensorPosition(
-            forward_cm=-11.0, strafe_cm=-8.2, clearance_cm=1.0
-        ),
-        defs.rear_left_light_sensor: SensorPosition(
-            forward_cm=-11.0, strafe_cm=8.2, clearance_cm=1.0
-        ),
-        defs.front_right_light_sensor: SensorPosition(
-            forward_cm=14.0, strafe_cm=-8.5, clearance_cm=1.0
-        ),
-        defs.front_left_light_sensor: SensorPosition(
-            forward_cm=14.0, strafe_cm=8.5, clearance_cm=1.0
-        ),
-    }
-    _wheel_positions = {
-        defs.front_left_motor: WheelPosition(forward_cm=6.15, strafe_cm=10.0),
-        defs.front_right_motor: WheelPosition(forward_cm=6.15, strafe_cm=-10.0),
-        defs.rear_left_motor: WheelPosition(forward_cm=-6.15, strafe_cm=10.0),
-        defs.rear_right_motor: WheelPosition(forward_cm=-6.15, strafe_cm=-10.0),
-    }
 
 
 __all__ = ["Robot"]
