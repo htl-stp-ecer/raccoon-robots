@@ -24,7 +24,7 @@ from src.steps.servo_steps import servo_pom_arm_down, servo_pom_grab_wide_open
 from src.hardware.defs import *
 
 
-class CollectLastPomsMission(Mission):
+class M06CollectLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
         strafe_left_until_black(Defs.front_left_light_sensor,

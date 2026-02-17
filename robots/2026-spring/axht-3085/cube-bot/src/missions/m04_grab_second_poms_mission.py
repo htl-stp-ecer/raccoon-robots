@@ -23,7 +23,7 @@ from src.steps.light_sensor_steps import simple_backside_backward_lineup_on_blac
 from src.steps.servo_steps import *
 
 
-class GrabSecondPomsMission(Mission):
+class M04GrabSecondPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             parallel( #align on poms and put the claw down

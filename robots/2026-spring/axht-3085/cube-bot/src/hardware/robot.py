@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-17 12:55:46
+ Generated: 2026-02-17 17:13:58
 ===========================================================
 
 Authors:
@@ -32,13 +32,13 @@ from libstp import (
 from src.hardware.defs import Defs
 
 
-from src.missions.setup_mission import SetupMission
-from src.missions.shutdown_mission import ShutdownMission
-from src.missions.grab_first_poms_mission import GrabFirstPomsMission
-from src.missions.drive_down_acces_ramp_mission import DriveDownAccesRampMission
-from src.missions.grab_second_poms_mission import GrabSecondPomsMission
-from src.missions.align_for_last_poms_mission import AlignForLastPomsMission
-from src.missions.collect_last_poms_mission import CollectLastPomsMission
+from src.missions.m01_setup_mission import M01SetupMission
+from src.missions.m99_shutdown_mission import M99ShutdownMission
+from src.missions.m02_grab_first_poms_mission import M02GrabFirstPomsMission
+from src.missions.m03_drive_down_acces_ramp_mission import M03DriveDownAccesRampMission
+from src.missions.m04_grab_second_poms_mission import M04GrabSecondPomsMission
+from src.missions.m05_align_for_last_poms_mission import M05AlignForLastPomsMission
+from src.missions.m06_collect_last_poms_mission import M06CollectLastPomsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -61,7 +61,7 @@ class Robot(GenericRobot):
         front_right_motor=defs.front_right_motor,
         track_width=0.2,
         wheel_radius=0.0375,
-        wheelbase=0.123,
+        wheelbase=0.125,
     )
     drive = Drive(
         kinematics=kinematics,
@@ -119,24 +119,45 @@ class Robot(GenericRobot):
         heading_saturation_error_rad=0.01,
         heading_recovery_error_rad=0.005,
         linear=AxisConstraints(
-            max_velocity=0.2153, acceleration=0.3333, deceleration=0.6229
+            max_velocity=0.2331, acceleration=0.4327, deceleration=0.4856
         ),
         lateral=AxisConstraints(
-            max_velocity=0.2145, acceleration=0.3922, deceleration=0.6504
+            max_velocity=0.2209, acceleration=0.6485, deceleration=0.4498
         ),
         angular=AxisConstraints(
-            max_velocity=1.5864, acceleration=1.8933, deceleration=7.754
+            max_velocity=1.8105, acceleration=2.8187, deceleration=7.8611
         ),
     )
     missions = [
-        GrabFirstPomsMission(),
-        DriveDownAccesRampMission(),
-        GrabSecondPomsMission(),
-        AlignForLastPomsMission(),
-        CollectLastPomsMission(),
+        M02GrabFirstPomsMission(),
+        M03DriveDownAccesRampMission(),
+        M04GrabSecondPomsMission(),
+        M05AlignForLastPomsMission(),
+        M06CollectLastPomsMission(),
     ]
-    setup_mission = SetupMission()
-    shutdown_mission = ShutdownMission()
+    setup_mission = M01SetupMission()
+    shutdown_mission = M99ShutdownMission()
+    width_cm = 28.5
+    length_cm = 29.6
+    rotation_center_forward_cm = 2.95
+    rotation_center_strafe_cm = 2.25
+    _sensor_positions = {
+        defs.rear_left_light_sensor: SensorPosition(
+            forward_cm=-10.3, strafe_cm=11.55, clearance_cm=0.5
+        ),
+        defs.front_right_light_sensor: SensorPosition(
+            forward_cm=14.2, strafe_cm=-5.45, clearance_cm=0.5
+        ),
+        defs.front_left_light_sensor: SensorPosition(
+            forward_cm=14.2, strafe_cm=11.55, clearance_cm=0.5
+        ),
+    }
+    _wheel_positions = {
+        defs.front_left_motor: WheelPosition(forward_cm=6.25, strafe_cm=10.0),
+        defs.front_right_motor: WheelPosition(forward_cm=6.25, strafe_cm=-10.0),
+        defs.rear_left_motor: WheelPosition(forward_cm=-6.25, strafe_cm=10.0),
+        defs.rear_right_motor: WheelPosition(forward_cm=-6.25, strafe_cm=-10.0),
+    }
 
 
 __all__ = ["Robot"]

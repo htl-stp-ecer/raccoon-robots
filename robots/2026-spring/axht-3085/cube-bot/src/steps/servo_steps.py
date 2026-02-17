@@ -31,15 +31,15 @@ def servo_pom_grab_close(speed = 80):
 
 @dsl
 def servo_pom_grab_pom_width(speed = 120): #open die claw only a bit wider as a pom diameter
-    return slow_servo(Defs.pom_grab, 45, speed)
+    return slow_servo(Defs.pom_grab, 55, speed)
 
 @dsl
 def servo_pom_grab_slightly_open(speed = 120):
-    return slow_servo(Defs.pom_grab, 70, speed)
+    return slow_servo(Defs.pom_grab, 75, speed)
 
 @dsl
 def servo_pom_grab_open(speed = 120):
-    return slow_servo(Defs.pom_grab, 120, speed)
+    return slow_servo(Defs.pom_grab, 90, speed)
 
 @dsl
 def servo_pom_grab_wide_open(speed = 120):
@@ -48,8 +48,8 @@ def servo_pom_grab_wide_open(speed = 120):
 # --- shild servo ---
 @dsl
 def servo_shild_down(speed = 300):
-    return slow_servo(Defs.shild, 71, speed)
+    return slow_servo(Defs.shild, 60, speed)
 
 @dsl
 def servo_shild_up(speed = 300):
-    return slow_servo(Defs.shild, 17, speed)
+    return slow_servo(Defs.shild, 10, speed)
