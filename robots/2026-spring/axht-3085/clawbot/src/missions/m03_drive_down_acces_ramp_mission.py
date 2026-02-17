@@ -21,7 +21,7 @@ from src.hardware.defs import Defs
 from src.steps.servo_steps import *
 
 
-class DriveDownAccesRampMission(Mission):
+class M03DriveDownAccesRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
 
@@ -35,7 +35,8 @@ class DriveDownAccesRampMission(Mission):
                     #close the claw a bit, so fully closing it is faster
                     servo_pom_grab_slightly_open(999),
                     #wait until we have collected all poms
-                    wait(3),
+                    #wait_until_distance(45),
+                    wait(2.2),
                     servo_pom_grab_close(999),
                     servo_pom_arm_up(),
                 ]),
