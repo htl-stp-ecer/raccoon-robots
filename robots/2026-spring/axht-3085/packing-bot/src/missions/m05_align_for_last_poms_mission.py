@@ -23,7 +23,7 @@ from src.hardware.defs import *
 from src.steps.servo_steps import servo_pom_arm_up
 
 
-class AlignForLastPomsMission(Mission):
+class M05AlignForLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             drive_forward(20, 1.0),

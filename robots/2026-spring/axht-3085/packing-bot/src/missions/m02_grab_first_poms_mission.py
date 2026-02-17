@@ -25,13 +25,13 @@ from src.steps.light_sensor_steps import *
 from src.steps.servo_steps import *
 
 
-class GrabFirstPomsMission(Mission):
+class M02GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # drive infront of poms
-            strafe_right(20, 100.0),
+            strafe_right(20, 1.0),
             servo_shild_up(999),
-            strafe_left(20, 100.0),
+            strafe_left(20, 1.0),
 
             parallel(
                 seq([ #turn and prepear to set down the the claw
@@ -42,12 +42,10 @@ class GrabFirstPomsMission(Mission):
                     servo_pom_grab_open(),
                 ]),
             ),
-            wall_align_backward(0.4, 1),
-            #simpl_frontside_forward_lineup_on_black(),
+            drive_backward(5, 1),
             servo_pom_arm_down(),
+            #frontside_forward_lineup_on_black(0.9),
 
             #the poms collectin is done simultanisosly with
             #the drive_down_acces_ramp mission
-
-
         ])
