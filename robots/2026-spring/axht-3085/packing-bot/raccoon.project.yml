@@ -91,10 +91,10 @@ missions:
   - SetupMission: setup
   - ShutdownMission: shutdown
   - GrabFirstPomsMission
-- DriveDownAccesRampMission
-- GrabSecondPomsMission
-- AlignForLastPomsMission
-- CollectLastPomsMission
+  - DriveDownAccesRampMission
+  - GrabSecondPomsMission
+  - AlignForLastPomsMission
+  - CollectLastPomsMission
 definitions:
   button:
     type: DigitalSensor
