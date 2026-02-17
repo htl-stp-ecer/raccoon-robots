@@ -150,6 +150,19 @@ definitions:
   front_right_ir_sensor:
     type: IRSensor
     port: 1
+  drum_pusher_servo:
+    type: Servo
+    port: 3
+  drum_motor:
+    type: Motor
+    port: 2
+    inverted: false
+    calibration:
+      ticks_to_rad: 1.0
+      vel_lpf_alpha: 1.0
+  drum_light_sensor:
+    type: IRSensor
+    port: 1
 connection:
   pi_address: 192.168.100.160
   pi_port: 8421
