@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-17 12:42:04
+ Generated: 2026-02-17 12:48:55
 ===========================================================
 
 Authors:
@@ -13,11 +13,17 @@ Authors:
 """
 
 from libstp import (
+    AxisConstraints,
+    AxisVelocityControlConfig,
+    ChassisVelocityControlConfig,
     Drive,
+    Feedforward,
     FusedOdometry,
     FusedOdometryConfig,
     GenericRobot,
     MecanumKinematics,
+    PidConfig,
+    PidGains,
     SensorPosition,
     UnifiedMotionPidConfig,
     WheelPosition,
@@ -31,6 +37,17 @@ from src.missions.shutdown_mission import ShutdownMission
 from src.missions.grab_first_poms_mission import GrabFirstPomsMission
 
 
+def _build_chassis_vel_config(vx=None, vy=None, wz=None):
+    cfg = ChassisVelocityControlConfig()
+    if vx is not None:
+        cfg.vx = vx
+    if vy is not None:
+        cfg.vy = vy
+    if wz is not None:
+        cfg.wz = wz
+    return cfg
+
+
 class Robot(GenericRobot):
     defs = Defs()
     kinematics = MecanumKinematics(
@@ -42,16 +59,70 @@ class Robot(GenericRobot):
         wheel_radius=0.0375,
         wheelbase=0.123,
     )
+    drive = Drive(
+        kinematics=kinematics,
+        vel_config=_build_chassis_vel_config(
+            vx=AxisVelocityControlConfig(
+                pid=PidGains(kp=0.0, ki=0.0, kd=0.0),
+                ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
+            ),
+            vy=AxisVelocityControlConfig(
+                pid=PidGains(kp=0.0, ki=0.0, kd=0.0),
+                ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
+            ),
+            wz=AxisVelocityControlConfig(
+                pid=PidGains(kp=0.65, ki=0.0, kd=0.0),
+                ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
+            ),
+        ),
+        imu=defs.imu,
+    )
     odometry = FusedOdometry(
         imu=defs.imu, kinematics=kinematics, config=FusedOdometryConfig(bemf_trust=1.0)
     )
     motion_pid_config = UnifiedMotionPidConfig(
-        distance_kd=0.5,
-        distance_ki=0.0,
-        distance_kp=1.0,
-        heading_kd=0.2,
-        heading_ki=0.0,
-        heading_kp=1.0,
+        distance=PidConfig(
+            kp=1.0,
+            ki=0.0,
+            kd=0.5,
+            integral_max=10.0,
+            integral_deadband=0.01,
+            derivative_lpf_alpha=0.5,
+            output_min=-10.0,
+            output_max=10.0,
+        ),
+        heading=PidConfig(
+            kp=1.0,
+            ki=0.0,
+            kd=0.2,
+            integral_max=10.0,
+            integral_deadband=0.01,
+            derivative_lpf_alpha=0.5,
+            output_min=-10.0,
+            output_max=10.0,
+        ),
+        velocity_ff=1.0,
+        distance_tolerance_m=0.005,
+        angle_tolerance_rad=0.017,
+        saturation_derating_factor=0.85,
+        saturation_min_scale=0.2,
+        saturation_recovery_rate=0.02,
+        saturation_hold_cycles=5,
+        saturation_recovery_threshold=0.95,
+        heading_saturation_derating_factor=0.85,
+        heading_min_scale=0.25,
+        heading_recovery_rate=0.05,
+        heading_saturation_error_rad=0.01,
+        heading_recovery_error_rad=0.005,
+        linear=AxisConstraints(
+            max_velocity=0.2153, acceleration=0.3333, deceleration=0.6229
+        ),
+        lateral=AxisConstraints(
+            max_velocity=0.2145, acceleration=0.3922, deceleration=0.6504
+        ),
+        angular=AxisConstraints(
+            max_velocity=1.5864, acceleration=1.8933, deceleration=7.754
+        ),
     )
     missions = [GrabFirstPomsMission()]
     setup_mission = SetupMission()
