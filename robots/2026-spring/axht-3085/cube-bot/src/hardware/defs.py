@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-11 17:40:21
+ Generated: 2026-02-17 12:52:19
 ===========================================================
 
 Authors:
@@ -12,16 +12,7 @@ Authors:
    You are free to modify it as needed. Regeneration may overwrite changes.
 """
 
-from libstp import (
-    AnalogSensor,
-    DigitalSensor,
-    Feedforward,
-    IRSensor,
-    Motor,
-    MotorCalibration,
-    PidGains,
-    Servo,
-)
+from libstp import AnalogSensor, DigitalSensor, IRSensor, Motor, MotorCalibration, Servo
 from libstp import IMU as Imu
 
 
@@ -32,29 +23,23 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.165, kV=0.16505993860636586, kA=1e-06),
-            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
-            ticks_to_rad=0.004358603458214727,
-            vel_lpf_alpha=0.8,
+            ticks_to_rad=0.004466155691818877, vel_lpf_alpha=0.8
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.22, kV=0.1415650287290876, kA=1e-06),
-            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
-            ticks_to_rad=0.0049803776405655765,
-            vel_lpf_alpha=0.8,
+            ticks_to_rad=0.004415457507265901, vel_lpf_alpha=0.8
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.17, kV=0.16154924342153362, kA=1e-06),
-            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
-            ticks_to_rad=0.004708033357019507,
+            ff={"kS": 0.1, "kV": 0.18692403983703706, "kA": 0.015871817084935565},
+            pid={"kp": 10.0, "ki": 10.0, "kd": 1.1202285674265806},
+            ticks_to_rad=0.0043432497284286165,
             vel_lpf_alpha=0.8,
         ),
     )
@@ -62,10 +47,7 @@ class Defs:
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.18, kV=0.10116544412095624, kA=0.004394658054609205),
-            pid=PidGains(kp=10.0, ki=1.0, kd=0.0),
-            ticks_to_rad=0.004374158169361072,
-            vel_lpf_alpha=0.8,
+            ticks_to_rad=0.004482416511271493, vel_lpf_alpha=0.8
         ),
     )
     rear_right_light_sensor = IRSensor(port=0)
