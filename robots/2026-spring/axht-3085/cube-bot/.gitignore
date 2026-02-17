@@ -1,0 +1,6 @@
+logs/
+.raccoon
+.git
+.idea
+.raccoon_codegen_cache.json
+__pycache__
