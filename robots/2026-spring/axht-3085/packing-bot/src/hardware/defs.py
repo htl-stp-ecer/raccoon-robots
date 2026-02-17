@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-07 19:38:50
+ Generated: 2026-02-17 12:42:02
 ===========================================================
 
 Authors:
@@ -12,16 +12,7 @@ Authors:
    You are free to modify it as needed. Regeneration may overwrite changes.
 """
 
-from libstp import (
-    AnalogSensor,
-    DigitalSensor,
-    Feedforward,
-    IRSensor,
-    Motor,
-    MotorCalibration,
-    PidGains,
-    Servo,
-)
+from libstp import AnalogSensor, DigitalSensor, IRSensor, Motor, MotorCalibration, Servo
 from libstp import IMU as Imu
 
 
@@ -32,40 +23,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.1, kV=0.15732144931968844, kA=0.010207614450276913),
-            pid=PidGains(kp=10.0, ki=0, kd=0),
-            ticks_to_rad=0.004466155691818877,
-            vel_lpf_alpha=0.8,
+            ticks_to_rad=0.004466155691818877, vel_lpf_alpha=0.8
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.1, kV=0.20358700173069277, kA=0.02),
-            pid=PidGains(kp=10.0, ki=0, kd=0),
-            ticks_to_rad=0.004415457507265901,
-            vel_lpf_alpha=0.8,
+            ticks_to_rad=0.004415457507265901, vel_lpf_alpha=0.8
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.1, kV=0.18692403983703706, kA=0.015871817084935565),
-            pid=PidGains(kp=10.0, ki=0, kd=0),
-            ticks_to_rad=0.004538669922954123,
-            vel_lpf_alpha=0.8,
+            ticks_to_rad=0.004538669922954123, vel_lpf_alpha=0.8
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ff=Feedforward(kS=0.1, kV=0.16253475305629306, kA=0.010956222915881436),
-            pid=PidGains(kp=10.0, ki=0, kd=0),
-            ticks_to_rad=0.004482416511271493,
-            vel_lpf_alpha=0.8,
+            ticks_to_rad=0.004482416511271493, vel_lpf_alpha=0.8
         ),
     )
     rear_right_light_sensor = IRSensor(port=0)
