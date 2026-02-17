@@ -164,10 +164,13 @@ class DrumMotorService(RobotService):
         self.motor.brake()
 
     async def _move(self, count: int, *, forward: bool) -> None:
-        """Low-level: spin motor and count edge transitions on the sensor.
+        """Low-level: spin motor and count pocket transitions on the sensor.
 
         Uses an exponential moving average (EMA) to filter sensor noise, plus
         hysteresis thresholds to avoid false triggers near the midpoint.
+
+        One pocket = move onto black (if not already), then move until white.
+        Low threshold = white (pocket), high threshold = black (blocked).
         """
         low, high = self.hysteresis_thresholds
         direction = "forward" if forward else "backward"
@@ -186,35 +189,31 @@ class DrumMotorService(RobotService):
 
             # Determine initial state
             if filtered >= high:
-                is_blocked = True
+                on_black = True
             elif filtered <= low:
-                is_blocked = False
+                on_black = False
             else:
-                is_blocked = filtered > self.midpoint
-            self.info(f"Initial raw={raw:.0f}, filtered={filtered:.0f}, state={'blocked' if is_blocked else 'pocket'}")
+                on_black = filtered > self.midpoint
+            self.info(f"Initial raw={raw:.0f}, filtered={filtered:.0f}, state={'black' if on_black else 'white'}")
 
-            # Each pocket = 2 edges (blocked→pocket + pocket→blocked).
-            # We count completed pockets, incrementing index after every 2nd edge.
-            half = 0  # counts edges within the current pocket
             while pockets < count:
                 raw = float(self.light_sensor.read())
                 filtered += EMA_ALPHA * (raw - filtered)
-                if is_blocked and filtered <= low:
-                    is_blocked = False
-                    half += 1
-                    self.info(f"Pocket {pockets}/{count} edge {half}/2: raw={raw:.0f}, filtered={filtered:.0f} → pocket")
-                elif not is_blocked and filtered >= high:
-                    is_blocked = True
-                    half += 1
-                    self.info(f"Pocket {pockets}/{count} edge {half}/2: raw={raw:.0f}, filtered={filtered:.0f} → blocked")
-                if half >= 2:
-                    half = 0
+
+                if not on_black and filtered >= high:
+                    # Reached black
+                    on_black = True
+                    self.info(f"Pocket {pockets+1}/{count}: raw={raw:.0f}, filtered={filtered:.0f} → black")
+                elif on_black and filtered <= low:
+                    # Reached white — one pocket complete
+                    on_black = False
                     pockets += 1
                     if forward:
                         self._current_index = (self._current_index + 1) % NUM_POCKETS
                     else:
                         self._current_index = (self._current_index - 1) % NUM_POCKETS
-                    self.info(f"Pocket {pockets}/{count} complete → index={self._current_index}")
+                    self.info(f"Pocket {pockets}/{count} complete: raw={raw:.0f}, filtered={filtered:.0f} → white, index={self._current_index}")
+
                 await asyncio.sleep(SAMPLE_INTERVAL)
         finally:
             self.motor.set_speed(0)
