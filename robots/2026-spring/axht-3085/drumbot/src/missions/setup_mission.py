@@ -19,7 +19,7 @@ claimed over the generated code itself.
 
 from libstp import Mission, Sequential, seq, wait_for_button
 
-from steps.drum_collector import calibrate_drum_collector
+from src.steps.drum_collector import calibrate_drum_collector
 
 
 class SetupMission(Mission):
