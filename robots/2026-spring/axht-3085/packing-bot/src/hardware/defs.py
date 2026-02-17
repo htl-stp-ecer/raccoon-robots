@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-17 12:52:19
+ Generated: 2026-02-17 12:52:58
 ===========================================================
 
 Authors:
@@ -37,10 +37,7 @@ class Defs:
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ff={"kS": 0.1, "kV": 0.18692403983703706, "kA": 0.015871817084935565},
-            pid={"kp": 10.0, "ki": 10.0, "kd": 1.1202285674265806},
-            ticks_to_rad=0.0043432497284286165,
-            vel_lpf_alpha=0.8,
+            ticks_to_rad=0.0043432497284286165, vel_lpf_alpha=0.8
         ),
     )
     rear_right_motor = Motor(
