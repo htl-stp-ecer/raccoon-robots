@@ -42,5 +42,5 @@ class M04GrabSecondPomsMission(Mission):
                 frontside_forward_drive_until_line(),
             ),
 
-            servo_pom_grab_close(),
+            servo_pom_grab_close(999),
         ])

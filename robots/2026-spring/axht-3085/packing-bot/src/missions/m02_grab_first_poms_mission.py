@@ -46,6 +46,18 @@ class M02GrabFirstPomsMission(Mission):
             servo_pom_arm_down(),
             #frontside_forward_lineup_on_black(0.9),
 
-            #the poms collectin is done simultanisosly with
-            #the drive_down_acces_ramp mission
+            # get poms and close claw
+            parallel(
+
+                drive_forward(cm=185), #drives down acces ramp
+                seq([
+                    #close the claw a bit, so fully closing it is faster
+                    servo_pom_grab_slightly_open(999),
+                    #wait until we have collected all poms
+                    #wait_until_distance(45),
+                    wait(2.2),
+                    servo_pom_grab_close(999),
+                    servo_pom_arm_up(),
+                ]),
+            ),
         ])
