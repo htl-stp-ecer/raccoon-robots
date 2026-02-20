@@ -16,11 +16,14 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
-from libstp import Mission, Sequential, seq, drive_forward
+from libstp import Mission, Sequential, seq, drive_forward, lineup, turn_right, wall_align_forward
 
 
 class DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drive_forward(20, 1.0),
+            turn_right(90, 1.0),
+            drive_forward(50, 1.0),
+            wall_align_forward(0.5, 0.3),
+
         ])

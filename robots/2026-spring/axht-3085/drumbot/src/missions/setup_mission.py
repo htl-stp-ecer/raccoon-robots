@@ -17,7 +17,7 @@ Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
 
-from libstp import Mission, Sequential, seq, wait_for_button
+from libstp import *
 
 from src.steps.drum_collector import calibrate_drum_collector
 
@@ -26,10 +26,10 @@ class SetupMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # loop_for(
-            #     calibrate(distance_cm=50), iterations=5
             # ),
 
             # calibrate_wait_for_light(Defs.front_left_ir_sensor)
             calibrate_drum_collector(calibration_time=2.0),
-            wait_for_button()
+            calibrate(distance_cm=50),
+            wait_for_button(),
         ])
