@@ -88,28 +88,27 @@ robot:
       acceleration: 2.8187
       deceleration: 7.8611
   physical:
-    width_cm: 28.5
+    width_cm: 23.5
     length_cm: 29.6
     rotation_center:
-      x_cm: 12.0
-      y_cm: 17.75
+      x_cm: 11.75
+      y_cm: 18.5
     sensors:
     - name: rear_left_light_sensor
-      x_cm: 2.7000000000000006
-      y_cm: 4.499999999999998
-      clearance_cm: 0.5
+      x_cm: 3.2999999999999994
+      y_cm: 4.400000000000001
+      clearance_cm: 0.0
     - name: front_right_light_sensor
-      x_cm: 19.7
+      x_cm: 19.5
       y_cm: 29.0
-      clearance_cm: 0.5
+      clearance_cm: 0.0
     - name: front_left_light_sensor
-      x_cm: 2.7000000000000006
+      x_cm: 4.0
       y_cm: 29.0
-      clearance_cm: 0.5
+      clearance_cm: 0.0
 missions:
 - M01SetupMission: setup
 - M99ShutdownMission: shutdown
-- M02GrabFirstPomsMission
 - M03DriveDownAccesRampMission
 - M04GrabSecondPomsMission
 - M05AlignForLastPomsMission
@@ -123,28 +122,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.4976277083107398e-05
+      ticks_to_rad: 1.5238061831840851e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.54189993115549e-05
+      ticks_to_rad: 1.6277011112104807e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.5948322551129635e-05
+      ticks_to_rad: 1.6335272923166657e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.548518357579032e-05
+      ticks_to_rad: 1.5612388304923865e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
@@ -166,6 +165,9 @@ definitions:
   pom_arm:
     type: Servo
     port: 1
+  shild_graber:
+    type: Servo
+    port: 2
   pom_grab:
     type: Servo
     port: 3

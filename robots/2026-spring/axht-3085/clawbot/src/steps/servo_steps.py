@@ -53,3 +53,13 @@ def servo_shild_down(speed = 300):
 @dsl
 def servo_shild_up(speed = 300):
     return slow_servo(Defs.shild, 10, speed)
+
+# --- shild graber serbo ---
+@dsl
+def servo_shild_grabber_open():
+    return servo(Defs.shild_graber, 70)
+
+
+@dsl
+def servo_shild_grabber_close():
+    return servo(Defs.shild_graber, 10)

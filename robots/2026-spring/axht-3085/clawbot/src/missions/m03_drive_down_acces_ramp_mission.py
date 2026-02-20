@@ -26,21 +26,6 @@ class M03DriveDownAccesRampMission(Mission):
         return seq([
 
 
-            # get poms and close claw
-            wall_align_strafe_left(0.2, 1.0),
-            parallel(
-
-                drive_forward(cm=185), #drives down acces ramp
-                seq([
-                    #close the claw a bit, so fully closing it is faster
-                    servo_pom_grab_slightly_open(999),
-                    #wait until we have collected all poms
-                    #wait_until_distance(45),
-                    wait(2.2),
-                    servo_pom_grab_close(999),
-                    servo_pom_arm_up(),
-                ]),
-            ),
 
             # drive infornt of poms
             turn_right(90, 1.0),
