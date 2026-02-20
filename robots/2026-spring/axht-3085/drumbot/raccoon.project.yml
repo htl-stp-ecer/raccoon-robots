@@ -3,14 +3,11 @@ uuid: 21e5bb71-a37d-4a2f-99ed-ad10963fe875
 robot:
   drive:
     kinematics:
-      type: mecanum
-      wheel_radius: 0.0295
-      track_width: 0.19
-      wheelbase: 0.12
-      front_left_motor: front_left_motor
-      front_right_motor: front_right_motor
-      back_left_motor: rear_left_motor
-      back_right_motor: rear_right_motor
+      type: differential
+      wheel_radius: 0.0345
+      wheelbase: 0.16
+      left_motor: front_left_motor
+      right_motor: front_right_motor
     vel_config:
       vx:
         pid:
@@ -109,7 +106,8 @@ robot:
 missions:
 - SetupMission: setup
 - ShutdownMission: shutdown
-- PotatoMission
+#- PotatoMission
+- DriveToDrumsMission
 definitions:
   button:
     type: DigitalSensor
@@ -124,23 +122,9 @@ definitions:
   front_right_motor:
     type: Motor
     port: 1
-    inverted: false
+    inverted: true
     calibration:
       ticks_to_rad: 1.392706010079093e-05
-      vel_lpf_alpha: 1.0
-  rear_left_motor:
-    type: Motor
-    port: 2
-    inverted: false
-    calibration:
-      ticks_to_rad: 1.5823734931161142e-05
-      vel_lpf_alpha: 1.0
-  rear_right_motor:
-    type: Motor
-    port: 3
-    inverted: false
-    calibration:
-      ticks_to_rad: 1.734218369071362e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
@@ -156,6 +140,13 @@ definitions:
   drum_motor:
     type: Motor
     port: 2
+    inverted: false
+    calibration:
+      ticks_to_rad: 1.0
+      vel_lpf_alpha: 1.0
+  servo_help_motor:
+    type: Motor
+    port: 3
     inverted: false
     calibration:
       ticks_to_rad: 1.0
