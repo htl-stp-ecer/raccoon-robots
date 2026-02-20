@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-17 17:13:56
+ Generated: 2026-02-18 19:16:12
 ===========================================================
 
 Authors:
@@ -23,28 +23,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.521415124782799e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5238061831840851e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5725442955949707e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6277011112104807e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6164874570271932e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6335272923166657e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5730902353876414e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5612388304923865e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_light_sensor = IRSensor(port=1)
@@ -53,6 +53,7 @@ class Defs:
     front_left_light_sensor = IRSensor(port=5)
     shild = Servo(port=0)
     pom_arm = Servo(port=1)
+    shild_graber = Servo(port=2)
     pom_grab = Servo(port=3)
     analog_sensors = [
         rear_left_light_sensor,

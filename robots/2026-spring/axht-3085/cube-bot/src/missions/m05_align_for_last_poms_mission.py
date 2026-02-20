@@ -20,7 +20,7 @@ from libstp import *
 
 from src.steps.light_sensor_steps import frontside_forward_lineup_on_black, frontside_forward_drive_until_line
 from src.hardware.defs import *
-from src.steps.servo_steps import servo_pom_arm_up
+from src.steps.servo_steps import servo_pom_arm_up, servo_shild_grabber_open, servo_shild_grabber_close
 
 
 class M05AlignForLastPomsMission(Mission):
@@ -31,14 +31,20 @@ class M05AlignForLastPomsMission(Mission):
             parallel(
                 turn_right(90, speed=1.0),
                 seq([
-                    wait(1),
+                    wait(0.6 ),
                     servo_pom_arm_up(),
                 ]),
             ),
 
+            strafe_right_until_black(Defs.front_right_light_sensor, 1.0),
+            strafe_left_until_black(Defs.front_right_light_sensor, 1.0),
+
+            servo_shild_grabber_open(),
+
             #TODO may do the backward driving with a linefollow if it exists
             drive_backward(25, 1.0),
-            wall_align_backward(1.0, 0.4)
+            wall_align_backward(1.0, 0.4),
 
+            servo_shild_grabber_close(),
             #align on black line
         ])
