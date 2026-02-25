@@ -1,13 +1,13 @@
 from src.hardware.defs import Defs
 from libstp import Mission, Sequential, seq
 
-from src.steps.line_follow import follow_line_single, LineSide
+from src.steps.single_line_follow import follow_line_single, LineSide
 
 
 class TestMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            follow_line_single(Defs.front_right_light_sensor, 40, 1.0, LineSide.RIGHT),
+            follow_line_single(Defs.front_right_light_sensor, 40, 1.0),
             #strafe_left_lineup_on_black(Defs.front_left_light_sensor, Defs.rear_left_light_sensor, 0.9),
             #strafe_right_until_black([Defs.front_left_light_sensor, Defs.rear_left_light_sensor], 1.0),
 
