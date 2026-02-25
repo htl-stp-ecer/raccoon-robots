@@ -4,6 +4,8 @@ Line following using IR sensors.
 This module provides steps for following lines using one or two IR sensors
 with PID-based steering control.
 """
+from libstp import *
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -11,7 +13,6 @@ from typing import TYPE_CHECKING
 from libstp.foundation import ChassisVelocity, PidConfig, PidController
 from libstp.sensor_ir import IRSensor
 
-from libstp import *
 
 if TYPE_CHECKING:
     from libstp.robot.api import GenericRobot
