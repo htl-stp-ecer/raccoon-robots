@@ -90,7 +90,7 @@ class SingleSensorLineFollow(MotionStep):
             return True
 
         self.debug(
-            f"traveled={traveled:.2f} vx={self._target_distance_m:.2f}"
+            f"current_pos={current_pose.position[0]} pose={current_pose} traveled={traveled:.2f} target={self._target_distance_m:.2f}"
         )
 
         # --- edge-tracking error ---
