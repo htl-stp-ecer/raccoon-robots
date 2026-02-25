@@ -10,7 +10,8 @@ from src.steps.light_sensor_steps import *
 class TestMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            strafe_left_lineup_on_black(Defs.front_left_light_sensor, Defs.rear_left_light_sensor, 0.9),
+            drive_forward(100, 1.0),
+            #strafe_left_lineup_on_black(Defs.front_left_light_sensor, Defs.rear_left_light_sensor, 0.9),
             #strafe_right_until_black([Defs.front_left_light_sensor, Defs.rear_left_light_sensor], 1.0),
 
             #simpl_frontside_forward_lineup_on_black(),
