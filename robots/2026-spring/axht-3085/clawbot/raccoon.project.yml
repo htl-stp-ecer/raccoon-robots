@@ -109,10 +109,7 @@ robot:
 missions:
 - M01SetupMission: setup
 - M99ShutdownMission: shutdown
-- M03DriveDownAccesRampMission
-- M04GrabSecondPomsMission
-- M05AlignForLastPomsMission
-- M06CollectLastPomsMission
+- TestMission
 definitions:
   button:
     type: DigitalSensor
