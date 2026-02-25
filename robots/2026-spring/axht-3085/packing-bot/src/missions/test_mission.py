@@ -1,5 +1,5 @@
 from src.hardware.defs import Defs
-from libstp import Mission, Sequential, seq
+from libstp import Mission, Sequential, seq, drive_forward, follow_line
 
 from src.steps.single_line_follow import follow_line_single, LineSide
 
