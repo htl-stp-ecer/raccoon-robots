@@ -38,7 +38,7 @@ class SingleLineFollowConfig:
     side: LineSide = LineSide.LEFT
     kp: float = 10.0
     ki: float = 0.0
-    kd: float = 0.0
+    kd: float = 0.3
     forward_reduction: float = 0.5  # slow down proportional to |steering|
 
 @dsl(hidden=True)
