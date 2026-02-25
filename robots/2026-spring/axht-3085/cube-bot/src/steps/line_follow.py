@@ -11,9 +11,7 @@ from typing import TYPE_CHECKING
 from libstp.foundation import ChassisVelocity, PidConfig, PidController
 from libstp.sensor_ir import IRSensor
 
-from .. import SimulationStep, SimulationStepDelta, dsl
-from .motion_step import MotionStep
-from .move_until import SurfaceColor
+from libstp import *
 
 if TYPE_CHECKING:
     from libstp.robot.api import GenericRobot
