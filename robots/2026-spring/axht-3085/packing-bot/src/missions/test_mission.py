@@ -1,7 +1,7 @@
-from src.steps.line_follow import *
 from src.steps.light_sensor_steps import *
-
 from src.hardware.defs import Defs
+
+from src.steps.line_follow import follow_line_single
 
 
 class TestMission(Mission):
