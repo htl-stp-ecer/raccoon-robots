@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-18 19:16:15
+ Generated: 2026-02-25 16:58:45
 ===========================================================
 
 Authors:
@@ -34,10 +34,7 @@ from src.hardware.defs import Defs
 
 from src.missions.m01_setup_mission import M01SetupMission
 from src.missions.m99_shutdown_mission import M99ShutdownMission
-from src.missions.m03_drive_down_acces_ramp_mission import M03DriveDownAccesRampMission
-from src.missions.m04_grab_second_poms_mission import M04GrabSecondPomsMission
-from src.missions.m05_align_for_last_poms_mission import M05AlignForLastPomsMission
-from src.missions.m06_collect_last_poms_mission import M06CollectLastPomsMission
+from src.missions.test_mission import TestMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -127,12 +124,7 @@ class Robot(GenericRobot):
             max_velocity=1.8105, acceleration=2.8187, deceleration=7.8611
         ),
     )
-    missions = [
-        M03DriveDownAccesRampMission(),
-        M04GrabSecondPomsMission(),
-        M05AlignForLastPomsMission(),
-        M06CollectLastPomsMission(),
-    ]
+    missions = [TestMission()]
     setup_mission = M01SetupMission()
     shutdown_mission = M99ShutdownMission()
     width_cm = 23.5
