@@ -36,7 +36,7 @@ class SingleLineFollowConfig:
     forward_speed: float  # m/s
     distance_cm: float  # distance to follow
     side: LineSide = LineSide.LEFT
-    kp: float = 1.0
+    kp: float = 3.0
     ki: float = 0.0
     kd: float = 0.3
     forward_reduction: float = 0.5  # slow down proportional to |steering|
@@ -90,7 +90,8 @@ class SingleSensorLineFollow(MotionStep):
             return True
 
         self.debug(
-            f"current_pos={current_pose.position[0]} pose={current_pose} traveled={traveled:.2f} target={self._target_distance_m:.2f}"
+            f"current_pos={current_pose.position[0]} pose={current_pose}"
+            f" traveled={traveled:.2f} target={self._target_distance_m:.2f}"
         )
 
         # --- edge-tracking error ---
