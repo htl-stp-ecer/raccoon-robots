@@ -17,9 +17,10 @@ class M01SetupMission(Mission):
             stop(),
             wait_for_button(),
             follow_line_single(
-                Defs.front_left_light_sensor,
                 Defs.front_right_light_sensor,
-                50
+                50,
+                1.0,
+                LineSide.RIGHT,
             ),
             wait_for_button(),
 
