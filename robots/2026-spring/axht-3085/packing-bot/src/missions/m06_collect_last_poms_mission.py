@@ -19,7 +19,7 @@ claimed over the generated code itself.
 from libstp import Mission, Sequential, seq, strafe_left_until_black, drive_forward
 from pycparser.c_ast import Default
 
-from src.steps.light_sensor_steps import left_starfe_lineup_on_black, left_starfe_until_black
+from src.steps.light_sensor_steps import left_starfe_until_black
 from src.steps.servo_steps import servo_pom_arm_down, servo_pom_grab_wide_open
 from src.hardware.defs import *
 
