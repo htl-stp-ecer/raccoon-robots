@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-18 19:16:15
+ Generated: 2026-02-27 18:47:27
 ===========================================================
 
 Authors:
@@ -34,6 +34,7 @@ from src.hardware.defs import Defs
 
 from src.missions.m01_setup_mission import M01SetupMission
 from src.missions.m99_shutdown_mission import M99ShutdownMission
+from src.missions.m02_grab_first_poms_mission import M02GrabFirstPomsMission
 from src.missions.m03_drive_down_acces_ramp_mission import M03DriveDownAccesRampMission
 from src.missions.m04_grab_second_poms_mission import M04GrabSecondPomsMission
 from src.missions.m05_align_for_last_poms_mission import M05AlignForLastPomsMission
@@ -66,7 +67,7 @@ class Robot(GenericRobot):
         kinematics=kinematics,
         vel_config=_build_chassis_vel_config(
             vx=AxisVelocityControlConfig(
-                pid=PidGains(kp=0.0, ki=0.0, kd=0.0),
+                pid=PidGains(kp=0.137793, ki=1.108274, kd=0.010895),
                 ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
             ),
             vy=AxisVelocityControlConfig(
@@ -74,7 +75,7 @@ class Robot(GenericRobot):
                 ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
             ),
             wz=AxisVelocityControlConfig(
-                pid=PidGains(kp=0.65, ki=0.0, kd=0.0),
+                pid=PidGains(kp=0.0, ki=0.0, kd=0.0),
                 ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
             ),
         ),
@@ -85,9 +86,9 @@ class Robot(GenericRobot):
     )
     motion_pid_config = UnifiedMotionPidConfig(
         distance=PidConfig(
-            kp=1.0,
+            kp=0.9375,
             ki=0.0,
-            kd=0.5,
+            kd=0.1562,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -95,7 +96,7 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=1.0,
+            kp=2.0625,
             ki=0.0,
             kd=0.2,
             integral_max=10.0,
@@ -118,16 +119,17 @@ class Robot(GenericRobot):
         heading_saturation_error_rad=0.01,
         heading_recovery_error_rad=0.005,
         linear=AxisConstraints(
-            max_velocity=0.2331, acceleration=0.4327, deceleration=0.4856
+            max_velocity=0.2139, acceleration=0.9402, deceleration=1.6644
         ),
         lateral=AxisConstraints(
             max_velocity=0.2209, acceleration=0.6485, deceleration=0.4498
         ),
         angular=AxisConstraints(
-            max_velocity=1.8105, acceleration=2.8187, deceleration=7.8611
+            max_velocity=1.8027, acceleration=2.4758, deceleration=17.4353
         ),
     )
     missions = [
+        M02GrabFirstPomsMission(),
         M03DriveDownAccesRampMission(),
         M04GrabSecondPomsMission(),
         M05AlignForLastPomsMission(),
@@ -140,11 +142,11 @@ class Robot(GenericRobot):
     rotation_center_forward_cm = 3.7
     rotation_center_strafe_cm = 0.0
     _sensor_positions = {
-        defs.rear_left_light_sensor: SensorPosition(
-            forward_cm=-10.4, strafe_cm=8.45, clearance_cm=0
+        defs.rear_right_light_sensor: SensorPosition(
+            forward_cm=-12.2, strafe_cm=-12.25, clearance_cm=0
         ),
         defs.front_right_light_sensor: SensorPosition(
-            forward_cm=14.2, strafe_cm=-7.75, clearance_cm=0
+            forward_cm=14.2, strafe_cm=-2.95, clearance_cm=0
         ),
         defs.front_left_light_sensor: SensorPosition(
             forward_cm=14.2, strafe_cm=7.75, clearance_cm=0
