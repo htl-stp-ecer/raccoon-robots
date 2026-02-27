@@ -16,15 +16,7 @@ class M01SetupMission(Mission):
             calibrate(distance_cm=50),
             stop(),
             wait_for_button(),
-            follow_line_single(
-                Defs.front_right_light_sensor,
-                70,
-                1.0,
-                LineSide.RIGHT,
-                2,
-                0.001,
-                0.0,
-            ),
+
             wait_for_button(),
 
             #calibrate_wait_for_light(Defs.wait_for_light_sensor),
