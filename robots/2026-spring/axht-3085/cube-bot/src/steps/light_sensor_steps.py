@@ -40,7 +40,15 @@ def frontside_line_follow():
 
 @dsl
 def frontside_line_follow_right_edge(cm, speed = 1.0):
-    pass
+    return follow_line_single(
+        Defs.front_right_light_sensor,
+        cm,
+        speed,
+        LineSide.RIGHT,
+        2,
+        0.001,
+        0.0,
+    ),
 
 @dsl
 def left_starfe_until_black(threshold = 0.7, speed = 1.0):

@@ -47,7 +47,8 @@ class M02GrabFirstPomsMission(Mission):
             #frontside_forward_lineup_on_black(0.9),
 
             # get poms and close claw
-            drive_forward(cm=185), #drives down acces ramp
+            frontside_line_follow_right_edge(185, 1.0), #drives down acces ramp
+            #drive_forward(cm=185), #drives down acces ramp
             seq([
                 #close the claw a bit, so fully closing it is faster
                 servo_pom_grab_slightly_open(999),
