@@ -1,6 +1,6 @@
 from libstp import *
 from src.hardware.defs import *
-from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
+from src.steps.light_sensor_steps import frontside_forward_lineup_on_black, frontside_line_follow_right_edge
 from src.steps.servo_steps import *
 from src.steps.single_line_follow import follow_line_single_right_edge
 
