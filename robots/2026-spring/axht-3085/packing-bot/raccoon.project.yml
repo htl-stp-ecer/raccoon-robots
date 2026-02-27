@@ -123,28 +123,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.552634767823638e-05
+      ticks_to_rad: 1.555235614516976e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.5521094733275467e-05
+      ticks_to_rad: 1.5517792719217682e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.57822761257547e-05
+      ticks_to_rad: 1.5709433302155076e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.5828633415775832e-05
+      ticks_to_rad: 1.5849811732067065e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
