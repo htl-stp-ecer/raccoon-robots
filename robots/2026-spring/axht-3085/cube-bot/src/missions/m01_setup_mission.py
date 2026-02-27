@@ -21,9 +21,6 @@ class M01SetupMission(Mission):
                 50,
                 1.0,
                 LineSide.RIGHT,
-                0.7,
-                0.001,
-                0.0,
             ),
             wait_for_button(),
 
