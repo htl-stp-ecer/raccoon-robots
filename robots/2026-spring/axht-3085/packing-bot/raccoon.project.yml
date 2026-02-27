@@ -14,9 +14,9 @@ robot:
     vel_config:
       vx:
         pid:
-          kp: 0.0
-          ki: 0.0
-          kd: 0.0
+          kp: 0.137793
+          ki: 1.108274
+          kd: 0.010895
         ff:
           kS: 0.0
           kV: 1.0
@@ -32,7 +32,7 @@ robot:
           kA: 0.0
       wz:
         pid:
-          kp: 0.65
+          kp: 0.0
           ki: 0.0
           kd: 0.0
         ff:
@@ -45,16 +45,16 @@ robot:
       bemf_trust: 1.0
   motion_pid:
     distance:
-      kp: 1.0
+      kp: 0.9375
       ki: 0.0
-      kd: 0.5
+      kd: 0.1562
       integral_max: 10.0
       integral_deadband: 0.01
       derivative_lpf_alpha: 0.5
       output_min: -10.0
       output_max: 10.0
     heading:
-      kp: 1.0
+      kp: 2.0625
       ki: 0.0
       kd: 0.2
       integral_max: 10.0
@@ -76,17 +76,17 @@ robot:
     heading_saturation_error_rad: 0.01
     heading_recovery_error_rad: 0.005
     linear:
-      max_velocity: 0.2331
-      acceleration: 0.4327
-      deceleration: 0.4856
+      max_velocity: 0.2139
+      acceleration: 0.9402
+      deceleration: 1.6644
     lateral:
       max_velocity: 0.2209
       acceleration: 0.6485
       deceleration: 0.4498
     angular:
-      max_velocity: 1.8105
-      acceleration: 2.8187
-      deceleration: 7.8611
+      max_velocity: 1.8027
+      acceleration: 2.4758
+      deceleration: 17.4353
   physical:
     width_cm: 23.5
     length_cm: 29.6
@@ -95,11 +95,11 @@ robot:
       y_cm: 18.5
     sensors:
     - name: rear_left_light_sensor
-      x_cm: 3.2999999999999994
-      y_cm: 4.400000000000001
+      x_cm: 4.0
+      y_cm: 4.600000000000002
       clearance_cm: 0.0
     - name: front_right_light_sensor
-      x_cm: 19.5
+      x_cm: 20.0
       y_cm: 29.0
       clearance_cm: 0.0
     - name: front_left_light_sensor
@@ -122,28 +122,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.5238061831840851e-05
+      ticks_to_rad: 1.5166856118815973e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.6277011112104807e-05
+      ticks_to_rad: 1.608634771742956e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.6335272923166657e-05
+      ticks_to_rad: 1.6147959179923327e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.5612388304923865e-05
+      ticks_to_rad: 1.564285688677338e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
