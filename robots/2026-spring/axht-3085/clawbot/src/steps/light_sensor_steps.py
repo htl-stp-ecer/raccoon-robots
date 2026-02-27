@@ -35,10 +35,6 @@ def frontside_backward_lineup_on_white():
     return backward_lineup_on_white(Defs.front_left_light_sensor, Defs.front_right_light_sensor)
 
 
-@dsl
-def backside_backward_lineup_on_white():
-    return backward_lineup_on_white(Defs.rear_left_light_sensor, Defs.rear_right_light_sensor)
-
 def frontside_line_follow():
     #follow_line(Defs.)
     pass
