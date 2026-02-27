@@ -94,12 +94,12 @@ robot:
       x_cm: 11.75
       y_cm: 18.5
     sensors:
-    - name: rear_left_light_sensor
-      x_cm: 4.0
-      y_cm: 4.600000000000002
+    - name: rear_right_light_sensor
+      x_cm: 23.999999999999996
+      y_cm: 2.600000000000003
       clearance_cm: 0.0
     - name: front_right_light_sensor
-      x_cm: 20.0
+      x_cm: 14.700000000000001
       y_cm: 29.0
       clearance_cm: 0.0
     - name: front_left_light_sensor
@@ -109,6 +109,7 @@ robot:
 missions:
 - M01SetupMission: setup
 - M99ShutdownMission: shutdown
+- M02GrabFirstPomsMission
 - M03DriveDownAccesRampMission
 - M04GrabSecondPomsMission
 - M05AlignForLastPomsMission
@@ -147,7 +148,7 @@ definitions:
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
-  rear_left_light_sensor:
+  rear_right_light_sensor:
     type: IRSensor
     port: 1
   wait_for_light_sensor:
