@@ -18,7 +18,7 @@ class M01SetupMission(Mission):
             wait_for_button(),
             follow_line_single(
                 Defs.front_right_light_sensor,
-                50,
+                70,
                 1.0,
                 LineSide.RIGHT,
                 2,
