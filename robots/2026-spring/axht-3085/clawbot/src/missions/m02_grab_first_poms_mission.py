@@ -47,8 +47,7 @@ class M02GrabFirstPomsMission(Mission):
             #frontside_forward_lineup_on_black(0.9),
 
             # get poms and close claw
-            parallel(
-
+            follow_line_sing ow_line_
                 drive_forward(cm=185), #drives down acces ramp
                 seq([
                     #close the claw a bit, so fully closing it is faster
