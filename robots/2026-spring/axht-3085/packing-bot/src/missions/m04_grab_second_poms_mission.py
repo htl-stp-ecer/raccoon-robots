@@ -19,7 +19,7 @@ claimed over the generated code itself.
 from libstp import *
 
 from src.hardware.defs import Defs
-from src.steps.light_sensor_steps import simple_backside_backward_lineup_on_black, frontside_forward_drive_until_line
+from src.steps.light_sensor_steps import frontside_forward_drive_until_line
 from src.steps.servo_steps import *
 
 
