@@ -1,6 +1,5 @@
 from libstp import *
 from src.hardware.defs import *
-from src.steps.single_line_follow import follow_line_single_right_edge
 
 
 @dsl
