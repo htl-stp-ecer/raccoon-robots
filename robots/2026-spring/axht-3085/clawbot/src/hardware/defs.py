@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-27 20:17:39
+ Generated: 2026-02-27 20:29:09
 ===========================================================
 
 Authors:
@@ -23,28 +23,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5378517986186595e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5409059507764474e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.570893284882842e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5660789585165394e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6073682582367236e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5989114909210855e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5858819860002123e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5851705164160653e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_light_sensor = IRSensor(port=1)
