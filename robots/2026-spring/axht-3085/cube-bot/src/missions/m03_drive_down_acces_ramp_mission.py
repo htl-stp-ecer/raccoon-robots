@@ -25,6 +25,8 @@ class M03DriveDownAccesRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # drive infornt of poms
+            wait_for_button(),
+
             turn_right(90, 1.0),
             strafe_right_until_black(Defs.front_right_light_sensor, 0.3),
             wall_align_backward(1.0, 0.3),
