@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-25 18:24:32
+ Generated: 2026-02-27 20:38:55
 ===========================================================
 
 Authors:
@@ -23,31 +23,31 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.4998832593992436e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.555235614516976e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5983579384383914e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5517792719217682e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.625990520766949e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5709433302155076e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5646583206871603e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5849811732067065e-05, vel_lpf_alpha=1.0
         ),
     )
-    rear_left_light_sensor = IRSensor(port=1)
+    rear_right_light_sensor = IRSensor(port=1)
     wait_for_light_sensor = AnalogSensor(port=2)
     front_right_light_sensor = IRSensor(port=4)
     front_left_light_sensor = IRSensor(port=5)
@@ -56,7 +56,7 @@ class Defs:
     shild_graber = Servo(port=2)
     pom_grab = Servo(port=3)
     analog_sensors = [
-        rear_left_light_sensor,
+        rear_right_light_sensor,
         wait_for_light_sensor,
         front_right_light_sensor,
         front_left_light_sensor,
