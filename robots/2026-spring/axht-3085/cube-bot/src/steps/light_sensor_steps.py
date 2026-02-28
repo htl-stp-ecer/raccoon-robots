@@ -1,4 +1,6 @@
-from libstp import lineup, SurfaceColor, drive_forward_until_black, forward_lineup_on_white, forward_lineup_on_black, backward_lineup_on_black, backward_lineup_on_white, dsl,strafe_left_lineup_on_black, strafe_left_until_black
+from libstp import lineup, SurfaceColor, drive_forward_until_black, forward_lineup_on_white, forward_lineup_on_black, \
+    backward_lineup_on_black, backward_lineup_on_white, dsl, strafe_left_lineup_on_black, strafe_left_until_black, \
+    follow_line_single
 from src.hardware.defs import *
 
 
@@ -48,7 +50,7 @@ def frontside_line_follow_right_edge(cm, speed = 1.0):
         2,
         0.001,
         0.0,
-    ),
+    )
 
 @dsl
 def left_starfe_until_black(threshold = 0.7, speed = 1.0):
