@@ -24,9 +24,6 @@ from src.steps.servo_steps import *
 class M03DriveDownAccesRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-
-
-
             # drive infornt of poms
             turn_right(90, 1.0),
             strafe_right_until_black(Defs.front_right_light_sensor, 0.3),
