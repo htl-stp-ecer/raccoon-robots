@@ -1,6 +1,6 @@
 from libstp import *
 from src.hardware.defs import *
-from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
+from src.steps.light_sensor_steps import frontside_forward_lineup_on_black, frontside_line_follow_right_edge
 from src.steps.servo_steps import *
 
 
@@ -15,6 +15,8 @@ class M01SetupMission(Mission):
 
             calibrate(distance_cm=50),
             stop(),
+            wait_for_button(),
+
             wait_for_button(),
 
             #calibrate_wait_for_light(Defs.wait_for_light_sensor),
