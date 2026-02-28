@@ -17,7 +17,6 @@ class M01SetupMission(Mission):
             stop(),
             wait_for_button(),
 
-            wait_for_button(),
 
             #calibrate_wait_for_light(Defs.wait_for_light_sensor),
         ])
