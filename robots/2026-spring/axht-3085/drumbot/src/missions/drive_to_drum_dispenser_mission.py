@@ -1,10 +1,7 @@
-from libstp.button import set_digital
-
 """
-from .missions.drive_to_drum_dispenser_mission import DriveToDrumDispenserMission
 ===========================================================
  Project:   tobi-test
- Generated: 2026-01-07 13:29:44
+ Generated: 2026-03-02 16:41:40
  Tool:      Raccoon IDE
  Platform:  StpOS – Robotics Operating System
 ===========================================================
@@ -19,10 +16,12 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
+from libstp import Mission, Sequential, seq, drive_forward, turn_left
 
-from src.hardware.robot import Robot
 
-robot = Robot()
-
-if __name__ == "__main__":
-    robot.start()
+class DriveToDrumDispenserMission(Mission):
+    def sequence(self) -> Sequential:
+        return seq([
+            drive_forward(10,1),
+            turn_left(90,1),
+        ])

@@ -109,7 +109,7 @@ robot:
 missions:
 - SetupMission: setup
 - ShutdownMission: shutdown
-- drive_to_Drum_dispenser
+- DriveToDrumDispenserMission
 definitions:
   button:
     type: DigitalSensor
