@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-02 15:38:13
+ Generated: 2026-03-02 15:42:59
 ===========================================================
 
 Authors:
@@ -34,7 +34,7 @@ from src.hardware.defs import Defs
 
 from src.missions.setup_mission import SetupMission
 from src.missions.shutdown_mission import ShutdownMission
-from src.missions.drive_to__drum_dispenser import drive_to_Drum_dispenser
+from src.missions.drive_to_drum_dispenser_mission import DriveToDrumDispenserMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -124,7 +124,7 @@ class Robot(GenericRobot):
             max_velocity=1.5864, acceleration=1.8933, deceleration=7.754
         ),
     )
-    missions = [drive_to_Drum_dispenser()]
+    missions = [DriveToDrumDispenserMission()]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
     width_cm = 13.0
