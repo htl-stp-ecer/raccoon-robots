@@ -21,7 +21,7 @@ from libstp import *
 from src.steps.light_sensor_steps import frontside_forward_lineup_on_black, frontside_forward_drive_until_line
 from src.hardware.defs import *
 from src.steps.servo_steps import servo_pom_arm_up, servo_shild_grabber_open, servo_shild_grabber_close
-from steps.servo_steps import servo_shild_down, servo_shild_up
+from src.steps.servo_steps import servo_shild_down, servo_shild_up
 
 
 class M05AlignForLastPomsMission(Mission):

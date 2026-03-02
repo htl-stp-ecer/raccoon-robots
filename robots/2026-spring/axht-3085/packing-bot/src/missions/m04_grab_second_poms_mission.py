@@ -21,7 +21,7 @@ from libstp import *
 from src.hardware.defs import Defs
 from src.steps.light_sensor_steps import frontside_forward_drive_until_line
 from src.steps.servo_steps import *
-from steps.light_sensor_steps import frontside_forward_lineup_on_black
+from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
 
 
 class M04GrabSecondPomsMission(Mission):
