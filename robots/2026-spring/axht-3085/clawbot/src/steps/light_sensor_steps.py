@@ -1,7 +1,7 @@
+from src.hardware.defs import *
 from libstp import lineup, SurfaceColor, drive_forward_until_black, forward_lineup_on_white, forward_lineup_on_black, \
     backward_lineup_on_black, backward_lineup_on_white, dsl, strafe_left_lineup_on_black, strafe_left_until_black, \
     follow_line_single, LineSide
-from src.hardware.defs import *
 
 
 @dsl
