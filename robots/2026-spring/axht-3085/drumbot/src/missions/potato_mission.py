@@ -14,39 +14,5 @@ class PotatoMission(Mission):
                 close_drum_pusher(),
                 drum_retreat(),
             ])),
-            #
-            # open_drum_pusher(),
-            # wait_for_checkpoint(10 + 8),
-            # close_drum_pusher(),
-            # drum_retreat(),
-            #
-            # open_drum_pusher(),
-            # wait_for_checkpoint(10 + 7 + 8),
-            # close_drum_pusher(),
-            # drum_retreat(),
-            #
-            # open_drum_pusher(),
-            # wait_for_checkpoint(10 + 7 + 7 + 8),
-            # close_drum_pusher(),
-            # drum_retreat(),
-            #
-            # open_drum_pusher(),
-            # wait_for_checkpoint(10 + 7 + 7 + 7 + 8),
-            # close_drum_pusher(),
-            # drum_retreat(),
-            #
-            # open_drum_pusher(),
-            # wait_for_checkpoint(10 + 7 + 7 + 7 + 7 + 8),
-            # close_drum_pusher(),
-            # drum_retreat(),
-            #
-            # open_drum_pusher(),
-            # wait_for_checkpoint(10 + 7 + 7 + 7 + 7 + 7 + 8),
-            # close_drum_pusher(),
-            # drum_retreat(),
-            #
-            # open_drum_pusher(),
-            # wait_for_checkpoint(10 + 7 + 7 + 7 + 7 + 7 + 7 + 8),
-            # close_drum_pusher(),
-            # drum_retreat(),
+
         ])
