@@ -49,7 +49,7 @@ class M02GrabFirstPomsMission(Mission):
                 # get poms and close claw
                 seq([
                     frontside_line_follow_right_edge(145, 1.0),  # drives down acces ramp
-                    dirve_forward(40, 1.0), # TODO: do only line following; currently line follow does weird thing at the end
+                    drive_forward(40, 1.0), # TODO: do only line following; currently line follow does weird thing at the end
                 ]),
                 seq([
                     #close the claw a bit, so fully closing it is faster
