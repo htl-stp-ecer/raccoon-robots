@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-02-17 13:24:09
+ Generated: 2026-03-02 15:38:13
 ===========================================================
 
 Authors:
@@ -34,7 +34,7 @@ from src.hardware.defs import Defs
 
 from src.missions.setup_mission import SetupMission
 from src.missions.shutdown_mission import ShutdownMission
-from src.missions.potato_mission import PotatoMission
+from src.missions.drive_to__drum_dispenser import drive_to_Drum_dispenser
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -124,7 +124,7 @@ class Robot(GenericRobot):
             max_velocity=1.5864, acceleration=1.8933, deceleration=7.754
         ),
     )
-    missions = [PotatoMission()]
+    missions = [drive_to_Drum_dispenser()]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
     width_cm = 13.0
