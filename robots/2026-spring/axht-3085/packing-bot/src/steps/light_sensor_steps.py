@@ -71,7 +71,7 @@ def single_line_follow_right_front_edge_until_line(cm, speed = 1.0, threshold = 
         0.001,
         0.0,
         threshold,
-        second_sensor=Defs
+        second_sensor=Defs.front_left_light_sensor,
     )
 
 @dsl
