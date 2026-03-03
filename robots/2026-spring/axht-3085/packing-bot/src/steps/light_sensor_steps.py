@@ -3,7 +3,7 @@ from libstp import lineup, SurfaceColor, drive_forward_until_black, forward_line
     backward_lineup_on_black, backward_lineup_on_white, dsl, strafe_left_lineup_on_black, strafe_left_until_black, \
     follow_line_single, LineSide, drive_forward_until_white, seq
 
-from src.steps.follow_line import better_follow_line_single_until_line
+from src.steps.follow_line import better_follow_line_single_until_line,better_follow_line_single
 
 
 @dsl
