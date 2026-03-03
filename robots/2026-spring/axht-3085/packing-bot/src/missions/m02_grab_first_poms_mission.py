@@ -50,7 +50,7 @@ class M02GrabFirstPomsMission(Mission):
             parallel(
                 # get poms and close claw
                 seq([
-                    frontside_line_follow_right_edge(135, 1.0),  # drives down acces ramp
+                    single_line_follow_right_front_edge_until_line(135, 1.0),  # drives down acces ramp
                     drive_forward(40, 1.0), # TODO: do only line following; currently line follow does weird thing at the end
                 ]),
                 seq([

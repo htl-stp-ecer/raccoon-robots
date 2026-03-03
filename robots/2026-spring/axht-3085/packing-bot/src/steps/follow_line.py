@@ -160,3 +160,40 @@ def better_follow_line_single(
         threshold=threshold,
     )
     return BetterSingleSensorLineFollow(config)
+
+@dsl(tags=["motion", "line-follow"])
+def better_follow_line_single_until_line(
+        sensor: IRSensor,
+        second_sensor: IRSensor,
+        speed: float = 0.5,
+        side: LineSide = LineSide.LEFT,
+        kp: float = 1.0,
+        ki: float = 0.0,
+        kd: float = 0.3,
+        threshold: float = 0.5,
+) -> BetterSingleSensorLineFollow:
+    """
+    Follow a line using a single sensor for a specified distance.
+
+    The sensor tracks the edge of the line (where probabilityOfBlack ~ 0.5).
+    ``side`` selects which edge to follow.
+
+    Args:
+        sensor: The IR sensor instance
+        second_sensor: The IR sensor instance
+        speed: Fraction of max speed, 0-1 (default 0.5)
+        side: Which edge to track (LEFT or RIGHT)
+        kp, ki, kd: PID gains for steering
+
+    Returns:
+        SingleSensorLineFollow step
+    """
+    config = BetterSingleLineFollowConfig(
+        sensor=sensor,
+        speed_scale=speed,
+        side=side,
+        kp=kp, ki=ki, kd=kd,
+        threshold=threshold,
+        second_sensor=second_sensor,
+    )
+    return BetterSingleSensorLineFollow(config)
