@@ -47,7 +47,7 @@ def frontside_line_follow_right_edge(cm, speed = 1.0):
         cm,
         speed,
         LineSide.RIGHT,
-        10,
+        2,
         0.001,
         0.0,
     )
