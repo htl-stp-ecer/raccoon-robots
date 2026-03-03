@@ -1,7 +1,7 @@
 from libstp import *
 from src.hardware.defs import *
 from src.steps.servo_steps import *
-from steps.light_sensor_steps import frontside_line_follow_right_edge
+from src.steps.light_sensor_steps import frontside_line_follow_right_edge
 
 
 class M01SetupMission(Mission):
