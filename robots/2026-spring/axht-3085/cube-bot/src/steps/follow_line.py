@@ -13,8 +13,8 @@ from libstp.foundation import PidConfig, PidController
 from libstp.motion import LinearMotion, LinearMotionConfig, LinearAxis
 from libstp.sensor_ir import IRSensor
 
-from .. import SimulationStep, SimulationStepDelta, dsl
-from .motion_step import MotionStep
+from libstp import SimulationStep, SimulationStepDelta, dsl
+from libstp import MotionStep
 
 if TYPE_CHECKING:
     from libstp.robot.api import GenericRobot
