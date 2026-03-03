@@ -190,6 +190,7 @@ def better_follow_line_single_until_line(
     """
     config = BetterSingleLineFollowConfig(
         sensor=sensor,
+        distance_cm=0,
         speed_scale=speed,
         side=side,
         kp=kp, ki=ki, kd=kd,
