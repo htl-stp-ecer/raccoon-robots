@@ -11,7 +11,7 @@ class M01SetupMission(Mission):
             servo_pom_arm_start(),
             servo_pom_grab_start(),
             servo_shild_down(),
-            servo_shild_grabber_close(),
+            servo_shild_grabber_open(),
 
             calibrate(distance_cm=50),
             stop(),
