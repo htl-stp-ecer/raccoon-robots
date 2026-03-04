@@ -1,7 +1,7 @@
 from libstp.button import set_digital
 
 """
-from .missions.drive_to_drum_dispenser_mission import DriveToDrumDispenserMission
+from .missions.drive_to_drums_mission import DriveToDrumsMission
 ===========================================================
  Project:   tobi-test
  Generated: 2026-01-07 13:29:44
@@ -24,5 +24,14 @@ from src.hardware.robot import Robot
 
 robot = Robot()
 
+import libstp.foundation as logging
+
+#logging.set_global_level(logging.Level.trace)
+# logging.set_file_level("turn.py", logging.Level.trace)
+logging.set_file_level("linear_motion.cpp", logging.Level.trace)
+#logging.set_file_level("fused_odometry.cpp", logging.Level.info)
+#logging.set_file_level("drive.cpp", logging.Level.trace)
+
 if __name__ == "__main__":
+    set_digital(10)
     robot.start()

@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-02 15:42:59
+ Generated: 2026-02-20 19:41:00
 ===========================================================
 
 Authors:
@@ -16,12 +16,12 @@ from libstp import (
     AxisConstraints,
     AxisVelocityControlConfig,
     ChassisVelocityControlConfig,
+    DifferentialKinematics,
     Drive,
     Feedforward,
     FusedOdometry,
     FusedOdometryConfig,
     GenericRobot,
-    MecanumKinematics,
     PidConfig,
     PidGains,
     SensorPosition,
@@ -34,7 +34,7 @@ from src.hardware.defs import Defs
 
 from src.missions.setup_mission import SetupMission
 from src.missions.shutdown_mission import ShutdownMission
-from src.missions.drive_to_drum_dispenser_mission import DriveToDrumDispenserMission
+from src.missions.drive_to_drums_mission import DriveToDrumsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -50,14 +50,11 @@ def _build_chassis_vel_config(vx=None, vy=None, wz=None):
 
 class Robot(GenericRobot):
     defs = Defs()
-    kinematics = MecanumKinematics(
-        back_left_motor=defs.rear_left_motor,
-        back_right_motor=defs.rear_right_motor,
-        front_left_motor=defs.front_left_motor,
-        front_right_motor=defs.front_right_motor,
-        track_width=0.19,
-        wheel_radius=0.0295,
-        wheelbase=0.12,
+    kinematics = DifferentialKinematics(
+        left_motor=defs.front_left_motor,
+        right_motor=defs.front_right_motor,
+        wheel_radius=0.0345,
+        wheelbase=0.16,
     )
     drive = Drive(
         kinematics=kinematics,
@@ -124,7 +121,7 @@ class Robot(GenericRobot):
             max_velocity=1.5864, acceleration=1.8933, deceleration=7.754
         ),
     )
-    missions = [DriveToDrumDispenserMission()]
+    missions = [DriveToDrumsMission()]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()
     width_cm = 13.0
@@ -138,12 +135,6 @@ class Robot(GenericRobot):
         defs.front_right_ir_sensor: SensorPosition(
             forward_cm=7.5, strafe_cm=-3.3, clearance_cm=1.0
         ),
-    }
-    _wheel_positions = {
-        defs.front_left_motor: WheelPosition(forward_cm=6.0, strafe_cm=9.5),
-        defs.front_right_motor: WheelPosition(forward_cm=6.0, strafe_cm=-9.5),
-        defs.rear_left_motor: WheelPosition(forward_cm=-6.0, strafe_cm=9.5),
-        defs.rear_right_motor: WheelPosition(forward_cm=-6.0, strafe_cm=-9.5),
     }
 
 

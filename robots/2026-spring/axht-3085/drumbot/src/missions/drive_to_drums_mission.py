@@ -1,7 +1,7 @@
 """
 ===========================================================
- Project:   {{ project_name }}
- Generated: {{ generated_at }}
+ Project:   tobi-test
+ Generated: 2026-02-20 19:08:58
  Tool:      Raccoon IDE
  Platform:  StpOS – Robotics Operating System
 ===========================================================
@@ -16,20 +16,14 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
-
-from libstp import *
-
-from src.steps.drum_collector import calibrate_drum_collector
+from libstp import Mission, Sequential, seq, drive_forward, lineup, turn_right, wall_align_forward
 
 
-class SetupMission(Mission):
+class DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # loop_for(
-            # ),
+            turn_right(90, 1.0),
+            drive_forward(50, 1.0),
+            wall_align_forward(0.5, 0.3),
 
-            # calibrate_wait_for_light(Defs.front_left_ir_sensor)
-            calibrate_drum_collector(calibration_time=2.0),
-            calibrate(distance_cm=50),
-            wait_for_button(),
         ])
