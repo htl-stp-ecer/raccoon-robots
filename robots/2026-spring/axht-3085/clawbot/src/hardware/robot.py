@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-02-27 14:55:17
+ Generated: 2026-03-03 19:32:58
 ===========================================================
 
 Authors:
@@ -34,6 +34,7 @@ from src.hardware.defs import Defs
 
 from src.missions.m01_setup_mission import M01SetupMission
 from src.missions.m99_shutdown_mission import M99ShutdownMission
+from src.missions.m02_grab_first_poms_mission import M02GrabFirstPomsMission
 from src.missions.m03_drive_down_acces_ramp_mission import M03DriveDownAccesRampMission
 from src.missions.m04_grab_second_poms_mission import M04GrabSecondPomsMission
 from src.missions.m05_align_for_last_poms_mission import M05AlignForLastPomsMission
@@ -128,6 +129,7 @@ class Robot(GenericRobot):
         ),
     )
     missions = [
+        M02GrabFirstPomsMission(),
         M03DriveDownAccesRampMission(),
         M04GrabSecondPomsMission(),
         M05AlignForLastPomsMission(),
@@ -140,11 +142,11 @@ class Robot(GenericRobot):
     rotation_center_forward_cm = 3.7
     rotation_center_strafe_cm = 0.0
     _sensor_positions = {
-        defs.rear_left_light_sensor: SensorPosition(
-            forward_cm=-10.2, strafe_cm=7.75, clearance_cm=0
+        defs.rear_right_light_sensor: SensorPosition(
+            forward_cm=-12.2, strafe_cm=-12.25, clearance_cm=0
         ),
         defs.front_right_light_sensor: SensorPosition(
-            forward_cm=14.2, strafe_cm=-8.25, clearance_cm=0
+            forward_cm=14.2, strafe_cm=-2.95, clearance_cm=0
         ),
         defs.front_left_light_sensor: SensorPosition(
             forward_cm=14.2, strafe_cm=7.75, clearance_cm=0

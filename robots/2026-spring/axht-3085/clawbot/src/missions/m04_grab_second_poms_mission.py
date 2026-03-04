@@ -19,15 +19,16 @@ claimed over the generated code itself.
 from libstp import *
 
 from src.hardware.defs import Defs
-from src.steps.light_sensor_steps import simple_backside_backward_lineup_on_black, frontside_forward_drive_until_line
+from src.steps.light_sensor_steps import frontside_forward_drive_until_line
 from src.steps.servo_steps import *
+from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
 
 
 class M04GrabSecondPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             parallel( #align on poms and put the claw down
-                strafe_left_until_white(Defs.front_right_light_sensor, 0.3),
+                strafe_left_until_white(Defs.rear_right_light_sensor, 0.3),
                 servo_pom_arm_above_pom(speed=200),
             ),
             servo_pom_grab_slightly_open(speed=300),
@@ -39,7 +40,7 @@ class M04GrabSecondPomsMission(Mission):
 
             parallel(
                 servo_pom_grab_pom_width(),
-                frontside_forward_drive_until_line(),
+                frontside_forward_lineup_on_black(),
             ),
 
             servo_pom_grab_close(999),

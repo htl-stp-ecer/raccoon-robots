@@ -23,7 +23,7 @@ import libstp.foundation as logging
 robot = Robot()
 
 #logging.set_file_level("fused_odometry.cpp", logging.Level.trace),
-logging.set_file_level("single_line_follow.py", logging.Level.debug),
+#logging.set_file_level("single_line_follow.py", logging.Level.debug),
 
 if __name__ == "__main__":
    robot.start()
