@@ -107,7 +107,6 @@ robot:
 missions:
 - SetupMission: setup
 - ShutdownMission: shutdown
-- DriveToDrumsMission
 - PotatoMission
 definitions:
   button:
@@ -118,7 +117,7 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.8250353080195564e-05
+      ticks_to_rad: 1.55904564255625e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
