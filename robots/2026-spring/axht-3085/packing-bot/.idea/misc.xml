@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="Black">
-    <option name="sdkName" value="Python 3.12" />
-  </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Remote 3.13 (sftp://pi@192.168.100.237:22/home/pi/.virtualenvs/packingbot/bin/python)" project-jdk-type="Python SDK" />
-</project>

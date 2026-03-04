@@ -1,5 +1,10 @@
-from libstp import *
 from src.hardware.defs import *
+from libstp import lineup, SurfaceColor, drive_forward_until_black, forward_lineup_on_white, forward_lineup_on_black, \
+    backward_lineup_on_black, backward_lineup_on_white, dsl, strafe_left_lineup_on_black, strafe_left_until_black, \
+    follow_line_single, LineSide, drive_forward_until_white, seq
+
+from src.steps.follow_line import better_follow_line_single_until_line,better_follow_line_single
+
 
 @dsl
 def frontside_forward_lineup_on_black(threshold = 0.7):
@@ -19,16 +24,17 @@ def frontside_forward_drive_until_line(threshold = 0.7):
     return drive_forward_until_black([Defs.front_left_light_sensor, Defs.front_right_light_sensor], speed = 1.0, confidence_threshold=threshold)
 
 @dsl
+def frontside_forward_drive_over_line(threshold = 0.7):
+    return seq([
+            drive_forward_until_black([Defs.front_left_light_sensor, Defs.front_right_light_sensor], speed = 1.0, confidence_threshold=threshold),
+            drive_forward_until_white([Defs.front_left_light_sensor, Defs.front_right_light_sensor], speed = 1.0, confidence_threshold=threshold),
+        ])
+
+@dsl
 def frontside_forward_lineup_on_white():
     return forward_lineup_on_white(Defs.front_left_light_sensor, Defs.front_right_light_sensor)
 
-@dsl
-def backside_forward_lineup_on_black():
-    return forward_lineup_on_black(Defs.rear_left_light_sensor, Defs.rear_right_light_sensor)
 
-@dsl
-def backside_forward_lineup_on_white():
-    return forward_lineup_on_white(Defs.rear_left_light_sensor, Defs.rear_right_light_sensor)
 
 @dsl
 def frontside_backward_lineup_on_black():
@@ -38,32 +44,37 @@ def frontside_backward_lineup_on_black():
 def frontside_backward_lineup_on_white():
     return backward_lineup_on_white(Defs.front_left_light_sensor, Defs.front_right_light_sensor)
 
-@dsl
-def backside_backward_lineup_on_black():
-    return backward_lineup_on_black(Defs.rear_left_light_sensor, Defs.rear_right_light_sensor)
-
-@dsl
-def simple_backside_backward_lineup_on_black(threshold = 0.7):
-    return lineup(Defs.rear_left_light_sensor, Defs.rear_right_light_sensor, SurfaceColor.BLACK, threshold)
-
-@dsl
-def backside_backward_lineup_on_white():
-    return backward_lineup_on_white(Defs.rear_left_light_sensor, Defs.rear_right_light_sensor)
 
 def frontside_line_follow():
     #follow_line(Defs.)
     pass
 
 @dsl
-def left_starfe_lineup_on_black(threshold = 0.7):
-    return strafe_left_lineup_on_black(Defs.front_left_light_sensor,
-                                       Defs.rear_left_light_sensor,
-                                       speed = 1.0,
-                                       confidence_threshold=threshold)
+def frontside_line_follow_right_edge(cm, speed = 1.0):
+    return better_follow_line_single(
+        Defs.front_right_light_sensor,
+        cm,
+        speed,
+        LineSide.RIGHT,
+        2,
+        0.001,
+        0.0,
+    )
+
+def single_line_follow_right_front_edge_until_line(speed = 1.0, threshold = 0.7):
+    return better_follow_line_single_until_line(
+        Defs.front_right_light_sensor,
+        speed,
+        LineSide.RIGHT,
+        2,
+        0.001,
+        0.0,
+        threshold,
+        Defs.front_left_light_sensor,
+    )
 
 @dsl
 def left_starfe_until_black(threshold = 0.7, speed = 1.0):
-    return strafe_left_until_black([Defs.front_left_light_sensor,
-                                       Defs.rear_left_light_sensor],
+    return strafe_left_until_black(Defs.front_left_light_sensor,
                                        speed = speed,
                                        confidence_threshold=threshold)
