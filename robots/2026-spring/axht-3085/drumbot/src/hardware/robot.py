@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-02-20 19:41:00
+ Generated: 2026-03-04 16:18:34
 ===========================================================
 
 Authors:
@@ -68,7 +68,7 @@ class Robot(GenericRobot):
                 ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
             ),
             wz=AxisVelocityControlConfig(
-                pid=PidGains(kp=0.65, ki=0.0, kd=0.0),
+                pid=PidGains(kp=0.0, ki=0.0, kd=0.0),
                 ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
             ),
         ),
@@ -79,9 +79,9 @@ class Robot(GenericRobot):
     )
     motion_pid_config = UnifiedMotionPidConfig(
         distance=PidConfig(
-            kp=1.0,
+            kp=3.0,
             ki=0.0,
-            kd=0.5,
+            kd=0.0,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -89,7 +89,7 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=1.0,
+            kp=1.5,
             ki=0.0,
             kd=0.2,
             integral_max=10.0,
@@ -112,15 +112,16 @@ class Robot(GenericRobot):
         heading_saturation_error_rad=0.01,
         heading_recovery_error_rad=0.005,
         linear=AxisConstraints(
-            max_velocity=0.2153, acceleration=0.3333, deceleration=0.6229
+            max_velocity=0.2368, acceleration=0.2798, deceleration=2.0532
         ),
         lateral=AxisConstraints(
             max_velocity=0.2145, acceleration=0.3922, deceleration=0.6504
         ),
         angular=AxisConstraints(
-            max_velocity=1.5864, acceleration=1.8933, deceleration=7.754
+            max_velocity=1.5864, acceleration=1.8933, deceleration=11.8728
         ),
     )
+    shutdown_in = 120
     missions = [DriveToDrumsMission()]
     setup_mission = SetupMission()
     shutdown_mission = ShutdownMission()

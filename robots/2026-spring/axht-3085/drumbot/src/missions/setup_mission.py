@@ -28,8 +28,6 @@ class SetupMission(Mission):
             # loop_for(
             # ),
 
-            # calibrate_wait_for_light(Defs.front_left_ir_sensor)
-            calibrate_drum_collector(calibration_time=2.0),
-            calibrate(distance_cm=50),
-            wait_for_button(),
+             calibrate_drum_collector(calibration_time=2.0),
+             calibrate(distance_cm=50),
         ])
