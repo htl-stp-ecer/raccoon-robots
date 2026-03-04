@@ -1,6 +1,7 @@
 name: PackingBot
 uuid: 322a6cb2-b54d-4ad2-bb55-14d157403ae7
 robot:
+  shutdown_in: 120
   drive:
     kinematics:
       type: mecanum
@@ -106,11 +107,13 @@ robot:
       x_cm: 4.0
       y_cm: 29.0
       clearance_cm: 0.0
+    start_pose:
+      x_cm: 90.25787965616045
+      y_cm: 47.277936962750715
+      theta_deg: 0.0
 missions:
 - M01SetupMission: setup
 - M99ShutdownMission: shutdown
-- M02GrabFirstPomsMission
-- M03DriveDownAccesRampMission
 - M04GrabSecondPomsMission
 - M05AlignForLastPomsMission
 - M06CollectLastPomsMission
@@ -123,28 +126,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.5831252622369768e-05
+      ticks_to_rad: 1.559840512951008e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.5314396282313987e-05
+      ticks_to_rad: 1.5170149045039616e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.5727673994358612e-05
+      ticks_to_rad: 1.575998955812976e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.604399930430468e-05
+      ticks_to_rad: 1.5760148372174144e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU

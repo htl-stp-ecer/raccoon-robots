@@ -25,7 +25,8 @@ from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
 class M03DriveDownAccesRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # drive infornt of poms
+            # drive infornt of pom
+            #switch_calibration_set("default"),
             turn_right(90, 1.0),
             strafe_right_until_black(Defs.rear_right_light_sensor, 0.3),
             frontside_forward_lineup_on_black(),

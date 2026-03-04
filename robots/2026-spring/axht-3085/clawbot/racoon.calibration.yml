@@ -1,4 +1,8 @@
 root:
   ir-calibration:
-    white_tresh: 123.581497
-    black_tresh: 2161.07275
+    default:
+      white_tresh: 1469.84827
+      black_tresh: 2490.58813
+    upper:
+      white_tresh: 597.968445
+      black_tresh: 1464.87659
