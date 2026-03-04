@@ -1,1 +1,0 @@
-{"name":"TestMission","is_setup":false,"is_shutdown":false,"order":1,"steps":[{"step_type":"","function_name":"drive_forward","arguments":[{"name":"cm","value":10,"type":"float"},{"name":"velocity","value":1,"type":"float"}],"position":{"x":296,"y":83},"children":[]}],"comments":[],"groups":[]}

@@ -19,7 +19,7 @@ claimed over the generated code itself.
 from libstp import Mission, Sequential, seq, strafe_left_until_black, drive_forward
 from pycparser.c_ast import Default
 
-from src.steps.light_sensor_steps import left_starfe_lineup_on_black, left_starfe_until_black
+from src.steps.light_sensor_steps import left_starfe_until_black
 from src.steps.servo_steps import servo_pom_arm_down, servo_pom_grab_wide_open
 from src.hardware.defs import *
 
@@ -27,7 +27,6 @@ from src.hardware.defs import *
 class M06CollectLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drive_forward(0.5, 1.0),
             strafe_left_until_black(Defs.front_left_light_sensor,
                                     speed=0.3,
                                     confidence_threshold=0.3),

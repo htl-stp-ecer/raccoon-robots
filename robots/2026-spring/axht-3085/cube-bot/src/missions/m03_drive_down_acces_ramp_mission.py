@@ -19,16 +19,16 @@ claimed over the generated code itself.
 from libstp import *
 from src.hardware.defs import Defs
 from src.steps.servo_steps import *
+from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
 
 
 class M03DriveDownAccesRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-
-
-
             # drive infornt of poms
             turn_right(90, 1.0),
-            strafe_right_until_black(Defs.front_right_light_sensor, 0.3),
-            wall_align_backward(1.0, 0.3),
+            strafe_right_until_black(Defs.rear_right_light_sensor, 0.3),
+            frontside_forward_lineup_on_black(),
+            drive_backward(10, 1.0),
+            wall_align_backward(0.7, 0.4),
         ])
