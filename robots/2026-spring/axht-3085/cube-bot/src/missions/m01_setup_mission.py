@@ -2,6 +2,7 @@ from libstp import *
 from src.hardware.defs import *
 from src.steps.servo_steps import *
 from src.steps.light_sensor_steps import frontside_line_follow_right_edge
+from src.steps.light_sensor_steps import single_line_follow_right_front_edge_until_line
 
 
 class M01SetupMission(Mission):
@@ -15,9 +16,12 @@ class M01SetupMission(Mission):
                 servo_shild_grabber_close(),
             ),
 
-            calibrate(distance_cm=50),
-            stop(),
-            wait_for_button(),
+            calibrate(distance_cm=50,
+                      #calibration_sets=["default", "upper"],
+                      ),
 
-            #calibrate_wait_for_light(Defs.wait_for_light_sensor),
+            #switch_calibration_set("upper"),
+            wait_for_button(),
+            single_line_follow_right_front_edge_until_line(135, 1.0),  # drives down acces ramp
+
         ])

@@ -46,6 +46,7 @@ class M02GrabFirstPomsMission(Mission):
             servo_pom_arm_down(),
             frontside_forward_drive_over_line(),
             strafe_left_until_black(Defs.front_right_light_sensor, 1.0),
+            strafe_left(1.0, 1.0),
 
             parallel(
                 # get poms and close claw
