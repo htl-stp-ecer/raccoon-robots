@@ -35,14 +35,14 @@ class Defs:
     )
     front_left_ir_sensor = IRSensor(port=0)
     front_right_ir_sensor = IRSensor(port=1)
-    drum_pusher_servo = Servo(port=3)
+    drum_pusher_servo = Servo(port=0)
     drum_motor = Motor(
-        port=2,
+        port=3,
         inverted=False,
         calibration=MotorCalibration(ticks_to_rad=1.0, vel_lpf_alpha=1.0),
     )
     servo_help_motor = Motor(
-        port=3,
+        port=2,
         inverted=False,
         calibration=MotorCalibration(ticks_to_rad=1.0, vel_lpf_alpha=1.0),
     )
