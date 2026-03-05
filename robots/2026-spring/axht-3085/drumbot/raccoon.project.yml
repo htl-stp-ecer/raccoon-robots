@@ -117,14 +117,14 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.55904564255625e-05
+      ticks_to_rad: 1.5918366403446004e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 1
     inverted: true
     calibration:
-      ticks_to_rad: 1.4551013679760538e-05
+      ticks_to_rad: 1.3393937789047178e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
@@ -151,6 +151,9 @@ definitions:
     calibration:
       ticks_to_rad: 1.0
       vel_lpf_alpha: 1.0
+  lift_drums_servo:
+    type: Servo
+    port: 3
   drum_light_sensor:
     type: IRSensor
     port: 1

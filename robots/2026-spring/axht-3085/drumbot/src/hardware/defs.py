@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-04 17:43:52
+ Generated: 2026-03-04 19:44:49
 ===========================================================
 
 Authors:
@@ -23,29 +23,30 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.55904564255625e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6114211492477958e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.4551013679760538e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.3948624416967943e-05, vel_lpf_alpha=1.0
         ),
     )
     front_left_ir_sensor = IRSensor(port=0)
     front_right_ir_sensor = IRSensor(port=1)
-    drum_pusher_servo = Servo(port=0)
+    drum_pusher_servo = Servo(port=3)
     drum_motor = Motor(
-        port=3,
-        inverted=False,
-        calibration=MotorCalibration(ticks_to_rad=1.0, vel_lpf_alpha=1.0),
-    )
-    servo_help_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(ticks_to_rad=1.0, vel_lpf_alpha=1.0),
     )
+    servo_help_motor = Motor(
+        port=3,
+        inverted=False,
+        calibration=MotorCalibration(ticks_to_rad=1.0, vel_lpf_alpha=1.0),
+    )
+    lift_drums_servo = Servo(port=3)
     drum_light_sensor = IRSensor(port=1)
     analog_sensors = [front_left_ir_sensor, front_right_ir_sensor, drum_light_sensor]
 
