@@ -1,0 +1,5 @@
+root:
+  ir-calibration:
+    default:
+      white_tresh: 0
+      black_tresh: 0
