@@ -105,9 +105,9 @@ robot:
       y_cm: 20.0
       theta_deg: 90.0
 missions:
-- SetupMission: setup
-- ShutdownMission: shutdown
-- PotatoMission
+- M00SetupMission: setup
+- M99ShutdownMission: shutdown
+- M01DriveToDrumsMission
 definitions:
   button:
     type: DigitalSensor
@@ -117,14 +117,14 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.5918366403446004e-05
+      ticks_to_rad: 1.8293094756833188e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 1
     inverted: true
     calibration:
-      ticks_to_rad: 1.3393937789047178e-05
+      ticks_to_rad: 1.4932896995958334e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
@@ -139,24 +139,24 @@ definitions:
     port: 3
   drum_motor:
     type: Motor
-    port: 2
+    port: 3
     inverted: false
     calibration:
       ticks_to_rad: 1.0
       vel_lpf_alpha: 1.0
   servo_help_motor:
     type: Motor
-    port: 3
+    port: 2
     inverted: false
     calibration:
       ticks_to_rad: 1.0
       vel_lpf_alpha: 1.0
   lift_drums_servo:
     type: Servo
-    port: 3
+    port: 1
   drum_light_sensor:
     type: IRSensor
-    port: 1
+    port: 0
 connection:
   pi_address: 192.168.100.174
   pi_port: 8421

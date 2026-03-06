@@ -19,6 +19,6 @@ claimed over the generated code itself.
 
 from libstp import Mission, Sequential, seq
 
-class ShutdownMission(Mission):
+class M99ShutdownMission(Mission):
     def sequence(self) -> Sequential:
         return seq([])

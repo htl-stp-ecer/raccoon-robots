@@ -20,14 +20,13 @@ claimed over the generated code itself.
 from libstp import *
 
 from src.steps.drum_collector import calibrate_drum_collector
+from src.steps.drum_lifting_step import *
 
-
-class SetupMission(Mission):
+class M00SetupMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # loop_for(
-            # ),
-
-             calibrate_drum_collector(calibration_time=2.0),
-             calibrate(distance_cm=50),
+            drum_lifting_up(slow_mode=False),
+            calibrate(distance_cm=50),
+            drum_lifting_down(),
+            calibrate_drum_collector(calibration_time=2.0),
         ])

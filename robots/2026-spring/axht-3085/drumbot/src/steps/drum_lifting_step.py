@@ -6,29 +6,37 @@ from src.hardware.defs import Defs
 def _lift_drum_servo(
         degrees,
         servo_speed,
-        base_motor_speed=50,
+        base_motor_speed=100,
         servo_ref=Defs.lift_drums_servo,
-        motor_ref=Defs.servo_help_motor):
+        motor_ref=Defs.servo_help_motor,
+        slow_mode=True
+) -> Sequential:
     def _build(_):
         delta_angle = degrees - servo_ref.get_position()
-        motor_speed = base_motor_speed if delta_angle < 0 else -base_motor_speed
+        move_with_slow_servo = slow_mode
 
-        return seq([
-            motor_power(motor_ref, motor_speed),
-            slow_servo(servo_ref, degrees, servo_speed),
-            motor_off(motor_ref),
+        sequence = []
+        info(f"Current servo position: {servo_ref.get_position()} degrees, target: {degrees} degrees, delta: {delta_angle} degrees")
+        if delta_angle > 0:
+            sequence.append(motor_power(motor_ref, -base_motor_speed))
+            move_with_slow_servo = False
+        sequence.extend([
+            slow_servo(servo_ref, degrees, servo_speed) if move_with_slow_servo else servo(servo_ref, degrees),
+            motor_brake(motor_ref),
         ])
+
+        return seq(sequence)
 
     return defer(_build)
 
 
-def drum_lifting_service_up():
-    return _lift_drum_servo(degrees=70, servo_speed=10)
+def drum_lifting_up(slow_mode=True):
+    return _lift_drum_servo(degrees=170, servo_speed=25, slow_mode=slow_mode)
 
 
-def drum_lifting_service_middle() -> None:
-    return _lift_drum_servo(degrees=70, servo_speed=10)
+def drum_lifting_middle(slow_mode=True) -> None:
+    return _lift_drum_servo(degrees=120, servo_speed=25, slow_mode=slow_mode)
 
 
-def drum_lifting_service_down() -> None:
-    return _lift_drum_servo(degrees=20, servo_speed=10)
+def drum_lifting_down(slow_mode=True) -> None:
+    return _lift_drum_servo(degrees=20, servo_speed=25, slow_mode=slow_mode)

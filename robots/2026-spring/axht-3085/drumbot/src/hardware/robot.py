@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-04 17:28:58
+ Generated: 2026-03-06 19:35:47
 ===========================================================
 
 Authors:
@@ -32,9 +32,9 @@ from libstp import (
 from src.hardware.defs import Defs
 
 
-from src.missions.setup_mission import SetupMission
-from src.missions.shutdown_mission import ShutdownMission
-from src.missions.potato_mission import PotatoMission
+from src.missions.m00_setup_mission import M00SetupMission
+from src.missions.m99_shutdown_mission import M99ShutdownMission
+from src.missions.m01_drive_to_drums_mission import M01DriveToDrumsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -122,9 +122,9 @@ class Robot(GenericRobot):
         ),
     )
     shutdown_in = 120
-    missions = [PotatoMission()]
-    setup_mission = SetupMission()
-    shutdown_mission = ShutdownMission()
+    missions = [M01DriveToDrumsMission()]
+    setup_mission = M00SetupMission()
+    shutdown_mission = M99ShutdownMission()
     width_cm = 13.0
     length_cm = 19.0
     rotation_center_forward_cm = -1.5

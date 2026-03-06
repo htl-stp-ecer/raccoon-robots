@@ -3,3 +3,9 @@ root:
     default:
       white_tresh: 0
       black_tresh: 0
+    default_port0:
+      white_tresh: 0
+      black_tresh: 0
+    default_port1:
+      white_tresh: 0
+      black_tresh: 0
