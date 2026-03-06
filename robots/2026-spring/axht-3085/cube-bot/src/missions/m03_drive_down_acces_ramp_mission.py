@@ -20,7 +20,7 @@ from libstp import *
 from src.hardware.defs import Defs
 from src.steps.servo_steps import *
 from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
-from steps.light_sensor_steps import backside_backward_drive_until_line
+from src.steps.light_sensor_steps import backside_backward_drive_until_line
 
 
 class M03DriveDownAccesRampMission(Mission):
