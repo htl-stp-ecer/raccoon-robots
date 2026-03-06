@@ -21,7 +21,5 @@ class M01SetupMission(Mission):
                       ),
 
             switch_calibration_set("upper"),
-            wait_for_button(),
-            single_line_follow_right_front_edge_until_line(135, 1.0),  # drives down acces ramp
 
         ])
