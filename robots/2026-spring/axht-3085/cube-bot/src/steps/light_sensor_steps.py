@@ -1,8 +1,8 @@
 from src.hardware.defs import *
 from libstp import lineup, SurfaceColor, drive_forward_until_black, forward_lineup_on_white, forward_lineup_on_black, \
     backward_lineup_on_black, backward_lineup_on_white, dsl, strafe_left_lineup_on_black, strafe_left_until_black, \
-    follow_line_single_until_black, LineSide, drive_forward_until_white, seq, follow_line_single
-
+    follow_line_single_until_black, LineSide, drive_forward_until_white, seq, follow_line_single, \
+    drive_backward_until_black
 
 
 @dsl
@@ -55,9 +55,8 @@ def frontside_line_follow_right_edge(cm, speed = 1.0):
         cm,
         0.8,
         side=LineSide.RIGHT,
-        stop_threshold=1.0,
-        kp=1.0,
-        ki=0.00,
+        kp=0.5,
+        ki=0.02,
         kd=0,
     )
 
@@ -68,8 +67,8 @@ def single_line_follow_right_front_edge_until_line(speed = 1.0, threshold = 0.7)
         0.8,
         side=LineSide.RIGHT,
         stop_threshold=1.0,
-        kp=1.0,
-        ki=0.00,
+        kp=0.5,
+        ki=0.02,
         kd=0,
     )
 
@@ -78,3 +77,8 @@ def left_starfe_until_black(threshold = 0.7, speed = 1.0):
     return strafe_left_until_black(Defs.front_left_light_sensor,
                                        speed = speed,
                                        confidence_threshold=threshold)
+
+def backside_backward_drive_until_line(threshold = 0.7):
+    return drive_backward_until_black(Defs.rear_right_light_sensor,
+                                      speed = 1.0,
+                                      treshold=threshold,)
