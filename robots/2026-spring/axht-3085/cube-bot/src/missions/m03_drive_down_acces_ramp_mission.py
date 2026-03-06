@@ -20,6 +20,7 @@ from libstp import *
 from src.hardware.defs import Defs
 from src.steps.servo_steps import *
 from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
+from steps.light_sensor_steps import backside_backward_drive_until_line
 
 
 class M03DriveDownAccesRampMission(Mission):
@@ -27,9 +28,8 @@ class M03DriveDownAccesRampMission(Mission):
         return seq([
             # drive infornt of pom
             switch_calibration_set("default"),
+            backside_backward_drive_until_line(),
             turn_right(90, 1.0),
-            strafe_right_until_black(Defs.rear_right_light_sensor, 0.3),
+            wall_align_backward(1.5, 0.4),
             frontside_forward_lineup_on_black(),
-            drive_backward(10, 1.0),
-            wall_align_backward(0.7, 0.4),
         ])
