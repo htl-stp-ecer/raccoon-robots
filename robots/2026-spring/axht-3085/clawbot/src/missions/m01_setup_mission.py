@@ -17,10 +17,10 @@ class M01SetupMission(Mission):
             ),
 
             calibrate(distance_cm=50,
-                      #calibration_sets=["default", "upper"],
+                      calibration_sets=["default", "upper"],
                       ),
 
-            #switch_calibration_set("upper"),
+            switch_calibration_set("upper"),
             wait_for_button(),
             single_line_follow_right_front_edge_until_line(135, 1.0),  # drives down acces ramp
 
