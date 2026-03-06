@@ -10,7 +10,7 @@ def servo_pom_arm_down(speed: int = 100):
 
 @dsl
 def servo_pom_arm_up(speed: int = 100):
-    return slow_servo(Defs.pom_arm, 60, speed)
+    return slow_servo(Defs.pom_arm, 90, speed)
 
 @dsl
 def servo_pom_arm_above_pom(speed: int = 100):
@@ -18,7 +18,7 @@ def servo_pom_arm_above_pom(speed: int = 100):
 
 @dsl
 def servo_pom_arm_start():
-    return slow_servo(Defs.pom_arm, 140, 200)
+    return slow_servo(Defs.pom_arm, 120, 200)
 
 # --- pom grab ---
 @dsl
@@ -47,19 +47,19 @@ def servo_pom_grab_wide_open(speed: int = 120):
 
 # --- shild servo ---
 @dsl
-def servo_shild_down(speed: int = 300):
+def servo_shield_down(speed: int = 300):
     return slow_servo(Defs.shild, 60, speed)
 
 @dsl
-def servo_shild_up(speed: int = 300):
+def servo_shield_up(speed: int = 300):
     return slow_servo(Defs.shild, 10, speed)
 
 # --- shild graber serbo ---
 @dsl
-def servo_shild_grabber_open():
+def servo_shield_grabber_open():
     return servo(Defs.shild_graber, 35)
 
 
 @dsl
-def servo_shild_grabber_close():
+def servo_shield_grabber_close():
     return servo(Defs.shild_graber, 10)
