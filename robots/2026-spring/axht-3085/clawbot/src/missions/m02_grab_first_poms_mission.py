@@ -30,14 +30,14 @@ class M02GrabFirstPomsMission(Mission):
         return seq([
             # drive infront of poms
             strafe_right(20, 1.0),
-            servo_shild_up(999),
+            servo_shield_up(999),
             strafe_left(20, 1.0),
 
             parallel(
-                seq([ #turn and prepear to set down the the claw
+                seq([ #turn and prepare to set down the claw
                     turn_right(90, 1.0),
                 ]),
-                seq([ #repears the servo to move down while moving bacwards
+                seq([ #prepares the servo to move down while moving backwards
                     servo_pom_arm_up(),
                     servo_pom_grab_open(),
                 ]),
@@ -46,23 +46,26 @@ class M02GrabFirstPomsMission(Mission):
             servo_pom_arm_down(),
             frontside_forward_drive_over_line(),
             strafe_left_until_black(Defs.front_right_light_sensor, 1.0),
-            strafe_left(1.0, 1.0),
 
             parallel(
                 # get poms and close claw
                 seq([
-                    single_line_follow_right_front_edge_until_line(135, 1.0),  # drives down acces ramp
+                    frontside_line_follow_right_edge(135, 1.0),  # drives down access ramp
                     single_line_follow_right_front_edge_until_line(),
                     drive_forward(40, 1.0), # TODO: do only line following; currently line follow does weird thing at the end
                 ]),
                 seq([
                     #close the claw a bit, so fully closing it is faster
-                    servo_pom_grab_slightly_open(999),
+                    parallel(
+                        servo_pom_grab_slightly_open(999),
+                        servo_shield_down(999),
+                    ),
                     #wait until we have collected all poms
                     wait_until_distance(35),
                     #wait(2.2),
                     servo_pom_grab_close(999),
                     servo_pom_arm_up(),
+                    servo_shield_down(999),
                 ]),
             ),
         ])
