@@ -55,17 +55,14 @@ class M02GrabFirstPomsMission(Mission):
                     drive_forward(40, 1.0), # TODO: do only line following; currently line follow does weird thing at the end
                 ]),
                 seq([
-                    #close the claw a bit, so fully closing it is faster
-                    parallel(
-                        servo_pom_grab_slightly_open(999),
-                        servo_shield_down(999),
-                    ),
                     #wait until we have collected all poms
                     wait_until_distance(35),
-                    #wait(2.2),
                     servo_pom_grab_close(999),
                     servo_pom_arm_up(),
-                    servo_shield_down(999),
+                    servo_shield_up(999),
                 ]),
+                # close the claw a bit, so fully closing it is faster
+                servo_pom_grab_slightly_open(999),
+                servo_shield_down(999),
             ),
         ])
