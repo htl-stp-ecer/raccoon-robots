@@ -48,18 +48,19 @@ def servo_pom_grab_wide_open(speed: int = 120):
 # --- shild servo ---
 @dsl
 def servo_shield_down(speed: int = 300):
-    return slow_servo(Defs.shild, 60, speed)
+    return slow_servo(Defs.shild, 156, speed)
 
 @dsl
 def servo_shield_up(speed: int = 300):
-    return slow_servo(Defs.shild, 10, speed)
+    return slow_servo(Defs.shild, 86, speed)
+
 
 # --- shild graber serbo ---
 @dsl
 def servo_shield_grabber_open():
-    return servo(Defs.shild_graber, 35)
+    return servo(Defs.shild_graber, 90)
 
 
 @dsl
 def servo_shield_grabber_close():
-    return servo(Defs.shild_graber, 10)
+    return servo(Defs.shild_graber, 17)
