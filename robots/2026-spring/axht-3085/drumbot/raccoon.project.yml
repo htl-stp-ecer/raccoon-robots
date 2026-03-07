@@ -107,7 +107,7 @@ robot:
 missions:
 - M00SetupMission: setup
 - M99ShutdownMission: shutdown
-#- M01DriveToDrumsMission
+- M01DriveToDrumsMission
 - M02CollectDrumsMission
 definitions:
   button:
