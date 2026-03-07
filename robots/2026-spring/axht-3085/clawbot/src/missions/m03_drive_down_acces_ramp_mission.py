@@ -28,7 +28,6 @@ class M03DriveDownAccesRampMission(Mission):
         return seq([
             # drive infornt of pom
             switch_calibration_set("default"),
-            wall_align_forward(1.0, 0.5),
             backside_backward_drive_until_line(),
             turn_right(90, 1.0),
             wall_align_backward(1.0, 0.4),
