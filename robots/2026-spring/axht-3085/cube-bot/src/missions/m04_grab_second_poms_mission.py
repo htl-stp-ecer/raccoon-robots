@@ -28,7 +28,6 @@ class M04GrabSecondPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             parallel( #align on poms and put the claw down
-                strafe_left_until_white(Defs.rear_right_light_sensor, 0.3),
                 servo_pom_arm_above_pom(speed=200),
             ),
             servo_pom_grab_slightly_open(speed=300),
