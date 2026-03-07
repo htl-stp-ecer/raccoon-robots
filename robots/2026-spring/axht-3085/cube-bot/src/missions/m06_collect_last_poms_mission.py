@@ -16,10 +16,9 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
-from libstp import Mission, Sequential, seq, strafe_left_until_black, drive_forward
+from libstp import Mission, Sequential, seq, strafe_left_until_black, drive_forward, strafe_right_until_white, turn_to_heading
 from pycparser.c_ast import Default
 
-from src.steps.light_sensor_steps import left_starfe_until_black
 from src.steps.servo_steps import servo_pom_arm_down, servo_pom_grab_wide_open
 from src.hardware.defs import *
 
@@ -27,10 +26,16 @@ from src.hardware.defs import *
 class M06CollectLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+
+            drive_forward(5.0, 1.0),
             strafe_left_until_black(Defs.front_left_light_sensor,
                                     speed=0.3,
                                     confidence_threshold=0.3),
-            #left_starfe_until_black(threshold=0.3, speed = 0.3),
-            servo_pom_arm_down(),
+
+            strafe_right_until_white(Defs.front_left_light_sensor,
+                                    speed=0.3,
+                                    confidence_threshold=0.3),
+
+            turn_to_heading(0, 1.0),
             servo_pom_grab_wide_open(),
         ])

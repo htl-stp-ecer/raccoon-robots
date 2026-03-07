@@ -28,10 +28,13 @@ from src.steps.servo_steps import *
 class M02GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            mark_heading_reference(), #mark heading for use in drive down acess ramp
             # drive infront of poms
-            strafe_right(20, 1.0),
-            servo_shield_up(999),
-            strafe_left(20, 1.0),
+            strafe_right(30, 1.0),
+            parallel(
+                servo_shield_up(999),
+                strafe_left(30, 1.0),
+            ),
 
             parallel(
                 seq([ #turn and prepare to set down the claw
@@ -50,10 +53,12 @@ class M02GrabFirstPomsMission(Mission):
             parallel(
                 # get poms and close claw
                 seq([
-                    frontside_line_follow_right_edge(135, 1.0),  # drives down access ramp
+                    frontside_line_follow_right_edge(125, 1.0),  # drives down access ramp
+                    #strafe_follow_line(Defs.front_right_light_sensor,
+                    #                   1.0),
                     single_line_follow_right_front_edge_until_line(),
                     parallel(
-                        drive_forward(40, 1.0),
+                        drive_forward(30, 1.0),
                         servo_pom_arm_high_up(),
                     )
                 ]),
@@ -62,7 +67,6 @@ class M02GrabFirstPomsMission(Mission):
                     wait_until_distance(35),
                     servo_pom_grab_close(999),
                     servo_pom_arm_up(),
-                    servo_shield_up(999),
                 ]),
                 seq([
                     #wait until the claw is over the edge and put it back down
@@ -71,6 +75,5 @@ class M02GrabFirstPomsMission(Mission):
                 ]),
                 # close the claw a bit, so fully closing it is faster
                 servo_pom_grab_slightly_open(999),
-                servo_shield_down(999),
             ),
         ])
