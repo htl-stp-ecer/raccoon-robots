@@ -118,14 +118,14 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.8441375464663316e-05
+      ticks_to_rad: 1.854721197481163e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 1
     inverted: true
     calibration:
-      ticks_to_rad: 1.5320468519713242e-05
+      ticks_to_rad: 1.539842003560741e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
@@ -158,6 +158,9 @@ definitions:
   drum_light_sensor:
     type: IRSensor
     port: 0
+  wait_for_light_sensor:
+    type: AnalogSensor
+    port: 5
 connection:
   pi_address: 192.168.100.174
   pi_port: 8421

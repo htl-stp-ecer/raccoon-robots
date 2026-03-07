@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-07 13:34:11
+ Generated: 2026-03-07 14:02:00
 ===========================================================
 
 Authors:
@@ -12,7 +12,7 @@ Authors:
    You are free to modify it as needed. Regeneration may overwrite changes.
 """
 
-from libstp import DigitalSensor, IRSensor, Motor, MotorCalibration, Servo
+from libstp import AnalogSensor, DigitalSensor, IRSensor, Motor, MotorCalibration, Servo
 from libstp import IMU as Imu
 
 
@@ -23,14 +23,14 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.8496669494242445e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.8468345088944708e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5321595873642662e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5440583193006207e-05, vel_lpf_alpha=1.0
         ),
     )
     front_left_ir_sensor = IRSensor(port=1)
@@ -48,7 +48,13 @@ class Defs:
     )
     lift_drums_servo = Servo(port=1)
     drum_light_sensor = IRSensor(port=0)
-    analog_sensors = [front_left_ir_sensor, front_right_ir_sensor, drum_light_sensor]
+    wait_for_light_sensor = AnalogSensor(port=5)
+    analog_sensors = [
+        front_left_ir_sensor,
+        front_right_ir_sensor,
+        drum_light_sensor,
+        wait_for_light_sensor,
+    ]
 
 
 __all__ = ["Defs"]
