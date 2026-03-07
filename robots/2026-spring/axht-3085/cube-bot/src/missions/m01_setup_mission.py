@@ -15,10 +15,6 @@ class M01SetupMission(Mission):
                 servo_shield_down(),
                 servo_shield_grabber_close(),
             ),
-            servo_shield_up(),
-
-            wait_for_button(),
-            drive_forward(70, 1.0),
 
             calibrate(distance_cm=50,
                       calibration_sets=["default", "upper"],
