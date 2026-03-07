@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-07 15:21:26
+ Generated: 2026-03-07 15:57:48
 ===========================================================
 
 Authors:
@@ -147,7 +147,7 @@ class Robot(GenericRobot):
             forward_cm=-12.2, strafe_cm=-12.25, clearance_cm=0
         ),
         defs.front_right_light_sensor: SensorPosition(
-            forward_cm=14.2, strafe_cm=-2.95, clearance_cm=0
+            forward_cm=14.2, strafe_cm=-3.55, clearance_cm=0
         ),
         defs.front_left_light_sensor: SensorPosition(
             forward_cm=14.2, strafe_cm=7.75, clearance_cm=0
