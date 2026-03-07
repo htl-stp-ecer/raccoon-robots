@@ -5,20 +5,20 @@ from src.hardware.defs import *
 
 # --- pom arm
 @dsl
-def servo_pom_arm_down(speed: int = 100):
+def servo_pom_arm_down(speed: int = 250):
     return slow_servo(Defs.pom_arm, 0, speed)
 
 @dsl
-def servo_pom_arm_up(speed: int = 100):
+def servo_pom_arm_up(speed: int = 250):
     return slow_servo(Defs.pom_arm, 90, speed)
 
 @dsl
-def servo_pom_arm_above_pom(speed: int = 100):
-    return slow_servo(Defs.pom_arm, 30, speed)
+def servo_pom_arm_above_pom(speed: int = 250):
+    return slow_servo(Defs.pom_arm, 50, speed)
 
 @dsl
 def servo_pom_arm_high_up(speed: int = 400):
-    return slow_servo(Defs.pom_arm, 140, speed)
+    return slow_servo(Defs.pom_arm, 145, speed)
 
 @dsl
 def servo_pom_arm_start(speed: int = 400):
@@ -66,5 +66,5 @@ def servo_shield_grabber_open():
 
 
 @dsl
-def servo_shield_grabber_close():
-    return servo(Defs.shild_graber, 17)
+def servo_shield_grabber_close(speed = 50):
+    return slow_servo(Defs.shild_graber, 17, speed)

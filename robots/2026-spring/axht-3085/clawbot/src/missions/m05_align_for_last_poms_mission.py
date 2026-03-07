@@ -18,40 +18,47 @@ claimed over the generated code itself.
 """
 from libstp import *
 
-from src.steps.light_sensor_steps import frontside_forward_lineup_on_black, frontside_forward_drive_until_line
-from src.hardware.defs import *
-from src.steps.servo_steps import servo_pom_arm_up, servo_shield_grabber_open, servo_shield_grabber_close
-from src.steps.servo_steps import servo_shield_down, servo_shield_up
+from src.steps.light_sensor_steps import (frontside_forward_lineup_on_black, frontside_forward_drive_until_line,
+                                          backside_right_starfe_until_black)
+from src.hardware.defs import Defs
+from src.steps.servo_steps import (servo_pom_arm_up, servo_shield_grabber_open, servo_shield_grabber_close,
+                                   servo_shield_down, servo_shield_up, servo_pom_arm_down, servo_pom_arm_high_up)
 
 
 class M05AlignForLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drive_forward(20, 1.0),
+            drive_forward(18, 1.0),
             #push a blue pom to collect it later
             parallel(
                 turn_right(90, speed=1.0),
                 seq([
-                    wait(0.3),
-                    servo_pom_arm_up(),
+                    wait(0.4),
+                    servo_pom_arm_high_up(400),
                 ]),
             ),
 
-            strafe_right_until_black(Defs.rear_right_light_sensor, 1.0),
-            strafe_left(5, 1.0),
-
             parallel(
+                servo_pom_arm_down(999), # put down claw so we can strave easyer
+
+                seq([
+                    strafe_right_until_black(Defs.rear_right_light_sensor, 1.0),
+                    strafe_left(10, 1.0),
+                ]),
+
+                #prepair the shield to grab the sorted poms
                 servo_shield_down(),
                 servo_shield_grabber_open(),
             ),
+            turn_to_heading(-90, 1.0),
 
-            #TODO may do the backward driving with a linefollow if it exists
             drive_backward(25, 1.0),
-            wall_align_backward(1.0, 0.4),
+            #grab the pom set
+            backside_right_starfe_until_black(),
 
-            drive_forward(1.0, 1.0),
-            strafe_right_until_black(Defs.rear_right_light_sensor, 1.0),
             servo_shield_grabber_close(),
             servo_shield_up(),
-            #align on black line
+
+            wall_align_backward(1.0, 0.4, 0.2, 1.0),
+            mark_heading_reference(),  # mark heading for collecting the poms
         ])

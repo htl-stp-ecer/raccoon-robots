@@ -15,6 +15,14 @@ class M01SetupMission(Mission):
                 servo_shield_down(),
                 servo_shield_grabber_close(),
             ),
+            stop(),
+            wait(1),
+            stop(),
+
+            #heading mark test (please delete in the future)
+            #mark_heading_reference(),
+            #wait_for_button(),
+            #turn_to_heading(0, 1.0),
 
             calibrate(distance_cm=50,
                       calibration_sets=["default", "upper"],

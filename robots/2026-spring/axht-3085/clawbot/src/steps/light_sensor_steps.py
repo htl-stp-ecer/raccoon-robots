@@ -2,7 +2,7 @@ from src.hardware.defs import *
 from libstp import lineup, SurfaceColor, drive_forward_until_black, forward_lineup_on_white, forward_lineup_on_black, \
     backward_lineup_on_black, backward_lineup_on_white, dsl, strafe_left_lineup_on_black, strafe_left_until_black, \
     follow_line_single_until_black, LineSide, drive_forward_until_white, seq, follow_line_single, \
-    drive_backward_until_black
+    drive_backward_until_black, strafe_right_until_white, strafe_right_until_black
 
 
 @dsl
@@ -73,10 +73,25 @@ def single_line_follow_right_front_edge_until_line(speed = 1.0, threshold = 0.7)
     )
 
 @dsl
-def left_starfe_until_black(threshold = 0.7, speed = 1.0):
+def frontside_left_starfe_until_black(threshold = 0.7, speed = 1.0):
     return strafe_left_until_black(Defs.front_left_light_sensor,
                                        speed = speed,
                                        confidence_threshold=threshold)
+
+def backside_left_starfe_until_black(threshold = 0.7, speed = 1.0):
+    return strafe_left_until_black(Defs.rear_right_light_sensor,
+                                   speed = speed,
+                                   confidence_threshold=threshold)
+
+def backside_right_starfe_until_black(threshold = 0.7, speed = 1.0):
+    return strafe_right_until_black(Defs.rear_right_light_sensor,
+                                   speed = speed,
+                                   confidence_threshold=threshold)
+
+def backside_right_starfe_until_white(threshold = 0.7, speed = 1.0):
+    return strafe_right_until_white(Defs.rear_right_light_sensor,
+                                   speed = speed,
+                                   confidence_threshold=threshold)
 
 def backside_backward_drive_until_line(threshold = 0.7):
     return drive_backward_until_black(Defs.rear_right_light_sensor,

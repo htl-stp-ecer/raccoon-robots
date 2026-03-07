@@ -22,19 +22,19 @@ from src.hardware.defs import Defs
 from src.steps.light_sensor_steps import frontside_forward_drive_until_line
 from src.steps.servo_steps import *
 from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
+from src.steps.light_sensor_steps import backside_right_starfe_until_white
 
 
 class M04GrabSecondPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            parallel( #align on poms and put the claw down
-                servo_pom_arm_above_pom(speed=200),
-            ),
-            servo_pom_grab_slightly_open(speed=300),
+             #align on poms and put the claw down
+            servo_pom_arm_above_pom(speed=100),
+            #servo_pom_grab_slightly_open(speed=999),
 
             parallel(
-                servo_pom_arm_down(),
-                servo_pom_grab_open(),
+                servo_pom_arm_down(500),
+                servo_pom_grab_open(999),
             ),
 
             parallel(
