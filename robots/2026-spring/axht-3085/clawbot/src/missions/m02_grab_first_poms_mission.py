@@ -52,14 +52,22 @@ class M02GrabFirstPomsMission(Mission):
                 seq([
                     frontside_line_follow_right_edge(135, 1.0),  # drives down access ramp
                     single_line_follow_right_front_edge_until_line(),
-                    drive_forward(40, 1.0), # TODO: do only line following; currently line follow does weird thing at the end
+                    parallel(
+                        drive_forward(40, 1.0),
+                        servo_pom_arm_high_up(),
+                    )
                 ]),
                 seq([
                     #wait until we have collected all poms
                     wait_until_distance(35),
                     servo_pom_grab_close(999),
-                    servo_pom_arm_high_up(),
+                    servo_pom_arm_up(),
                     servo_shield_up(999),
+                ]),
+                seq([
+                    #wait until the claw is over the edge and put it back down
+                    wait_until_distance(45),
+                    servo_pom_arm_down(),
                 ]),
                 # close the claw a bit, so fully closing it is faster
                 servo_pom_grab_slightly_open(999),
