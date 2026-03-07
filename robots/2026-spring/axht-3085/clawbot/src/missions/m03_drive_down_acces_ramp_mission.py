@@ -30,6 +30,5 @@ class M03DriveDownAccesRampMission(Mission):
             switch_calibration_set("default"),
             backside_backward_drive_until_line(),
             turn_right(90, 1.0),
-            wall_align_backward(1.5, 0.4),
-            frontside_forward_lineup_on_black(),
+            wall_align_backward(1.0, 0.4),
         ])
