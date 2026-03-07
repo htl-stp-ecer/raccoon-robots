@@ -58,7 +58,7 @@ class M02GrabFirstPomsMission(Mission):
                     #wait until we have collected all poms
                     wait_until_distance(35),
                     servo_pom_grab_close(999),
-                    servo_pom_arm_up(),
+                    servo_pom_arm_high_up(),
                     servo_shield_up(999),
                 ]),
                 # close the claw a bit, so fully closing it is faster
