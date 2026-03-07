@@ -7,20 +7,20 @@ root:
       white_tresh: 597.968445
       black_tresh: 1464.87659
     default_port1:
-      white_tresh: 605.713806
-      black_tresh: 2387.05396
+      white_tresh: 556.907959
+      black_tresh: 2241.15381
     default_port4:
-      white_tresh: 1029.1145
-      black_tresh: 3045.70679
+      white_tresh: 874.871582
+      black_tresh: 3285.27661
     default_port5:
-      white_tresh: 1631.29578
-      black_tresh: 3362.92065
+      white_tresh: 1003.47687
+      black_tresh: 3252
     upper_port1:
-      white_tresh: 536.959717
-      black_tresh: 2173.03125
+      white_tresh: 585.175415
+      black_tresh: 2073.2334
     upper_port4:
-      white_tresh: 1249.91687
-      black_tresh: 3566.33325
+      white_tresh: 2282.14429
+      black_tresh: 3747.81812
     upper_port5:
-      white_tresh: 1528.28381
-      black_tresh: 3489.10718
+      white_tresh: 2620.52173
+      black_tresh: 3788.79175
