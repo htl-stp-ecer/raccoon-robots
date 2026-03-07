@@ -54,7 +54,7 @@ class M02GrabFirstPomsMission(Mission):
                     single_line_follow_right_front_edge_until_line(),
                     parallel(
                         drive_forward(40, 1.0),
-                        wall_align_forward(1.0, 0.5),
+                        wall_align_forward(1.0, 0.5)
                         servo_pom_arm_high_up(),
                     )
                 ]),
