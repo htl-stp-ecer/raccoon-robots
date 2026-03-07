@@ -55,7 +55,6 @@ class M02GrabFirstPomsMission(Mission):
                     parallel(
                         drive_forward(40, 1.0),
                         servo_pom_arm_high_up(),
-                        wall_align_forward(1.0, 0.5),
                     )
                 ]),
                 seq([
