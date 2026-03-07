@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-07 12:57:14
+ Generated: 2026-03-07 13:29:57
 ===========================================================
 
 Authors:
@@ -90,9 +90,9 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=1.5,
+            kp=2.25,
             ki=0.0,
-            kd=0.2,
+            kd=0.25,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -119,7 +119,7 @@ class Robot(GenericRobot):
             max_velocity=0.2145, acceleration=0.3922, deceleration=0.6504
         ),
         angular=AxisConstraints(
-            max_velocity=1.5864, acceleration=1.8933, deceleration=11.8728
+            max_velocity=1.6718, acceleration=2.687, deceleration=10.1617
         ),
     )
     shutdown_in = 120
