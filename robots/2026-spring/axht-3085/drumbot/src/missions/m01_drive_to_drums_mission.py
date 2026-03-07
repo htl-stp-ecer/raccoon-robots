@@ -14,6 +14,5 @@ class M01DriveToDrumsMission(Mission):
                      turn_right(90),
                  ])
              ),
-             drive_forward(75),
-            MoveDrumMotorByOffsetStep(20)
+             drive_forward(73),
         ])
