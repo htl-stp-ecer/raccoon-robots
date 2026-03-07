@@ -17,11 +17,11 @@ def servo_pom_arm_above_pom(speed: int = 100):
     return slow_servo(Defs.pom_arm, 30, speed)
 
 @dsl
-def servo_pom_arm_high_up(speed: int = 200):
+def servo_pom_arm_high_up(speed: int = 400):
     return slow_servo(Defs.pom_arm, 120, speed)
 
 @dsl
-def servo_pom_arm_start(speed: int = 200):
+def servo_pom_arm_start(speed: int = 400):
     return slow_servo(Defs.pom_arm, 120, speed)
 
 # --- pom grab ---
