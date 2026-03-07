@@ -100,7 +100,7 @@ robot:
       y_cm: 2.600000000000003
       clearance_cm: 0.0
     - name: front_right_light_sensor
-      x_cm: 14.700000000000001
+      x_cm: 15.299999999999999
       y_cm: 29.0
       clearance_cm: 0.0
     - name: front_left_light_sensor
@@ -128,28 +128,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.577876762880731e-05
+      ticks_to_rad: 1.5700591720911692e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.5581262192568182e-05
+      ticks_to_rad: 1.5522711064640004e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.5775930978071033e-05
+      ticks_to_rad: 1.5702038330815687e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.5923331578150804e-05
+      ticks_to_rad: 1.5878454925245904e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
