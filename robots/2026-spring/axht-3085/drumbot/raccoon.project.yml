@@ -108,6 +108,7 @@ missions:
 - M00SetupMission: setup
 - M99ShutdownMission: shutdown
 - M01DriveToDrumsMission
+- M02CollectDrumsMission
 definitions:
   button:
     type: DigitalSensor
@@ -117,14 +118,14 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.8293094756833188e-05
+      ticks_to_rad: 1.8618872226559221e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 1
     inverted: true
     calibration:
-      ticks_to_rad: 1.4932896995958334e-05
+      ticks_to_rad: 1.5312148273893707e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
@@ -136,20 +137,20 @@ definitions:
     port: 1
   drum_pusher_servo:
     type: Servo
-    port: 3
+    port: 0
   drum_motor:
     type: Motor
-    port: 3
+    port: 2
     inverted: false
     calibration:
       ticks_to_rad: 1.0
       vel_lpf_alpha: 1.0
   servo_help_motor:
     type: Motor
-    port: 2
+    port: 3
     inverted: false
     calibration:
-      ticks_to_rad: 1.0
+      ticks_to_rad: 1e-05
       vel_lpf_alpha: 1.0
   lift_drums_servo:
     type: Servo
@@ -161,5 +162,5 @@ connection:
   pi_address: 192.168.100.174
   pi_port: 8421
   pi_user: pi
-  remote_path: null
+  remote_path:
   auto_connect: true

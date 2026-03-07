@@ -48,7 +48,7 @@ class DrumCollectorCalibrationStep(UIStep):
 @dsl()
 def calibrate_drum_collector(
     calibration_time: float = 5.0,
-    motor_speed: float = 0.7,
+    motor_speed: float = -0.7,
 ) -> DrumCollectorCalibrationStep:
     """
     Calibrate the drum collector by spinning the motor and sampling the light sensor.

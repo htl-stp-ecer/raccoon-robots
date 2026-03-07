@@ -1,4 +1,3 @@
-from libstp.button import set_digital
 from src.hardware.robot import Robot
 
 robot = Robot()
