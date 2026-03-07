@@ -54,6 +54,7 @@ class M02GrabFirstPomsMission(Mission):
                     single_line_follow_right_front_edge_until_line(),
                     parallel(
                         drive_forward(40, 1.0),
+                        wall_align_forward(1.0, 0.5)
                         servo_pom_arm_high_up(),
                     )
                 ]),
@@ -66,7 +67,7 @@ class M02GrabFirstPomsMission(Mission):
                 ]),
                 seq([
                     #wait until the claw is over the edge and put it back down
-                    wait_until_distance(45),
+                    wait_until_distance(65),
                     servo_pom_arm_down(),
                 ]),
                 # close the claw a bit, so fully closing it is faster
