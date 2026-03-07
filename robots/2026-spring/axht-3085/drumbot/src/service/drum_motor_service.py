@@ -200,19 +200,24 @@ class DrumMotorService(RobotService):
                 raw = float(self.light_sensor.read())
                 filtered += EMA_ALPHA * (raw - filtered)
 
-                if not on_black and filtered >= high:
-                    # Reached black
-                    on_black = True
-                    self.info(f"Pocket {pockets+1}/{count}: raw={raw:.0f}, filtered={filtered:.0f} → black")
-                elif on_black and filtered <= low:
-                    # Reached white — one pocket complete
-                    on_black = False
-                    pockets += 1
-                    if forward:
+                if forward:
+                    if not on_black and filtered >= high:
+                        on_black = True
+                        self.info(f"Pocket {pockets+1}/{count}: raw={raw:.0f}, filtered={filtered:.0f} → black")
+                    elif on_black and filtered <= low:
+                        on_black = False
+                        pockets += 1
                         self._current_index = (self._current_index + 1) % NUM_POCKETS
-                    else:
+                        self.info(f"Pocket {pockets}/{count} complete: raw={raw:.0f}, filtered={filtered:.0f} → white, index={self._current_index}")
+                else:
+                    if on_black and filtered <= low:
+                        on_black = False
+                        self.info(f"Pocket {pockets+1}/{count}: raw={raw:.0f}, filtered={filtered:.0f} → white")
+                    elif not on_black and filtered >= high:
+                        on_black = True
+                        pockets += 1
                         self._current_index = (self._current_index - 1) % NUM_POCKETS
-                    self.info(f"Pocket {pockets}/{count} complete: raw={raw:.0f}, filtered={filtered:.0f} → white, index={self._current_index}")
+                        self.info(f"Pocket {pockets}/{count} complete: raw={raw:.0f}, filtered={filtered:.0f} → black, index={self._current_index}")
 
                 await asyncio.sleep(SAMPLE_INTERVAL)
         finally:
