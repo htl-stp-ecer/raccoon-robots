@@ -162,6 +162,9 @@ definitions:
   wait_for_light_sensor:
     type: AnalogSensor
     port: 5
+  et_range_finder:
+    type: ETSensor
+    port: 3
 connection:
   pi_address: 192.168.100.174
   pi_port: 8421
