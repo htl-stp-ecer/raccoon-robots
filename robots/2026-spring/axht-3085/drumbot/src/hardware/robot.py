@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-07 15:23:20
+ Generated: 2026-03-07 16:53:55
 ===========================================================
 
 Authors:
@@ -34,7 +34,6 @@ from src.hardware.defs import Defs
 
 from src.missions.m00_setup_mission import M00SetupMission
 from src.missions.m99_shutdown_mission import M99ShutdownMission
-from src.missions.m01_drive_to_drums_mission import M01DriveToDrumsMission
 from src.missions.m02_collect_drums_mission import M02CollectDrumsMission
 
 
@@ -123,7 +122,7 @@ class Robot(GenericRobot):
         ),
     )
     shutdown_in = 120
-    missions = [M01DriveToDrumsMission(), M02CollectDrumsMission()]
+    missions = [M02CollectDrumsMission()]
     setup_mission = M00SetupMission()
     shutdown_mission = M99ShutdownMission()
     width_cm = 13.0

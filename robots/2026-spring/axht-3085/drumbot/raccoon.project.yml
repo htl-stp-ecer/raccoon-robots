@@ -107,7 +107,7 @@ robot:
 missions:
 - M00SetupMission: setup
 - M99ShutdownMission: shutdown
-- M01DriveToDrumsMission
+#- M01DriveToDrumsMission
 - M02CollectDrumsMission
 definitions:
   button:
@@ -118,14 +118,14 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.854721197481163e-05
+      ticks_to_rad: 1.866321415232597e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 1
     inverted: true
     calibration:
-      ticks_to_rad: 1.539842003560741e-05
+      ticks_to_rad: 1.5476011887496066e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
