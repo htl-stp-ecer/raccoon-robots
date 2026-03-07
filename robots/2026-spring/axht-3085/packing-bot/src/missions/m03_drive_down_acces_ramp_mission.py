@@ -19,8 +19,21 @@ claimed over the generated code itself.
 from libstp import *
 from src.hardware.defs import Defs
 from src.steps.servo_steps import *
-from src.steps.light_sensor_steps import frontside_forward_lineup_on_black
-from src.steps.light_sensor_steps import backside_backward_drive_until_line
+from src.steps.light_sensor_steps import frontside_forward_lineup_on_black, backside_right_starfe_until_black, backside_backward_drive_until_line, backside_left_starfe_until_black
+
+#class M03DriveDownAccesRampMission(Mission):
+#    def sequence(self) -> Sequential:
+#        return seq([
+#            # drive infornt of pom
+#            switch_calibration_set("default"),
+#            drive_forward(25),
+#            wall_align_forward(1.0, 0.5),
+#            backside_backward_drive_until_line(),
+#            #turn_right(90, 1.0),
+#            #turn_to_heading(180, 1.0),
+#            turn_right(90, 1.0),
+#            wall_align_backward(1.0, 0.4),
+#        ])
 
 
 class M03DriveDownAccesRampMission(Mission):
@@ -28,7 +41,14 @@ class M03DriveDownAccesRampMission(Mission):
         return seq([
             # drive infornt of pom
             switch_calibration_set("default"),
-            backside_backward_drive_until_line(),
-            turn_right(90, 1.0),
-            wall_align_backward(1.0, 0.4),
+
+            turn_to_heading(180, 1.0),
+            backside_right_starfe_until_black(),
+            turn_to_heading(180, 1.0),
+
+            wall_align_backward(1.0, 0.4, 0.1, 1.0), # TODO: put the max drive time to 0.7
+            mark_heading_reference(),  # mark heading for use in drive down acess ramp
+
+            drive_forward(2, 1.0),
+
         ])
