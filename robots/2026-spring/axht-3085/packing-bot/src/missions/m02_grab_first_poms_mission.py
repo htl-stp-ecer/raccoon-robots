@@ -1,6 +1,5 @@
 from libstp import *
 from src.hardware.defs import Defs
-from src.steps.sensors import front
 
 
 class M02GrabFirstPomsMission(Mission):
@@ -25,14 +24,14 @@ class M02GrabFirstPomsMission(Mission):
             ),
             drive_backward(5, 1),
             Defs.pom_arm.down(),
-            front.drive_over_line(),
-            front.strafe_left_until_black(sensor=front.right),
+            Defs.front.drive_over_line(),
+            Defs.front.strafe_left_until_black(sensor=Defs.front.right),
 
             parallel(
                 # get poms and close claw
                 seq([
-                    front.follow_right_edge(125),  # drives down access ramp
-                    front.follow_right_until_black(),
+                    Defs.front.follow_right_edge(125),  # drives down access ramp
+                    Defs.front.follow_right_until_black(),
                     parallel(
                         drive_forward(30, 1.0),
                         Defs.pom_arm.high_up(),

@@ -1,6 +1,5 @@
 from libstp import *
 from src.hardware.defs import Defs
-from src.steps.sensors import rear
 
 
 class M05AlignForLastPomsMission(Mission):
@@ -32,7 +31,7 @@ class M05AlignForLastPomsMission(Mission):
 
             drive_backward(25, 1.0),
             #grab the pom set
-            rear.strafe_right_until_black(),
+            Defs.rear.strafe_right_until_black(),
 
             Defs.shild_graber.closed(),
             Defs.shild.up(),

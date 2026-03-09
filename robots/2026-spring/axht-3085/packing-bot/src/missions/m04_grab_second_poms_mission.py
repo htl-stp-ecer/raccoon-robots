@@ -1,6 +1,5 @@
 from libstp import *
 from src.hardware.defs import Defs
-from src.steps.sensors import front
 
 
 class M04GrabSecondPomsMission(Mission):
@@ -16,7 +15,7 @@ class M04GrabSecondPomsMission(Mission):
 
             parallel(
                 Defs.pom_grab.pom_width(),
-                front.lineup_on_black(),
+                Defs.front.lineup_on_black(),
             ),
 
             Defs.pom_grab.closed(speed=999),
