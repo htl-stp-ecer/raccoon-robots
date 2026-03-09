@@ -1,9 +1,4 @@
-from libstp import strafe_left_lineup_on_black, strafe_right_until_black, forward_lineup_on_black, drive_until_black, \
-    drive_forward_until_black, follow_line_single
-from libstp.mission.api import Mission
-from libstp.step.sequential import Sequential, seq
 from libstp import *
-from src.hardware.defs import Defs
 
 
 class TestMission(Mission):
