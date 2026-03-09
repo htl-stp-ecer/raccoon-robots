@@ -4,7 +4,6 @@ from libstp.mission.api import Mission
 from libstp.step.sequential import Sequential, seq
 from libstp import *
 from src.hardware.defs import Defs
-from src.steps.light_sensor_steps import *
 
 
 class TestMission(Mission):
