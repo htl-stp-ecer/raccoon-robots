@@ -4,6 +4,9 @@ from libstp import *
 class TestMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            characterize_drive(
+                axes=["angular"]
+            )
             #strafe_right_until_black([Defs.front_left_light_sensor, Defs.rear_left_light_sensor], 1.0),
 
             #simpl_frontside_forward_lineup_on_black(),

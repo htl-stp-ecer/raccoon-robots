@@ -15,7 +15,7 @@ class M02GrabFirstPomsMission(Mission):
 
             parallel(
                 seq([ #turn and prepare to set down the claw
-                    turn_right(90, 1.0),
+                    turn_right().degrees(90).speed(1.0),
                 ]),
                 seq([ #prepares the servo to move down while moving backwards
                     Defs.pom_arm.up(),
