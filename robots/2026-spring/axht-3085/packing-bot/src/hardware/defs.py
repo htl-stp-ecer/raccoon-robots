@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-08 16:44:52
+ Generated: 2026-03-10 19:37:17
 ===========================================================
 
 Authors:
@@ -45,7 +45,7 @@ class Defs:
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.537102534840009e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.537102534840008e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
@@ -65,9 +65,17 @@ class Defs:
     shild = ServoPreset(Servo(port=0), positions={"up": 86, "down": 156})
     pom_arm = ServoPreset(
         Servo(port=1),
-        positions={"down": 0, "above_pom": 50, "up": 90, "start": 140, "high_up": 145},
+        positions={
+            "down": 10,
+            "above_pom": 55,
+            "up": 105,
+            "start": 160,
+            "high_up": 165,
+        },
     )
-    shild_graber = ServoPreset(Servo(port=2), positions={"open": 90, "closed": 17})
+    shild_graber = ServoPreset(
+        Servo(port=2), positions={"open": 70, "wide_open": 40, "closed": 135}
+    )
     pom_grab = ServoPreset(
         Servo(port=3),
         positions={

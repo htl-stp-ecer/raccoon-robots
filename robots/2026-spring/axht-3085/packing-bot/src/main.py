@@ -1,4 +1,5 @@
 """
+from .missions.m07_drive_to_baskets_mission import M07DriveToBasketsMission
 ===========================================================
  Project:   PackingBot
  Generated: 2026-01-29 14:21:31
@@ -24,7 +25,7 @@ robot = Robot()
 
 #logging.set_file_level("fused_odometry.cpp", logging.Level.trace),
 #logging.set_file_level("single_line_follow.py", logging.Level.debug),
-logging.set_file_level("libstp.step.base", logging.Level.debug),
+#logging.set_file_level("libstp.step.base", logging.Level.debug),
 
 
 if __name__ == "__main__":
