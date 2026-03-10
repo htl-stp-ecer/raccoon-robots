@@ -82,8 +82,8 @@ motion_pid:
     acceleration: 0.6485
     deceleration: 0.4498
   angular:
-    max_velocity: 1.8027
-    acceleration: 2.4758
+    max_velocity: 1.6268
+    acceleration: 4.5349
     deceleration: 17.4353
 physical:
   width_cm: 23.5

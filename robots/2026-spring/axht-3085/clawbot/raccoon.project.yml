@@ -1,6 +1,213 @@
 name: PackingBot
 uuid: 322a6cb2-b54d-4ad2-bb55-14d157403ae7
-robot: !include config/robot.yml
-definitions: !include config/hardware.yml
-missions: !include config/missions.yml
-connection: !include config/connection.yml
+robot:
+  shutdown_in: 120
+  drive:
+    kinematics:
+      type: mecanum
+      wheel_radius: 0.0375
+      track_width: 0.2
+      wheelbase: 0.125
+      front_left_motor: front_left_motor
+      front_right_motor: front_right_motor
+      back_left_motor: rear_left_motor
+      back_right_motor: rear_right_motor
+    vel_config:
+      vx:
+        pid:
+          kp: 0.137793
+          ki: 1.108274
+          kd: 0.010895
+        ff:
+          kS: 0.0
+          kV: 1.0
+          kA: 0.0
+      vy:
+        pid:
+          kp: 0.0
+          ki: 0.0
+          kd: 0.0
+        ff:
+          kS: 0.0
+          kV: 1.0
+          kA: 0.0
+      wz:
+        pid:
+          kp: 0.0
+          ki: 0.0
+          kd: 0.0
+        ff:
+          kS: 0.0
+          kV: 1.0
+          kA: 0.0
+  odometry:
+    type: FusedOdometry
+    config:
+      bemf_trust: 1.0
+  motion_pid:
+    distance:
+      kp: 0.9375
+      ki: 0.0
+      kd: 0.1562
+      integral_max: 10.0
+      integral_deadband: 0.01
+      derivative_lpf_alpha: 0.5
+      output_min: -10.0
+      output_max: 10.0
+    heading:
+      kp: 2.0625
+      ki: 0.0
+      kd: 0.2
+      integral_max: 10.0
+      integral_deadband: 0.01
+      derivative_lpf_alpha: 0.5
+      output_min: -10.0
+      output_max: 10.0
+    velocity_ff: 1.0
+    distance_tolerance_m: 0.005
+    angle_tolerance_rad: 0.017
+    saturation_derating_factor: 0.85
+    saturation_min_scale: 0.2
+    saturation_recovery_rate: 0.02
+    saturation_hold_cycles: 5
+    saturation_recovery_threshold: 0.95
+    heading_saturation_derating_factor: 0.85
+    heading_min_scale: 0.25
+    heading_recovery_rate: 0.05
+    heading_saturation_error_rad: 0.01
+    heading_recovery_error_rad: 0.005
+    linear:
+      max_velocity: 0.2139
+      acceleration: 0.9402
+      deceleration: 1.6644
+    lateral:
+      max_velocity: 0.2209
+      acceleration: 0.6485
+      deceleration: 0.4498
+    angular:
+      max_velocity: 1.6268
+      acceleration: 4.5349
+      deceleration: 17.4353
+  physical:
+    width_cm: 23.5
+    length_cm: 29.6
+    rotation_center:
+      x_cm: 11.75
+      y_cm: 18.5
+    sensors:
+    - name: rear_right_light_sensor
+      x_cm: 23.999999999999996
+      y_cm: 2.600000000000003
+      clearance_cm: 0.0
+    - name: front_right_light_sensor
+      x_cm: 15.299999999999999
+      y_cm: 29.0
+      clearance_cm: 0.0
+    - name: front_left_light_sensor
+      x_cm: 4.0
+      y_cm: 29.0
+      clearance_cm: 0.0
+    start_pose:
+      x_cm: 90.25787965616045
+      y_cm: 47.277936962750715
+      theta_deg: 0.0
+definitions:
+  button:
+    type: DigitalSensor
+    port: 10
+  imu:
+    type: IMU
+  rear_right_light_sensor:
+    type: IRSensor
+    port: 1
+  wait_for_light_sensor:
+    type: AnalogSensor
+    port: 2
+  front_right_light_sensor:
+    type: IRSensor
+    port: 4
+  front_left_light_sensor:
+    type: IRSensor
+    port: 5
+  front:
+    type: SensorGroup
+    left: front_left_light_sensor
+    right: front_right_light_sensor
+  rear:
+    type: SensorGroup
+    right: rear_right_light_sensor
+  front_left_motor:
+    type: Motor
+    port: 1
+    inverted: false
+    calibration:
+      ticks_to_rad: 1.559470141013631e-05
+      vel_lpf_alpha: 1.0
+  front_right_motor:
+    type: Motor
+    port: 0
+    inverted: true
+    calibration:
+      ticks_to_rad: 1.5394161863224042e-05
+      vel_lpf_alpha: 1.0
+  rear_left_motor:
+    type: Motor
+    port: 2
+    inverted: false
+    calibration:
+      ticks_to_rad: 1.591619818386045e-05
+      vel_lpf_alpha: 1.0
+  rear_right_motor:
+    type: Motor
+    port: 3
+    inverted: true
+    calibration:
+      ticks_to_rad: 1.580919365162462e-05
+      vel_lpf_alpha: 1.0
+  shild:
+    type: Servo
+    port: 0
+    positions:
+      up: 86
+      down: 156
+  pom_arm:
+    type: Servo
+    port: 1
+    positions:
+      down: 10
+      above_pom: 55
+      up: 105
+      start: 160
+      high_up: 165
+  shild_graber:
+    type: Servo
+    port: 2
+    positions:
+      open: 70
+      wide_open: 40
+      closed: 135
+  pom_grab:
+    type: Servo
+    port: 3
+    positions:
+      closed: 0
+      start: 30
+      pom_width: 55
+      slightly_open: 75
+      open: 90
+      wide_open: 125
+missions:
+- M01SetupMission: setup
+- M99ShutdownMission: shutdown
+- M02GrabFirstPomsMission
+- M03DriveDownAccesRampMission
+- M04GrabSecondPomsMission
+- M05AlignForLastPomsMission
+- M06CollectLastPomsMission
+- M07DriveToBasketsMission
+connection:
+  pi_address: 192.168.100.237
+  pi_port: 8421
+  pi_user: pi
+  remote_path: null
+  auto_connect: true

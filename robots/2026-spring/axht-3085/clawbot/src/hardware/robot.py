@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-09 16:28:33
+ Generated: 2026-03-10 19:37:20
 ===========================================================
 
 Authors:
@@ -32,7 +32,14 @@ from libstp import (
 from src.hardware.defs import Defs
 
 
-from src.missions.test_mission import TestMission
+from src.missions.m01_setup_mission import M01SetupMission
+from src.missions.m99_shutdown_mission import M99ShutdownMission
+from src.missions.m02_grab_first_poms_mission import M02GrabFirstPomsMission
+from src.missions.m03_drive_down_acces_ramp_mission import M03DriveDownAccesRampMission
+from src.missions.m04_grab_second_poms_mission import M04GrabSecondPomsMission
+from src.missions.m05_align_for_last_poms_mission import M05AlignForLastPomsMission
+from src.missions.m06_collect_last_poms_mission import M06CollectLastPomsMission
+from src.missions.m07_drive_to_baskets_mission import M07DriveToBasketsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -119,13 +126,20 @@ class Robot(GenericRobot):
             max_velocity=0.2209, acceleration=0.6485, deceleration=0.4498
         ),
         angular=AxisConstraints(
-            max_velocity=1.8027, acceleration=2.4758, deceleration=17.4353
+            max_velocity=1.6268, acceleration=4.5349, deceleration=17.4353
         ),
     )
     shutdown_in = 120
-    missions = [TestMission()]
-    setup_mission = None
-    shutdown_mission = None
+    missions = [
+        M02GrabFirstPomsMission(),
+        M03DriveDownAccesRampMission(),
+        M04GrabSecondPomsMission(),
+        M05AlignForLastPomsMission(),
+        M06CollectLastPomsMission(),
+        M07DriveToBasketsMission(),
+    ]
+    setup_mission = M01SetupMission()
+    shutdown_mission = M99ShutdownMission()
     width_cm = 23.5
     length_cm = 29.6
     rotation_center_forward_cm = 3.7
