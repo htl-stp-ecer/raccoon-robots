@@ -1,8 +1,8 @@
-- TestMission
-#- M01SetupMission: setup
-#- M99ShutdownMission: shutdown
-#- M02GrabFirstPomsMission
-#- M03DriveDownAccesRampMission
-#- M04GrabSecondPomsMission
-#- M05AlignForLastPomsMission
-#- M06CollectLastPomsMission
+#- TestMission
+- M01SetupMission: setup
+- M99ShutdownMission: shutdown
+- M02GrabFirstPomsMission
+- M03DriveDownAccesRampMission
+- M04GrabSecondPomsMission
+- M05AlignForLastPomsMission
+- M06CollectLastPomsMission
