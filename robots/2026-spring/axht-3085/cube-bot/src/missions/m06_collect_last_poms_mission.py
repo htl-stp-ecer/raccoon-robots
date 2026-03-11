@@ -13,7 +13,7 @@ class M06CollectLastPomsMission(Mission):
             #align for poms
             turn_to_heading(-90, 1.0),
             Defs.pom_arm.down(),  # put down claw so we can strafe easier
-            wall_align_backward(1.0, 0.3, 0.3, 3),
+            wall_align_backward(1.0, 0.3, 0.0, 2),
             Defs.pom_grab.wide_open(),
             wait_for_seconds(1),
 
@@ -21,9 +21,9 @@ class M06CollectLastPomsMission(Mission):
             parallel(
                 drive_forward(50, 1.0),
                 seq([
-                    wait_until_distance(5),
-                    Defs.pom_grab.slightly_open(), #not the normal slightliy open (zahnradspiel ist real)
-                    wait_until_distance(20),
+                    wait_until_distance(1),
+                    Defs.pom_grab.pom_width(200), #not the normal slightliy open (zahnradspiel ist real)
+                    wait_until_distance(15),
                     Defs.pom_grab.wide_open(),
                 ]),
             ),
