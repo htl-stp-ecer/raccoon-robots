@@ -10,7 +10,7 @@ class M05AlignForLastPomsMission(Mission):
             parallel(
                 turn_right(90, speed=1.0),
                 seq([
-                    wait_for_seconds(0.55),
+                    wait_for_seconds(0.4),
                     Defs.pom_arm.high_up(),
                 ]),
             ),
@@ -19,7 +19,7 @@ class M05AlignForLastPomsMission(Mission):
 
                 seq([
                     strafe_right(1.0).until(on_black(Defs.rear_right_light_sensor)),
-                    strafe_left(17, 1.0), #magic hardcoded value :)
+                    strafe_left(13, 1.0), #magic hardcoded value :)
                 ]),
 
                 #prepare the shield to grab the sorted poms
@@ -28,7 +28,8 @@ class M05AlignForLastPomsMission(Mission):
             ),
             turn_to_heading(-90, 1.0),
 
-            drive_backward(25, 1.0),
+            drive_backward(20, 1.0),
+            wall_align_backward(1.0, 0.3, 0.0, 2.0),
             #grab the pom set
 
             Defs.shild_graber.closed(),

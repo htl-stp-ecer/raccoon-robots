@@ -21,5 +21,5 @@ from libstp import *
 class M07DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drive_forward(90, 1.0),
+            #drive_forward(90, 1.0),
         ])
