@@ -3,7 +3,7 @@ shild:
   port: 0
   positions:
     up: 86
-    down: 156
+    down: 165
 pom_arm:
   type: Servo
   port: 1
