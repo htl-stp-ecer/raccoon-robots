@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-07 19:22:48
+ Generated: 2026-03-13 17:03:22
 ===========================================================
 
 Authors:
@@ -129,14 +129,17 @@ class Robot(GenericRobot):
     shutdown_mission = M99ShutdownMission()
     width_cm = 13.0
     length_cm = 19.0
-    rotation_center_forward_cm = -1.5
+    rotation_center_forward_cm = -4.0
     rotation_center_strafe_cm = 0.0
     _sensor_positions = {
         defs.front_left_ir_sensor: SensorPosition(
-            forward_cm=7.5, strafe_cm=3.5, clearance_cm=1.0
+            forward_cm=7.5, strafe_cm=7.25, clearance_cm=1.0
         ),
         defs.front_right_ir_sensor: SensorPosition(
-            forward_cm=7.5, strafe_cm=-3.3, clearance_cm=1.0
+            forward_cm=7.5, strafe_cm=-7.25, clearance_cm=1.0
+        ),
+        defs.drum_light_sensor: SensorPosition(
+            forward_cm=7.5, strafe_cm=-7.25, clearance_cm=0
         ),
     }
 

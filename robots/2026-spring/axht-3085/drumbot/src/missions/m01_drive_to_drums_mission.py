@@ -10,7 +10,7 @@ class M01DriveToDrumsMission(Mission):
             parallel(
                  drum_lifting_up(),
                  seq([
-                     wait(0.4),
+                     wait_for_seconds(0.4),
                      turn_right(90),
                  ])
              ),

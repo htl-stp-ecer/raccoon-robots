@@ -3,11 +3,11 @@ from libstp import *
 from src.hardware.defs import Defs
 from src.steps.drum_collector import drum_retreat
 from src.steps.drum_lifting_step import drum_lifting_down
-from src.steps.drum_pusher_servo import open_drum_pusher, close_drum_pusher
+from src.steps.servo_steps import open_drum_pusher, close_drum_pusher
 
 
 @dsl
-def collect_drums() -> Sequential:
+def collect_drums(offset_velocity: int = -830, offset_time: float = 0.3,) -> Sequential:
     sequence = []
 
     start_offset = 10
@@ -22,8 +22,8 @@ def collect_drums() -> Sequential:
             close_drum_pusher(),
             drum_retreat(),
             # relative soon
-            motor_velocity(Defs.drum_motor, -250),
-            wait(0.3),
+            set_motor_velocity(Defs.drum_motor, offset_velocity),
+            wait_for_seconds(offset_time),
             motor_passive_brake(Defs.drum_motor),
         ])
 

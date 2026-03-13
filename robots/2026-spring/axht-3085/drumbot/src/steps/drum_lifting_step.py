@@ -18,10 +18,10 @@ def _lift_drum_servo(
         sequence = []
         info(f"Current servo position: {servo_ref.get_position()} degrees, target: {degrees} degrees, delta: {delta_angle} degrees")
         if delta_angle > 0:
-            sequence.append(motor_power(motor_ref, -base_motor_speed))
+            sequence.append(set_motor_power(motor_ref, -base_motor_speed))
             move_with_slow_servo = False
         sequence.extend([
-            slow_servo(servo_ref, degrees, servo_speed) if move_with_slow_servo else servo(servo_ref, degrees),
+            servo(servo_ref, degrees) if move_with_slow_servo else servo(servo_ref, degrees),
             motor_passive_brake(motor_ref),
         ])
 

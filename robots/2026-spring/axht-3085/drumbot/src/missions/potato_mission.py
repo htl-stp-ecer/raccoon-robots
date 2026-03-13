@@ -3,7 +3,7 @@ from libstp import seq, Mission, wait_for_checkpoint, wait_for_button, loop_fore
 from src.steps.drum_lifting_step import drum_lifting_up
 from src.hardware.defs import Defs
 from src.steps.drum_collector import drum_retreat
-from src.steps.drum_pusher_servo import open_drum_pusher, close_drum_pusher
+from src.steps.servo_steps import open_drum_pusher, close_drum_pusher
 
 
 class PotatoMission(Mission):
