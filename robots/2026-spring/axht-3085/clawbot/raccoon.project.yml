@@ -15,9 +15,9 @@ robot:
     vel_config:
       vx:
         pid:
-          kp: 0.137793
-          ki: 1.108274
-          kd: 0.010895
+          kp: 0.001438
+          ki: 0.86309
+          kd: 0.000157
         ff:
           kS: 0.0
           kV: 1.0
@@ -46,18 +46,18 @@ robot:
       bemf_trust: 1.0
   motion_pid:
     distance:
-      kp: 0.9375
+      kp: 3.8599
       ki: 0.0
-      kd: 0.1562
+      kd: 0.2087
       integral_max: 10.0
       integral_deadband: 0.01
       derivative_lpf_alpha: 0.5
       output_min: -10.0
       output_max: 10.0
     heading:
-      kp: 2.0625
+      kp: 5.9297
       ki: 0.0
-      kd: 0.2
+      kd: 0.0
       integral_max: 10.0
       integral_deadband: 0.01
       derivative_lpf_alpha: 0.5
@@ -85,8 +85,8 @@ robot:
       acceleration: 0.6485
       deceleration: 0.4498
     angular:
-      max_velocity: 1.6268
-      acceleration: 4.5349
+      max_velocity: 1.7005
+      acceleration: 7.8594
       deceleration: 17.4353
   physical:
     width_cm: 23.5
@@ -141,35 +141,35 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.5560805748235626e-05
+      ticks_to_rad: 1.645460960616041e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.519272038332997e-05
+      ticks_to_rad: 1.602862428463778e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.5739416999801032e-05
+      ticks_to_rad: 1.6458916539600594e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.574463315013559e-05
+      ticks_to_rad: 1.65357840852043e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
     port: 0
     positions:
       up: 86
-      down: 156
+      down: 180
   pom_arm:
     type: Servo
     port: 1
@@ -185,7 +185,7 @@ definitions:
     positions:
       open: 70
       wide_open: 40
-      closed: 135
+      closed: 145
   pom_grab:
     type: Servo
     port: 3
