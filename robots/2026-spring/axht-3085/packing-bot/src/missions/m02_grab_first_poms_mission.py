@@ -30,8 +30,10 @@ class M02GrabFirstPomsMission(Mission):
             parallel(
                 # get poms and close claw
                 seq([
-                    Defs.front.follow_right_edge(125),  # drives down access ramp
-                    Defs.front.follow_right_until_black(),
+                    #Defs.front.follow_right_edge(125),  # drives down access ramp
+                    #Defs.front.follow_right_until_black(),
+                    Defs.front.follow_right_edge(999).until(after_cm(125) & on_black(Defs.front.right)),  # drives down access ramp
+
                     parallel(
                         drive_forward(30, 1.0),
                         Defs.pom_arm.high_up(),

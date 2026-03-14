@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-11 17:15:16
+ Generated: 2026-03-13 19:18:45
 ===========================================================
 
 Authors:
@@ -38,28 +38,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.546740187349814e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5560805748235626e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5135436214491005e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.519272038332997e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5827338439829387e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5739416999801032e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5696380725953422e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.574463315013559e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(Servo(port=0), positions={"up": 86, "down": 156})
