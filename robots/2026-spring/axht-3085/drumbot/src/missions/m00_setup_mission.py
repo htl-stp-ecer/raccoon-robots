@@ -12,6 +12,11 @@ from src.steps.range_finder import *
 class M00SetupMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            #auto_tune(
+            #    characterize_axes=["forward", "angular"],
+           #     vel_axes=["vx", "wz"],
+           #     motion_axes=["distance", "heading"],
+           # ),
             wait_for_button(),
             drum_lifting_up(slow_mode=False),
             calibrate_range_finder(),

@@ -12,8 +12,8 @@ def collect_drums(offset_velocity: int = -830, offset_time: float = 0.3,) -> Seq
 
     start_offset = 10
     drums = 8
-    time_between_drums = 7.28
-    time_before_collecting_drum = 1.1
+    time_between_drums = 7
+    time_before_collecting_drum = 0.8
 
     def _block(checkpoint_timestamp: int):
         return seq([

@@ -7,8 +7,8 @@ root:
       white_tresh: 0
       black_tresh: 0
     default_port1:
-      white_tresh: 3070.84766
-      black_tresh: 3787.75
+      white_tresh: 2962.61548
+      black_tresh: 3756.95288
     default_port2:
-      white_tresh: 1487.21875
-      black_tresh: 3639.33325
+      white_tresh: 1422.20984
+      black_tresh: 3648.07153

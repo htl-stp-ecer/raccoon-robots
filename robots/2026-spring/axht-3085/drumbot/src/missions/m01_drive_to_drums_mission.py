@@ -14,5 +14,5 @@ class M01DriveToDrumsMission(Mission):
                      turn_right(90),
                  ])
              ),
-             drive_forward(73),
+             drive_forward(72),
         ])
