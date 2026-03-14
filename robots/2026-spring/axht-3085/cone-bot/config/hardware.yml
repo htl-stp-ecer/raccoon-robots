@@ -11,10 +11,10 @@ front_right_ir_sensor:
   port: 2
 cone_arm_down_button:
   type: DigitalSensor
-  port: 1
+  port: 0
 cone_arm_up_button:
   type: DigitalSensor
-  port: 2
+  port: 1
 front:
   type: SensorGroup
   left: front_left_ir_sensor

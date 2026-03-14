@@ -1,15 +1,19 @@
 from libstp import *
 
 from src.hardware.defs import Defs
-from src.steps.cone_container_steps import down_cone_container, up_cone_container
 
 
 class M00SetupMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            motor_off(Defs.cone_container_motor),
             Defs.claw_servo.closed(),
             Defs.cone_arm_servo.up(),
-            down_cone_container(),
             calibrate(distance_cm=50),
-            up_cone_container(),
+            # Defs.cone_arm_servo.down()
+            # auto_tune(
+            #     vel_axes=["vx", "wz"],
+            #     characterize_axes=["forward", "angular"],
+            #     motion_axes=["distance", "heading"],
+            # ),
         ])

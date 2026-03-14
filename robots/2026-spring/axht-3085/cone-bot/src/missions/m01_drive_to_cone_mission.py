@@ -1,10 +1,14 @@
 from libstp import *
 
+from src.hardware.defs import Defs
+
+
 class M01DriveToConeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            turn_right(deg=65),
-            drive_forward(cm=41),
+            turn_right(65),
+            Defs.front.lineup_on_black(),
+            drive_forward(11),
             # turn_right(deg=90),
             # drive_forward(cm=46),
             # forward_lineup_on_black(),
