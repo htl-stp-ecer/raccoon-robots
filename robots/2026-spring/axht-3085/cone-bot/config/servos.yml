@@ -6,7 +6,7 @@ claw_servo:
     open: 30
 cone_arm_servo:
   type: Servo
-  port: 3
+  port: 1
   positions:
-    up: 42
+    up: 32
     down: 160
