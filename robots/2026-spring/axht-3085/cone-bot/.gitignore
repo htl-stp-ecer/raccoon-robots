@@ -6,5 +6,6 @@ logs/
 __pycache__
 .raccoon_codegen_cache.json
 defs.py
+defs.pyi
 robot.py
 racoon.calibration.yml
