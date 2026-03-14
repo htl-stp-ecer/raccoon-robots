@@ -14,8 +14,12 @@ class M01SetupMission(Mission):
             ),
             stop(),
             wait_for_seconds(1),
-            stop(),
 
+            #auto_tune(
+            #    vel_axes=["vy"],
+            #    tune_motion=False,
+            #    characterize_axes=["lateral"]
+            #),
             calibrate(distance_cm=50,
                       calibration_sets=["default", "upper"],
                       ),

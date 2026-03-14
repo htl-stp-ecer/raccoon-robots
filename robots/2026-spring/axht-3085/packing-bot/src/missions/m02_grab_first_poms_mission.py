@@ -18,7 +18,7 @@ class M02GrabFirstPomsMission(Mission):
                     turn_right(90, 1.0),
                 ]),
                 seq([ #prepares the servo to move down while moving backwards
-                    Defs.pom_arm.up(),
+                    Defs.pom_arm.above_pom(),
                     Defs.pom_grab.open(),
                 ]),
             ),
@@ -29,16 +29,8 @@ class M02GrabFirstPomsMission(Mission):
 
             parallel(
                 # get poms and close claw
-                seq([
-                    #Defs.front.follow_right_edge(125),  # drives down access ramp
-                    #Defs.front.follow_right_until_black(),
-                    Defs.front.follow_right_edge(999).until(after_cm(125) & on_black(Defs.front.right)),  # drives down access ramp
-
-                    parallel(
-                        drive_forward(30, 1.0),
-                        Defs.pom_arm.high_up(),
-                    )
-                ]),
+                Defs.front.follow_right_edge(999).until(after_cm(125) & on_black(Defs.front.right)),  # drives down access ramp
+                #strafe_follow_line_single(Defs.front.right, speed=1.0, side=LineSide.RIGHT).until(after_cm(125) & on_black(Defs.front.right)),
                 seq([
                     #wait until we have collected all poms
                     wait_until_distance(35),
@@ -47,10 +39,14 @@ class M02GrabFirstPomsMission(Mission):
                 ]),
                 seq([
                     #wait until the claw is over the edge and put it back down
-                    wait_until_distance(65),
+                    wait_until_distance(45),
                     Defs.pom_arm.down(),
                 ]),
                 # close the claw a bit, so fully closing it is faster
                 Defs.pom_grab.slightly_open(),
+            ),
+            parallel(
+                drive_forward(25),
+                Defs.pom_arm.high_up(),
             ),
         ])

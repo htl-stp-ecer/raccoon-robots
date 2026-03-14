@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-13 19:18:48
+ Generated: 2026-03-14 12:58:34
 ===========================================================
 
 Authors:
@@ -68,7 +68,7 @@ class Robot(GenericRobot):
         kinematics=kinematics,
         vel_config=_build_chassis_vel_config(
             vx=AxisVelocityControlConfig(
-                pid=PidGains(kp=0.137793, ki=1.108274, kd=0.010895),
+                pid=PidGains(kp=0.001438, ki=0.86309, kd=0.000157),
                 ff=Feedforward(kS=0.0, kV=1.0, kA=0.0),
             ),
             vy=AxisVelocityControlConfig(
@@ -87,9 +87,9 @@ class Robot(GenericRobot):
     )
     motion_pid_config = UnifiedMotionPidConfig(
         distance=PidConfig(
-            kp=0.9375,
+            kp=3.8599,
             ki=0.0,
-            kd=0.1562,
+            kd=0.2087,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -97,9 +97,9 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=2.0625,
+            kp=5.9297,
             ki=0.0,
-            kd=0.2,
+            kd=0.0,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -126,7 +126,7 @@ class Robot(GenericRobot):
             max_velocity=0.2209, acceleration=0.6485, deceleration=0.4498
         ),
         angular=AxisConstraints(
-            max_velocity=1.6268, acceleration=4.5349, deceleration=17.4353
+            max_velocity=1.7005, acceleration=7.8594, deceleration=17.4353
         ),
     )
     shutdown_in = 120

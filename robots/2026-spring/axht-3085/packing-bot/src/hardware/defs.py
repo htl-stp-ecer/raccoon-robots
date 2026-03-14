@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-13 19:18:45
+ Generated: 2026-03-14 12:58:31
 ===========================================================
 
 Authors:
@@ -38,31 +38,31 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5560805748235626e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6384333431992524e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.519272038332997e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5959120030147982e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5739416999801032e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.639141077527703e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.574463315013559e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6458681448563875e-05, vel_lpf_alpha=1.0
         ),
     )
-    shild = ServoPreset(Servo(port=0), positions={"up": 86, "down": 156})
+    shild = ServoPreset(Servo(port=0), positions={"up": 86, "down": 180})
     pom_arm = ServoPreset(
         Servo(port=1),
         positions={
@@ -74,7 +74,7 @@ class Defs:
         },
     )
     shild_graber = ServoPreset(
-        Servo(port=2), positions={"open": 70, "wide_open": 40, "closed": 135}
+        Servo(port=2), positions={"open": 70, "wide_open": 40, "closed": 145}
     )
     pom_grab = ServoPreset(
         Servo(port=3),
