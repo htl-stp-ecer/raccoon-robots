@@ -113,6 +113,8 @@ missions:
 - M01DriveToDrumsMission
 - M02CollectDrumsMission
 - M03DriveToPipe
+- M04RejectDrumsMission
+- M05DriveToOtherPipe
 definitions:
   button:
     type: DigitalSensor
@@ -122,14 +124,14 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.863932357763699e-05
+      ticks_to_rad: 1.855523782240028e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 1
     inverted: true
     calibration:
-      ticks_to_rad: 1.5491288371580885e-05
+      ticks_to_rad: 1.55055737832223e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU

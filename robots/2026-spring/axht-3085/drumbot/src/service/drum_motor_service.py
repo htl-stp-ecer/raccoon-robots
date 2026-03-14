@@ -130,6 +130,12 @@ class DrumMotorService(RobotService):
         assert self.is_calibrated, "Drum not calibrated"
         await self._move(count, forward=False)
 
+    async def reject(self, count: int = 1) -> None:
+        """Spin backward through *count* pocket edges."""
+        self.info(f"retreat({count}) from index {self._current_index}")
+        assert self.is_calibrated, "Drum not calibrated"
+        await self._move(count, forward=False)
+
     async def go_to(self, index: int) -> None:
         """Move to target pocket index via the shortest path (wrapping)."""
         self.info(f"go_to({index}) from current index {self._current_index}")

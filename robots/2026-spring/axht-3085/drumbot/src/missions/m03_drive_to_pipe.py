@@ -2,7 +2,7 @@ from libstp import *
 
 from src.hardware.defs import Defs
 from src.steps.drum_collector import drum_retreat
-from src.steps.drum_lifting_step import drum_lifting_up, dispense_drums
+from src.steps.drum_lifting_step import drum_lifting_up, dispense_drums, shake_drums
 from src.steps.range_finder import turn_to_peak
 from src.steps.range_finder.scan_sweep_step import ScanSweepStep
 
@@ -18,13 +18,8 @@ class M03DriveToPipe(Mission):
 
            turn_to_peak(),
            turn_left(20,1),
-           drive_forward(6,1),
 
-
-           drum_retreat(),
-           drum_retreat(),
-           drum_retreat(),
-           drum_retreat(),
+           wall_align_forward(speed=0.3, accel_threshold=0.25, settle_duration=0, max_duration=3, grace_period=0.4),
 
        ])
 
