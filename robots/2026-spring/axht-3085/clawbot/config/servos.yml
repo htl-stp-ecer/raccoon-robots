@@ -3,7 +3,7 @@ shild:
   port: 0
   positions:
     up: 86
-    down: 165
+    down: 170
 pom_arm:
   type: Servo
   port: 1
@@ -18,8 +18,7 @@ shild_graber:
   port: 2
   positions:
     open: 70
-    wide_open: 40
-    closed: 135
+    closed: 140
 pom_grab:
   type: Servo
   port: 3

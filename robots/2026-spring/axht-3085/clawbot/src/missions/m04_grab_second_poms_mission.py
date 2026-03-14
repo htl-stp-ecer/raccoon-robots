@@ -15,7 +15,7 @@ class M04GrabSecondPomsMission(Mission):
 
             #push the oragne pom on the left to the side
             turn_left(15),
-            turn_right(35),
+            turn_right(40),
             turn_to_heading(0),
 
             parallel(

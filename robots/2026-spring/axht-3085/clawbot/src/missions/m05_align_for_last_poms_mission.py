@@ -29,12 +29,12 @@ class M05AlignForLastPomsMission(Mission):
             turn_to_heading(-90, 1.0),
 
             drive_backward(20, 1.0),
-            wall_align_backward(1.0, 0.3, 0.0, 2.0),
+            wall_align_backward(1.0, 0.4, 0.0, 2.0),
             #grab the pom set
 
             Defs.shild_graber.closed(),
             Defs.shild.up(),
 
-            #wall_align_backward(1.0, 0.3, 0.1, 1.0),
+            #wall_align_backward(1.0, 0.4, 0.1, 1.0),
             #mark_heading_reference(),  # mark heading for collecting the poms
         ])
