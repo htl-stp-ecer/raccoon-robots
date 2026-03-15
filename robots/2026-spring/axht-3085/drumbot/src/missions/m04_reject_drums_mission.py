@@ -33,7 +33,6 @@ class M04RejectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             reject_drums(),
-            reject_drums(),
            # shake_drums(),
             #dispense_drums(),
             reject_drums(),

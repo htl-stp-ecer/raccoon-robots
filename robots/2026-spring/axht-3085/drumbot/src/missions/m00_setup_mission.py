@@ -13,13 +13,13 @@ class M00SetupMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #auto_tune(
-            #    characterize_axes=["forward", "angular"],
-           #     vel_axes=["vx", "wz"],
-           #     motion_axes=["distance", "heading"],
-           # ),
+            #    characterize_axes=[ "angular"],
+            #    vel_axes=[ "wz"],
+            #    motion_axes=["distance", "heading"],
+            #),
             wait_for_button(),
             drum_lifting_up(slow_mode=False),
-            calibrate_range_finder(),
+           calibrate_range_finder(),
             wait_for_button(),
             open_drum_pusher(),
 
