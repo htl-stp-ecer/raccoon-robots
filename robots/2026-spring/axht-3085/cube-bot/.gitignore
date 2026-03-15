@@ -4,3 +4,4 @@ logs/
 .idea
 .raccoon_codegen_cache.json
 __pycache__
+racoon.calibration.yml
