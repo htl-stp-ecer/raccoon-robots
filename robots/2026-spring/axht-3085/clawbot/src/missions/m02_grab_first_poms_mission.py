@@ -1,11 +1,13 @@
 from libstp import *
+
 from src.hardware.defs import Defs
 
 
 class M02GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            mark_heading_reference(), #mark heading for use in drive down acess ramp
+            switch_calibration_set("upper"),
+            mark_heading_reference(),  # mark heading for use in drive down acess ramp
             # drive infront of poms
             strafe_right(30, 1.0),
             parallel(
@@ -14,11 +16,11 @@ class M02GrabFirstPomsMission(Mission):
             ),
 
             parallel(
-                seq([ #turn and prepare to set down the claw
-                    turn_right(90, 1.0),
-                ]),
-                seq([ #prepares the servo to move down while moving backwards
-                    Defs.pom_arm.above_pom(),
+                # turn and prepare to set down the claw
+                turn_right(90, 1.0),
+
+                seq([  # prepares the servo to move down while moving backwards
+                    Defs.pom_arm.up(),
                     Defs.pom_grab.open(),
                 ]),
             ),
@@ -29,22 +31,29 @@ class M02GrabFirstPomsMission(Mission):
 
             parallel(
                 # get poms and close claw
-                Defs.front.follow_right_edge(999).until(after_cm(125) & on_black(Defs.front.right)),  # drives down access ramp
-                #strafe_follow_line_single(Defs.front.right, speed=1.0, side=LineSide.RIGHT).until(after_cm(125) & on_black(Defs.front.right)),
+                strafe_follow_line_single(
+                    Defs.front.right,
+                    speed=1.0,
+                    side=LineSide.LEFT,
+                    kp=0.4,
+                    kd=0.1,
+                ).until(after_cm(125) & on_black(Defs.front.left)),
                 seq([
-                    #wait until we have collected all poms
+                    # close the claw a bit, so fully closing it is faster
+                    Defs.pom_grab.slightly_open(),
+
+                    # wait until we have collected all poms
                     wait_until_distance(35),
                     Defs.pom_grab.closed(),
                     Defs.pom_arm.up(),
-                ]),
-                seq([
-                    #wait until the claw is over the edge and put it back down
+
+                    # wait until the claw is over the edge and put it back down
                     wait_until_distance(45),
                     Defs.pom_arm.down(),
                 ]),
-                # close the claw a bit, so fully closing it is faster
-                Defs.pom_grab.slightly_open(),
             ),
+
+            # dont do drive and arm movements at the sime time!
             parallel(
                 drive_forward(25),
                 Defs.pom_arm.high_up(),

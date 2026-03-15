@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-14 12:58:31
+ Generated: 2026-03-15 17:25:57
 ===========================================================
 
 Authors:
@@ -38,36 +38,40 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6384333431992524e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6520683212185293e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5959120030147982e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5967391211831144e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.639141077527703e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6656163602342022e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6458681448563875e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6549925424527252e-05, vel_lpf_alpha=1.0
         ),
     )
-    shild = ServoPreset(Servo(port=0), positions={"up": 86, "down": 180})
+    shild = ServoPreset(
+        Servo(port=0),
+        positions={"up": 65, "down": 180, "above_pasked": 135, "grab_pasked": 153},
+    )
     pom_arm = ServoPreset(
         Servo(port=1),
         positions={
             "down": 10,
             "above_pom": 55,
+            "above_basket": 75,
             "up": 105,
             "start": 160,
             "high_up": 165,
@@ -79,12 +83,13 @@ class Defs:
     pom_grab = ServoPreset(
         Servo(port=3),
         positions={
-            "closed": 0,
+            "closed": 10,
             "start": 30,
             "pom_width": 55,
             "slightly_open": 75,
             "open": 90,
             "wide_open": 125,
+            "magic_val_for_m06": 95,
         },
     )
     analog_sensors = [
