@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-14 21:34:29
+ Generated: 2026-03-15 09:17:20
 ===========================================================
 
 Authors:
@@ -34,7 +34,11 @@ from src.hardware.defs import Defs
 
 from src.missions.m00_setup_mission import M00SetupMission
 from src.missions.m99_shutdown_mission import M99ShutdownMission
-from src.missions.m1000_test_mission import M1000TestMission
+from src.missions.m01_drive_to_drums_mission import M01DriveToDrumsMission
+from src.missions.m02_collect_drums_mission import M02CollectDrumsMission
+from src.missions.m03_drive_to_pipe import M03DriveToPipe
+from src.missions.m04_reject_drums_mission import M04RejectDrumsMission
+from src.missions.m05_drive_to_other_pipe import M05DriveToOtherPipe
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -122,7 +126,13 @@ class Robot(GenericRobot):
         ),
     )
     shutdown_in = 120
-    missions = [M1000TestMission()]
+    missions = [
+        M01DriveToDrumsMission(),
+        M02CollectDrumsMission(),
+        M03DriveToPipe(),
+        M04RejectDrumsMission(),
+        M05DriveToOtherPipe(),
+    ]
     setup_mission = M00SetupMission()
     shutdown_mission = M99ShutdownMission()
     width_cm = 13.0

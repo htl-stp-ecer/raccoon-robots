@@ -22,7 +22,7 @@ class M05DriveToOtherPipe(Mission):
                 parallel(turn_left(22, 1), dispense_drums()),
 
                 wall_align_forward(speed=0.3, accel_threshold=0.35, settle_duration=0, max_duration=3, grace_period=0.4),
-                drive_backward(2.5,1),
+                parallel(drive_backward(3,1),shake_drums()),
 
                 reject_drums(),
                 reject_drums(),
