@@ -24,5 +24,4 @@ class M01SetupMission(Mission):
                       calibration_sets=["default", "upper"],
                       ),
 
-            switch_calibration_set("upper"),
         ])

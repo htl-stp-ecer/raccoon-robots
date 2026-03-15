@@ -141,41 +141,44 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.645460960616041e-05
+      ticks_to_rad: 1.649309633888853e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.602862428463778e-05
+      ticks_to_rad: 1.591838097201705e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.6458916539600594e-05
+      ticks_to_rad: 1.6693060623841173e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.65357840852043e-05
+      ticks_to_rad: 1.6536490920178063e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
     port: 0
     positions:
-      up: 86
+      up: 65
       down: 180
+      above_pasked: 135
+      grab_pasked: 153
   pom_arm:
     type: Servo
     port: 1
     positions:
       down: 10
       above_pom: 55
+      above_basket: 75
       up: 105
       start: 160
       high_up: 165
@@ -190,12 +193,13 @@ definitions:
     type: Servo
     port: 3
     positions:
-      closed: 0
+      closed: 10
       start: 30
       pom_width: 55
       slightly_open: 75
       open: 90
       wide_open: 125
+      magic_val_for_m06: 95
 missions:
 - M01SetupMission: setup
 - M99ShutdownMission: shutdown
@@ -205,6 +209,8 @@ missions:
 - M05AlignForLastPomsMission
 - M06CollectLastPomsMission
 - M07DriveToBasketsMission
+- M08DropSortedPomsMission
+- M09DropMachingPomsMission
 connection:
   pi_address: 192.168.100.237
   pi_port: 8421

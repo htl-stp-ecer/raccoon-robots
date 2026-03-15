@@ -17,9 +17,71 @@ Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
 from libstp import *
+from src.hardware.defs import Defs
 
 class M07DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            #drive_forward(90, 1.0),
+            strafe_left(speed=1.0).until(on_black(Defs.front.left)),
+            strafe_follow_line_single(
+                Defs.front.left,
+                speed=1.0,
+                side=LineSide.LEFT,
+                kp=0.4,
+                kd=0.1,
+            ).distance_cm(10),
+
+            #get rid of fist traffic conde
+            Defs.pom_arm.down(),
+            turn_left(degrees=35),
+            turn_right(degrees=35),
+            Defs.pom_arm.high_up(),
+
+            strafe_follow_line_single(
+                Defs.front.left,
+                speed=1.0,
+                side=LineSide.LEFT,
+                kp=0.4,
+                kd=0.1,
+            ).until(on_black(Defs.rear.right)),
+            drive_forward(speed=1.0, cm=10),
+
+            #get rid of second traffic conde
+            Defs.pom_arm.down(),
+            turn_left(degrees=35),
+            turn_right(degrees=35),
+            Defs.pom_arm.high_up(),
+
+            strafe_follow_line_single(
+                Defs.front.left,
+                speed=1.0,
+                side=LineSide.LEFT,
+                kp=0.4,
+                kd=0.1,
+            ).until(on_black(Defs.rear.right)),
+
+            #grab first basked
+            parallel(
+                strafe_left(speed=1.0).until(on_black(Defs.front.left)),
+                Defs.shild.above_pasked(),
+            ),
+            strafe_right(cm=7),
+            Defs.shild.grab_pasked(),
+
+            #but the baskets close togheter
+            drive_forward(cm=16),
+
+
+            #align our self to grab both baskets
+            Defs.shild.above_pasked(),
+            strafe_left(speed=1.0).until(on_black(Defs.front.left)),
+            wall_align_forward(1.0, 0.4, 0.1, 4), #align on pip
+            turn_to_heading(degrees=0),
+
+            #drive back to baskets
+            drive_backward(cm=2.5),
+
+            #grab both baskets
+            strafe_right(cm=7),
+            Defs.shild.grab_pasked(),
         ])

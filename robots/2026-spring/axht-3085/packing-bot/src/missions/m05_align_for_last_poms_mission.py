@@ -32,7 +32,7 @@ class M05AlignForLastPomsMission(Mission):
             wall_align_backward(1.0, 0.4, 0.0, 2.0),
             #grab the pom set
 
-            Defs.shild_graber.closed(),
+            Defs.shild_graber.closed(70),
             Defs.shild.up(),
 
             #wall_align_backward(1.0, 0.4, 0.1, 1.0),
