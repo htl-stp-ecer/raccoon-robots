@@ -25,6 +25,7 @@ class DrumMotorService(RobotService):
         self._blocked_threshold: float | None = None
         self._pocket_threshold: float | None = None
         self._current_index: int = 0
+        self.collection_failed: bool = False
 
     @property
     def motor(self) -> Motor:
