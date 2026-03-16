@@ -11,7 +11,7 @@ class M05DriveToOtherPipe(Mission):
     def sequence(self) -> Sequential:
             return seq([
 
-                parallel(drive_backward(73,1),drum_lifting_up(),),
+                parallel(drive_backward(71.5,1),drum_lifting_up(),),
                 turn_left(110,1),
                 follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1).until(on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
                 drive_forward(10,1),
@@ -22,7 +22,7 @@ class M05DriveToOtherPipe(Mission):
                 turn_left(22, 1),
 
 
-                wall_align_forward(speed=0.3, accel_threshold=0.35, settle_duration=0, max_duration=3, grace_period=0.4),
+                wall_align_forward(speed=0.3, accel_threshold=0.25, settle_duration=0, max_duration=3, grace_period=0.4),
                 parallel(drive_backward(4,1),shake_drums()),
 
                 reject_drums(),

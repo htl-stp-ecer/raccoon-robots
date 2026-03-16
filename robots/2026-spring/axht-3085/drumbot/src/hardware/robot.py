@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   tobi-test
- Generated: 2026-03-15 16:10:06
+ Generated: 2026-03-16 16:22:49
 ===========================================================
 
 Authors:
@@ -34,11 +34,7 @@ from src.hardware.defs import Defs
 
 from src.missions.m00_setup_mission import M00SetupMission
 from src.missions.m99_shutdown_mission import M99ShutdownMission
-from src.missions.m01_drive_to_drums_mission import M01DriveToDrumsMission
-from src.missions.m02_collect_drums_mission import M02CollectDrumsMission
-from src.missions.m03_drive_to_pipe import M03DriveToPipe
-from src.missions.m04_reject_drums_mission import M04RejectDrumsMission
-from src.missions.m05_drive_to_other_pipe import M05DriveToOtherPipe
+from src.missions.m1000_test_mission import M1000TestMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -93,9 +89,9 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=2.25,
+            kp=6,
             ki=0.0,
-            kd=0.25,
+            kd=0.2,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -122,17 +118,11 @@ class Robot(GenericRobot):
             max_velocity=0.2145, acceleration=0.3922, deceleration=0.6504
         ),
         angular=AxisConstraints(
-            max_velocity=1.6718, acceleration=2.687, deceleration=10.1617
+            max_velocity=16718, acceleration=2687, deceleration=101617
         ),
     )
     shutdown_in = 120
-    missions = [
-        M01DriveToDrumsMission(),
-        M02CollectDrumsMission(),
-        M03DriveToPipe(),
-        M04RejectDrumsMission(),
-        M05DriveToOtherPipe(),
-    ]
+    missions = [M1000TestMission()]
     setup_mission = M00SetupMission()
     shutdown_mission = M99ShutdownMission()
     width_cm = 13.0

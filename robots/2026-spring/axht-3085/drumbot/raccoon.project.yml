@@ -52,9 +52,9 @@ robot:
       output_min: -10.0
       output_max: 10.0
     heading:
-      kp: 2.25
+      kp: 6
       ki: 0.0
-      kd: 0.25
+      kd: 0.2
       integral_max: 10.0
       integral_deadband: 0.01
       derivative_lpf_alpha: 0.5
@@ -82,9 +82,9 @@ robot:
       acceleration: 0.3922
       deceleration: 0.6504
     angular:
-      max_velocity: 1.6718
-      acceleration: 2.687
-      deceleration: 10.1617
+      max_velocity: 16718
+      acceleration: 2687
+      deceleration: 101617
   physical:
     width_cm: 13.0
     length_cm: 19.0
@@ -110,6 +110,7 @@ robot:
 missions:
 - M00SetupMission: setup
 - M99ShutdownMission: shutdown
+#- M1000TestMission
 - M01DriveToDrumsMission
 - M02CollectDrumsMission
 - M03DriveToPipe
@@ -124,14 +125,14 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.9008312412359364e-05
+      ticks_to_rad: 1.9445540407254842e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 1
     inverted: true
     calibration:
-      ticks_to_rad: 1.6392802362940542e-05
+      ticks_to_rad: 1.5655898523590267e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU

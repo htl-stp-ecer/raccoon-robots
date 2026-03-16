@@ -8,5 +8,68 @@ from src.steps.drum_collector import drum_retreat
 class M1000TestMission(Mission):
    def sequence(self) -> Sequential:
        return seq([
-           drive_forward().until(on_white(Defs.front_left_ir_sensor) & on_white(Defs.front_right_ir_sensor)),
+           turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),
+           turn_left(180, 1),
+           turn_right(180, 1),
+           turn_left(90, 1),
+           turn_right(90, 1),
+
+           WaitForButton(),
+           turn_left(180, 1),
+           turn_right(180, 1),
+           turn_left(90, 1),
+           turn_right(90, 1),
+
+           WaitForButton(),
+           turn_left(180, 1),
+           turn_right(180, 1),
+           turn_left(90, 1),
+           turn_right(90, 1),
+
+           WaitForButton(),turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),turn_left(180,1),
+           turn_right(180,1),
+           turn_left(90,1),
+           turn_right(90,1),
+
+           WaitForButton(),
        ])
