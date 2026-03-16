@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-15 17:25:57
+ Generated: 2026-03-16 20:18:35
 ===========================================================
 
 Authors:
@@ -38,28 +38,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6520683212185293e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.649309633888853e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5967391211831144e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.591838097201705e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6656163602342022e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6693060623841173e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6549925424527252e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6536490920178063e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -69,12 +69,12 @@ class Defs:
     pom_arm = ServoPreset(
         Servo(port=1),
         positions={
-            "down": 10,
-            "above_pom": 55,
-            "above_basket": 75,
-            "up": 105,
-            "start": 160,
-            "high_up": 165,
+            "down": 180,
+            "above_pom": 160,
+            "above_basket": 108,
+            "up": 150,
+            "start": 10,
+            "high_up": 10,
         },
     )
     shild_graber = ServoPreset(
