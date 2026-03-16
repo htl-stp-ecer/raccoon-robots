@@ -11,7 +11,7 @@ class M02GrabFirstPomsMission(Mission):
             # drive infront of poms
             strafe_right(30, 1.0),
             parallel(
-                Defs.shild.up(speed=999),
+                Defs.shild.up(),
                 strafe_left(30, 1.0),
             ),
 

@@ -176,12 +176,12 @@ definitions:
     type: Servo
     port: 1
     positions:
-      down: 10
-      above_pom: 55
-      above_basket: 75
-      up: 105
-      start: 160
-      high_up: 165
+      down: 180
+      above_pom: 160
+      above_basket: 108
+      up: 140
+      start: 10
+      high_up: 10
   shild_graber:
     type: Servo
     port: 2
