@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-16 20:18:35
+ Generated: 2026-03-18 17:36:38
 ===========================================================
 
 Authors:
@@ -29,7 +29,7 @@ class Defs:
     imu = Imu()
     button = DigitalSensor(port=10)
     rear_right_light_sensor = IRSensor(port=1)
-    wait_for_light_sensor = AnalogSensor(port=2)
+    wait_for_light_sensor = AnalogSensor(port=1)
     front_right_light_sensor = IRSensor(port=4)
     front_left_light_sensor = IRSensor(port=5)
     front = SensorGroup(left=front_left_light_sensor, right=front_right_light_sensor)
@@ -69,12 +69,12 @@ class Defs:
     pom_arm = ServoPreset(
         Servo(port=1),
         positions={
-            "down": 180,
-            "above_pom": 160,
+            "down": 152,
+            "above_pom": 135,
             "above_basket": 108,
-            "up": 150,
-            "start": 10,
-            "high_up": 10,
+            "up": 140,
+            "start": 0,
+            "high_up": 0,
         },
     )
     shild_graber = ServoPreset(
@@ -83,13 +83,13 @@ class Defs:
     pom_grab = ServoPreset(
         Servo(port=3),
         positions={
-            "closed": 10,
+            "closed": 40,
             "start": 30,
-            "pom_width": 55,
-            "slightly_open": 75,
-            "open": 90,
-            "wide_open": 125,
-            "magic_val_for_m06": 95,
+            "pom_width": 87,
+            "slightly_open": 100,
+            "open": 120,
+            "wide_open": 130,
+            "magic_val_for_m06": 105,
         },
     )
     analog_sensors = [
