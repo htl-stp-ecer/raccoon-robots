@@ -5,7 +5,7 @@ from src.hardware.defs import Defs
 class M05AlignForLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drive_forward(18, 1.0),
+            drive_forward(25, 1.0),
             #push a blue pom to collect it later
             parallel(
                 turn_right(90, speed=1.0),
