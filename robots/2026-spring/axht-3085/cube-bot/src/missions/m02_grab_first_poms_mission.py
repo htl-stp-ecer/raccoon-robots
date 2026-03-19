@@ -19,10 +19,7 @@ class M02GrabFirstPomsMission(Mission):
                 # turn and prepare to set down the claw
                 turn_right(90, 1.0),
 
-                seq([  # prepares the servo to move down while moving backwards
-                    Defs.pom_arm.up(),
-                    Defs.pom_grab.open(),
-                ]),
+                Defs.pom_grab.open(),
             ),
             drive_backward(5, 1),
             Defs.pom_arm.down(),

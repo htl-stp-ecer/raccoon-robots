@@ -122,7 +122,7 @@ definitions:
     port: 1
   wait_for_light_sensor:
     type: AnalogSensor
-    port: 2
+    port: 1
   front_right_light_sensor:
     type: IRSensor
     port: 4
@@ -141,28 +141,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.649309633888853e-05
+      ticks_to_rad: 1.6567973380193687e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.591838097201705e-05
+      ticks_to_rad: 1.595572514831049e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.6693060623841173e-05
+      ticks_to_rad: 1.6620882320181235e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.6536490920178063e-05
+      ticks_to_rad: 1.6545298736921663e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
@@ -176,12 +176,12 @@ definitions:
     type: Servo
     port: 1
     positions:
-      down: 180
-      above_pom: 160
+      down: 152
+      above_pom: 135
       above_basket: 108
       up: 140
-      start: 10
-      high_up: 10
+      start: 0
+      high_up: 0
   shild_graber:
     type: Servo
     port: 2
@@ -193,13 +193,13 @@ definitions:
     type: Servo
     port: 3
     positions:
-      closed: 10
+      closed: 40
       start: 30
-      pom_width: 55
-      slightly_open: 75
-      open: 90
-      wide_open: 125
-      magic_val_for_m06: 95
+      pom_width: 87
+      slightly_open: 100
+      open: 120
+      wide_open: 130
+      magic_val_for_m06: 110
 missions:
 - M01SetupMission: setup
 - M99ShutdownMission: shutdown
