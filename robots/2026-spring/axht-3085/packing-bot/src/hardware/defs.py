@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-21 10:23:35
+ Generated: 2026-03-21 17:20:50
 ===========================================================
 
 Authors:
@@ -29,7 +29,7 @@ class Defs:
     imu = Imu()
     button = DigitalSensor(port=10)
     rear_right_light_sensor = IRSensor(port=1)
-    wait_for_light_sensor = AnalogSensor(port=1)
+    wait_for_light_sensor = AnalogSensor(port=2)
     front_right_light_sensor = IRSensor(port=4)
     front_left_light_sensor = IRSensor(port=5)
     front = SensorGroup(left=front_left_light_sensor, right=front_right_light_sensor)
@@ -38,28 +38,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6409346766266992e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6476144686760033e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5821968220392163e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5912422769565933e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6534108046411276e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.654061191000076e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.633047904459888e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6458980142064323e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(

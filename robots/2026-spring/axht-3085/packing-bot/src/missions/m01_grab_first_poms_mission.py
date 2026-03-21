@@ -7,7 +7,7 @@ class M01GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             switch_calibration_set("upper"),
-            mark_heading_reference(),  # mark heading for use in drive down acess ramp
+            mark_heading_reference(origin_offset_deg=-180),  # mark heading for use in drive down acess ramp
             # drive infront of poms
             parallel(
             strafe_right(30, 1.0),
@@ -38,9 +38,9 @@ class M01GrabFirstPomsMission(Mission):
                     Defs.front.right,
                     speed=1.0,
                     side=LineSide.LEFT,
-                    kp=0.5,
+                    kp=0.7,
                     kd=0.1,
-                ).until(after_cm(125) & on_black(Defs.front.left)),
+                ).until(after_cm(125) > on_black(Defs.front.left)),
                 seq([
                     # close the claw a bit, so fully closing it is faster
                     Defs.pom_grab.slightly_open(),
