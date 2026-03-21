@@ -3,7 +3,7 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M02GrabFirstPomsMission(Mission):
+class M01GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             switch_calibration_set("upper"),

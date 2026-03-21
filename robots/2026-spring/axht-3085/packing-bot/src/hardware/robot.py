@@ -32,16 +32,16 @@ from libstp import (
 from src.hardware.defs import Defs
 
 
-from src.missions.m01_setup_mission import M01SetupMission
+from src.missions.m00_setup_mission import M00SetupMission
 from src.missions.m99_shutdown_mission import M99ShutdownMission
-from src.missions.m02_grab_first_poms_mission import M02GrabFirstPomsMission
-from src.missions.m03_drive_down_acces_ramp_mission import M03DriveDownAccesRampMission
-from src.missions.m04_grab_second_poms_mission import M04GrabSecondPomsMission
-from src.missions.m05_align_for_last_poms_mission import M05AlignForLastPomsMission
-from src.missions.m06_collect_last_poms_mission import M06CollectLastPomsMission
-from src.missions.m07_drive_to_baskets_mission import M07DriveToBasketsMission
-from src.missions.m08_drop_sorted_poms_mission import M08DropSortedPomsMission
-from src.missions.m09_drop_maching_poms_mission import M09DropMachingPomsMission
+from src.missions.m01_grab_first_poms_mission import M01GrabFirstPomsMission
+from src.missions.m02_drive_down_acces_ramp_mission import M02DriveDownAccesRampMission
+from src.missions.m03_grab_second_poms_mission import M03GrabSecondPomsMission
+from src.missions.m04_align_for_last_poms_mission import M04AlignForLastPomsMission
+from src.missions.m05_collect_last_poms_mission import M05CollectLastPomsMission
+from src.missions.m06_drive_to_baskets_mission import M06DriveToBasketsMission
+from src.missions.m07_drop_sorted_poms_mission import M07DropSortedPomsMission
+from src.missions.m08_drop_maching_poms_mission import M08DropMachingPomsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -133,16 +133,16 @@ class Robot(GenericRobot):
     )
     shutdown_in = 120
     missions = [
-        M02GrabFirstPomsMission(),
-        M03DriveDownAccesRampMission(),
-        M04GrabSecondPomsMission(),
-        M05AlignForLastPomsMission(),
-        M06CollectLastPomsMission(),
-        M07DriveToBasketsMission(),
-        M08DropSortedPomsMission(),
-        M09DropMachingPomsMission(),
+        M01GrabFirstPomsMission(),
+        M02DriveDownAccesRampMission(),
+        M03GrabSecondPomsMission(),
+        M04AlignForLastPomsMission(),
+        M05CollectLastPomsMission(),
+        M06DriveToBasketsMission(),
+        M07DropSortedPomsMission(),
+        M08DropMachingPomsMission(),
     ]
-    setup_mission = M01SetupMission()
+    setup_mission = M00SetupMission()
     shutdown_mission = M99ShutdownMission()
     width_cm = 23.5
     length_cm = 29.6

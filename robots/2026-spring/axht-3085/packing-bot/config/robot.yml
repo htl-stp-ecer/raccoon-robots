@@ -12,9 +12,9 @@ drive:
   vel_config:
     vx:
       pid:
-        kp: 0.137793
-        ki: 1.108274
-        kd: 0.010895
+        kp: 0.001438
+        ki: 0.86309
+        kd: 0.000157
       ff:
         kS: 0.0
         kV: 1.0
@@ -43,18 +43,18 @@ odometry:
     bemf_trust: 1.0
 motion_pid:
   distance:
-    kp: 0.9375
+    kp: 3.8599
     ki: 0.0
-    kd: 0.1562
+    kd: 0.2087
     integral_max: 10.0
     integral_deadband: 0.01
     derivative_lpf_alpha: 0.5
     output_min: -10.0
     output_max: 10.0
   heading:
-    kp: 2.0625
+    kp: 5.9297
     ki: 0.0
-    kd: 0.2
+    kd: 0.0
     integral_max: 10.0
     integral_deadband: 0.01
     derivative_lpf_alpha: 0.5
@@ -82,8 +82,8 @@ motion_pid:
     acceleration: 0.6485
     deceleration: 0.4498
   angular:
-    max_velocity: 1.6268
-    acceleration: 4.5349
+    max_velocity: 1.7005
+    acceleration: 7.8594
     deceleration: 17.4353
 physical:
   width_cm: 23.5
