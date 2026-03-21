@@ -21,13 +21,13 @@ class M05CollectLastPomsMission(Mission):
             drive_backward(5.0, 1.0),
 
             #align for poms
-            turn_to_heading(0, 1.0),
+            turn_to_heading_left(0, 1.0),
             Defs.pom_arm.down(200),
             wait_for_seconds(0.5),
             Defs.pom_grab.open(),
 
             #collect poms
-            turn_to_heading(0, 1.0), #make sure we are parralel to pipe
+            turn_to_heading_left(0, 1.0), #make sure we are parralel to pipe
             line_follow(15, 1.0),
             Defs.pom_grab.wide_open(),
             line_follow(35, 1.0),
