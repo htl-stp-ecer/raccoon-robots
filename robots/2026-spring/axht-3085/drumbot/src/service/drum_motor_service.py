@@ -11,7 +11,7 @@ from libstp import (
 )
 
 NUM_POCKETS = 9
-DEFAULT_MOTOR_SPEED = 0.7
+DEFAULT_MOTOR_SPEED = 0.1
 SAMPLE_INTERVAL = 0.01  # ~100 Hz
 HYSTERESIS_FRACTION = 0.3  # fraction of spread used as dead zone on each side of midpoint
 EMA_ALPHA = 0.9  # low-pass filter smoothing factor (lower = smoother, slower response)
@@ -137,38 +137,41 @@ class DrumMotorService(RobotService):
         assert self.is_calibrated, "Drum not calibrated"
         await self._move(count, forward=False)
 
-    async def go_to(self, index: int) -> None:
-        """Move to target pocket index via the shortest path (wrapping)."""
+    async def go_to(self, index: int) -> str:
+        """Move to target pocket index via the shortest path (wrapping).
+
+        Returns the direction taken: 'forward', 'backward', or 'none'.
+        """
         self.info(f"go_to({index}) from current index {self._current_index}")
         assert self.is_calibrated, "Drum not calibrated"
         delta = (index - self._current_index) % NUM_POCKETS
         if delta == 0:
             self.info(f"Already at index {index}, no move needed")
-            return
+            return "none"
         # shortest direction
         if delta <= NUM_POCKETS // 2:
             self.info(f"Shortest path: advance {delta}")
             await self.advance(delta)
+            return "forward"
         else:
             self.info(f"Shortest path: retreat {NUM_POCKETS - delta}")
             await self.retreat(NUM_POCKETS - delta)
+            return "backward"
 
-    async def add_offset(self, offset_ticks: int, move_speed: int = 0.3, tolerance: float = 5.0) -> None:
-        """Move motor by ticks"""
-        current_position = self.motor.get_position()
-        target_position = current_position + offset_ticks
-        self.info(f"add_offset({offset_ticks} ticks): current={current_position}, target={target_position}")
-        while True:
-            current_position = self.motor.get_position()
-            error = target_position - current_position
-            if abs(error) < tolerance:  # tolerance in ticks
-                self.info(f"Reached target position within tolerance: current={current_position}, target={target_position}")
+    async def add_offset(self, offset_ticks: int, velocity: int = 400, timeout: float = 2.0) -> None:
+        """Move motor by ticks using firmware position controller."""
+        self.info(f"add_offset({offset_ticks} ticks, velocity={velocity})")
+        self.motor.move_relative(velocity, offset_ticks)
+        loop = asyncio.get_event_loop()
+        start = loop.time()
+        while not self.motor.is_done():
+            if loop.time() - start > timeout:
+                self.warn(f"add_offset timed out after {timeout}s")
                 break
-            speed_percent = int(move_speed * 100) * (1 if error > 0 else -1)
-            self.motor.set_speed(speed_percent)
             await asyncio.sleep(SAMPLE_INTERVAL)
         self.motor.set_speed(0)
         self.motor.brake()
+        self.info(f"add_offset complete, position={self.motor.get_position()}")
 
     async def _move(self, count: int, *, forward: bool) -> None:
         """Low-level: spin motor and count pocket transitions on the sensor.

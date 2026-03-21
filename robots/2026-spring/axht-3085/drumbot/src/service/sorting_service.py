@@ -1,0 +1,69 @@
+from typing import List, Optional
+
+from libstp import GenericRobot, RobotService
+
+NUM_SLOTS = 9
+
+
+class SortingService(RobotService):
+    """Bidirectional revolver sorting: blue grows CW (0→1→2→...),
+    pink grows CCW (8→7→6→...). Empty slot ends up in the middle."""
+
+    def __init__(self, robot: "GenericRobot") -> None:
+        super().__init__(robot)
+        self.blue_next: int = 0
+        self.pink_next: int = 8
+        self.slots: List[Optional[str]] = [None] * NUM_SLOTS
+
+    def assign_slot(self, color: str) -> int:
+        """Return the target slot for *color* and advance the pointer."""
+        if self.blue_next > self.pink_next:
+            raise RuntimeError(
+                f"Revolver full: blue_next={self.blue_next}, pink_next={self.pink_next}"
+            )
+
+        if color == "blue":
+            target = self.blue_next
+            self.blue_next += 1
+        elif color == "pink":
+            target = self.pink_next
+            self.pink_next -= 1
+        else:
+            raise ValueError(f"Unknown color: {color!r}")
+
+        self.slots[target] = color
+        self.info(
+            f"Assigned {color} → slot {target}  "
+            f"(blue_next={self.blue_next}, pink_next={self.pink_next})"
+        )
+        return target
+
+    @property
+    def blue_slots(self) -> List[int]:
+        """Indices of blue-occupied slots, in filling order (ascending)."""
+        return [i for i, s in enumerate(self.slots) if s == "blue"]
+
+    @property
+    def pink_slots(self) -> List[int]:
+        """Indices of pink-occupied slots, in filling order (descending)."""
+        return [i for i in range(NUM_SLOTS - 1, -1, -1) if self.slots[i] == "pink"]
+
+    @property
+    def empty_slot(self) -> Optional[int]:
+        """The single empty slot (None if revolver isn't full yet or has >1 empty)."""
+        empties = [i for i, s in enumerate(self.slots) if s is None]
+        return empties[0] if len(empties) == 1 else None
+
+    def nearest_empty_slot(self, current_index: int) -> int:
+        """Return the empty slot nearest to current_index (shortest path on ring)."""
+        empties = [i for i, s in enumerate(self.slots) if s is None]
+        if not empties:
+            raise RuntimeError("No empty slots available")
+
+        def ring_distance(a: int, b: int) -> int:
+            d = abs(a - b)
+            return min(d, NUM_SLOTS - d)
+
+        best = min(empties, key=lambda e: ring_distance(current_index, e))
+        self.info(f"Nearest empty slot to {current_index}: slot {best} (empties={empties})")
+        return best

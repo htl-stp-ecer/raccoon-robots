@@ -1,7 +1,7 @@
 name: tobi-test
 uuid: 21e5bb71-a37d-4a2f-99ed-ad10963fe875
 robot:
-  shutdown_in: 120
+  shutdown_in: 12000
   drive:
     kinematics:
       type: differential
@@ -110,11 +110,7 @@ robot:
 missions:
 - M00SetupMission: setup
 - M99ShutdownMission: shutdown
-- M01DriveToDrumsMission
 - M02CollectDrumsMission
-- M03DriveToPipe
-- M04RejectDrumsMission
-- M05DriveToOtherPipe
 definitions:
   button:
     type: DigitalSensor
@@ -124,14 +120,14 @@ definitions:
     port: 0
     inverted: false
     calibration:
-      ticks_to_rad: 1.8613482826975012e-05
+      ticks_to_rad: 4.3526522355793626e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 1
     inverted: true
     calibration:
-      ticks_to_rad: 1.5794895844760436e-05
+      ticks_to_rad: 2.5542734946328358e-05
       vel_lpf_alpha: 1.0
   imu:
     type: IMU
