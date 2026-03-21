@@ -2,7 +2,7 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M05AlignForLastPomsMission(Mission):
+class M04AlignForLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             drive_forward(25, 1.0),

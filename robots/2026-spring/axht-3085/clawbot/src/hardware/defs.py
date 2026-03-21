@@ -96,7 +96,7 @@ class Defs:
             "slightly_open": 100,
             "open": 120,
             "wide_open": 140,
-            "magic_val_for_m06": 120,
+            "magic_val_for_m05": 120,
         },
     )
     analog_sensors = [

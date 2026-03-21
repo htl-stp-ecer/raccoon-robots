@@ -20,7 +20,7 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M09DropMachingPomsMission(Mission):
+class M08DropMachingPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #align oursfls for basket

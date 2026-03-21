@@ -21,7 +21,7 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M08DropSortedPomsMission(Mission):
+class M07DropSortedPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             strafe_left().until(on_black(Defs.front.right)),

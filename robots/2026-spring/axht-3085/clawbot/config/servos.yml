@@ -2,30 +2,37 @@ shild:
   type: Servo
   port: 0
   positions:
-    up: 86
-    down: 170
+    up: 65
+    _45deg: 125
+    down: 180
+    normal_drive: 175
+    above_pasked: 135
+    grab_pasked: 153
 pom_arm:
   type: Servo
   port: 1
   positions:
-    down: 10
-    above_pom: 55
-    up: 105
-    start: 160
-    high_up: 165
+    down: 152
+    above_pom: 135
+    above_basket: 108
+    up: 140
+    start: 0
+    high_up: 0
 shild_graber:
   type: Servo
   port: 2
   positions:
     open: 70
-    closed: 140
+    wide_open: 40
+    closed: 145
 pom_grab:
   type: Servo
   port: 3
   positions:
-    closed: 0
+    closed: 40
     start: 30
-    pom_width: 55
-    slightly_open: 75
-    open: 90
-    wide_open: 125
+    pom_width: 87
+    slightly_open: 100
+    open: 120
+    wide_open: 140
+    magic_val_for_m05: 120

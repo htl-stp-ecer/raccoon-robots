@@ -1,8 +1,10 @@
-#- TestMission
-- M01SetupMission: setup
+- M00SetupMission: setup
 - M99ShutdownMission: shutdown
-- M02GrabFirstPomsMission
-- M03DriveDownAccesRampMission
-- M04GrabSecondPomsMission
-- M05AlignForLastPomsMission
-- M06CollectLastPomsMission
+- M01GrabFirstPomsMission
+- M02DriveDownAccesRampMission
+- M03GrabSecondPomsMission
+- M04AlignForLastPomsMission
+- M05CollectLastPomsMission
+- M06DriveToBasketsMission
+- M07DropSortedPomsMission
+- M08DropMachingPomsMission

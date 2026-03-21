@@ -13,7 +13,7 @@ def line_follow(cm, speed = 1.0):
         ])
 
 
-class M06CollectLastPomsMission(Mission):
+class M05CollectLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             drive_forward(1.0, 1.0),
