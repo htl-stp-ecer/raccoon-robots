@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-18 17:36:38
+ Generated: 2026-03-21 10:23:35
 ===========================================================
 
 Authors:
@@ -38,33 +38,40 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.649309633888853e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6409346766266992e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.591838097201705e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5821968220392163e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6693060623841173e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6534108046411276e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6536490920178063e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.633047904459888e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
         Servo(port=0),
-        positions={"up": 65, "down": 180, "above_pasked": 135, "grab_pasked": 153},
+        positions={
+            "up": 65,
+            "_45deg": 125,
+            "down": 180,
+            "normal_drive": 175,
+            "above_pasked": 135,
+            "grab_pasked": 153,
+        },
     )
     pom_arm = ServoPreset(
         Servo(port=1),
@@ -88,8 +95,8 @@ class Defs:
             "pom_width": 87,
             "slightly_open": 100,
             "open": 120,
-            "wide_open": 130,
-            "magic_val_for_m06": 105,
+            "wide_open": 140,
+            "magic_val_for_m06": 120,
         },
     )
     analog_sensors = [

@@ -9,9 +9,12 @@ class M02GrabFirstPomsMission(Mission):
             switch_calibration_set("upper"),
             mark_heading_reference(),  # mark heading for use in drive down acess ramp
             # drive infront of poms
-            strafe_right(30, 1.0),
             parallel(
-                Defs.shild.up(),
+            strafe_right(30, 1.0),
+                Defs.shild.normal_drive(),  # put the shild only 45 deg up so the claw doesnt hit the shild
+            ),
+            parallel(
+                Defs.shild._45deg(), #put the shild only 45 deg up so the claw doesnt hit the shild
                 strafe_left(30, 1.0),
             ),
 
@@ -23,7 +26,10 @@ class M02GrabFirstPomsMission(Mission):
             ),
             drive_backward(5, 1),
             Defs.pom_arm.down(),
-            Defs.front.drive_over_line(),
+            parallel(
+                Defs.front.drive_over_line(),
+                Defs.shild.up(), #make usre we don't hit the pom
+            ),
             Defs.front.strafe_left_until_black(sensor=Defs.front.right),
 
             parallel(
@@ -32,7 +38,7 @@ class M02GrabFirstPomsMission(Mission):
                     Defs.front.right,
                     speed=1.0,
                     side=LineSide.LEFT,
-                    kp=0.4,
+                    kp=0.5,
                     kd=0.1,
                 ).until(after_cm(125) & on_black(Defs.front.left)),
                 seq([
@@ -46,13 +52,10 @@ class M02GrabFirstPomsMission(Mission):
 
                     # wait until the claw is over the edge and put it back down
                     wait_until_distance(45),
-                    Defs.pom_arm.down(),
+                    Defs.pom_arm.high_up(100),
                 ]),
             ),
 
             # dont do drive and arm movements at the sime time!
-            parallel(
-                drive_forward(25),
-                Defs.pom_arm.high_up(),
-            ),
+            drive_forward(30),
         ])

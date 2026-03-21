@@ -41,7 +41,7 @@ class M08DropSortedPomsMission(Mission):
                                       side=LineSide.RIGHT,
                                       kp=0.4,
                                       kd=0.1,
-                                      ).distance_cm(20),
+                                      ).distance_cm(15),
             #drop poms
             turn_to_heading(degrees=-15),
             Defs.shild_graber.open(),
