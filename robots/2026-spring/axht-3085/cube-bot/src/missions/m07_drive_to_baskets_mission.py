@@ -27,45 +27,55 @@ class M07DriveToBasketsMission(Mission):
                 Defs.front.left,
                 speed=1.0,
                 side=LineSide.LEFT,
-                kp=0.4,
+                kp=0.5,
                 kd=0.1,
-            ).distance_cm(10),
+            ).distance_cm(15),
 
             #get rid of fist traffic conde
             Defs.pom_arm.down(),
             turn_left(degrees=35),
-            turn_right(degrees=35),
-            Defs.pom_arm.high_up(),
+            turn_to_heading(0, 1.0),
+            Defs.pom_arm.high_up(100),
 
+            #drive until line and 15cm higher
             strafe_follow_line_single(
                 Defs.front.left,
                 speed=1.0,
                 side=LineSide.LEFT,
-                kp=0.4,
+                kp=0.5,
                 kd=0.1,
             ).until(on_black(Defs.rear.right)),
-            drive_forward(speed=1.0, cm=10),
+            strafe_follow_line_single(
+                Defs.front.left,
+                speed=1.0,
+                side=LineSide.LEFT,
+                kp=0.5,
+                kd=0.1,
+            ).distance_cm(15),
 
             #get rid of second traffic conde
             Defs.pom_arm.down(),
             turn_left(degrees=35),
-            turn_right(degrees=35),
-            Defs.pom_arm.high_up(),
+            turn_to_heading(0, 1.0),
+            Defs.pom_arm.high_up(100),
 
             strafe_follow_line_single(
                 Defs.front.left,
                 speed=1.0,
                 side=LineSide.LEFT,
-                kp=0.4,
+                kp=0.5,
                 kd=0.1,
             ).until(on_black(Defs.rear.right)),
 
             #grab first basked
             parallel(
-                strafe_left(speed=1.0).until(on_black(Defs.front.left)),
+                seq([
+                    strafe_left(speed=1.0).until(on_black(Defs.front.left)),
+                    strafe_right(speed=1.0).until(on_white(Defs.front.left)),
+                    strafe_right(cm=7),
+                ]),
                 Defs.shild.above_pasked(),
             ),
-            strafe_right(cm=7),
             Defs.shild.grab_pasked(),
 
             #but the baskets close togheter

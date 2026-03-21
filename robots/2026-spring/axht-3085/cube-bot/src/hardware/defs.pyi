@@ -12,7 +12,9 @@ from typing import List
 
 class _ShildPreset(ServoPreset):
     up: _PresetPosition
+    _45deg: _PresetPosition
     down: _PresetPosition
+    normal_drive: _PresetPosition
     above_pasked: _PresetPosition
     grab_pasked: _PresetPosition
 
