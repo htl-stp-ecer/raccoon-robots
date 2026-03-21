@@ -8,7 +8,7 @@ class M04AlignForLastPomsMission(Mission):
             drive_forward(25, 1.0),
             #push a blue pom to collect it later
             parallel(
-                turn_to_heading(-90),
+                turn_to_heading_right(90),
                 seq([
                     wait_for_seconds(0.4),
                     Defs.pom_arm.high_up(100),
@@ -26,7 +26,7 @@ class M04AlignForLastPomsMission(Mission):
                 Defs.shild.down(),
                 Defs.shild_graber.open(),
             ),
-            turn_to_heading(-90, 1.0),
+            turn_to_heading_right(90, 1.0),
 
             drive_backward(25, 1.0),
             wall_align_backward(1.0, 0.4, 0.0, 3.0),

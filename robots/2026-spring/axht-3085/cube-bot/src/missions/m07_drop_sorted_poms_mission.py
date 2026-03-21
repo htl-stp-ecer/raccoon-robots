@@ -34,20 +34,17 @@ class M07DropSortedPomsMission(Mission):
                                       side=LineSide.RIGHT,
                                       kp=0.4,
                                       kd=0.1,
-                                      ).until(on_black(Defs.front.left)),
+                                      )
+            .until(
+                on_black(Defs.front.left) > after_cm(10)
+            ),
 
-            strafe_follow_line_single(Defs.front.right, #drive further with hardcode
-                                      speed=-1,
-                                      side=LineSide.RIGHT,
-                                      kp=0.4,
-                                      kd=0.1,
-                                      ).distance_cm(15),
             #drop poms
-            turn_to_heading(degrees=-15),
+            turn_to_heading_right(15),
             Defs.shild_graber.open(),
             wait_for_seconds(0.3),
             Defs.shild_graber.closed(),
-            turn_to_heading(degrees=0),
+            turn_to_heading_right(degrees=0),
 
             #let baskeds go
             Defs.shild.above_pasked(),
@@ -62,5 +59,5 @@ class M07DropSortedPomsMission(Mission):
                 #push sorted poms in fully
             strafe_right().until(on_black(Defs.front.left)),
             strafe_right().until(on_white(Defs.front.left)),
-            strafe_right(cm=5),
+            strafe_right(cm=8),
         ])

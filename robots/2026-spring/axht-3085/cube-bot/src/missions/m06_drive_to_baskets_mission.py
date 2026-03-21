@@ -19,60 +19,52 @@ claimed over the generated code itself.
 from libstp import *
 from src.hardware.defs import Defs
 
+def line_follow(speed = 1.0):
+    return strafe_follow_line_single(
+        Defs.front.left,
+        speed=1.0,
+        side=LineSide.LEFT,
+        kp=0.5,
+        kd=0.1,
+    )
+
+
 class M06DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             strafe_left(speed=1.0).until(on_black(Defs.front.left)),
-            strafe_follow_line_single(
-                Defs.front.left,
-                speed=1.0,
-                side=LineSide.LEFT,
-                kp=0.5,
-                kd=0.1,
-            ).distance_cm(15),
+            line_follow().distance_cm(15),
 
             #get rid of fist traffic conde
             Defs.pom_arm.down(),
             turn_left(degrees=35),
-            turn_to_heading(0, 1.0),
-            Defs.pom_arm.high_up(100),
+            parallel(
+                turn_to_heading_left(0, 1.0),
+                Defs.pom_arm.high_up(200),
+            ),
 
             #drive until line and 15cm higher
-            strafe_follow_line_single(
-                Defs.front.left,
-                speed=1.0,
-                side=LineSide.LEFT,
-                kp=0.5,
-                kd=0.1,
-            ).until(on_black(Defs.rear.right)),
-            strafe_follow_line_single(
-                Defs.front.left,
-                speed=1.0,
-                side=LineSide.LEFT,
-                kp=0.5,
-                kd=0.1,
-            ).distance_cm(15),
+            line_follow().until(
+                on_black(Defs.rear.right) > after_cm(15),
+            ),
 
             #get rid of second traffic conde
             Defs.pom_arm.down(),
             turn_left(degrees=35),
-            turn_to_heading(0, 1.0),
-            Defs.pom_arm.high_up(100),
+            parallel(
+                turn_to_heading_left(0, 1.0),
+                Defs.pom_arm.high_up(200),
+            ),
 
-            strafe_follow_line_single(
-                Defs.front.left,
-                speed=1.0,
-                side=LineSide.LEFT,
-                kp=0.5,
-                kd=0.1,
-            ).until(on_black(Defs.rear.right)),
+            line_follow().until(on_black(Defs.rear.right)),
 
             #grab first basked
             parallel(
                 seq([
                     strafe_left(speed=1.0).until(on_black(Defs.front.left)),
-                    strafe_right(speed=1.0).until(on_white(Defs.front.left)),
-                    strafe_right(cm=7),
+                    strafe_right(speed=1.0).until(
+                        on_white(Defs.front.left) > after_cm(7),
+                    ),
                 ]),
                 Defs.shild.above_pasked(),
             ),
@@ -86,7 +78,7 @@ class M06DriveToBasketsMission(Mission):
             Defs.shild.above_pasked(),
             strafe_left(speed=1.0).until(on_black(Defs.front.left)),
             wall_align_forward(1.0, 0.4, 0.1, 4), #align on pip
-            turn_to_heading(degrees=0),
+            turn_to_heading_left(degrees=0),
 
             #drive back to baskets
             drive_backward(cm=2.5),
