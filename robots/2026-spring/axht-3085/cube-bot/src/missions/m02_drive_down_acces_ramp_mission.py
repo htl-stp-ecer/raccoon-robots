@@ -3,7 +3,7 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M03DriveDownAccesRampMission(Mission):
+class M02DriveDownAccesRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             switch_calibration_set("default"),

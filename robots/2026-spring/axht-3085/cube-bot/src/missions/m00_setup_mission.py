@@ -3,7 +3,7 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M01SetupMission(Mission):
+class M00SetupMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             parallel(

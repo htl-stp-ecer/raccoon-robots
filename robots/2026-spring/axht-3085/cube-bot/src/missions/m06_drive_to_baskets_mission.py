@@ -19,7 +19,7 @@ claimed over the generated code itself.
 from libstp import *
 from src.hardware.defs import Defs
 
-class M07DriveToBasketsMission(Mission):
+class M06DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             strafe_left(speed=1.0).until(on_black(Defs.front.left)),

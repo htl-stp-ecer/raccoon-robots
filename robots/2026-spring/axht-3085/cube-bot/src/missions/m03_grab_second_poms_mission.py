@@ -2,7 +2,7 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M04GrabSecondPomsMission(Mission):
+class M03GrabSecondPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #align on poms and put the claw down
