@@ -2,8 +2,8 @@ from libstp import *
 
 from src.hardware.defs import Defs
 from src.steps.drum_collector import drum_retreat
-from src.steps.drum_lifting_step import drum_lifting_down
-from src.steps.servo_steps import open_drum_pusher, close_drum_pusher
+from src.steps.drum_lifting_step import *
+from src.steps.servo_steps import open_drum_pusher, close_drum_pusher, use_drum_to_block
 
 
 @dsl
@@ -19,7 +19,12 @@ def collect_drums(offset_velocity: int = -830, offset_time: float = 0.3,) -> Seq
         return seq([
             open_drum_pusher(),
             wait_for_checkpoint(checkpoint_timestamp + time_before_collecting_drum),
+            use_drum_to_block(),
+            drum_align_on_back(),
+            wait_for_seconds(0.2),
+            drum_lifting_down(),
             close_drum_pusher(),
+            wait_for_seconds(0.2),
             drum_retreat(),
             # relative soon
             set_motor_velocity(Defs.drum_motor, offset_velocity),

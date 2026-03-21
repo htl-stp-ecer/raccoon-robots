@@ -20,7 +20,7 @@ class RangeFinderScanningScreen(UIScreen[None]):
                     Text("Scanning...", size="large"),
                 ], align="center"),
                 Spacer(8),
-                Text("Robot is sweeping left to right. Keep target at ~15 cm.", size="small", muted=True),
+                Text("Robot is sweeping to the right. Keep target at ~15 cm.", size="small", muted=True),
                 Spacer(16),
                 Text(f"{self.sample_count} samples", size="small", muted=True),
             ],

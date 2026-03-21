@@ -33,8 +33,12 @@ def _lift_drum_servo(
 def drum_lifting_up(slow_mode=True) -> Defer:
     return _lift_drum_servo(degrees=170, servo_speed=25, slow_mode=slow_mode)
 
+def drum_align_on_back(slow_mode=True) -> Defer:
+    return _lift_drum_servo(degrees=80, servo_speed=25, slow_mode=slow_mode)
+
 def dispense_drums(slow_mode=True) -> Defer:
     return _lift_drum_servo(degrees=154, servo_speed=25, slow_mode=slow_mode)
+
 
 def shake_drums(slow_mode=True) -> Defer:
     return _lift_drum_servo(degrees=147, servo_speed=25, slow_mode=slow_mode)

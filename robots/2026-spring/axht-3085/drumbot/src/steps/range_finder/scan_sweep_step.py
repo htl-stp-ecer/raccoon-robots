@@ -1,4 +1,4 @@
-"""Sweep motion step: reuses TurnMotion to turn left then right while sampling."""
+"""Sweep motion step: reuses TurnMotion to turn right while sampling."""
 from __future__ import annotations
 
 import math
@@ -16,19 +16,18 @@ if TYPE_CHECKING:
 
 
 class _Phase(Enum):
-    TURN_TO_START = 1
-    SWEEP = 2
+    SWEEP = 1
 
 
 @dsl(hidden=True)
 class ScanSweepStep(MotionStep):
-    """Reuses TurnMotion to turn left, then sweep right while sampling the ET sensor."""
+    """Reuses TurnMotion to sweep right while sampling the ET sensor."""
 
     def __init__(self, sweep_deg: float, turn_speed: float):
         super().__init__()
         self._sweep_deg = sweep_deg
         self._turn_speed = turn_speed
-        self._phase = _Phase.TURN_TO_START
+        self._phase = _Phase.SWEEP
         self._motion: TurnMotion | None = None
         self._start_heading: float = 0.0
         self._service: RangeFinderService | None = None
@@ -50,25 +49,16 @@ class ScanSweepStep(MotionStep):
         self._service.range_finder.reset_filter()
         self._start_heading = robot.odometry.get_heading()
 
-        half_rad = math.radians(self._sweep_deg) / 2.0
-        self._phase = _Phase.TURN_TO_START
-        self._motion = self._make_turn(robot, half_rad)  # positive = CCW = left
-        self.info(f"Sweep: turning left {self._sweep_deg / 2:.0f} deg")
+        sweep_rad = math.radians(self._sweep_deg)
+        self._phase = _Phase.SWEEP
+        self._motion = self._make_turn(robot, -sweep_rad)  # negative = CW = right
+        self.info(f"Sweep: scanning right {self._sweep_deg:.0f} deg")
 
     def on_update(self, robot: "GenericRobot", dt: float) -> bool:
         self._motion.update(dt)
         rf = self._service.range_finder
 
-        if self._phase == _Phase.TURN_TO_START:
-            if self._motion.is_finished():
-                self._phase = _Phase.SWEEP
-                rf.reset_filter()
-                sweep_rad = math.radians(self._sweep_deg)
-                self._motion = self._make_turn(robot, -sweep_rad)  # negative = CW = right
-                self.info(f"Sweep: scanning right {self._sweep_deg:.0f} deg")
-            return False
-
-        # SWEEP phase: sample while turning
+        # SWEEP phase: sample while turning right
         value = rf.read_filtered()
         heading = robot.odometry.get_heading()
         relative_deg = math.degrees(heading - self._start_heading)

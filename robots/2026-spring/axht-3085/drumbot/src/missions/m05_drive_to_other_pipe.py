@@ -11,19 +11,23 @@ class M05DriveToOtherPipe(Mission):
     def sequence(self) -> Sequential:
             return seq([
 
-                parallel(drive_backward(71.5,1),drum_lifting_up(),),
-                turn_left(110,1),
-                follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1).until(on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
+                parallel(drive_backward(7,1),drum_lifting_up(),),
+                turn_left(20,1),
+                drive_backward(40,1),
+                drive_backward().until(on_black(Defs.front_right_ir_sensor)),
+                drive_forward(2.5,1),
+                turn_left().until(on_black(Defs.front_right_ir_sensor)),
+                follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1, side = LineSide.RIGHT).until(on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
                 drive_forward(10,1),
-                follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1).until(on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
-                follow_line_single(Defs.front_right_ir_sensor, 43, kp=0.3, kd=0.1),
+                follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1,side = LineSide.RIGHT).until(on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
+                follow_line_single(Defs.front_right_ir_sensor, 43, kp=0.3, kd=0.1,side = LineSide.RIGHT),
 
-                turn_to_peak(),
-                turn_left(22, 1),
+                turn_to_peak(turn_speed = 0.4),
+                turn_left(22.5, 1),
 
 
-                wall_align_forward(speed=0.3, accel_threshold=0.25, settle_duration=0, max_duration=3, grace_period=0.4),
-                parallel(drive_backward(4,1),shake_drums()),
+                wall_align_forward(speed=0.3, accel_threshold=0.15, settle_duration=0, max_duration=3, grace_period=0.4),
+                parallel(drive_backward(3.7,1),shake_drums()),
 
                 reject_drums(),
                 reject_drums(),
@@ -32,6 +36,5 @@ class M05DriveToOtherPipe(Mission):
                 reject_drums(),
                 reject_drums(),
                 reject_drums(),
-
 
             ])

@@ -71,9 +71,9 @@ class RangeFinderCalibrationStep(UIStep):
 @dsl(tags=["calibration", "sensor"])
 def calibrate_range_finder(
     sweep_deg: float = 60.0,
-    turn_speed: float = 0.5,
+    turn_speed: float = 0.3,
 ) -> RangeFinderCalibrationStep:
-    """Calibrate the ET range finder by sweeping left-to-right and sampling.
+    """Calibrate the ET range finder by sweeping to the right and sampling.
 
     Place the robot ~15 cm from the target. It will turn through sweep_deg
     degrees, record sensor readings, and compute T_enter / T_exit thresholds
