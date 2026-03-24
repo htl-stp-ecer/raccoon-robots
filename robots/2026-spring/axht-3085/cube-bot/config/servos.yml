@@ -6,7 +6,7 @@ shild:
     _45deg: 125
     down: 180
     normal_drive: 175
-    above_pasked: 135
+    above_pasked: 132
     grab_pasked: 153
 pom_arm:
   type: Servo
