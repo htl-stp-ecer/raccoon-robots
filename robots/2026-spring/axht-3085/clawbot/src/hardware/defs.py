@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-21 17:20:50
+ Generated: 2026-03-24 16:20:22
 ===========================================================
 
 Authors:
@@ -38,28 +38,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6476144686760033e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6504762078392853e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5912422769565933e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.588979123952305e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.654061191000076e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6530065794134344e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6458980142064323e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6463093108312786e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -79,9 +79,9 @@ class Defs:
             "down": 152,
             "above_pom": 135,
             "above_basket": 108,
-            "up": 140,
+            "up": 130,
             "start": 0,
-            "high_up": 0,
+            "high_up": 40,
         },
     )
     shild_graber = ServoPreset(
@@ -96,7 +96,7 @@ class Defs:
             "slightly_open": 100,
             "open": 120,
             "wide_open": 140,
-            "magic_val_for_m05": 120,
+            "m05_collect_poms": 125,
         },
     )
     analog_sensors = [

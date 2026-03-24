@@ -1,16 +1,14 @@
 from libstp import *
 from src.hardware.defs import Defs
 
-def line_follow(cm, speed = 1.0):
-    return seq([
-        strafe_follow_line_single(
+def line_follow(speed = 1.0):
+    return strafe_follow_line_single(
             Defs.rear.right,
             speed=speed,
             side=LineSide.RIGHT,
             kp=0.5,
             kd=0.1,
-        ).distance_cm(cm)
-        ])
+        )
 
 
 class M05CollectLastPomsMission(Mission):
@@ -24,15 +22,23 @@ class M05CollectLastPomsMission(Mission):
             turn_to_heading_left(0, 1.0),
             Defs.pom_arm.down(200),
             wait_for_seconds(0.5),
-            Defs.pom_grab.open(),
+            Defs.pom_grab.m05_collect_poms(),
 
             #collect poms
             turn_to_heading_left(0, 1.0), #make sure we are parralel to pipe
-            line_follow(15, 1.0),
-            Defs.pom_grab.wide_open(),
-            line_follow(35, 1.0),
+            parallel(
+                line_follow().distance_cm(70) ,
+                seq([
+                    wait_until_distance(cm=20),
+                    Defs.pom_grab.wide_open(),
+
+                    #make sure we collect ALL lost poms
+                    wait_until_distance(cm=45),
+                    Defs.pom_grab.closed(),
+                    Defs.pom_grab.slightly_open(),
+                ])
+            ),
 
             Defs.pom_grab.closed(),
             wait_for_seconds(0.3),
-            Defs.pom_arm.high_up(100),
         ])

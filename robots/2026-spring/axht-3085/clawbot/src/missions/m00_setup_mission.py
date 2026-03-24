@@ -15,8 +15,8 @@ class M00SetupMission(Mission):
                 Defs.pom_arm.start(100),
                 Defs.pom_grab.start(100),
             ),
-            stop(),
-            wait_for_seconds(1),
+
+            Defs.shild.up(),
 
             #auto_tune(
             #    vel_axes=["vy"],

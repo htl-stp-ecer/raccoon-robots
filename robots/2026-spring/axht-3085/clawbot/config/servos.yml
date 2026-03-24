@@ -15,9 +15,9 @@ pom_arm:
     down: 152
     above_pom: 135
     above_basket: 108
-    up: 140
+    up: 130
     start: 0
-    high_up: 50 #FIXME THIS IS AN UNTESTED VALUE
+    high_up: 40
 shild_graber:
   type: Servo
   port: 2
@@ -35,4 +35,4 @@ pom_grab:
     slightly_open: 100
     open: 120
     wide_open: 140
-    magic_val_for_m05: 120
+    m05_collect_poms: 125
