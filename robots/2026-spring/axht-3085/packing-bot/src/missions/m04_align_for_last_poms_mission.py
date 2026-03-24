@@ -34,5 +34,6 @@ class M04AlignForLastPomsMission(Mission):
 
             Defs.shild_graber.closed(70),
             Defs.shild.up(),
-            mark_heading_reference(),  # mark heading for collecting the poms
+            # mark heading for collecting the poms (0 heading is now in the direction of the black line)
+            mark_heading_reference(),
         ])
