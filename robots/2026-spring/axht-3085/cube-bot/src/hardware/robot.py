@@ -1,7 +1,7 @@
 """
 ===========================================================
  Project:   PackingBot
- Generated: 2026-03-21 17:20:53
+ Generated: 2026-03-24 16:20:25
 ===========================================================
 
 Authors:
@@ -40,8 +40,6 @@ from src.missions.m03_grab_second_poms_mission import M03GrabSecondPomsMission
 from src.missions.m04_align_for_last_poms_mission import M04AlignForLastPomsMission
 from src.missions.m05_collect_last_poms_mission import M05CollectLastPomsMission
 from src.missions.m06_drive_to_baskets_mission import M06DriveToBasketsMission
-from src.missions.m07_drop_sorted_poms_mission import M07DropSortedPomsMission
-from src.missions.m08_drop_maching_poms_mission import M08DropMachingPomsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -139,8 +137,6 @@ class Robot(GenericRobot):
         M04AlignForLastPomsMission(),
         M05CollectLastPomsMission(),
         M06DriveToBasketsMission(),
-        M07DropSortedPomsMission(),
-        M08DropMachingPomsMission(),
     ]
     setup_mission = M00SetupMission()
     shutdown_mission = M99ShutdownMission()

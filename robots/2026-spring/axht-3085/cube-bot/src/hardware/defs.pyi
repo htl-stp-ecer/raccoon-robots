@@ -50,7 +50,7 @@ class _PomGrabPreset(ServoPreset):
     slightly_open: _PresetPosition
     open: _PresetPosition
     wide_open: _PresetPosition
-    magic_val_for_m05: _PresetPosition
+    m05_collect_poms: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...

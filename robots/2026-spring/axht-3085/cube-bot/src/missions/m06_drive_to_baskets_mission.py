@@ -33,13 +33,11 @@ class M06DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             strafe_left(speed=1.0).until(on_black(Defs.front.left)),
-            line_follow().distance_cm(15),
 
             #get rid of fist traffic conde
-            Defs.pom_arm.down(),
-            turn_left(degrees=35),
+            turn_left(degrees=40),
             parallel(
-                turn_to_heading_left(0, 1.0),
+                turn_to_heading_right(0, 1.0),
                 Defs.pom_arm.high_up(200),
             ),
 
@@ -50,40 +48,24 @@ class M06DriveToBasketsMission(Mission):
 
             #get rid of second traffic conde
             Defs.pom_arm.down(),
-            turn_left(degrees=35),
+            turn_left(degrees=40),
             parallel(
-                turn_to_heading_left(0, 1.0),
+                turn_to_heading_right(0, 1.0),
                 Defs.pom_arm.high_up(200),
             ),
 
-            line_follow().until(on_black(Defs.rear.right)),
-
-            #grab first basked
-            parallel(
-                seq([
-                    strafe_left(speed=1.0).until(on_black(Defs.front.left)),
-                    strafe_right(speed=1.0).until(
-                        on_white(Defs.front.left) > after_cm(7),
-                    ),
-                ]),
-                Defs.shild.above_pasked(),
+            line_follow().until(
+                on_black(Defs.rear.right) > on_white(Defs.rear.right)
             ),
-            Defs.shild.grab_pasked(),
 
-            #but the baskets close togheter
-            drive_forward(cm=16),
+            #trow cubes down
+            Defs.pom_arm.up(),
+            turn_left().until(after_seconds(0.4)),
+            parallel(
+                turn_to_heading_left(0),
+                Defs.pom_arm.high_up(),
+            ),
+            wall_align_forward(1.0,0.4, 0.1, 5, 1.0),
 
 
-            #align our self to grab both baskets
-            Defs.shild.above_pasked(),
-            strafe_left(speed=1.0).until(on_black(Defs.front.left)),
-            wall_align_forward(1.0, 0.4, 0.1, 4), #align on pip
-            turn_to_heading_left(degrees=0),
-
-            #drive back to baskets
-            drive_backward(cm=2.5),
-
-            #grab both baskets
-            strafe_right(cm=7),
-            Defs.shild.grab_pasked(),
         ])
