@@ -22,7 +22,7 @@ from src.hardware.defs import Defs
 def line_follow(speed = 1.0):
     return strafe_follow_line_single(
         Defs.front.left,
-        speed=1.0,
+        speed=speed,
         side=LineSide.LEFT,
         kp=0.5,
         kd=0.1,
@@ -47,7 +47,10 @@ class M06DriveToBasketsMission(Mission):
             ),
 
             #get rid of second traffic conde
-            Defs.pom_arm.down(),
+            parallel(
+                turn_right(degrees=10),
+                Defs.pom_arm.down(),
+            ),
             turn_left(degrees=40),
             parallel(
                 turn_to_heading_right(0, 1.0),
@@ -59,13 +62,17 @@ class M06DriveToBasketsMission(Mission):
             ),
 
             #trow cubes down
-            Defs.pom_arm.up(),
+            parallel(
+                turn_right(degrees=10),
+                Defs.pom_arm.up(),
+            ),
             turn_left().until(after_seconds(0.4)),
             parallel(
                 turn_to_heading_left(0),
                 Defs.pom_arm.high_up(),
             ),
             wall_align_forward(1.0,0.4, 0.1, 5, 1.0),
+            mark_heading_reference(),
 
 
         ])

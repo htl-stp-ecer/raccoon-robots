@@ -2,6 +2,14 @@ from libstp import *
 
 from src.hardware.defs import Defs
 
+def line_follow_backward(speed=1.0):
+    return strafe_follow_line_single(
+        Defs.front.left,
+        speed=-speed,
+        side=LineSide.RIGHT,
+        kp=0.5,
+        kd=0.1,
+    )
 
 class M00SetupMission(Mission):
     def sequence(self) -> Sequential:
@@ -18,6 +26,7 @@ class M00SetupMission(Mission):
 
             Defs.shild.up(),
 
+
             #auto_tune(
             #    vel_axes=["vy"],
             #    tune_motion=False,
@@ -27,4 +36,5 @@ class M00SetupMission(Mission):
                       calibration_sets=["default", "upper"],
                       ),
 
+            wait_for_button(),
         ])
