@@ -58,5 +58,5 @@ class M01GrabFirstPomsMission(Mission):
             ),
 
             # dont do drive and arm movements at the sime time!
-            drive_forward(30),
+            drive_forward(35),
         ])

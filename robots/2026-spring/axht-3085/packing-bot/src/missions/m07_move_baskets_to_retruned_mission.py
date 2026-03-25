@@ -29,6 +29,7 @@ class M07MoveBasketsToRetrunedMission(Mission):
             #grap basktets
             strafe_left().until(on_black(Defs.front.left)),
             Defs.shild.above_pasked(),
+            strafe_right(cm=1),
             #strafe_right().until(on_white(Defs.front.left)),
             Defs.shild.down(),
 
@@ -45,7 +46,6 @@ class M07MoveBasketsToRetrunedMission(Mission):
                                       )
             .until(
                 on_black(Defs.front.left) >
-                on_white(Defs.front.left) >
                 after_cm(15)
             ),
 
