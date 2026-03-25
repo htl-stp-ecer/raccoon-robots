@@ -1,2 +1,3 @@
 from .sampling_screen import DrumSamplingScreen
 from .confirm_screen import DrumConfirmScreen
+from .sort_into_slot_offset_screen import SortIntoSlotOffsetScreen

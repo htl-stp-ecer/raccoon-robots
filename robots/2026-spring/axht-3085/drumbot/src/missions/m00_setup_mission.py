@@ -17,7 +17,7 @@ class M00SetupMission(Mission):
             #    motion_axes=["distance", "heading"],
             # ),
             wait_for_button(),
-            drum_lifting_up(slow_mode=False),
+            #drum_lifting_up(slow_mode=False),
             # calibrate(distance_cm=50, exclude_ir_sensors=[
             #     Defs.wait_for_light_sensor,
             #     Defs.drum_light_sensor
@@ -29,7 +29,7 @@ class M00SetupMission(Mission):
             # calibrate_range_finder(turn_speed=0.2),
             wait_for_button(),
             open_drum_pusher(),
-            drum_lifting_down(),
+            #drum_lifting_down(),
             calibrate_drum_collector(calibration_time=2.0),
             drum_retreat(),
             set_motor_velocity(Defs.drum_motor, -830),

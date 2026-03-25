@@ -13,8 +13,8 @@ DEADLINE_WARNING_SECS = 6.0
 _block_start_time: float = 0.0
 
 
-OFFSET_FORWARD_TICKS = -25000    # ticks offset after forward travel
-OFFSET_BACKWARD_TICKS = -50000  # ticks offset after backward travel
+OFFSET_FORWARD_TICKS = 0    # ticks offset after forward travel
+OFFSET_BACKWARD_TICKS = -40000   # ticks offset after backward travel
 OFFSET_VELOCITY = 1500         # firmware PID velocity for offset
 
 

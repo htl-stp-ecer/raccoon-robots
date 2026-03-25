@@ -11,7 +11,7 @@ from libstp import (
 )
 
 NUM_POCKETS = 9
-DEFAULT_MOTOR_SPEED = 0.1
+DEFAULT_MOTOR_SPEED = 1.0
 SAMPLE_INTERVAL = 0.01  # ~100 Hz
 HYSTERESIS_FRACTION = 0.3  # fraction of spread used as dead zone on each side of midpoint
 EMA_ALPHA = 0.9  # low-pass filter smoothing factor (lower = smoother, slower response)

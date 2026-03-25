@@ -1,4 +1,4 @@
-"""Auto-generated type stub for defs.py — DO NOT EDIT."""
+"""Auto-generated type stub — Raccoon Toolchain (Tobias Madlberger / RaccoonOS Team)"""
 
 from libstp import AnalogSensor
 from libstp import DigitalSensor
@@ -7,7 +7,7 @@ from libstp import IMU as Imu
 from libstp import IRSensor
 from libstp import Motor
 from libstp import Servo
-from libstp.step.servo.preset import ServoPreset
+from libstp.step.servo.preset import ServoPreset, _PresetPosition
 from typing import List
 
 
