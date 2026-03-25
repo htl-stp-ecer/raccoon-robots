@@ -1,6 +1,7 @@
 """
 from .missions.m06_drive_to_baskets_mission import M06DriveToBasketsMission
 from .missions.m08_move_baskets_to_retruned_mission import M08MoveBasketsToRetrunedMission
+from .missions.m08_drop_sorted_poms_and_return_them_mission import M08DropSortedPomsAndReturnThemMission
 ===========================================================
  Project:   PackingBot
  Generated: 2026-01-29 14:21:31

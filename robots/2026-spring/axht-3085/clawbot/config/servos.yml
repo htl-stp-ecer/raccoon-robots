@@ -17,7 +17,7 @@ pom_arm:
     above_basket: 108
     up: 130
     start: 0
-    high_up: 40
+    high_up: 30
 shild_graber:
   type: Servo
   port: 2

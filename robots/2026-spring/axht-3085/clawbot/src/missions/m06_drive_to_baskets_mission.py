@@ -35,7 +35,7 @@ class M06DriveToBasketsMission(Mission):
             strafe_left(speed=1.0).until(on_black(Defs.front.left)),
 
             #get rid of fist traffic conde
-            turn_left(degrees=40),
+            turn_left(degrees=35),
             parallel(
                 turn_to_heading_right(0, 1.0),
                 Defs.pom_arm.high_up(200),
@@ -49,9 +49,9 @@ class M06DriveToBasketsMission(Mission):
             #get rid of second traffic conde
             parallel(
                 turn_right(degrees=10),
-                Defs.pom_arm.down(),
+                Defs.pom_arm.down(100),
             ),
-            turn_left(degrees=40),
+            turn_left(degrees=50),
             parallel(
                 turn_to_heading_right(0, 1.0),
                 Defs.pom_arm.high_up(200),
@@ -64,7 +64,7 @@ class M06DriveToBasketsMission(Mission):
             #trow cubes down
             parallel(
                 turn_right(degrees=10),
-                Defs.pom_arm.up(),
+                Defs.pom_arm.up(100),
             ),
             turn_left().until(after_seconds(0.4)),
             parallel(
