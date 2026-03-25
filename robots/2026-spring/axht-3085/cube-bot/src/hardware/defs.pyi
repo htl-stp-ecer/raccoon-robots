@@ -1,4 +1,4 @@
-"""Auto-generated type stub for defs.py — DO NOT EDIT."""
+"""Auto-generated type stub — Raccoon Toolchain (Tobias Madlberger / RaccoonOS Team)"""
 
 from libstp import AnalogSensor
 from libstp import DigitalSensor
