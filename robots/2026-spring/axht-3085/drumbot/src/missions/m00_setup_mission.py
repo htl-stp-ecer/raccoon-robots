@@ -19,15 +19,15 @@ class M00SetupMission(Mission):
             # ),
             wait_for_button(),
             drum_lifting_up(slow_mode=False),
-             calibrate(distance_cm=50, exclude_ir_sensors=[
-                 Defs.wait_for_light_sensor,
-                 Defs.drum_light_sensor
-             ]),
+            calibrate(distance_cm=50, exclude_ir_sensors=[
+                Defs.wait_for_light_sensor,
+                Defs.drum_light_sensor
+            ]),
 
             wait_for_button(),
-             drive_forward().until(on_white(Defs.front_right_ir_sensor)),
-             drive_forward(23, 1),
-             calibrate_range_finder(turn_speed=0.2),
+            drive_forward().until(on_white(Defs.front_right_ir_sensor)),
+            drive_forward(23, 1),
+            calibrate_range_finder(turn_speed=0.2),
             wait_for_button(),
             open_drum_pusher(),
             drum_lifting_down(),
