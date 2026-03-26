@@ -17,5 +17,5 @@ class M01DriveToDrumsMission(Mission):
              ),
              parallel(
                  drive_forward(65,1),
-                 seq([swap_pom_remover_servo(), wait_for_seconds(3.2), driving_position_pom_remover_servo()])),
+                 seq([swap_pom_remover_servo(), wait_for_seconds(1.1), driving_position_pom_remover_servo()])),
         ])
