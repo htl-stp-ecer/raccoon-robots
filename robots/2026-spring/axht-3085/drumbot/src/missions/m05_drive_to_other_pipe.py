@@ -23,11 +23,11 @@ class M05DriveToOtherPipe(Mission):
                 follow_line_single(Defs.front_right_ir_sensor, 43, kp=0.3, kd=0.1,side = LineSide.RIGHT),
 
                 turn_to_peak(turn_speed = 0.4),
-                turn_left(22.5, 1),
+                turn_left(21, 1),
 
 
                 wall_align_forward(speed=0.3, accel_threshold=0.15, settle_duration=0, max_duration=3, grace_period=0.4),
-                parallel(drive_backward(5,1),shake_drums()),
+                parallel(drive_backward(3,1),shake_drums()),
 
                 wait_for_button()
                 #reject_drums(),
