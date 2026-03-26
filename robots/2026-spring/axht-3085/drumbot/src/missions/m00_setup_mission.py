@@ -6,7 +6,7 @@ from src.hardware.defs import *
 from src.steps.drum_collector import calibrate_drum_collector, drum_retreat
 from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_down
 from src.steps.range_finder import calibrate_range_finder
-from src.steps.servo_steps import open_drum_pusher
+from src.steps.servo_steps import *
 
 
 class M00SetupMission(Mission):
@@ -36,4 +36,6 @@ class M00SetupMission(Mission):
             set_motor_velocity(Defs.drum_motor, -830),
             wait_for_seconds(0.3),
             motor_passive_brake(Defs.drum_motor),
+            driving_position_pom_remover_servo(),
+
         ])

@@ -14,7 +14,7 @@ def close_drum_pusher():
 
 
 def driving_position_pom_remover_servo():
-    return servo(Defs.pom_remover_servo, )
+    return servo(Defs.pom_remover_servo,170)
 
 def swap_pom_remover_servo():
-    return servo(Defs.pom_remover_servo, 170)
+    return servo(Defs.pom_remover_servo, 0)
