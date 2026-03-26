@@ -68,3 +68,15 @@ class ScanSweepStep(MotionStep):
             self.info(f"Sweep complete: {len(self.samples)} samples")
             return True
         return False
+
+
+@dsl(tags=["motion", "sensor"])
+def scan_sweep(
+    sweep_deg: float = 90.0,
+    turn_speed: float = 0.2,
+) -> ScanSweepStep:
+    """Sweep right while sampling the ET range finder."""
+    return ScanSweepStep(
+        sweep_deg=sweep_deg,
+        turn_speed=turn_speed,
+    )

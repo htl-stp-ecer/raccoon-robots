@@ -32,10 +32,11 @@ def reject_drums(offset_velocity: int = -1000, offset_time: float = 0.3,) -> Seq
 class M04RejectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            reject_drums(),
+            #reject_drums(),
            # shake_drums(),
             #dispense_drums(),
-            reject_drums(),
-            reject_drums(),
-            reject_drums(),
+            #reject_drums(),
+            #reject_drums(),
+            #reject_drums(),
+            wait_for_button()
         ])

@@ -4,6 +4,7 @@ from src.steps.drum_collector.move_by_offset_step import MoveDrumMotorByOffsetSt
 from src.steps.drum_lifting_step import drum_lifting_up
 
 
+
 class M01DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([

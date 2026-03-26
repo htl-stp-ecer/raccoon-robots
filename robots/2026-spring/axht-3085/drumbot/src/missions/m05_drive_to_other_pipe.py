@@ -27,14 +27,15 @@ class M05DriveToOtherPipe(Mission):
 
 
                 wall_align_forward(speed=0.3, accel_threshold=0.15, settle_duration=0, max_duration=3, grace_period=0.4),
-                parallel(drive_backward(3.7,1),shake_drums()),
+                parallel(drive_backward(5,1),shake_drums()),
 
-                reject_drums(),
-                reject_drums(),
+                wait_for_button()
+                #reject_drums(),
+                #reject_drums(),
                 #shake_drums(),
                 #dispense_drums(),
-                reject_drums(),
-                reject_drums(),
-                reject_drums(),
+                #reject_drums(),
+                #reject_drums(),
+                #reject_drums(),
 
             ])
