@@ -35,6 +35,4 @@ class M00SetupMission(Mission):
             calibrate(distance_cm=70,
                       calibration_sets=["default", "upper"],
                       ),
-
-            wait_for_button(),
         ])

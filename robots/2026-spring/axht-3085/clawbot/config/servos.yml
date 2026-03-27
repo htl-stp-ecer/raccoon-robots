@@ -29,10 +29,10 @@ pom_grab:
   type: Servo
   port: 3
   positions:
-    closed: 40
+    closed: 10
     start: 30
-    pom_width: 87
-    slightly_open: 100
-    open: 120
-    wide_open: 140
-    m05_collect_poms: 125
+    pom_width: 47
+    slightly_open: 700
+    open: 90
+    wide_open: 110
+    m05_collect_poms: 65
