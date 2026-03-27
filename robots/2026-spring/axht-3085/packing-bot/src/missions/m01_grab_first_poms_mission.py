@@ -18,7 +18,6 @@ class M01GrabFirstPomsMission(Mission):
                 Defs.shild._45deg(), #put the shild only 45 deg up so the claw doesnt hit the shild
                 strafe_left(30, 1.0),
             ),
-
             parallel(
                 # turn and prepare to set down the claw
                 turn_right(90, 1.0),

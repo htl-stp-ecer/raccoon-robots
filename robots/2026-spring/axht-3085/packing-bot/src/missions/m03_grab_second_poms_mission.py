@@ -7,7 +7,6 @@ class M03GrabSecondPomsMission(Mission):
         return seq([
             #align on poms and put the claw down
             Defs.pom_arm.above_pom(100),
-            wait_for_seconds(1),
 
             parallel(
                 Defs.pom_grab.open(100),
@@ -16,8 +15,8 @@ class M03GrabSecondPomsMission(Mission):
             wait_for_seconds(0.5),
 
             #push the oragne pom on the left to the side
-            turn_left(10),
-            turn_right(40),
+            turn_left(10).speed(0.4),
+            turn_right(40).speed(0.4),
             turn_to_heading_right(15),
             strafe_left(cm=5),
 
