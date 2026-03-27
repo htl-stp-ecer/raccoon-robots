@@ -185,6 +185,8 @@ definitions:
       normal_drive: 175
       above_pasked: 132
       grab_pasked: 153
+      m06_above_paskted: 140
+      m06_on_paskted: 150
   pom_arm:
     type: Servo
     port: 1
@@ -199,9 +201,9 @@ definitions:
     type: Servo
     port: 2
     positions:
-      open: 70
+      open: 90
       wide_open: 40
-      closed: 160
+      closed: 150
   pom_grab:
     type: Servo
     port: 3

@@ -24,7 +24,7 @@ class M04AlignForLastPomsMission(Mission):
 
                 #prepare the shield to grab the sorted poms
                 Defs.shild.down(),
-                Defs.shild_graber.open(),
+                Defs.shild_graber.wide_open(),
             ),
             turn_to_heading_right(90, 1.0),
 

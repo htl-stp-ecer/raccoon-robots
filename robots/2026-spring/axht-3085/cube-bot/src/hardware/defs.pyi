@@ -17,6 +17,8 @@ class _ShildPreset(ServoPreset):
     normal_drive: _PresetPosition
     above_pasked: _PresetPosition
     grab_pasked: _PresetPosition
+    m06_above_paskted: _PresetPosition
+    m06_on_paskted: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...
