@@ -35,16 +35,10 @@ class M07MoveBasketsToRetrunedMission(Mission):
 
             strafe_left().until(
                 on_black(Defs.front.right) >
-                on_white(Defs.front.right)
+                after_cm(15)
             ),
 
-            strafe_follow_line_single(Defs.front.right,  # drive to line
-                                      speed=-1,
-                                      side=LineSide.RIGHT,
-                                      kp=0.4,
-                                      kd=0.1,
-                                      )
-            .until(
+            drive_backward() .until(
                 on_black(Defs.front.left) >
                 after_cm(15)
             ),

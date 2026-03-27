@@ -21,7 +21,6 @@ class M05CollectLastPomsMission(Mission):
             #align for poms
             turn_to_heading_left(0, 1.0),
             Defs.pom_arm.down(200),
-            wait_for_seconds(0.5),
             Defs.pom_grab.m05_collect_poms(),
 
             #collect poms

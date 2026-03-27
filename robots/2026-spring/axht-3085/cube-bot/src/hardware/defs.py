@@ -26,28 +26,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6505581568850232e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6452102281033274e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.606628665936283e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.596025974729734e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6499452123784625e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6551989548097863e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.659537114430376e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6620370402005356e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -73,18 +73,18 @@ class Defs:
         },
     )
     shild_graber = ServoPreset(
-        Servo(port=2), positions={"open": 70, "wide_open": 40, "closed": 145}
+        Servo(port=2), positions={"open": 70, "wide_open": 40, "closed": 160}
     )
     pom_grab = ServoPreset(
         Servo(port=3),
         positions={
-            "closed": 40,
+            "closed": 10,
             "start": 30,
-            "pom_width": 87,
+            "pom_width": 47,
             "slightly_open": 100,
             "open": 120,
             "wide_open": 140,
-            "m05_collect_poms": 125,
+            "m05_collect_poms": 100,
         },
     )
     analog_sensors = [
