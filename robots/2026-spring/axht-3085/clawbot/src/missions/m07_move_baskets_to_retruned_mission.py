@@ -24,13 +24,13 @@ class M07MoveBasketsToRetrunedMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #drive in the middle of the baskets
-            drive_backward(15),
+            drive_forward(18),
 
             #grap basktets
-            strafe_left().until(on_black(Defs.front.left)),
+            strafe_right().until(on_black(Defs.front.left)),
+            strafe_right().until(on_white(Defs.front.left)),
             Defs.shild.above_pasked(),
             strafe_right(cm=1),
-            #strafe_right().until(on_white(Defs.front.left)),
             Defs.shild.down(),
 
             strafe_left().until(
