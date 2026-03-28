@@ -97,6 +97,38 @@ class GoToEmptySlotStep(Step):
             await drum_service.add_offset(offset, velocity=1500)
 
 
+@dsl(hidden=True)
+class AdvanceToMidpointStep(Step):
+    """Advance one pocket so the opening sits on the divider, preventing drums from falling out."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        drum_service = robot.get_service(DrumMotorService)
+        drum_service.info("Advancing 1 pocket to midpoint (cover opening during lift)")
+        await drum_service.advance(1)
+
+
+@dsl(hidden=True)
+class RetreatFromMidpointStep(Step):
+    """Retreat one pocket back from midpoint to proper slot alignment."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        drum_service = robot.get_service(DrumMotorService)
+        drum_service.info("Retreating 1 pocket from midpoint (restore slot alignment)")
+        await drum_service.retreat(1)
+
+
+@dsl()
+def advance_to_midpoint() -> AdvanceToMidpointStep:
+    """Advance one pocket to midpoint to prevent drums from falling out during lift."""
+    return AdvanceToMidpointStep()
+
+
+@dsl()
+def retreat_from_midpoint() -> RetreatFromMidpointStep:
+    """Retreat one pocket from midpoint back to proper slot alignment."""
+    return RetreatFromMidpointStep()
+
+
 @dsl()
 def sort_into_slot() -> SortIntoSlotStep:
     """Detect color and sort the current drum into the correct slot."""

@@ -15,24 +15,25 @@ from libstp import IMU as Imu
 class Defs:
     imu = Imu()
     button = DigitalSensor(port=10)
+    front_left_ir_sensor = IRSensor(port=1)
+    front_right_ir_sensor = IRSensor(port=2)
+    drum_light_sensor = IRSensor(port=0)
+    wait_for_light_sensor = AnalogSensor(port=5)
+    et_range_finder = ETSensor(port=3)
     front_left_motor = Motor(
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.8362245716112606e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.8411101776190906e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.538446297592609e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5412729070541685e-05, vel_lpf_alpha=1.0
         ),
     )
-    front_left_ir_sensor = IRSensor(port=1)
-    front_right_ir_sensor = IRSensor(port=2)
-    drum_pusher_servo = Servo(port=0)
-    pom_remover_servo = Servo(port=3)
     drum_motor = Motor(
         port=2,
         inverted=False,
@@ -43,10 +44,9 @@ class Defs:
         inverted=False,
         calibration=MotorCalibration(ticks_to_rad=1e-05, vel_lpf_alpha=1.0),
     )
+    drum_pusher_servo = Servo(port=0)
+    pom_remover_servo = Servo(port=3)
     lift_drums_servo = Servo(port=1)
-    drum_light_sensor = IRSensor(port=0)
-    wait_for_light_sensor = AnalogSensor(port=5)
-    et_range_finder = ETSensor(port=3)
     analog_sensors = [
         front_left_ir_sensor,
         front_right_ir_sensor,

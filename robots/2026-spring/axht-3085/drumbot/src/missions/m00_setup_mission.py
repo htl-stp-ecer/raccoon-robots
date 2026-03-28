@@ -21,22 +21,22 @@ class M00SetupMission(Mission):
             # ),
             wait_for_button(),
             drum_lifting_up(slow_mode=False),
-            calibrate(distance_cm=50, exclude_ir_sensors=[
-                Defs.wait_for_light_sensor,
-                Defs.drum_light_sensor,
-            ]),
-
-            # Drives to black and hardcoded cm forward
-            calibrate_range_finder(turn_speed=0.2, profile="first_pipe", setup_steps=[
-                debug_wait("Place on black tape for seed first pipe position"),
-                drive_to_first_pipe(),
-            ]),
-
-            # Follows line until at the second pipe
-            calibrate_range_finder(turn_speed=0.2, profile="second_pipe", setup_steps=[
-                debug_wait("Place at the seed position for second pipe"),
-                drive_to_second_pipe(),
-            ]),
+            # calibrate(distance_cm=50, exclude_ir_sensors=[
+            #     Defs.wait_for_light_sensor,
+            #     Defs.drum_light_sensor,
+            # ]),
+            #
+            # # Drives to black and hardcoded cm forward
+            # calibrate_range_finder(turn_speed=0.2, profile="first_pipe", setup_steps=[
+            #     debug_wait("Place on black tape for seed first pipe position"),
+            #     drive_to_first_pipe(),
+            # ]),
+            #
+            # # Follows line until at the second pipe
+            # calibrate_range_finder(turn_speed=0.2, profile="second_pipe", setup_steps=[
+            #     debug_wait("Place at the seed position for second pipe"),
+            #     drive_to_second_pipe(),
+            # ]),
 
             wait_for_button(),
             open_drum_pusher(),
