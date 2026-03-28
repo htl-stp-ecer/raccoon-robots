@@ -1,4 +1,4 @@
-from libstp import GenericRobot, dsl
+from libstp import GenericRobot, Step, dsl
 from libstp.ui.step import UIStep
 
 from src.hardware.range_finder import DEFAULT_PROFILE
@@ -16,19 +16,23 @@ class RangeFinderCalibrationStep(UIStep):
         sweep_deg: float = 90.0,
         turn_speed: float = 0.2,
         profile: str = DEFAULT_PROFILE,
+        setup_steps: list[Step] | None = None,
     ):
         super().__init__()
         self.sweep_deg = sweep_deg
         self.turn_speed = turn_speed
         self.profile = profile
+        self.setup_steps = setup_steps or []
+
+    async def _run_setup(self, robot: "GenericRobot") -> None:
+        for step in self.setup_steps:
+            await step.run_step(robot)
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         service = robot.get_service(RangeFinderService)
         range_finder = service.range_finder
 
-        await self.wait_for_button(
-            f"Calibrate range finder: profile \"{self.profile}\""
-        )
+        await self._run_setup(robot)
 
         while True:
             scan_step = scan_sweep(
@@ -76,16 +80,21 @@ class RangeFinderCalibrationStep(UIStep):
                 )
                 return
 
+            # Retry: re-run setup steps (debug_wait + drive) to reset position
+            await self._run_setup(robot)
+
 
 @dsl()
 def calibrate_range_finder(
     sweep_deg: float = 90.0,
     turn_speed: float = 0.2,
     profile: str = DEFAULT_PROFILE,
+    setup_steps: list[Step] | None = None,
 ) -> RangeFinderCalibrationStep:
     """Sweep the ET sensor, compute thresholds, and confirm them in the UI."""
     return RangeFinderCalibrationStep(
         sweep_deg=sweep_deg,
         turn_speed=turn_speed,
         profile=profile,
+        setup_steps=setup_steps,
     )

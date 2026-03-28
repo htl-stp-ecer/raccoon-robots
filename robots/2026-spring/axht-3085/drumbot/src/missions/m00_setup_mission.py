@@ -27,14 +27,16 @@ class M00SetupMission(Mission):
             ]),
 
             # Drives to black and hardcoded cm forward
-            debug_wait("Place on black tape for seed first pipe position"),
-            drive_to_first_pipe(),
-            calibrate_range_finder(turn_speed=0.2, profile="first_pipe"),
+            calibrate_range_finder(turn_speed=0.2, profile="first_pipe", setup_steps=[
+                debug_wait("Place on black tape for seed first pipe position"),
+                drive_to_first_pipe(),
+            ]),
 
             # Follows line until at the second pipe
-            debug_wait("Place at the seed position for second pipe"),
-            drive_to_second_pipe(),
-            calibrate_range_finder(turn_speed=0.2, profile="second_pipe"),
+            calibrate_range_finder(turn_speed=0.2, profile="second_pipe", setup_steps=[
+                debug_wait("Place at the seed position for second pipe"),
+                drive_to_second_pipe(),
+            ]),
 
             wait_for_button(),
             open_drum_pusher(),
