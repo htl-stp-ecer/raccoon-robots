@@ -112,16 +112,19 @@ robot:
       y_cm: 47.277936962750715
       theta_deg: 0.0
 missions:
-- M00SetupMission: setup
-- M99ShutdownMission: shutdown
-- M01GrabFirstPomsMission
-- M02DriveDownAccesRampMission
-- M03GrabSecondPomsMission
-- M04AlignForLastPomsMission
-- M05CollectLastPomsMission
-- M06DriveToBasketsMission
-- M07MoveBasketsToRetrunedMission
-- M08DropSortedPomsAndReturnThemMission
+- M000SetupMission: setup
+- M999ShutdownMission: shutdown
+- M010GrabFirstPomsMission
+- M020DriveDownAccesRampMission
+- M030GrabSecondPomsMission
+- M040AlignForLastPomsMission
+- M050CollectLastPomsMission
+- M060DriveToBasketsMission
+- M070DropSortedPomsMission
+- M071PushCubesDownMission
+- M080MoveBasketsMission
+- M090ReturnSortedPomsMission
+- M100DropMachedPomsMission
 definitions:
   button:
     type: DigitalSensor
@@ -152,39 +155,40 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.643169919098347e-05
+      ticks_to_rad: 1.643346629618684e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.5951204429142702e-05
+      ticks_to_rad: 1.6005210183100793e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.6544418896332673e-05
+      ticks_to_rad: 1.6494009231304352e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.6622677072333252e-05
+      ticks_to_rad: 1.659864099950014e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
     port: 0
     positions:
       up: 65
+      save_up: 75
       _45deg: 125
       down: 180
       normal_drive: 175
       above_pasked: 132
-      grab_pasked: 153
+      grab_pasked: 157
       m06_above_paskted: 140
       m06_on_paskted: 150
   pom_arm:
@@ -193,8 +197,9 @@ definitions:
     positions:
       down: 152
       above_pom: 135
-      above_basket: 108
+      above_basket: 125
       up: 130
+      drop_poms_pos: 90
       start: 0
       high_up: 30
   shild_graber:
@@ -207,6 +212,7 @@ definitions:
   pom_grab:
     type: Servo
     port: 3
+    offset: 20
     positions:
       closed: 10
       start: 30
@@ -214,7 +220,7 @@ definitions:
       slightly_open: 100
       open: 120
       wide_open: 140
-      m05_collect_poms: 100
+      m05_collect_poms: 105
 connection:
   pi_address: 192.168.100.237
   pi_port: 8421
