@@ -1,4 +1,3 @@
-from typing import List, Tuple
 
 from libstp import GenericRobot, RobotService
 
@@ -18,10 +17,10 @@ class RangeFinderService(RobotService):
 
     @staticmethod
     def compute_thresholds(
-        scan_data: List[Tuple[float, float]],
+        scan_data: list[tuple[float, float]],
         enter_factor: float = 0.6,
         exit_factor: float = 0.4,
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """Determine T_enter and T_exit from scan data.
 
         Treats the lowest readings as baseline and computes thresholds as

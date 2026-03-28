@@ -1,6 +1,7 @@
-from libstp import Step, GenericRobot, dsl
+from libstp import GenericRobot, Step, dsl
 
 from src.service.drum_motor_service import DrumMotorService
+
 
 @dsl(hidden=True)
 class MoveDrumMotorByOffsetStep(Step):

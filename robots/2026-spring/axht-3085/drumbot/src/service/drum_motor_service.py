@@ -1,14 +1,6 @@
 import asyncio
-from typing import List, Tuple
 
-from libstp import (
-    GenericRobot,
-    AnalogSensor,
-    Motor,
-    KMeans,
-    RobotService,
-    IRSensor
-)
+from libstp import AnalogSensor, GenericRobot, IRSensor, KMeans, Motor, RobotService
 
 NUM_POCKETS = 9
 DEFAULT_MOTOR_SPEED = 1.0
@@ -48,7 +40,7 @@ class DrumMotorService(RobotService):
         return (self._blocked_threshold + self._pocket_threshold) / 2
 
     @property
-    def hysteresis_thresholds(self) -> Tuple[float, float]:
+    def hysteresis_thresholds(self) -> tuple[float, float]:
         """Return (low, high) thresholds with dead zone around midpoint.
 
         To transition pocket→blocked the reading must exceed *high*.
@@ -67,10 +59,10 @@ class DrumMotorService(RobotService):
     def pocket_threshold(self) -> float | None:
         return self._pocket_threshold
 
-    async def sample(self, duration: float, motor_speed: float = DEFAULT_MOTOR_SPEED) -> List[float]:
+    async def sample(self, duration: float, motor_speed: float = DEFAULT_MOTOR_SPEED) -> list[float]:
         """Spin motor and collect light sensor readings at ~100 Hz."""
         self.info(f"Sampling: duration={duration}s, motor_speed={motor_speed}")
-        samples: List[float] = []
+        samples: list[float] = []
         speed_percent = int(motor_speed * 100)
         self.info(f"Setting motor speed to {speed_percent}%")
         self.motor.set_speed(speed_percent)
@@ -90,7 +82,7 @@ class DrumMotorService(RobotService):
             self.info(f"Collected 0 samples in {duration}s")
         return samples
 
-    def cluster(self, samples: List[float]) -> Tuple[float, float]:
+    def cluster(self, samples: list[float]) -> tuple[float, float]:
         """Run 2-means clustering. Returns (pocket, blocked) centroids."""
         self.info(f"Clustering {len(samples)} samples...")
         km = KMeans(max_iterations=10)
@@ -110,7 +102,7 @@ class DrumMotorService(RobotService):
         low, high = self.hysteresis_thresholds
         self.info(
             f"Calibration applied: pocket={pocket:.0f}, blocked={blocked:.0f}, "
-            f"spread={blocked - pocket:.0f}, hysteresis=[{low:.0f}, {high:.0f}]"
+            f"spread={blocked - pocket:.0f}, hysteresis=[{low:.0f}, {high:.0f}]",
         )
 
     # ── pocket navigation ────────────────────────────────────────

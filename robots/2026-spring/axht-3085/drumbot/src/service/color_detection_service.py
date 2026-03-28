@@ -1,4 +1,3 @@
-from typing import List
 
 from libstp import GenericRobot, RobotService
 
@@ -6,8 +5,8 @@ from libstp import GenericRobot, RobotService
 class ColorDetectionService(RobotService):
     """Color detection — currently hardcoded, swap out for camera later."""
 
-    HARDCODED_SEQUENCE: List[str] = [
-        "blue", "pink", "blue", "pink", "blue", "pink", "blue", "pink"
+    HARDCODED_SEQUENCE: list[str] = [
+        "blue", "pink", "blue", "pink", "blue", "pink", "blue", "pink",
     ]
 
     def __init__(self, robot: "GenericRobot") -> None:
@@ -21,7 +20,7 @@ class ColorDetectionService(RobotService):
         """
         if self._index >= len(self.HARDCODED_SEQUENCE):
             raise RuntimeError(
-                f"No more drums expected (index={self._index})"
+                f"No more drums expected (index={self._index})",
             )
         color = self.HARDCODED_SEQUENCE[self._index]
         self._index += 1

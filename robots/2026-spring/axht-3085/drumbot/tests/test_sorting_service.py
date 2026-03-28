@@ -1,8 +1,9 @@
 """Offline tests for SortingService — bidirectional revolver sorting."""
-import pytest
 from unittest.mock import MagicMock
 
-from src.service.sorting_service import SortingService, NUM_SLOTS
+import pytest
+
+from src.service.sorting_service import NUM_SLOTS, SortingService
 
 
 def make_service():

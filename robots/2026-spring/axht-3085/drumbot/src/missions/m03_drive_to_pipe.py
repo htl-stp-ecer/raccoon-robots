@@ -2,9 +2,8 @@ from libstp import *
 
 from src.hardware.defs import Defs
 from src.steps.drum_collector import drum_retreat
-from src.steps.drum_lifting_step import drum_lifting_up, dispense_drums, shake_drums
+from src.steps.drum_lifting_step import drum_lifting_up, shake_drums
 from src.steps.range_finder import turn_to_peak
-from src.steps.range_finder.scan_sweep_step import ScanSweepStep
 
 
 class M03DriveToPipe(Mission):

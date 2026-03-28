@@ -3,8 +3,7 @@ from libstp.ui.step import UIStep
 
 from src.service.drum_motor_service import DrumMotorService
 
-from .dataclasses import DrumCalibrationResult
-from .screens import DrumSamplingScreen, DrumConfirmScreen
+from .screens import DrumConfirmScreen, DrumSamplingScreen
 
 
 @dsl(hidden=True)

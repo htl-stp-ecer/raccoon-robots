@@ -2,6 +2,7 @@ from libstp import GenericRobot, dsl
 from libstp.ui.step import UIStep
 
 from src.service.drum_motor_service import DrumMotorService
+
 from .screens import SortIntoSlotOffsetScreen
 
 
@@ -28,7 +29,7 @@ class SortIntoSlotCalibrationStep(UIStep):
         drum_service.info(
             "Sort-into-slot calibration: "
             f"forward {self.pocket_count} pocket(s), offset={self.offset_forward_ticks}; "
-            f"backward {self.pocket_count} pocket(s), offset={self.offset_backward_ticks}"
+            f"backward {self.pocket_count} pocket(s), offset={self.offset_backward_ticks}",
         )
 
         await drum_service.advance(self.pocket_count)
@@ -40,7 +41,7 @@ class SortIntoSlotCalibrationStep(UIStep):
                     "Press the button to apply the forward offset."
                 ),
                 offset_ticks=self.offset_forward_ticks,
-            )
+            ),
         )
         if self.offset_forward_ticks != 0:
             await drum_service.add_offset(
@@ -54,7 +55,7 @@ class SortIntoSlotCalibrationStep(UIStep):
                     "The forward offset is done. Press the button to return to "
                     "the pocket position and start the backward move."
                 ),
-            )
+            ),
         )
         if self.offset_forward_ticks != 0:
             await drum_service.add_offset(
@@ -71,7 +72,7 @@ class SortIntoSlotCalibrationStep(UIStep):
                     "Press the button to apply the backward offset."
                 ),
                 offset_ticks=self.offset_backward_ticks,
-            )
+            ),
         )
         if self.offset_backward_ticks != 0:
             await drum_service.add_offset(

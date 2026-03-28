@@ -68,7 +68,7 @@ class BlockTimerCheckStep(Step):
         if elapsed > DEADLINE_WARNING_SECS:
             drum_service.warn(
                 f"TIMING CRITICAL: drum #{self.drum_number} block took {elapsed:.2f}s "
-                f"(> {DEADLINE_WARNING_SECS}s) — next drum checkpoint at risk!"
+                f"(> {DEADLINE_WARNING_SECS}s) — next drum checkpoint at risk!",
             )
 
 

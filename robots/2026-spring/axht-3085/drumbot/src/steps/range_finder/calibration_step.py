@@ -1,6 +1,7 @@
 from libstp import GenericRobot, dsl
 from libstp.ui.step import UIStep
 
+from src.hardware.range_finder import DEFAULT_PROFILE
 from src.service.range_finder_service import RangeFinderService
 
 from .dataclasses import ScanData
@@ -10,10 +11,16 @@ from .screens import RangeFinderConfirmScreen, RangeFinderScanningScreen
 
 @dsl(hidden=True)
 class RangeFinderCalibrationStep(UIStep):
-    def __init__(self, sweep_deg: float = 90.0, turn_speed: float = 0.2):
+    def __init__(
+        self,
+        sweep_deg: float = 90.0,
+        turn_speed: float = 0.2,
+        profile: str = DEFAULT_PROFILE,
+    ):
         super().__init__()
         self.sweep_deg = sweep_deg
         self.turn_speed = turn_speed
+        self.profile = profile
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         service = robot.get_service(RangeFinderService)
@@ -25,9 +32,9 @@ class RangeFinderCalibrationStep(UIStep):
                 turn_speed=self.turn_speed,
             )
 
-            async def run_scan() -> list[tuple[float, float]]:
-                await scan_step.run_step(robot)
-                return scan_step.samples
+            async def run_scan(step=scan_step) -> list[tuple[float, float]]:
+                await step.run_step(robot)
+                return step.samples
 
             samples = await self.run_with_ui(
                 RangeFinderScanningScreen(sensor_port=range_finder.port),
@@ -52,14 +59,16 @@ class RangeFinderCalibrationStep(UIStep):
                     scan=scan,
                     t_enter=t_enter,
                     t_exit=t_exit,
-                )
+                ),
             )
 
             if result.confirmed:
-                range_finder.apply_calibration(result.t_enter, result.t_exit)
+                range_finder.apply_calibration(
+                    result.t_enter, result.t_exit, profile=self.profile,
+                )
                 service.info(
-                    f"Range finder calibration applied: "
-                    f"T_enter={result.t_enter:.0f}, T_exit={result.t_exit:.0f}"
+                    f"Range finder calibration [{self.profile}] applied: "
+                    f"T_enter={result.t_enter:.0f}, T_exit={result.t_exit:.0f}",
                 )
                 return
 
@@ -68,9 +77,11 @@ class RangeFinderCalibrationStep(UIStep):
 def calibrate_range_finder(
     sweep_deg: float = 90.0,
     turn_speed: float = 0.2,
+    profile: str = DEFAULT_PROFILE,
 ) -> RangeFinderCalibrationStep:
     """Sweep the ET sensor, compute thresholds, and confirm them in the UI."""
     return RangeFinderCalibrationStep(
         sweep_deg=sweep_deg,
         turn_speed=turn_speed,
+        profile=profile,
     )

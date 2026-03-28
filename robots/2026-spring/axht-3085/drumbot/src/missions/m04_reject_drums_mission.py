@@ -2,12 +2,10 @@ from libstp import *
 
 from src.hardware.defs import Defs
 from src.steps.drum_collector import drum_retreat
-from src.steps.drum_lifting_step import drum_lifting_down, shake_drums, dispense_drums
-from src.steps.servo_steps import open_drum_pusher, close_drum_pusher
 
 
 @dsl
-def reject_drums(offset_velocity: int = -1000, offset_time: float = 0.3,) -> Sequential:
+def reject_drums(offset_velocity: int = -1000, offset_time: float = 0.3) -> Sequential:
     sequence = []
 
 
@@ -23,7 +21,7 @@ def reject_drums(offset_velocity: int = -1000, offset_time: float = 0.3,) -> Seq
             motor_passive_brake(Defs.drum_motor),
         ])
 
-    for i in range(drums):
+    for _i in range(drums):
         sequence.append(_block())
 
     return seq(sequence)
@@ -38,5 +36,5 @@ class M04RejectDrumsMission(Mission):
             #reject_drums(),
             #reject_drums(),
             #reject_drums(),
-            wait_for_button()
+            wait_for_button(),
         ])

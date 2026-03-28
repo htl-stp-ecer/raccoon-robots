@@ -4,18 +4,17 @@ These tests exercise pure algorithmic logic (calibration, hysteresis,
 pocket navigation math) without requiring real hardware. We mock the
 RobotService base and hardware dependencies.
 """
-import asyncio
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 from src.service.drum_motor_service import (
-    DrumMotorService,
-    NUM_POCKETS,
-    HYSTERESIS_FRACTION,
-    EMA_ALPHA,
     DEFAULT_MOTOR_SPEED,
+    EMA_ALPHA,
+    HYSTERESIS_FRACTION,
+    NUM_POCKETS,
+    DrumMotorService,
 )
-
 
 # ── Fixtures ──────────────────────────────────────────────────────
 

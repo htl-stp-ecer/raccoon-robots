@@ -1,4 +1,3 @@
-from typing import List
 
 from libstp import GenericRobot, dsl
 from libstp.step import Step

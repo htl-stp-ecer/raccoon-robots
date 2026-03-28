@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from libstp import GenericRobot, RobotService
 
@@ -13,13 +12,13 @@ class SortingService(RobotService):
         super().__init__(robot)
         self.blue_next: int = 0
         self.pink_next: int = 8
-        self.slots: List[Optional[str]] = [None] * NUM_SLOTS
+        self.slots: list[str | None] = [None] * NUM_SLOTS
 
     def assign_slot(self, color: str) -> int:
         """Return the target slot for *color* and advance the pointer."""
         if self.blue_next > self.pink_next:
             raise RuntimeError(
-                f"Revolver full: blue_next={self.blue_next}, pink_next={self.pink_next}"
+                f"Revolver full: blue_next={self.blue_next}, pink_next={self.pink_next}",
             )
 
         if color == "blue":
@@ -34,22 +33,22 @@ class SortingService(RobotService):
         self.slots[target] = color
         self.info(
             f"Assigned {color} → slot {target}  "
-            f"(blue_next={self.blue_next}, pink_next={self.pink_next})"
+            f"(blue_next={self.blue_next}, pink_next={self.pink_next})",
         )
         return target
 
     @property
-    def blue_slots(self) -> List[int]:
+    def blue_slots(self) -> list[int]:
         """Indices of blue-occupied slots, in filling order (ascending)."""
         return [i for i, s in enumerate(self.slots) if s == "blue"]
 
     @property
-    def pink_slots(self) -> List[int]:
+    def pink_slots(self) -> list[int]:
         """Indices of pink-occupied slots, in filling order (descending)."""
         return [i for i in range(NUM_SLOTS - 1, -1, -1) if self.slots[i] == "pink"]
 
     @property
-    def empty_slot(self) -> Optional[int]:
+    def empty_slot(self) -> int | None:
         """The single empty slot (None if revolver isn't full yet or has >1 empty)."""
         empties = [i for i, s in enumerate(self.slots) if s is None]
         return empties[0] if len(empties) == 1 else None

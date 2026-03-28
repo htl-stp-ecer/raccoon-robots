@@ -4,7 +4,7 @@ from libstp.step.sequential import *
 
 from src.hardware.defs import *
 from src.steps.drum_collector import calibrate_drum_collector, drum_retreat
-from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_down
+from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up
 from src.steps.range_finder import calibrate_range_finder
 from src.steps.servo_steps import *
 
@@ -21,7 +21,7 @@ class M00SetupMission(Mission):
             drum_lifting_up(slow_mode=False),
             calibrate(distance_cm=50, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
-                Defs.drum_light_sensor
+                Defs.drum_light_sensor,
             ]),
 
             wait_for_button(),

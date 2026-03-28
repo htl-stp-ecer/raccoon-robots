@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import math
 from enum import Enum
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
 
 from libstp import dsl
-from libstp.motion import TurnMotion, TurnConfig
+from libstp.motion import TurnConfig, TurnMotion
 from libstp.step.motion.motion_step import MotionStep
 
 from src.service.range_finder_service import RangeFinderService
@@ -31,12 +31,12 @@ class ScanSweepStep(MotionStep):
         self._motion: TurnMotion | None = None
         self._start_heading: float = 0.0
         self._service: RangeFinderService | None = None
-        self.samples: List[Tuple[float, float]] = []
+        self.samples: list[tuple[float, float]] = []
 
     def _generate_signature(self) -> str:
         return f"ScanSweep(sweep={self._sweep_deg:.0f}, speed={self._turn_speed:.2f})"
 
-    def _make_turn(self, robot: "GenericRobot", angle_rad: float) -> TurnMotion:
+    def _make_turn(self, robot: GenericRobot, angle_rad: float) -> TurnMotion:
         cfg = TurnConfig()
         cfg.target_angle_rad = angle_rad
         cfg.speed_scale = self._turn_speed
@@ -44,7 +44,7 @@ class ScanSweepStep(MotionStep):
         motion.start()
         return motion
 
-    def on_start(self, robot: "GenericRobot") -> None:
+    def on_start(self, robot: GenericRobot) -> None:
         self._service = robot.get_service(RangeFinderService)
         self._service.range_finder.reset_filter()
         self._start_heading = robot.odometry.get_heading()
@@ -54,7 +54,7 @@ class ScanSweepStep(MotionStep):
         self._motion = self._make_turn(robot, -sweep_rad)  # negative = CW = right
         self.info(f"Sweep: scanning right {self._sweep_deg:.0f} deg")
 
-    def on_update(self, robot: "GenericRobot", dt: float) -> bool:
+    def on_update(self, robot: GenericRobot, dt: float) -> bool:
         self._motion.update(dt)
         rf = self._service.range_finder
 

@@ -1,0 +1,9 @@
+drum_pusher_servo:
+  type: Servo
+  port: 0
+pom_remover_servo:
+  type: Servo
+  port: 3
+lift_drums_servo:
+  type: Servo
+  port: 1

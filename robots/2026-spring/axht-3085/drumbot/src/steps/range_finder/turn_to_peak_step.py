@@ -6,9 +6,10 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from libstp import dsl
-from libstp.motion import TurnMotion, TurnConfig
+from libstp.motion import TurnConfig, TurnMotion
 from libstp.step.motion.motion_step import MotionStep
 
+from src.hardware.range_finder import DEFAULT_PROFILE
 from src.service.range_finder_service import RangeFinderService
 
 if TYPE_CHECKING:
@@ -25,11 +26,12 @@ class _Phase(Enum):
 class TurnToPeakStep(MotionStep):
     """Turn until T_enter, track peak heading, then TurnMotion back to it."""
 
-    def __init__(self, direction: float, turn_speed: float, search_deg: float):
+    def __init__(self, direction: float, turn_speed: float, search_deg: float, profile: str):
         super().__init__()
         self._direction = direction
         self._turn_speed = turn_speed
         self._search_deg = search_deg
+        self._profile = profile
         self._phase = _Phase.SEARCH
         self._motion: TurnMotion | None = None
         self._peak_value: float = 0.0
@@ -40,7 +42,7 @@ class TurnToPeakStep(MotionStep):
         d = "right" if self._direction < 0 else "left"
         return f"TurnToPeak(dir={d}, speed={self._turn_speed:.2f}, search={self._search_deg:.0f})"
 
-    def _make_turn(self, robot: "GenericRobot", angle_rad: float) -> TurnMotion:
+    def _make_turn(self, robot: GenericRobot, angle_rad: float) -> TurnMotion:
         cfg = TurnConfig()
         cfg.target_angle_rad = angle_rad
         cfg.speed_scale = self._turn_speed
@@ -48,9 +50,10 @@ class TurnToPeakStep(MotionStep):
         motion.start()
         return motion
 
-    def on_start(self, robot: "GenericRobot") -> None:
+    def on_start(self, robot: GenericRobot) -> None:
         self._service = robot.get_service(RangeFinderService)
         rf = self._service.range_finder
+        rf.load_profile(self._profile)
         assert rf.is_calibrated, "RangeFinder must be calibrated before turn_to_peak"
         rf.reset_filter()
 
@@ -60,7 +63,7 @@ class TurnToPeakStep(MotionStep):
         self._phase = _Phase.SEARCH
         self.info(f"Peak turn: searching (T_enter={rf.t_enter:.0f}, T_exit={rf.t_exit:.0f})")
 
-    def on_update(self, robot: "GenericRobot", dt: float) -> bool:
+    def on_update(self, robot: GenericRobot, dt: float) -> bool:
         self._motion.update(dt)
         rf = self._service.range_finder
         value = rf.read_filtered()
@@ -85,7 +88,7 @@ class TurnToPeakStep(MotionStep):
             if rf.is_below_exit(value):
                 self.info(
                     f"Peak turn: exited spike zone "
-                    f"(peak={self._peak_value:.0f} at {math.degrees(self._peak_heading):.1f} deg)"
+                    f"(peak={self._peak_value:.0f} at {math.degrees(self._peak_heading):.1f} deg)",
                 )
                 # Return to peak heading using odometry error
                 error_rad = robot.odometry.get_heading_error(self._peak_heading)
@@ -102,6 +105,7 @@ def turn_to_peak(
     direction: float = -1.0,
     turn_speed: float = 0.5,
     search_deg: float = 180.0,
+    profile: str = DEFAULT_PROFILE,
 ) -> TurnToPeakStep:
     """Peak-tracking turn using the calibrated ET range finder.
 
@@ -110,12 +114,13 @@ def turn_to_peak(
     heading when the reading drops below T_exit.
 
     Prerequisites:
-        Range finder must be calibrated via ``calibrate_range_finder()``.
+        Range finder must be calibrated via ``calibrate_range_finder(profile=...)``.
 
     Args:
         direction: -1.0 for right, +1.0 for left (default: right).
         turn_speed: Fraction of max angular speed, 0.0-1.0 (default 0.5).
         search_deg: Max degrees to search before giving up (default 180).
+        profile: Named calibration profile to use (default "default").
 
     Returns:
         A TurnToPeakStep instance.
@@ -124,10 +129,11 @@ def turn_to_peak(
 
         from src.steps.range_finder import turn_to_peak
 
-        turn_to_peak(direction=-1.0, turn_speed=0.3)
+        turn_to_peak(direction=-1.0, turn_speed=0.3, profile="pipe_1")
     """
     return TurnToPeakStep(
         direction=direction,
         turn_speed=turn_speed,
         search_deg=search_deg,
+        profile=profile,
     )

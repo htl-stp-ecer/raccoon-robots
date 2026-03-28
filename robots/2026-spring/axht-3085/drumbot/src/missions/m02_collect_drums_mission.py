@@ -1,9 +1,14 @@
 from libstp import *
 
 from src.steps.debug_wait_step import debug_wait
-from src.steps.drum_collector.sort_into_slot_step import sort_into_slot, go_to_empty_slot, block_timer_start, block_timer_check
+from src.steps.drum_collector.sort_into_slot_step import (
+    block_timer_check,
+    block_timer_start,
+    go_to_empty_slot,
+    sort_into_slot,
+)
 from src.steps.drum_lifting_step import *
-from src.steps.servo_steps import open_drum_pusher, close_drum_pusher, use_drum_to_block
+from src.steps.servo_steps import close_drum_pusher, open_drum_pusher, use_drum_to_block
 
 
 @dsl
@@ -13,7 +18,6 @@ def collect_drums() -> Sequential:
     start_offset = 10
     drums = 8
     time_between_drums = 7
-    time_before_collecting_drum = 0.3
 
     def _block(checkpoint_timestamp: int, drum_number: int):
         return seq([

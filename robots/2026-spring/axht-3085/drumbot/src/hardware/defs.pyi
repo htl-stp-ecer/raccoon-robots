@@ -1,15 +1,8 @@
 """Auto-generated type stub — Raccoon Toolchain (Tobias Madlberger / RaccoonOS Team)"""
 
-from libstp import AnalogSensor
-from libstp import DigitalSensor
-from libstp import ETSensor
-from libstp import IMU as Imu
-from libstp import IRSensor
-from libstp import Motor
-from libstp import Servo
-from libstp.step.servo.preset import ServoPreset, _PresetPosition
-from typing import List
 
+from libstp import IMU as Imu
+from libstp import AnalogSensor, DigitalSensor, ETSensor, IRSensor, Motor, Servo
 
 class Defs:
     imu: Imu
@@ -26,4 +19,4 @@ class Defs:
     drum_light_sensor: IRSensor
     wait_for_light_sensor: AnalogSensor
     et_range_finder: ETSensor
-    analog_sensors: List[AnalogSensor]
+    analog_sensors: list[AnalogSensor]

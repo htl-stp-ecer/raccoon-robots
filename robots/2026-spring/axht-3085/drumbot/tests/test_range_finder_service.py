@@ -23,7 +23,7 @@ class TestComputeThresholds:
         """Custom enter/exit factors are applied correctly."""
         scan_data = [(0.0, 0), (1.0, 1000)]
         t_enter, t_exit = RangeFinderService.compute_thresholds(
-            scan_data, enter_factor=0.8, exit_factor=0.2
+            scan_data, enter_factor=0.8, exit_factor=0.2,
         )
         assert t_enter == pytest.approx(800.0)
         assert t_exit == pytest.approx(200.0)

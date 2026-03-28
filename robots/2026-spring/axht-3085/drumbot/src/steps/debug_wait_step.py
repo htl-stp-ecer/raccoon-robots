@@ -1,4 +1,4 @@
-from libstp import GenericRobot, dsl, UIStep
+from libstp import GenericRobot, UIStep, dsl
 
 
 @dsl(hidden=True)

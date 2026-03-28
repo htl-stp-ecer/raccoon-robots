@@ -1,4 +1,3 @@
-from typing import List
 
 from libstp.ui import *
 
@@ -14,7 +13,7 @@ class DrumConfirmScreen(UIScreen[DrumCalibrationResult]):
         self,
         blocked_threshold: float,
         pocket_threshold: float,
-        collected_values: List[float],
+        collected_values: list[float],
     ):
         super().__init__()
         self.blocked_threshold = blocked_threshold

@@ -58,7 +58,7 @@ class FollowLineSingle2Step(MotionStep):
             f"speed={self._speed:.2f}, turn_speed={self._turn_speed:.2f})"
         )
 
-    def _make_linear(self, robot: "GenericRobot", distance_cm: float) -> LinearMotion:
+    def _make_linear(self, robot: GenericRobot, distance_cm: float) -> LinearMotion:
         cfg = LinearMotionConfig()
         cfg.axis = LinearAxis.Forward
         cfg.distance_m = distance_cm / 100.0
@@ -67,7 +67,7 @@ class FollowLineSingle2Step(MotionStep):
         motion.start()
         return motion
 
-    def _make_turn(self, robot: "GenericRobot", angle_rad: float) -> TurnMotion:
+    def _make_turn(self, robot: GenericRobot, angle_rad: float) -> TurnMotion:
         cfg = TurnConfig()
         cfg.target_angle_rad = angle_rad
         cfg.speed_scale = self._turn_speed
@@ -75,7 +75,7 @@ class FollowLineSingle2Step(MotionStep):
         motion.start()
         return motion
 
-    def _start_turn_deg(self, robot: "GenericRobot", angle_deg: float) -> TurnMotion:
+    def _start_turn_deg(self, robot: GenericRobot, angle_deg: float) -> TurnMotion:
         return self._make_turn(robot, math.radians(angle_deg))
 
     def _position_m(self) -> float:
@@ -95,7 +95,7 @@ class FollowLineSingle2Step(MotionStep):
         self.error(message)
         return True
 
-    def on_start(self, robot: "GenericRobot") -> None:
+    def on_start(self, robot: GenericRobot) -> None:
         if self._delta_s_cm < 0.0:
             raise ValueError("delta_s_cm must be non-negative")
         if self._search_distance_cm <= 0.0:
@@ -105,12 +105,12 @@ class FollowLineSingle2Step(MotionStep):
         self._phase = _Phase.SEARCH_FIRST_BLACK
         self._motion = self._make_linear(robot, self._search_distance_cm)
         self.info(
-            f"Searching first tape crossing with search_distance={self._search_distance_cm:.1f} cm"
+            f"Searching first tape crossing with search_distance={self._search_distance_cm:.1f} cm",
         )
         if self._started_on_black:
             self.info("Sensor started on black; waiting for white before starting X1")
 
-    def on_update(self, robot: "GenericRobot", dt: float) -> bool:
+    def on_update(self, robot: GenericRobot, dt: float) -> bool:
         assert self._motion is not None
         self._motion.update(dt)
 
@@ -140,7 +140,7 @@ class FollowLineSingle2Step(MotionStep):
                 self._phase = _Phase.DRIVE_DELTA
             elif self._motion.is_finished():
                 return self._fail(
-                    "Tape did not end while measuring X1. Increase search_distance_cm or check IR calibration."
+                    "Tape did not end while measuring X1. Increase search_distance_cm or check IR calibration.",
                 )
             return False
 
@@ -179,7 +179,7 @@ class FollowLineSingle2Step(MotionStep):
                 denominator = math.sqrt(
                     self._x1_cm ** 2
                     + self._x2_cm ** 2
-                    - 2.0 * self._x1_cm * self._x2_cm * math.cos(beta_rad)
+                    - 2.0 * self._x1_cm * self._x2_cm * math.cos(beta_rad),
                 )
                 if denominator <= 0.0:
                     return self._fail("Computed denominator for T is invalid")
@@ -197,31 +197,31 @@ class FollowLineSingle2Step(MotionStep):
                 alpha1_deg = math.degrees(self._alpha1_rad)
                 alpha2_deg = math.degrees(self._alpha2_rad)
                 self.info(
-                    f"Debug: X1={self._x1_cm:.2f} cm, X2={self._x2_cm:.2f} cm"
+                    f"Debug: X1={self._x1_cm:.2f} cm, X2={self._x2_cm:.2f} cm",
                 )
                 self.info(
-                    f"Debug: T={self._t_cm:.2f} cm, alpha1={alpha1_deg:.2f} deg, alpha2={alpha2_deg:.2f} deg"
+                    f"Debug: T={self._t_cm:.2f} cm, alpha1={alpha1_deg:.2f} deg, alpha2={alpha2_deg:.2f} deg",
                 )
 
                 if self._alpha1_rad > self._alpha2_rad:
                     correction_deg = ((alpha1_deg + alpha2_deg + self._beta_deg) / 2.0) - self._beta_deg
                     direction = "left" if correction_deg >= 0.0 else "right"
                     self.info(
-                        f"Debug: final correction angle={abs(correction_deg):.2f} deg, direction={direction}"
+                        f"Debug: final correction angle={abs(correction_deg):.2f} deg, direction={direction}",
                     )
                     self._motion = self._start_turn_deg(robot, correction_deg)
                 else:
                     correction_deg = ((alpha1_deg + alpha2_deg - self._beta_deg) / 2.0) + self._beta_deg
                     direction = "right" if correction_deg >= 0.0 else "left"
                     self.info(
-                        f"Debug: final correction angle={abs(correction_deg):.2f} deg, direction={direction}"
+                        f"Debug: final correction angle={abs(correction_deg):.2f} deg, direction={direction}",
                     )
                     self._motion = self._start_turn_deg(robot, -correction_deg)
 
                 self._phase = _Phase.FINAL_TURN
             elif self._motion.is_finished():
                 return self._fail(
-                    "Tape did not end while measuring X2. Increase search_distance_cm or check IR calibration."
+                    "Tape did not end while measuring X2. Increase search_distance_cm or check IR calibration.",
                 )
             return False
 

@@ -10,11 +10,10 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from statistics import median
-from typing import Optional
 
 import cv2
 import numpy as np
-from libstp.logging import info, warn, debug, error
+from libstp.logging import debug, error, info, warn
 
 
 @dataclass
@@ -60,7 +59,7 @@ class AnalysisResult:
         consensus = self.colors.get(name)
         return consensus.present if consensus else False
 
-    def get(self, name: str) -> Optional[ColorConsensus]:
+    def get(self, name: str) -> ColorConsensus | None:
         return self.colors.get(name)
 
 
@@ -92,15 +91,15 @@ class USBCamera:
         self._capture_fps = capture_fps
         self._presence_threshold = presence_threshold
         self._morph_kernel = np.ones(
-            (morph_kernel_size, morph_kernel_size), np.uint8
+            (morph_kernel_size, morph_kernel_size), np.uint8,
         )
 
         self._colors: dict[str, ColorProfile] = {}
         self._buffer: deque[np.ndarray] = deque(maxlen=buffer_size)
         self._lock = threading.Lock()
-        self._cap: Optional[cv2.VideoCapture] = None
+        self._cap: cv2.VideoCapture | None = None
         self._running = False
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
 
     # -- Color registration --------------------------------------------------
 
@@ -136,7 +135,7 @@ class USBCamera:
         if not self._cap.isOpened():
             error("Could not open camera at index %d", self._camera_index)
             raise RuntimeError(
-                f"Could not open camera at index {self._camera_index}"
+                f"Could not open camera at index {self._camera_index}",
             )
 
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._resolution[0])
@@ -144,12 +143,12 @@ class USBCamera:
 
         self._running = True
         self._thread = threading.Thread(
-            target=self._capture_loop, daemon=True
+            target=self._capture_loop, daemon=True,
         )
         self._thread.start()
         info(
             f"Camera started (index={self._camera_index}, "
-            f"res={self._resolution}, fps={self._capture_fps})"
+            f"res={self._resolution}, fps={self._capture_fps})",
         )
         return self
 
@@ -207,7 +206,7 @@ class USBCamera:
 
     # -- Frame access ---------------------------------------------------------
 
-    def grab_frame(self) -> Optional[np.ndarray]:
+    def grab_frame(self) -> np.ndarray | None:
         """Return the most recent frame, or None if buffer is empty."""
         with self._lock:
             return self._buffer[-1].copy() if self._buffer else None
@@ -215,7 +214,7 @@ class USBCamera:
     # -- Per-frame analysis ---------------------------------------------------
 
     def _analyze_frame(
-        self, frame: np.ndarray
+        self, frame: np.ndarray,
     ) -> dict[str, BlobResult]:
         """Analyze a single frame for all registered colors."""
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -226,7 +225,7 @@ class USBCamera:
             mask = None
             for lower, upper in profile.hsv_ranges:
                 range_mask = cv2.inRange(
-                    hsv, np.array(lower), np.array(upper)
+                    hsv, np.array(lower), np.array(upper),
                 )
                 mask = (
                     range_mask
@@ -244,7 +243,7 @@ class USBCamera:
 
             # Find contours
             contours, _ = cv2.findContours(
-                mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+                mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE,
             )
 
             if not contours:
@@ -279,8 +278,8 @@ class USBCamera:
 
     def analyze(
         self,
-        last_n_frames: Optional[int] = None,
-        presence_threshold: Optional[float] = None,
+        last_n_frames: int | None = None,
+        presence_threshold: float | None = None,
     ) -> AnalysisResult:
         """Analyze buffered frames and return consensus results.
 
@@ -327,7 +326,7 @@ class USBCamera:
 
             if not detections:
                 consensus[name] = ColorConsensus(
-                    present=False, confidence=confidence
+                    present=False, confidence=confidence,
                 )
                 continue
 
@@ -358,7 +357,7 @@ class USBCamera:
                 f"{name}={'present' if c.present else 'absent'}"
                 f"({c.confidence:.0%})"
                 for name, c in consensus.items()
-            )
+            ),
         )
 
         return AnalysisResult(

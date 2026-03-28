@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List, Tuple
 
 
 @dataclass
@@ -11,7 +10,7 @@ class RangeFinderCalibrationResult:
 
 @dataclass
 class ScanData:
-    samples: List[Tuple[float, float]]  # (heading_deg, value)
+    samples: list[tuple[float, float]]  # (heading_deg, value)
     baseline: float
     peak: float
     peak_heading_deg: float
