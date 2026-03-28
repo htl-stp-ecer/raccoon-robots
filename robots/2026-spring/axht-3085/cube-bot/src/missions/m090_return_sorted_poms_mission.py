@@ -3,7 +3,8 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M08DropSortedPomsAndReturnThemMission(Mission):
+
+class M090ReturnSortedPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             strafe_left().until(on_black(Defs.rear.right)),
@@ -11,10 +12,13 @@ class M08DropSortedPomsAndReturnThemMission(Mission):
 
             drive_backward(cm=10),
 
+            Defs.shild_graber.wide_open(),
+            Defs.shild_graber.closed(),
             strafe_right().until(
                 on_black(Defs.front.left)
             ),
-            strafe_left(cm=10),
+            strafe_left(cm=20),
+
             Defs.shild.down(),
-            strafe_right(cm=20),
+            strafe_right(cm=35),
         ])

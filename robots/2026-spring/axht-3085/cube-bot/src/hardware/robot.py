@@ -20,20 +20,21 @@ from libstp import (
 from src.hardware.defs import Defs
 
 
-from src.missions.m00_setup_mission import M00SetupMission
-from src.missions.m99_shutdown_mission import M99ShutdownMission
-from src.missions.m01_grab_first_poms_mission import M01GrabFirstPomsMission
-from src.missions.m02_drive_down_acces_ramp_mission import M02DriveDownAccesRampMission
-from src.missions.m03_grab_second_poms_mission import M03GrabSecondPomsMission
-from src.missions.m04_align_for_last_poms_mission import M04AlignForLastPomsMission
-from src.missions.m05_collect_last_poms_mission import M05CollectLastPomsMission
-from src.missions.m06_drive_to_baskets_mission import M06DriveToBasketsMission
-from src.missions.m07_move_baskets_to_retruned_mission import (
-    M07MoveBasketsToRetrunedMission,
+from src.missions.m000_setup_mission import M000SetupMission
+from src.missions.m999_shutdown_mission import M999ShutdownMission
+from src.missions.m010_grab_first_poms_mission import M010GrabFirstPomsMission
+from src.missions.m020_drive_down_acces_ramp_mission import (
+    M020DriveDownAccesRampMission,
 )
-from src.missions.m08_drop_sorted_poms_and_return_them_mission import (
-    M08DropSortedPomsAndReturnThemMission,
-)
+from src.missions.m030_grab_second_poms_mission import M030GrabSecondPomsMission
+from src.missions.m040_align_for_last_poms_mission import M040AlignForLastPomsMission
+from src.missions.m050_collect_last_poms_mission import M050CollectLastPomsMission
+from src.missions.m060_drive_to_baskets_mission import M060DriveToBasketsMission
+from src.missions.m070_drop_sorted_poms_mission import M070DropSortedPomsMission
+from src.missions.m071_push_cubes_down_mission import M071PushCubesDownMission
+from src.missions.m080_move_baskets_mission import M080MoveBasketsMission
+from src.missions.m090_return_sorted_poms_mission import M090ReturnSortedPomsMission
+from src.missions.m100_drop_mached_poms_mission import M100DropMachedPomsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -125,17 +126,20 @@ class Robot(GenericRobot):
     )
     shutdown_in = 120
     missions = [
-        M01GrabFirstPomsMission(),
-        M02DriveDownAccesRampMission(),
-        M03GrabSecondPomsMission(),
-        M04AlignForLastPomsMission(),
-        M05CollectLastPomsMission(),
-        M06DriveToBasketsMission(),
-        M07MoveBasketsToRetrunedMission(),
-        M08DropSortedPomsAndReturnThemMission(),
+        M010GrabFirstPomsMission(),
+        M020DriveDownAccesRampMission(),
+        M030GrabSecondPomsMission(),
+        M040AlignForLastPomsMission(),
+        M050CollectLastPomsMission(),
+        M060DriveToBasketsMission(),
+        M070DropSortedPomsMission(),
+        M071PushCubesDownMission(),
+        M080MoveBasketsMission(),
+        M090ReturnSortedPomsMission(),
+        M100DropMachedPomsMission(),
     ]
-    setup_mission = M00SetupMission()
-    shutdown_mission = M99ShutdownMission()
+    setup_mission = M000SetupMission()
+    shutdown_mission = M999ShutdownMission()
     width_cm = 23.5
     length_cm = 29.6
     rotation_center_forward_cm = 3.7

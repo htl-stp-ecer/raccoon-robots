@@ -3,7 +3,7 @@ from libstp import *
 from src.hardware.defs import Defs
 
 
-class M01GrabFirstPomsMission(Mission):
+class M010GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             Defs.shild.down(),
@@ -28,7 +28,7 @@ class M01GrabFirstPomsMission(Mission):
             Defs.pom_arm.down(),
             parallel(
                 Defs.front.drive_over_line(),
-                Defs.shild.up(), #make usre we don't hit the pom
+                Defs.shild.up(), #make usre we don't hit the cube
             ),
             Defs.front.strafe_left_until_black(sensor=Defs.front.right),
 

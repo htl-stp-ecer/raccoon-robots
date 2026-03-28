@@ -28,6 +28,7 @@ shild_graber:
 pom_grab:
   type: Servo
   port: 3
+  offset: 30
   positions:
     closed: 10
     start: 30

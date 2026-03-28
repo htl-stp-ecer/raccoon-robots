@@ -12,6 +12,7 @@ from typing import List
 
 class _ShildPreset(ServoPreset):
     up: _PresetPosition
+    save_up: _PresetPosition
     _45deg: _PresetPosition
     down: _PresetPosition
     normal_drive: _PresetPosition
@@ -29,6 +30,7 @@ class _PomArmPreset(ServoPreset):
     above_pom: _PresetPosition
     above_basket: _PresetPosition
     up: _PresetPosition
+    drop_poms_pos: _PresetPosition
     start: _PresetPosition
     high_up: _PresetPosition
 
