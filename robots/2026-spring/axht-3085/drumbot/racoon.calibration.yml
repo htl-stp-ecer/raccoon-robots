@@ -1,8 +1,19 @@
 root:
+  drum-collector:
+    default:
+      blocked: 2793.1494252873563
+      pocket: 1738.6533333333334
   ir-calibration:
     default_port1:
-      white_tresh: 190.753677
       black_tresh: 3368.62964
+      white_tresh: 190.753677
     default_port2:
-      white_tresh: 1050.17163
       black_tresh: 3654.87085
+      white_tresh: 1050.17163
+  range-finder:
+    first_pipe:
+      t_enter: 1200.0
+      t_exit: 800.0
+    second_pipe:
+      t_enter: 1100.0
+      t_exit: 750.0
