@@ -7,6 +7,8 @@ from src.steps.drum_collector import calibrate_drum_collector, drum_retreat
 from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up
 from src.steps.range_finder import calibrate_range_finder
 from src.steps.servo_steps import *
+from src.steps.debug_wait_step import debug_wait
+from src.steps.drive_to_pipe import drive_to_first_pipe, drive_to_second_pipe
 
 
 class M00SetupMission(Mission):
@@ -24,10 +26,16 @@ class M00SetupMission(Mission):
                 Defs.drum_light_sensor,
             ]),
 
-            wait_for_button(),
-            drive_forward().until(on_white(Defs.front_right_ir_sensor)),
-            drive_forward(23, 1),
-            calibrate_range_finder(turn_speed=0.2),
+            # Drives to black and hardcoded cm forward
+            debug_wait("Place on black tape for seed first pipe position"),
+            drive_to_first_pipe(),
+            calibrate_range_finder(turn_speed=0.2, profile="first_pipe"),
+
+            # Follows line until at the second pipe
+            debug_wait("Place at the seed position for second pipe"),
+            drive_to_second_pipe(),
+            calibrate_range_finder(turn_speed=0.2, profile="second_pipe"),
+
             wait_for_button(),
             open_drum_pusher(),
             drum_lifting_down(),

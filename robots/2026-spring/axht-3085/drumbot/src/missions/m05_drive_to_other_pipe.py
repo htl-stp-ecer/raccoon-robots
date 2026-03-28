@@ -3,6 +3,7 @@ from libstp import *
 from src.hardware.defs import Defs
 from src.steps.drum_lifting_step import *
 from src.steps.range_finder import turn_to_peak
+from src.steps.drive_to_pipe import drive_to_second_pipe
 
 
 class M05DriveToOtherPipe(Mission):
@@ -17,9 +18,8 @@ class M05DriveToOtherPipe(Mission):
                 turn_left().until(on_black(Defs.front_right_ir_sensor)),
                 follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1, side = LineSide.RIGHT).until(on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
                 drive_forward(10,1),
-                follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1,side = LineSide.RIGHT).until(on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
-                follow_line_single(Defs.front_right_ir_sensor, 43, kp=0.3, kd=0.1,side = LineSide.RIGHT),
 
+                drive_to_second_pipe(),
                 turn_to_peak(turn_speed = 0.4),
                 turn_left(20, 1),
 

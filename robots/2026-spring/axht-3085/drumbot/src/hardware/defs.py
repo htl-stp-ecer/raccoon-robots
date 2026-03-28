@@ -19,14 +19,14 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.8286281197461028e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.8383327180636618e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5253836576164541e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5472299272440976e-05, vel_lpf_alpha=1.0
         ),
     )
     front_left_ir_sensor = IRSensor(port=1)

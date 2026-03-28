@@ -4,6 +4,7 @@ from src.hardware.defs import Defs
 from src.steps.drum_collector import drum_retreat
 from src.steps.drum_lifting_step import drum_lifting_up, shake_drums
 from src.steps.range_finder import turn_to_peak
+from src.steps.drive_to_pipe import drive_to_first_pipe
 
 
 class M03DriveToPipe(Mission):
@@ -13,9 +14,8 @@ class M03DriveToPipe(Mission):
            drum_lifting_up(),
            drive_backward(35,1),
            turn_right(180,1),
-           drive_forward().until(on_white(Defs.front_right_ir_sensor)),
-           drive_forward(23,1),
 
+           drive_to_first_pipe(),
            turn_to_peak(turn_speed = 0.4),
            turn_left(19,1),
 

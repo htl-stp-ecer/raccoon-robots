@@ -26,6 +26,10 @@ class RangeFinderCalibrationStep(UIStep):
         service = robot.get_service(RangeFinderService)
         range_finder = service.range_finder
 
+        await self.wait_for_button(
+            f"Calibrate range finder: profile \"{self.profile}\""
+        )
+
         while True:
             scan_step = scan_sweep(
                 sweep_deg=self.sweep_deg,

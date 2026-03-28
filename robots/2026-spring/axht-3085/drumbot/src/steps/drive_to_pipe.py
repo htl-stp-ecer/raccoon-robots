@@ -1,0 +1,26 @@
+from libstp import seq, dsl, drive_forward, on_white, follow_line_single, on_black, LineSide, after_cm
+
+from src.hardware.defs import Defs
+
+
+@dsl
+def drive_to_first_pipe():
+    return seq([
+        drive_forward().until(on_white(Defs.front_right_ir_sensor)),
+        drive_forward(23, 1),
+    ])
+
+
+@dsl
+def drive_to_second_pipe():
+    return seq([
+        follow_line_single(
+            Defs.front_right_ir_sensor,
+            kp=0.3,
+            kd=0.1,
+            side=LineSide.RIGHT,
+        ).until(
+            on_black(Defs.front_left_ir_sensor)
+            > after_cm(43)
+        ),
+    ])
