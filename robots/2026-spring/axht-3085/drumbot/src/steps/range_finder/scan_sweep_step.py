@@ -72,7 +72,7 @@ class ScanSweepStep(MotionStep):
 
 @dsl(tags=["motion", "sensor"])
 def scan_sweep(
-    sweep_deg: float = 90.0,
+    sweep_deg: float = 45.0,
     turn_speed: float = 0.2,
 ) -> ScanSweepStep:
     """Sweep right while sampling the ET range finder."""

@@ -1,8 +1,8 @@
 root:
   ir-calibration:
     default_port1:
-      white_tresh: 199.673828
-      black_tresh: 3093.65723
+      white_tresh: 190.753677
+      black_tresh: 3368.62964
     default_port2:
-      white_tresh: 1082.76514
-      black_tresh: 3263.86011
+      white_tresh: 1050.17163
+      black_tresh: 3654.87085
