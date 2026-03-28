@@ -1,6 +1,6 @@
 from libstp import Mission, Sequential, seq
 
 
-class M99ShutdownMission(Mission):
+class M999ShutdownMission(Mission):
     def sequence(self) -> Sequential:
         return seq([])

@@ -20,18 +20,23 @@ from libstp import *
 
 from src.hardware.defs import Defs
 
-class M07MoveBasketsToRetrunedMission(Mission):
+class M080MoveBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #drive in the middle of the baskets
-            drive_forward(18),
+            parallel(
+                Defs.shild.above_pasked(),
+                drive_forward(13),
+            ),
 
             #grap basktets
-            strafe_right().until(on_black(Defs.front.left)),
-            strafe_right().until(on_white(Defs.front.left)),
+            strafe_right().until(
+                on_black(Defs.front.left) >
+                on_white(Defs.front.left)
+            ),
             Defs.shild.above_pasked(),
             strafe_right(cm=1),
-            Defs.shild.down(),
+            Defs.shild.grab_pasked(),
 
             strafe_left().until(
                 on_black(Defs.front.right) >
