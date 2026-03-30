@@ -19,19 +19,20 @@ def collect_drums() -> Sequential:
     start_offset = 10
     drums = 8
     time_between_drums = 7
+    time_before_collecting_drum = 0.3
 
     def _block(checkpoint_timestamp: int, drum_number: int):
         return seq([
             open_drum_pusher(),
             #debug_wait(f"Drum #{drum_number}: waiting for drum..."),
-            #wait_for_checkpoint(checkpoint_timestamp + time_before_collecting_drum),
-            debug_wait(f"Drum #{drum_number}: block drum"),
+            wait_for_checkpoint(checkpoint_timestamp + time_before_collecting_drum),
+            #debug_wait(f"Drum #{drum_number}: block drum"),
             block_timer_start(),
 
-            parallel(
+            #parallel(
                 use_drum_to_block(),
-                advance_to_midpoint(),
-            ),
+                #advance_to_midpoint(),
+            #),
 
             drum_align_on_back(),
 

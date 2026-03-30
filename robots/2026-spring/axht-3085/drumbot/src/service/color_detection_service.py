@@ -6,7 +6,7 @@ class ColorDetectionService(RobotService):
     """Color detection — currently hardcoded, swap out for camera later."""
 
     HARDCODED_SEQUENCE: list[str] = [
-        "blue", "pink", "blue", "pink", "blue", "pink", "blue", "pink",
+        "blue", "blue", "pink", "pink", "blue", "blue", "pink",  "pink",
     ]
 
     def __init__(self, robot: "GenericRobot") -> None:

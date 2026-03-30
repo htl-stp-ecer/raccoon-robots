@@ -1,20 +1,20 @@
 root:
   drum-collector:
     default:
-      blocked: 2277.1526717557254
-      pocket: 334.44761904761907
-      ticks_per_pocket: 137319
+      blocked: 2272.0079365079364
+      pocket: 307.69750889679716
+      ticks_per_pocket: 139926
   ir-calibration:
     default_port1:
-      black_tresh: 3368.62964
-      white_tresh: 190.753677
+      black_tresh: 3419.14282
+      white_tresh: 190.227844
     default_port2:
-      black_tresh: 3654.87085
-      white_tresh: 1050.17163
+      black_tresh: 3548.17383
+      white_tresh: 1263.91064
   range-finder:
     first_pipe:
-      t_enter: 1200.0
-      t_exit: 800.0
+      t_enter: 1940.0286847084003
+      t_exit: 1506.5752283963043
     second_pipe:
-      t_enter: 1100.0
-      t_exit: 750.0
+      t_enter: 1598.68556976387
+      t_exit: 1340.5283546458052
