@@ -1,4 +1,4 @@
-"""Auto-generated type stub for defs.py — DO NOT EDIT."""
+"""Auto-generated type stub — Raccoon Toolchain (Tobias Madlberger / RaccoonOS Team)"""
 
 from libstp import AnalogSensor
 from libstp import DigitalSensor
@@ -12,11 +12,14 @@ from typing import List
 
 class _ShildPreset(ServoPreset):
     up: _PresetPosition
+    save_up: _PresetPosition
     _45deg: _PresetPosition
     down: _PresetPosition
     normal_drive: _PresetPosition
     above_pasked: _PresetPosition
     grab_pasked: _PresetPosition
+    m06_above_paskted: _PresetPosition
+    m06_on_paskted: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...
@@ -27,6 +30,7 @@ class _PomArmPreset(ServoPreset):
     above_pom: _PresetPosition
     above_basket: _PresetPosition
     up: _PresetPosition
+    drop_poms_pos: _PresetPosition
     start: _PresetPosition
     high_up: _PresetPosition
 
