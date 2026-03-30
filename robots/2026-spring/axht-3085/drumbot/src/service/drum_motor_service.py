@@ -237,6 +237,12 @@ class DrumMotorService(RobotService):
         direction = "fwd" if forward else "bwd"
         self.info(f"{direction} {pockets} pockets {'precise' if precise else 'fast'} (midpoint={self._at_midpoint})")
 
+        # When at midpoint going forward, the half-pocket clearing crosses
+        # into the next pocket's stripe, so we need one fewer counted stripe.
+        stripes_to_count = pockets
+        if self._at_midpoint and forward:
+            stripes_to_count -= 1
+
         start_pos = self.motor.get_position()
         self.motor.set_velocity(FULL_VELOCITY * sign)
 
@@ -245,23 +251,24 @@ class DrumMotorService(RobotService):
             while abs(self.motor.get_position() - start_pos) < tpp // 2:
                 await asyncio.sleep(SAMPLE_INTERVAL)
 
-        # Skip past current stripe
-        skip_start = self.motor.get_position()
-        while abs(self.motor.get_position() - skip_start) < skip_ticks:
-            await asyncio.sleep(SAMPLE_INTERVAL)
+        if stripes_to_count > 0:
+            # Skip past current stripe
+            skip_start = self.motor.get_position()
+            while abs(self.motor.get_position() - skip_start) < skip_ticks:
+                await asyncio.sleep(SAMPLE_INTERVAL)
 
-        # Count stripe transitions at full speed
-        on_black = self._is_black()
-        stripes_counted = 0
-        entry_pos = 0
+            # Count stripe transitions at full speed
+            on_black = self._is_black()
+            stripes_counted = 0
+            entry_pos = 0
 
-        while stripes_counted < pockets:
-            reading = self._is_black()
-            if reading and not on_black:
-                stripes_counted += 1
-                entry_pos = self.motor.get_position()
-            on_black = reading
-            await asyncio.sleep(SAMPLE_INTERVAL)
+            while stripes_counted < stripes_to_count:
+                reading = self._is_black()
+                if reading and not on_black:
+                    stripes_counted += 1
+                    entry_pos = self.motor.get_position()
+                on_black = reading
+                await asyncio.sleep(SAMPLE_INTERVAL)
 
         # Stop
         self.motor.set_velocity(0)
