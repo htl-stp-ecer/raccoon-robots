@@ -1,11 +1,12 @@
+import asyncio
 import math
 from libstp import *
 
 from src.hardware.defs import Defs
 
 
-@dsl_step(tags=["motion", "sensor"])
-class EtScanAlign(MotionStep):
+@dsl_step(tags=["sensor"])
+class EtScanAlign(Step):
     """Rotates while sampling the ET sensor, detects an object's edges,
     then centers the heading between start and end of the object.
 
@@ -34,66 +35,52 @@ class EtScanAlign(MotionStep):
         self.speed = speed
         self.threshold = threshold
         self.sensor = sensor or Defs.et_sensor
-        # filled during scan
         self._samples: list[tuple[float, float]] = []  # (heading_deg, value)
-        self._start_heading: float = 0.0
-        self._scan_done = False
-        self._centering = False
-        self._target_heading: float | None = None
 
-    def on_start(self, robot):
-        self.drive = robot.drive
-        self._start_heading = math.degrees(robot.defs.imu.get_heading())
+    async def _execute_step(self, robot) -> None:
+        # Phase 1: Scan — turn while sampling the ET sensor
         self._samples = []
-        self._scan_done = False
-        self._centering = False
-        self._target_heading = None
+        sampling = True
 
-    def on_update(self, robot, dt) -> bool:
-        current_heading = math.degrees(robot.defs.imu.get_heading())
+        async def sample_loop():
+            while sampling:
+                heading_deg = math.degrees(robot.defs.imu.get_heading())
+                value = self.sensor.read()
+                self._samples.append((heading_deg, value))
+                await asyncio.sleep(0.01)  # ~100 Hz
 
-        if not self._scan_done:
-            return self._do_scan(robot, current_heading)
+        # Build the turn step
+        if self.direction == "left":
+            scan_step = turn_left(self.scan_degrees, self.speed)
         else:
-            return self._do_center(robot, current_heading)
+            scan_step = turn_right(self.scan_degrees, self.speed)
 
-    def _do_scan(self, robot, current_heading: float) -> bool:
-        # sample the sensor
-        value = self.sensor.read()
-        self._samples.append((current_heading, value))
+        # Run turn and sampling concurrently
+        sample_task = asyncio.create_task(sample_loop())
+        try:
+            await scan_step.run_step(robot)
+        finally:
+            sampling = False
+            await sample_task
 
-        # compute how far we've rotated
-        delta = self._angle_diff(current_heading, self._start_heading)
-        if abs(delta) >= self.scan_degrees:
-            # scan complete — stop, analyse, prepare centering
-            robot.drive.hard_stop()
-            self._scan_done = True
-            self._target_heading = self._find_center()
-            if self._target_heading is None:
-                # nothing detected — just stop where we are
-                return True
-            self._centering = True
-            return False
+        # Phase 2: Analyze — find object center
+        target = self._find_center()
+        if target is None:
+            return  # nothing detected
 
-        # keep turning
-        wz = self.speed if self.direction == "left" else -self.speed
-        self.drive.set_desired_velocity(0, 0, wz)
-        return False
+        # Phase 3: Center — turn to the midpoint heading
+        current = math.degrees(robot.defs.imu.get_heading())
+        error = self._angle_diff(target, current)
 
-    def _do_center(self, robot, current_heading: float) -> bool:
-        error = self._angle_diff(self._target_heading, current_heading)
         if abs(error) < 1.0:
-            robot.drive.hard_stop()
-            return True
+            return  # already centered
 
-        # proportional turn toward the target
-        kp = 0.02
-        wz = max(-self.speed, min(self.speed, kp * error))
-        self.drive.set_desired_velocity(0, 0, wz)
-        return False
+        if error > 0:
+            center_step = turn_left(abs(error), self.speed)
+        else:
+            center_step = turn_right(abs(error), self.speed)
 
-    def on_stop(self, robot):
-        robot.drive.hard_stop()
+        await center_step.run_step(robot)
 
     # --- analysis ---
 
@@ -106,14 +93,10 @@ class EtScanAlign(MotionStep):
         if not above:
             return None
 
-        # object start = first sample above threshold
-        # object end   = last sample above threshold
         obj_start_heading = above[0][0]
         obj_end_heading = above[-1][0]
 
-        # center heading = midpoint of the arc between start and end
-        center = self._midpoint_angle(obj_start_heading, obj_end_heading)
-        return center
+        return self._midpoint_angle(obj_start_heading, obj_end_heading)
 
     @property
     def object_start_heading(self) -> float | None:
