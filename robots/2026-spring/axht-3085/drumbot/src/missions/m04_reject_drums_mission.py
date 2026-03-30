@@ -1,24 +1,16 @@
 from libstp import *
 
-from src.hardware.defs import Defs
 from src.steps.drum_collector import drum_retreat
 
 
 @dsl
-def reject_drums(offset_velocity: int = -1000, offset_time: float = 0.3) -> Sequential:
+def reject_drums() -> Sequential:
     sequence = []
-
-
     drums = 1
-
 
     def _block():
         return seq([
             drum_retreat(),
-            # relative soon
-            set_motor_velocity(Defs.drum_motor, offset_velocity),
-            wait_for_seconds(offset_time),
-            motor_passive_brake(Defs.drum_motor),
         ])
 
     for _i in range(drums):
@@ -30,11 +22,5 @@ def reject_drums(offset_velocity: int = -1000, offset_time: float = 0.3) -> Sequ
 class M04RejectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            #reject_drums(),
-           # shake_drums(),
-            #dispense_drums(),
-            #reject_drums(),
-            #reject_drums(),
-            #reject_drums(),
             wait_for_button(),
         ])

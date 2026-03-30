@@ -12,7 +12,7 @@ class DrumGoToStep(Step):
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         service = robot.get_service(DrumMotorService)
-        await service.go_to(self.index)
+        await service.go_to_pocket(self.index)
 
 
 @dsl()

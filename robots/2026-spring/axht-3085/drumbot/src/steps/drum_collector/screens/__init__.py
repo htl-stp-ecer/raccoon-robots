@@ -1,3 +1,4 @@
 from .confirm_screen import DrumConfirmScreen
+from .edge_align_screen import EdgeAlignScreen
 from .sampling_screen import DrumSamplingScreen
 from .sort_into_slot_offset_screen import SortIntoSlotOffsetScreen

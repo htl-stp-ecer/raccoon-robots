@@ -13,14 +13,9 @@ DEADLINE_WARNING_SECS = 6.0
 _block_start_time: float = 0.0
 
 
-OFFSET_FORWARD_TICKS = 0    # ticks offset after forward travel
-OFFSET_BACKWARD_TICKS = -40000   # ticks offset after backward travel
-OFFSET_VELOCITY = 1500         # firmware PID velocity for offset
-
-
 @dsl(hidden=True)
 class SortIntoSlotStep(Step):
-    """Detect drum color, compute target slot, rotate revolver there, apply offset."""
+    """Detect drum color, compute target slot, rotate revolver there."""
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         color_service = robot.get_service(ColorDetectionService)
@@ -29,19 +24,7 @@ class SortIntoSlotStep(Step):
 
         color = await color_service.detect_color()
         target = sorting_service.assign_slot(color)
-        direction = await drum_service.go_to(target)
-
-        # Position-based offset nudge
-        if direction == "forward":
-            offset = OFFSET_FORWARD_TICKS
-        elif direction == "backward":
-            offset = OFFSET_BACKWARD_TICKS
-        else:
-            offset = 0
-
-        if offset != 0:
-            drum_service.info(f"Applying offset: {offset} ticks, direction={direction}")
-            await drum_service.add_offset(offset, velocity=400)
+        await drum_service.go_to_pocket(target)
 
 
 @dsl(hidden=True)
@@ -80,21 +63,9 @@ class GoToEmptySlotStep(Step):
         sorting_service = robot.get_service(SortingService)
         drum_service = robot.get_service(DrumMotorService)
 
-        empty = sorting_service.nearest_empty_slot(drum_service.current_index)
+        empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
         drum_service.info(f"Moving to empty slot {empty} before opening pusher")
-        direction = await drum_service.go_to(empty)
-
-        # Position-based offset so the empty slot is centered under the pipe
-        if direction == "forward":
-            offset = OFFSET_FORWARD_TICKS
-        elif direction == "backward":
-            offset = OFFSET_BACKWARD_TICKS
-        else:
-            offset = 0
-
-        if offset != 0:
-            drum_service.info(f"Empty slot offset: {offset} ticks, direction={direction}")
-            await drum_service.add_offset(offset, velocity=1500)
+        await drum_service.go_to_pocket(empty)
 
 
 @dsl(hidden=True)
@@ -103,8 +74,8 @@ class AdvanceToMidpointStep(Step):
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         drum_service = robot.get_service(DrumMotorService)
-        drum_service.info("Advancing 1 pocket to midpoint (cover opening during lift)")
-        await drum_service.advance(1)
+        drum_service.info("Moving to midpoint (cover opening during lift)")
+        await drum_service.move_to_midpoint()
 
 
 @dsl(hidden=True)
@@ -113,8 +84,8 @@ class RetreatFromMidpointStep(Step):
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         drum_service = robot.get_service(DrumMotorService)
-        drum_service.info("Retreating 1 pocket from midpoint (restore slot alignment)")
-        await drum_service.retreat(1)
+        drum_service.info("Returning from midpoint (restore slot alignment)")
+        await drum_service.move_from_midpoint()
 
 
 @dsl()

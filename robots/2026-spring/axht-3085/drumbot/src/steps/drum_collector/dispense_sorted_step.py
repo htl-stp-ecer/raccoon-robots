@@ -25,7 +25,7 @@ class DispenseSortedStep(Step):
         drum.info(f"Dispensing {self.color}: slots={slots}")
 
         for slot in slots:
-            await drum.go_to(slot)
+            await drum.go_to_pocket(slot)
             await drum.retreat(1)
 
 
