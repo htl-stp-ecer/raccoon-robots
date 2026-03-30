@@ -152,8 +152,12 @@ class USBCamera:
                 f"Could not open camera at index {self._camera_index}",
             )
 
+        # Prefer MJPEG — camera does HW JPEG compression, less USB
+        # bandwidth and less CPU than raw YUYV.
+        self._cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._resolution[0])
         self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self._resolution[1])
+        self._cap.set(cv2.CAP_PROP_FPS, self._capture_fps)
 
         if self._save_frames:
             os.makedirs(self._frames_dir, exist_ok=True)

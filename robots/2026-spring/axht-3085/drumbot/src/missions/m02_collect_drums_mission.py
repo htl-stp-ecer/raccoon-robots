@@ -15,6 +15,7 @@ from src.steps.drum_collector.sort_into_slot_step import (
 )
 from src.steps.drum_lifting_step import *
 from src.steps.servo_steps import close_drum_pusher, open_drum_pusher, use_drum_to_block
+from src.steps.wait_for_drum_step import wait_for_drum
 
 
 class DrumCollectionScreen(UIScreen[None]):
@@ -66,8 +67,6 @@ class DrumCollectionScreen(UIScreen[None]):
 START_OFFSET = 10
 DRUMS = 8
 TIME_BETWEEN_DRUMS = 7
-TIME_BEFORE_COLLECTING = 0.3
-
 
 @dsl(hidden=True)
 class CollectDrumsStep(UIStep):
@@ -97,7 +96,7 @@ class CollectDrumsStep(UIStep):
                 # Build and run the block steps
                 block = seq([
                     open_drum_pusher(),
-                    wait_for_checkpoint(checkpoint + TIME_BEFORE_COLLECTING),
+                    wait_for_drum(checkpoint=checkpoint, timeout=0.3),
                     block_timer_start(),
                     use_drum_to_block(),
                     drum_align_on_back(),
@@ -106,6 +105,7 @@ class CollectDrumsStep(UIStep):
                         sort_into_slot(),
                     ),
                     close_drum_pusher(),
+                    wait_for_seconds(0.1),
                     go_to_empty_slot(),
                     block_timer_check(drum_number),
                 ])
