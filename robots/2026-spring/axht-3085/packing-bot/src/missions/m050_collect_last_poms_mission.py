@@ -11,7 +11,7 @@ def line_follow(speed = 1.0):
         )
 
 
-class M05CollectLastPomsMission(Mission):
+class M050CollectLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             drive_forward(1.0, 1.0),
@@ -21,7 +21,6 @@ class M05CollectLastPomsMission(Mission):
             #align for poms
             turn_to_heading_left(0, 1.0),
             Defs.pom_arm.down(200),
-            wait_for_seconds(0.5),
             Defs.pom_grab.m05_collect_poms(),
 
             #collect poms
@@ -33,7 +32,7 @@ class M05CollectLastPomsMission(Mission):
                     Defs.pom_grab.wide_open(),
 
                     #make sure we collect ALL lost poms
-                    wait_until_distance(cm=45),
+                    wait_until_distance(cm=35),
                     Defs.pom_grab.closed(),
                     Defs.pom_grab.slightly_open(),
                 ])

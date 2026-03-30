@@ -17,7 +17,7 @@ pom_arm:
     above_basket: 108
     up: 130
     start: 0
-    high_up: 40
+    high_up: 30
 shild_graber:
   type: Servo
   port: 2
@@ -28,11 +28,12 @@ shild_graber:
 pom_grab:
   type: Servo
   port: 3
+  offset: 30
   positions:
-    closed: 40
+    closed: 10
     start: 30
-    pom_width: 87
-    slightly_open: 100
-    open: 120
-    wide_open: 140
-    m05_collect_poms: 125
+    pom_width: 47
+    slightly_open: 700
+    open: 90
+    wide_open: 110
+    m05_collect_poms: 65
