@@ -38,8 +38,8 @@ def collect_drums() -> Sequential:
             # sort_into_slot auto-accounts for midpoint offset — no retreat needed
             sort_into_slot(),
             close_drum_pusher(),
-            #go_to_empty_slot(),
-            advance_to_midpoint(),
+            go_to_empty_slot(),
+            #advance_to_midpoint(),
             block_timer_check(drum_number),
         ])
 
