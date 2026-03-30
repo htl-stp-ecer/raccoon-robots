@@ -121,7 +121,6 @@ missions:
 - M050CollectLastPomsMission
 - M060DriveToBasketsMission
 - M070DropSortedPomsMission
-- M071PushCubesDownMission
 - M080MoveBasketsMission
 - M090ReturnSortedPomsMission
 - M100DropMachedPomsMission
@@ -158,28 +157,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.64382931596523e-05
+      ticks_to_rad: 1.6302632397128554e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.5989446936703784e-05
+      ticks_to_rad: 1.5937292686867127e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.6501458597462377e-05
+      ticks_to_rad: 1.6687785582468087e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.6594096628777358e-05
+      ticks_to_rad: 1.6541167977570164e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
@@ -201,7 +200,7 @@ definitions:
       down: 152
       above_pom: 135
       above_basket: 125
-      up: 130
+      up: 135
       drop_poms_pos: 90
       start: 0
       high_up: 30

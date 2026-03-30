@@ -12,8 +12,6 @@ class M090ReturnSortedPomsMission(Mission):
 
             drive_backward(cm=10),
 
-            Defs.shild_graber.wide_open(),
-            Defs.shild_graber.closed(),
             strafe_right().until(
                 on_black(Defs.front.left)
             ),
