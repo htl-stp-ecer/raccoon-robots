@@ -15,11 +15,6 @@ from src.steps.drive_to_pipe import drive_to_first_pipe, drive_to_second_pipe
 class M00SetupMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # auto_tune(
-            #    characterize_axes=[ "angular"],
-            #    vel_axes=[ "wz"],
-            #    motion_axes=["distance", "heading"],
-            # ),
             wait_for_button(),
             drum_lifting_up(slow_mode=False),
             calibrate(distance_cm=50, exclude_ir_sensors=[

@@ -6,7 +6,6 @@ from src.steps.drum_collector.sort_into_slot_step import (
     block_timer_check,
     block_timer_start,
     go_to_empty_slot,
-    prepare_color_detection,
     sort_into_slot,
 )
 from src.steps.drum_lifting_step import *
@@ -26,7 +25,6 @@ def collect_drums() -> Sequential:
         return seq([
             open_drum_pusher(),
             #debug_wait(f"Drum #{drum_number}: waiting for drum..."),
-            prepare_color_detection(),  # analyze while drum is still visible
             wait_for_checkpoint(checkpoint_timestamp + time_before_collecting_drum),
             block_timer_start(),
 

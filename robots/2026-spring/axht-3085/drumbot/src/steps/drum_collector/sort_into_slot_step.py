@@ -1,4 +1,3 @@
-import asyncio
 import time
 
 from libstp import GenericRobot, dsl
@@ -12,19 +11,6 @@ DEADLINE_WARNING_SECS = 6.0
 
 # Shared timestamp set by BlockTimerStartStep, checked by BlockTimerCheckStep
 _block_start_time: float = 0.0
-
-# How far ahead of detect_color() to kick off analysis
-DETECTION_LEAD_TIME = 0.3
-
-
-@dsl(hidden=True)
-class PrepareColorDetectionStep(Step):
-    """Schedule camera analysis 0.3 s before it is needed."""
-
-    async def _execute_step(self, robot: "GenericRobot") -> None:
-        color_service = robot.get_service(ColorDetectionService)
-        color_service.schedule_detection()
-        await asyncio.sleep(DETECTION_LEAD_TIME)
 
 
 @dsl(hidden=True)
@@ -112,12 +98,6 @@ def advance_to_midpoint() -> AdvanceToMidpointStep:
 def retreat_from_midpoint() -> RetreatFromMidpointStep:
     """Retreat one pocket from midpoint back to proper slot alignment."""
     return RetreatFromMidpointStep()
-
-
-@dsl()
-def prepare_color_detection() -> PrepareColorDetectionStep:
-    """Schedule camera analysis ahead of sort_into_slot."""
-    return PrepareColorDetectionStep()
 
 
 @dsl()

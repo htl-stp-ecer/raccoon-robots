@@ -1,62 +1,92 @@
 
-import asyncio
 import threading
+import time
 
 from libstp import GenericRobot, RobotService
 
 from src.hardware.usb_camera import USBCamera
 
-# HSV ranges — tune these under competition lighting
-BLUE_HSV_RANGES = [((100, 80, 100), (130, 255, 255))]
-PINK_HSV_RANGES = [((150, 80, 100), (170, 255, 255)),
-                    ((170, 80, 100), (180, 255, 255))]
+# HSV ranges — wide to handle motion blur, varying lighting, desaturation
+BLUE_HSV_RANGES = [((85, 25, 25), (135, 255, 255))]
+PINK_HSV_RANGES = [((140, 25, 25), (180, 255, 255)),
+                    ((0, 25, 25), (10, 255, 255))]  # wrap around red
 
 ANALYSIS_FRAMES = 5
-PRESENCE_THRESHOLD = 0.5
+PRESENCE_THRESHOLD = 0.3
 
 
 class ColorDetectionService(RobotService):
-    """Detect drum color (blue/pink) via USB camera with scheduled analysis."""
+    """Continuously detect drum color (blue/pink) via USB camera.
+
+    A background thread analyzes frames as fast as it can.
+    The latest detected color is always available. Consuming it clears
+    the cached value so stale data is never reused.
+    """
 
     def __init__(self, robot: "GenericRobot") -> None:
         super().__init__(robot)
         self._camera = USBCamera(
-            camera_index=0,
+            camera_index="/dev/video0",
             resolution=(320, 240),
             buffer_size=30,
             capture_fps=15,
+            save_frames=False,
+            frames_dir="frames",
+            get_time=lambda: time.monotonic() - self._camera_start_time,
         )
-        self._camera.add_color("blue", hsv_ranges=BLUE_HSV_RANGES)
-        self._camera.add_color("pink", hsv_ranges=PINK_HSV_RANGES)
+        self._camera.add_color("blue", hsv_ranges=BLUE_HSV_RANGES,
+                               min_area=300, min_dimension=10)
+        self._camera.add_color("pink", hsv_ranges=PINK_HSV_RANGES,
+                               min_area=300, min_dimension=10)
 
-        self._pending_color: str | None = None
-        self._result_ready = asyncio.Event()
-        self._analysis_lock = threading.Lock()
+        self._camera_start_time: float = 0.0
+        self._lock = threading.Lock()
+        self._latest_color: str | None = None
+        self._detection_thread: threading.Thread | None = None
+        self._running = False
 
     def start_camera(self) -> None:
-        """Start the background capture thread."""
+        """Start background capture and continuous detection."""
+        self._camera_start_time = time.monotonic()
         self._camera.start()
-        self.info("Camera started — capturing frames in background")
+        self._running = True
+        self._detection_thread = threading.Thread(
+            target=self._detection_loop, daemon=True,
+        )
+        self._detection_thread.start()
+        self.info("Camera started — continuous color detection running")
 
     def stop_camera(self) -> None:
-        """Stop capture and release camera."""
+        """Stop detection and release camera."""
+        self._running = False
+        if self._detection_thread is not None:
+            self._detection_thread.join(timeout=2.0)
+            self._detection_thread = None
         self._camera.stop()
         self.info("Camera stopped")
 
-    def schedule_detection(self) -> None:
-        """Kick off frame analysis in a background thread.
+    def _detection_loop(self) -> None:
+        """Continuously analyze frames and cache the detected color."""
+        import os
 
-        Call this ~0.3 s before detect_color() is needed.
-        The analysis runs on a worker thread so it doesn't block the event loop.
-        """
-        self._result_ready.clear()
-        self._pending_color = None
+        detect_count = 0
+        log_window_start = time.monotonic()
+        last_frame_id = 0
 
-        def _analyze() -> None:
+        while self._running:
+            current_frame_id = self._camera.total_frames
+            if current_frame_id < ANALYSIS_FRAMES or current_frame_id == last_frame_id:
+                time.sleep(0.02)
+                continue
+            last_frame_id = current_frame_id
+
+            t0 = time.monotonic()
             result = self._camera.analyze(
                 last_n_frames=ANALYSIS_FRAMES,
                 presence_threshold=PRESENCE_THRESHOLD,
             )
+            analysis_ms = (time.monotonic() - t0) * 1000
+            detect_count += 1
 
             blue = result.get("blue")
             pink = result.get("pink")
@@ -64,45 +94,47 @@ class ColorDetectionService(RobotService):
             pink_present = pink is not None and pink.present
 
             if blue_present and pink_present:
-                # Both detected — pick the one with higher confidence
                 color = "blue" if blue.confidence >= pink.confidence else "pink"
             elif blue_present:
                 color = "blue"
             elif pink_present:
                 color = "pink"
             else:
-                color = "blue"  # fallback
-                self.warn("No color detected — defaulting to blue")
+                color = None
 
-            with self._analysis_lock:
-                self._pending_color = color
+            if color is not None:
+                with self._lock:
+                    self._latest_color = color
 
-            # Thread-safe way to set the asyncio event from a worker thread
-            loop = asyncio._get_running_loop()
-            if loop is not None:
-                loop.call_soon_threadsafe(self._result_ready.set)
-            else:
-                self._result_ready.set()
-
-        threading.Thread(target=_analyze, daemon=True).start()
-        self.info("Color analysis scheduled")
+            # Log performance every 5 seconds
+            log_elapsed = time.monotonic() - log_window_start
+            if log_elapsed >= 5.0:
+                detect_fps = detect_count / log_elapsed
+                try:
+                    load1, load5, load15 = os.getloadavg()
+                    cpu_str = f"load={load1:.1f}/{load5:.1f}/{load15:.1f}"
+                except OSError:
+                    cpu_str = "load=N/A"
+                self.info(
+                    f"Detection: {detect_fps:.1f} Hz, "
+                    f"last analysis={analysis_ms:.0f}ms, "
+                    f"{cpu_str}"
+                )
+                detect_count = 0
+                log_window_start = time.monotonic()
 
     async def detect_color(self) -> str:
-        """Return 'blue' or 'pink' for the current drum.
+        """Return the last detected color and clear it.
 
-        Waits for the result from a prior schedule_detection() call.
-        If no analysis was scheduled, runs one synchronously.
+        Logs an error if no color was detected.
         """
-        if self._pending_color is None and not self._result_ready.is_set():
-            self.warn("detect_color called without schedule_detection — analyzing now")
-            self.schedule_detection()
+        with self._lock:
+            color = self._latest_color
+            self._latest_color = None
 
-        try:
-            await asyncio.wait_for(self._result_ready.wait(), timeout=2.0)
-        except asyncio.TimeoutError:
-            self.warn("Analysis timed out — defaulting to blue")
+        if color is None:
+            self.error("No color detected by camera — could not determine drum color")
             return "blue"
 
-        color = self._pending_color or "blue"
         self.info(f"Detected color: {color}")
         return color

@@ -5,15 +5,18 @@ Provides configurable color profiles with multi-frame consensus analysis,
 designed for RPi3 performance constraints.
 """
 
+import os
 import threading
 import time
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from statistics import median
+from typing import Callable
 
 import cv2
 import numpy as np
-from libstp.logging import debug, error, info, warn
+from libstp import debug, error, info, warn
 
 
 @dataclass
@@ -78,12 +81,15 @@ class USBCamera:
 
     def __init__(
         self,
-        camera_index: int = 0,
+        camera_index: int | str = 0,
         resolution: tuple[int, int] = (320, 240),
         buffer_size: int = 30,
         capture_fps: int = 15,
         presence_threshold: float = 0.5,
         morph_kernel_size: int = 3,
+        save_frames: bool = False,
+        frames_dir: str = "frames",
+        get_time: Callable[[], float] | None = None,
     ):
         self._camera_index = camera_index
         self._resolution = resolution
@@ -100,6 +106,14 @@ class USBCamera:
         self._cap: cv2.VideoCapture | None = None
         self._running = False
         self._thread: threading.Thread | None = None
+        self._total_frames: int = 0
+
+        # Frame recording
+        self._save_frames = save_frames
+        self._frames_dir = frames_dir
+        self._get_time = get_time
+        self._io_pool: ThreadPoolExecutor | None = None
+        self._frame_count = 0
 
     # -- Color registration --------------------------------------------------
 
@@ -133,13 +147,17 @@ class USBCamera:
 
         self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
         if not self._cap.isOpened():
-            error("Could not open camera at index %d", self._camera_index)
+            error(f"Could not open camera at index {self._camera_index}")
             raise RuntimeError(
                 f"Could not open camera at index {self._camera_index}",
             )
 
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._resolution[0])
         self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self._resolution[1])
+
+        if self._save_frames:
+            os.makedirs(self._frames_dir, exist_ok=True)
+            self._io_pool = ThreadPoolExecutor(max_workers=1)
 
         self._running = True
         self._thread = threading.Thread(
@@ -162,6 +180,10 @@ class USBCamera:
             self._thread.join(timeout=2.0)
             self._thread = None
 
+        if self._io_pool is not None:
+            self._io_pool.shutdown(wait=True)
+            self._io_pool = None
+
         if self._cap is not None:
             self._cap.release()
             self._cap = None
@@ -177,6 +199,11 @@ class USBCamera:
         with self._lock:
             return len(self._buffer)
 
+    @property
+    def total_frames(self) -> int:
+        """Monotonically increasing count of captured frames."""
+        return self._total_frames
+
     def clear_buffer(self) -> None:
         with self._lock:
             self._buffer.clear()
@@ -189,16 +216,44 @@ class USBCamera:
 
     # -- Background capture ---------------------------------------------------
 
+    def _save_frame(self, frame: np.ndarray, sync_time: float, seq: int) -> None:
+        """Annotate and write a frame to disk (runs in IO thread pool)."""
+        label = f"t={sync_time:.2f}s"
+        annotated = frame.copy()
+        cv2.putText(
+            annotated, label,
+            (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2,
+        )
+        path = os.path.join(self._frames_dir, f"frame_{seq:04d}_t{sync_time:.2f}s.jpg")
+        cv2.imwrite(path, annotated)
+
     def _capture_loop(self) -> None:
         interval = 1.0 / self._capture_fps
+        fps_window_start = time.monotonic()
+        fps_frame_count = 0
         while self._running:
             t0 = time.monotonic()
             ret, frame = self._cap.read()
             if ret:
                 with self._lock:
                     self._buffer.append(frame)
+                self._total_frames += 1
+                fps_frame_count += 1
+                if self._save_frames and self._io_pool is not None:
+                    self._frame_count += 1
+                    sync_time = self._get_time() if self._get_time else 0.0
+                    self._io_pool.submit(
+                        self._save_frame, frame, sync_time, self._frame_count,
+                    )
             else:
                 warn("Failed to capture frame")
+            # Log actual FPS every 5 seconds
+            fps_elapsed = t0 - fps_window_start
+            if fps_elapsed >= 5.0:
+                actual_fps = fps_frame_count / fps_elapsed
+                info(f"Camera FPS: {actual_fps:.1f} (target {self._capture_fps})")
+                fps_window_start = t0
+                fps_frame_count = 0
             elapsed = time.monotonic() - t0
             sleep_time = interval - elapsed
             if sleep_time > 0:
