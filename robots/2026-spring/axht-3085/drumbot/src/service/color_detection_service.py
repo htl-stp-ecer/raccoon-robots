@@ -3,16 +3,35 @@ import threading
 import time
 
 from libstp import GenericRobot, RobotService
+from libstp.step.calibration.store import CalibrationStore
 
 from src.hardware.usb_camera import USBCamera
 
-# HSV ranges — wide to handle motion blur, varying lighting, desaturation
-BLUE_HSV_RANGES = [((85, 25, 25), (135, 255, 255))]
-PINK_HSV_RANGES = [((140, 25, 25), (180, 255, 255)),
-                    ((0, 25, 25), (10, 255, 255))]  # wrap around red
+# Default HSV ranges — used when no calibration data exists.
+DEFAULT_BLUE_HSV_RANGES = [((85, 25, 25), (135, 255, 255))]
+DEFAULT_PINK_HSV_RANGES = [((140, 25, 25), (180, 255, 255)),
+                            ((0, 25, 25), (10, 255, 255))]  # wrap around red
 
 ANALYSIS_FRAMES = 5
 PRESENCE_THRESHOLD = 0.3
+
+
+DEFAULT_MIN_AREA = 300
+
+
+def _load_calibration() -> tuple[list, list, int] | None:
+    """Try loading HSV ranges + min_area from racoon.calibration.yml."""
+    store = CalibrationStore()
+    data = store.load("color-detection", "default")
+    if data is None:
+        return None
+    try:
+        blue = [(tuple(lo), tuple(hi)) for lo, hi in data.get("blue_ranges", [])]
+        pink = [(tuple(lo), tuple(hi)) for lo, hi in data.get("pink_ranges", [])]
+        min_area = int(data.get("min_area", DEFAULT_MIN_AREA))
+        return blue, pink, min_area
+    except (TypeError, ValueError):
+        return None
 
 
 class ColorDetectionService(RobotService):
@@ -21,10 +40,27 @@ class ColorDetectionService(RobotService):
     A background thread analyzes frames as fast as it can.
     The latest detected color is always available. Consuming it clears
     the cached value so stale data is never reused.
+
+    HSV ranges are loaded from calibration YAML if available,
+    otherwise falls back to hardcoded defaults.
     """
 
     def __init__(self, robot: "GenericRobot") -> None:
         super().__init__(robot)
+
+        calibrated = _load_calibration()
+        if calibrated and calibrated[0] and calibrated[1]:
+            blue_ranges, pink_ranges, min_area = calibrated
+            self.info(
+                f"Loaded calibrated color ranges from racoon.calibration.yml "
+                f"(min_area={min_area})",
+            )
+        else:
+            blue_ranges = DEFAULT_BLUE_HSV_RANGES
+            pink_ranges = DEFAULT_PINK_HSV_RANGES
+            min_area = DEFAULT_MIN_AREA
+            self.info("Using default color ranges (no calibration found)")
+
         self._camera = USBCamera(
             camera_index="/dev/video0",
             resolution=(320, 240),
@@ -34,10 +70,10 @@ class ColorDetectionService(RobotService):
             frames_dir="frames",
             get_time=lambda: time.monotonic() - self._camera_start_time,
         )
-        self._camera.add_color("blue", hsv_ranges=BLUE_HSV_RANGES,
-                               min_area=300, min_dimension=10)
-        self._camera.add_color("pink", hsv_ranges=PINK_HSV_RANGES,
-                               min_area=300, min_dimension=10)
+        self._camera.add_color("blue", hsv_ranges=blue_ranges,
+                               min_area=min_area, min_dimension=10)
+        self._camera.add_color("pink", hsv_ranges=pink_ranges,
+                               min_area=min_area, min_dimension=10)
 
         self._camera_start_time: float = 0.0
         self._lock = threading.Lock()
@@ -123,6 +159,17 @@ class ColorDetectionService(RobotService):
                 detect_count = 0
                 log_window_start = time.monotonic()
 
+    def reset(self) -> None:
+        """Clear cached detection. Call when a new drum cycle starts."""
+        with self._lock:
+            self._latest_color = None
+
+    @property
+    def peek_color(self) -> str | None:
+        """Read the current detected color without consuming it."""
+        with self._lock:
+            return self._latest_color
+
     async def detect_color(self) -> str:
         """Return the last detected color and clear it.
 
@@ -138,3 +185,20 @@ class ColorDetectionService(RobotService):
 
         self.info(f"Detected color: {color}")
         return color
+
+    def apply_calibration(
+        self,
+        blue_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
+        pink_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
+        min_area: int = DEFAULT_MIN_AREA,
+    ) -> None:
+        """Hot-swap HSV ranges and min_area on the running camera."""
+        if blue_ranges:
+            self._camera.remove_color("blue")
+            self._camera.add_color("blue", hsv_ranges=blue_ranges,
+                                   min_area=min_area, min_dimension=10)
+        if pink_ranges:
+            self._camera.remove_color("pink")
+            self._camera.add_color("pink", hsv_ranges=pink_ranges,
+                                   min_area=min_area, min_dimension=10)
+        self.info(f"Color calibration applied at runtime (min_area={min_area})")

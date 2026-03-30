@@ -8,11 +8,12 @@ from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up
 from src.steps.range_finder import calibrate_range_finder
 from src.steps.servo_steps import *
 from src.steps.camera_lifecycle_step import start_camera
+from src.steps.color_calibration import calibrate_colors
 from src.steps.debug_wait_step import debug_wait
 from src.steps.drive_to_pipe import drive_to_first_pipe, drive_to_second_pipe
 
 
-class M00SetupMission(Mission):
+class M00SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
             wait_for_button(),
@@ -34,10 +35,11 @@ class M00SetupMission(Mission):
                 drive_to_second_pipe(),
             ]),
 
+            drum_lifting_down(),
+            open_drum_pusher(),
+            calibrate_colors(),
             wait_for_button(),
             start_camera(),
-            open_drum_pusher(),
-            drum_lifting_down(),
             calibrate_drum_collector(calibration_time=5.0),
             align_edge(),
             driving_position_pom_remover_servo(),
