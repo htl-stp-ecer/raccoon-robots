@@ -5,9 +5,8 @@ from libstp import AnalogSensor, GenericRobot, IRSensor, KMeans, Motor, RobotSer
 NUM_POCKETS = 9
 SAMPLE_INTERVAL = 0.01  # ~100 Hz
 HYSTERESIS_FRACTION = 0.15
-FULL_SPEED = 1.0
-CREEP_SPEED = 0.15  # slow speed for precise edge detection
-PID_SETTLE_SPEED = 1500  # velocity arg for move_to_position PID settle
+FULL_VELOCITY = 1700  # max velocity for set_velocity / move_to_position
+CREEP_VELOCITY = 225  # ~15% speed for precise edge detection
 
 
 class DrumMotorService(RobotService):
@@ -55,14 +54,14 @@ class DrumMotorService(RobotService):
     def pocket_threshold(self) -> float | None:
         return self._pocket_threshold
 
-    async def sample(self, duration: float, motor_speed: float = FULL_SPEED) -> list[float]:
+    async def sample(self, duration: float, motor_speed: float = 1.0) -> list[float]:
         """Spin motor, collect light sensor readings with encoder positions."""
         self.info(f"Sampling: duration={duration}s, motor_speed={motor_speed}")
         samples: list[float] = []
         self._sample_positions: list[int] = []
-        speed_percent = int(motor_speed * 100)
+        velocity = int(motor_speed * FULL_VELOCITY)
         start_encoder = self.motor.get_position()
-        self.motor.set_speed(speed_percent)
+        self.motor.set_velocity(velocity)
         try:
             loop = asyncio.get_event_loop()
             t_end = loop.time() + duration
@@ -71,8 +70,7 @@ class DrumMotorService(RobotService):
                 self._sample_positions.append(self.motor.get_position())
                 await asyncio.sleep(SAMPLE_INTERVAL)
         finally:
-            self.motor.set_speed(0)
-            self.motor.brake()
+            self.motor.set_velocity(0)
         end_encoder = self.motor.get_position()
         self._sample_total_ticks = abs(end_encoder - start_encoder)
         if samples:
@@ -185,121 +183,95 @@ class DrumMotorService(RobotService):
 
     # ── navigation ───────────────────────────────────────────────
 
-    async def advance(self, pockets: int = 1) -> None:
+    async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
         """Move forward N pockets (black stripes)."""
         self.info(f"advance({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
-        await self._move(pockets, forward=True)
+        await self._move(pockets, forward=True, precise=precise)
 
-    async def retreat(self, pockets: int = 1) -> None:
+    async def retreat(self, pockets: int = 1, *, precise: bool = False) -> None:
         """Move backward N pockets."""
         self.info(f"retreat({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
-        await self._move(pockets, forward=False)
+        await self._move(pockets, forward=False, precise=precise)
 
     async def reject(self, pockets: int = 1) -> None:
         self.info(f"reject({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
         await self._move(pockets, forward=False)
 
-    async def go_to_pocket(self, pocket: int) -> str:
+    async def go_to_pocket(self, pocket: int, *, precise: bool = True) -> str:
         delta = (pocket - self._current_pocket) % NUM_POCKETS
         if delta == 0:
             self.info(f"Already at pocket {pocket}")
             return "none"
         if delta <= NUM_POCKETS // 2:
-            await self.advance(delta)
+            await self.advance(delta, precise=precise)
             return "forward"
         else:
-            await self.retreat(NUM_POCKETS - delta)
+            await self.retreat(NUM_POCKETS - delta, precise=precise)
             return "backward"
 
     async def go_to_edge(self, target_edge: int) -> str:
         """Compat: convert edge to pocket and go there."""
         return await self.go_to_pocket(target_edge // 2)
 
-    def _ramp_speed(self, traveled: int, total: int, sign: int) -> int:
-        """Linear decel ramp from FULL_SPEED to CREEP_SPEED over the pocket distance.
+    async def _move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
+        """Move N pockets.
 
-        Returns signed speed percent (min CREEP_SPEED).
-        """
-        fraction = min(traveled / total, 1.0)
-        speed = FULL_SPEED - fraction * (FULL_SPEED - CREEP_SPEED)
-        return max(int(speed * 100), int(CREEP_SPEED * 100)) * sign
+        One fast move_to_position for (N * tpp - offset) ticks, then creep
+        with sensor to land on the target stripe.
 
-    async def _move(self, pockets: int, *, forward: bool) -> None:
-        """Move N pockets by polling the sensor directly.
-
-        Each pocket transition: skip past current stripe by encoder distance,
-        wait for white, wait for black.  On the last pocket a linear decel ramp
-        brings us to creep speed by the time we reach the stripe, then we creep
-        across it to measure both edges and settle on the center.
+        precise=True: crosses the stripe and settles on center.
+        precise=False: stops as soon as sensor reads black.
         """
         assert self._ticks_per_pocket is not None, "Calibrate first (need ticks_per_pocket)"
         assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
         sign = 1 if forward else -1
-        full = int(FULL_SPEED * 100) * sign
-        skip_ticks = self._ticks_per_pocket // 2
         tpp = self._ticks_per_pocket
+        # Undershoot by half a pocket so we stop in white before the target stripe
+        fast_ticks = (tpp * pockets - tpp // 2) * sign
         direction = "fwd" if forward else "bwd"
 
-        self.info(f"{direction} {pockets} pockets, skip_ticks={skip_ticks}")
+        self.info(f"{direction} {pockets} pockets {'precise' if precise else 'fast'}")
 
-        for i in range(pockets):
-            is_last = i == pockets - 1
-            start_pos = self.motor.get_position()
+        # Phase 1: blast at full velocity until we've covered the fast distance
+        fast_distance = abs(fast_ticks)
+        start_pos = self.motor.get_position()
+        self.motor.set_velocity(FULL_VELOCITY * sign)
+        while abs(self.motor.get_position() - start_pos) < fast_distance:
+            await asyncio.sleep(SAMPLE_INTERVAL)
 
-            self.motor.set_speed(full)
+        # Phase 2: switch to creep and use sensor to find the target stripe
+        self.motor.set_velocity(CREEP_VELOCITY * sign)
 
-            # Phase 1: skip past current stripe (encoder distance floor)
-            while abs(self.motor.get_position() - start_pos) < skip_ticks:
-                if is_last:
-                    traveled = abs(self.motor.get_position() - start_pos)
-                    self.motor.set_speed(self._ramp_speed(traveled, tpp, sign))
-                await asyncio.sleep(SAMPLE_INTERVAL)
+        # If we landed on black, wait for white first
+        while self._is_black():
+            await asyncio.sleep(SAMPLE_INTERVAL)
 
-            # Phase 2: if still on black, wait for white (with ramp on last)
-            while self._is_black():
-                if is_last:
-                    traveled = abs(self.motor.get_position() - start_pos)
-                    self.motor.set_speed(self._ramp_speed(traveled, tpp, sign))
-                await asyncio.sleep(SAMPLE_INTERVAL)
+        # Wait for the next black stripe
+        while not self._is_black():
+            await asyncio.sleep(SAMPLE_INTERVAL)
 
-            # Phase 3: wait for black — on last pocket continue ramping down
-            while not self._is_black():
-                if is_last:
-                    traveled = abs(self.motor.get_position() - start_pos)
-                    self.motor.set_speed(self._ramp_speed(traveled, tpp, sign))
-                await asyncio.sleep(SAMPLE_INTERVAL)
-
+        if precise:
+            # Cross stripe to find exit edge, settle on center
             entry_pos = self.motor.get_position()
+            while self._is_black():
+                await asyncio.sleep(SAMPLE_INTERVAL)
+            exit_pos = self.motor.get_position()
 
-            if forward:
-                self._current_pocket = (self._current_pocket + 1) % NUM_POCKETS
-            else:
-                self._current_pocket = (self._current_pocket - 1) % NUM_POCKETS
+            center_pos = (entry_pos + exit_pos) // 2
+            self.motor.move_to_position(FULL_VELOCITY, center_pos)
+            while not self.motor.is_done():
+                await asyncio.sleep(SAMPLE_INTERVAL)
+        else:
+            self.motor.set_velocity(0)
 
-            self.info(f"  pocket {i}: hit black at pos={entry_pos} (moved {abs(entry_pos - start_pos)}), pocket={self._current_pocket}, last={is_last}")
-
-            if is_last:
-                # Already at creep speed — cross the stripe to find exit edge
-                creep = int(CREEP_SPEED * 100) * sign
-                self.motor.set_speed(creep)
-                while self._is_black():
-                    await asyncio.sleep(SAMPLE_INTERVAL)
-                exit_pos = self.motor.get_position()
-                self.motor.set_speed(0)
-                self.motor.brake()
-
-                center_pos = (entry_pos + exit_pos) // 2
-                self.info(f"  stripe: entry={entry_pos}, exit={exit_pos}, width={abs(exit_pos - entry_pos)}, center={center_pos}")
-
-                self.motor.move_to_position(PID_SETTLE_SPEED, center_pos)
-                while not self.motor.is_done():
-                    await asyncio.sleep(SAMPLE_INTERVAL)
-                self.motor.brake()
-                final_pos = self.motor.get_position()
-                self.info(f"  settled: target={center_pos}, actual={final_pos}, delta={abs(final_pos - center_pos)}")
+        # Update pocket tracking
+        if forward:
+            self._current_pocket = (self._current_pocket + pockets) % NUM_POCKETS
+        else:
+            self._current_pocket = (self._current_pocket - pockets) % NUM_POCKETS
 
         self.info(f"Move done: pocket={self._current_pocket}")
 
@@ -309,10 +281,9 @@ class DrumMotorService(RobotService):
         ticks = self._ticks_per_pocket // 2
         self.info(f"Moving to midpoint: +{ticks} ticks")
         target = self.motor.get_position() + ticks
-        self.motor.move_to_position(PID_SETTLE_SPEED, target)
+        self.motor.move_to_position(FULL_VELOCITY, target)
         while not self.motor.is_done():
             await asyncio.sleep(SAMPLE_INTERVAL)
-        self.motor.brake()
 
     async def move_from_midpoint(self) -> None:
         """Move backward half a pocket (back to the pocket center)."""
@@ -320,7 +291,6 @@ class DrumMotorService(RobotService):
         ticks = self._ticks_per_pocket // 2
         self.info(f"Moving from midpoint: -{ticks} ticks")
         target = self.motor.get_position() - ticks
-        self.motor.move_to_position(PID_SETTLE_SPEED, target)
+        self.motor.move_to_position(FULL_VELOCITY, target)
         while not self.motor.is_done():
             await asyncio.sleep(SAMPLE_INTERVAL)
-        self.motor.brake()

@@ -18,7 +18,7 @@ class AlignEdgeStep(UIStep):
     async def _execute_step(self, robot: "GenericRobot") -> None:
         drum = robot.get_service(DrumMotorService)
 
-        await drum.advance(1)
+        await drum.advance(1, precise=True)
 
         # Let the user verify and nudge if needed
         await self.show(EdgeAlignScreen(drum))

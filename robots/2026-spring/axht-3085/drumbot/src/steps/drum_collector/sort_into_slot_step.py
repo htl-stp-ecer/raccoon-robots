@@ -65,7 +65,7 @@ class GoToEmptySlotStep(Step):
 
         empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
         drum_service.info(f"Moving to empty slot {empty} before opening pusher")
-        await drum_service.go_to_pocket(empty)
+        await drum_service.go_to_pocket(empty, precise=False)
 
 
 @dsl(hidden=True)

@@ -33,7 +33,7 @@ def collect_drums() -> Sequential:
             advance_to_midpoint(),
             #debug_wait(f"Drum #{drum_number}: align on back"),
             drum_align_on_back(),
-            wait_for_seconds(0.2),
+            #wait_for_seconds(0.2),
             #debug_wait(f"Drum #{drum_number}: lift down"),
             drum_lifting_down(),
             #debug_wait(f"Drum #{drum_number}: return from midpoint"),
@@ -59,4 +59,5 @@ class M02CollectDrumsMission(Mission):
         return seq([
             drum_lifting_down(slow_mode=False),
             collect_drums(),
+            advance_to_midpoint(),
         ])

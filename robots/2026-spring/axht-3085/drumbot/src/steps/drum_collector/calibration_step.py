@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from libstp import GenericRobot, dsl
 from libstp.step.calibration import CalibrateStep
 
-from src.service.drum_motor_service import DrumMotorService, NUM_POCKETS, FULL_SPEED
+from src.service.drum_motor_service import DrumMotorService, NUM_POCKETS
 
 from .screens import DrumConfirmScreen, DrumSamplingScreen
 
@@ -110,7 +110,7 @@ class DrumCollectorCalibrationStep(CalibrateStep[DrumCalibration]):
 @dsl()
 def calibrate_drum_collector(
     calibration_time: float = 12.0,
-    motor_speed: float = FULL_SPEED,
+    motor_speed: float = 1.0,
 ) -> DrumCollectorCalibrationStep:
     """Calibrate the drum collector by spinning the motor and sampling the light sensor.
 

@@ -1,9 +1,9 @@
 root:
   drum-collector:
     default:
-      blocked: 2295.5963302752293
-      pocket: 309.15976331360946
-      ticks_per_pocket: 138633
+      blocked: 2286.0236220472443
+      pocket: 310.6038961038961
+      ticks_per_pocket: 138814
   ir-calibration:
     default_port1:
       black_tresh: 3368.62964
