@@ -16,6 +16,7 @@ from libstp import IMU as Imu
 class Defs:
     imu = Imu()
     button = DigitalSensor(port=10)
+    distance_sensor = AnalogSensor(port=0)
     rear_right_light_sensor = IRSensor(port=1)
     wait_for_light_sensor = AnalogSensor(port=2)
     front_right_light_sensor = IRSensor(port=4)
@@ -93,6 +94,7 @@ class Defs:
         offset=20.0,
     )
     analog_sensors = [
+        distance_sensor,
         rear_right_light_sensor,
         wait_for_light_sensor,
         front_right_light_sensor,
