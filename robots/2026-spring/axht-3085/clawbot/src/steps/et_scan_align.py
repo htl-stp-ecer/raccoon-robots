@@ -58,7 +58,7 @@ class EtScanAlign(Step):
         # Run turn and sampling concurrently
         sample_task = asyncio.create_task(sample_loop())
         try:
-            await scan_step.run_step(robot)
+            await scan_step._execute_step(robot)
         finally:
             sampling = False
             await sample_task
@@ -80,7 +80,7 @@ class EtScanAlign(Step):
         else:
             center_step = turn_right(abs(error), self.speed)
 
-        await center_step.run_step(robot)
+        await center_step._execute_step(robot)
 
     # --- analysis ---
 
