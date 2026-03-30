@@ -19,7 +19,11 @@ claimed over the generated code itself.
 
 from libstp import Mission, Sequential, seq
 
+from src.steps.camera_lifecycle_step import stop_camera
+
 
 class M99ShutdownMission(Mission):
     def sequence(self) -> Sequential:
-        return seq([])
+        return seq([
+            stop_camera(),
+        ])
