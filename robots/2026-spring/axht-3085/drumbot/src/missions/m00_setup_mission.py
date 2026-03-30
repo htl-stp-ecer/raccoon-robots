@@ -7,6 +7,7 @@ from src.steps.drum_collector import align_edge, calibrate_drum_collector, drum_
 from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up
 from src.steps.range_finder import calibrate_range_finder
 from src.steps.servo_steps import *
+from src.steps.camera_lifecycle_step import start_camera
 from src.steps.debug_wait_step import debug_wait
 from src.steps.drive_to_pipe import drive_to_first_pipe, drive_to_second_pipe
 
@@ -39,6 +40,7 @@ class M00SetupMission(Mission):
             # ]),
 
             #wait_for_button(),
+            start_camera(),
             open_drum_pusher(),
             drum_lifting_down(),
             calibrate_drum_collector(calibration_time=5.0),
