@@ -63,6 +63,7 @@ class _PomGrabPreset(ServoPreset):
 class Defs:
     imu: Imu
     button: DigitalSensor
+    distance_sensor: AnalogSensor
     rear_right_light_sensor: IRSensor
     wait_for_light_sensor: AnalogSensor
     front_right_light_sensor: IRSensor

@@ -1,6 +1,7 @@
 from libstp import *
 
 from src.hardware.defs import Defs
+from src.steps.et_scan_align import EtScanAlign
 
 
 class M100DropMachedPomsMission(Mission):
@@ -8,10 +9,20 @@ class M100DropMachedPomsMission(Mission):
         return seq([
             #move over basket
             strafe_left().until(
-                on_black(Defs.front.left) >
-                on_white(Defs.front.left)
+                on_black(Defs.front.right) >
+                on_white(Defs.front.right) >
+                after_cm(5),
             ),
-            turn_to_heading_right(10),
+            turn_to_heading_right(0),
+            wait_for_button(),
+            EtScanAlign(
+               50,
+                "right",
+                0.7,
+                0,
+                Defs.distance_sensor
+            ),
+            wait_for_button(),
 
             #move arm down and open
             Defs.pom_arm.up(),

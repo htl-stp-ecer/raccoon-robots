@@ -131,6 +131,9 @@ definitions:
     port: 10
   imu:
     type: IMU
+  distance_sensor:
+    type: AnalogSensor
+    port: 0
   rear_right_light_sensor:
     type: IRSensor
     port: 1
@@ -155,28 +158,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.643346629618684e-05
+      ticks_to_rad: 1.64382931596523e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.6005210183100793e-05
+      ticks_to_rad: 1.5989446936703784e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.6494009231304352e-05
+      ticks_to_rad: 1.6501458597462377e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.659864099950014e-05
+      ticks_to_rad: 1.6594096628777358e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
