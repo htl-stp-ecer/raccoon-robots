@@ -31,7 +31,6 @@ from src.missions.m040_align_for_last_poms_mission import M040AlignForLastPomsMi
 from src.missions.m050_collect_last_poms_mission import M050CollectLastPomsMission
 from src.missions.m060_drive_to_baskets_mission import M060DriveToBasketsMission
 from src.missions.m070_drop_sorted_poms_mission import M070DropSortedPomsMission
-from src.missions.m071_push_cubes_down_mission import M071PushCubesDownMission
 from src.missions.m080_move_baskets_mission import M080MoveBasketsMission
 from src.missions.m090_return_sorted_poms_mission import M090ReturnSortedPomsMission
 from src.missions.m100_drop_mached_poms_mission import M100DropMachedPomsMission
@@ -133,7 +132,6 @@ class Robot(GenericRobot):
         M050CollectLastPomsMission(),
         M060DriveToBasketsMission(),
         M070DropSortedPomsMission(),
-        M071PushCubesDownMission(),
         M080MoveBasketsMission(),
         M090ReturnSortedPomsMission(),
         M100DropMachedPomsMission(),

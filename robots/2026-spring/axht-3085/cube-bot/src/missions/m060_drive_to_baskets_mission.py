@@ -34,7 +34,7 @@ class M060DriveToBasketsMission(Mission):
             strafe_left(speed=1.0).until(on_black(Defs.front.left)),
 
             #get rid of fist traffic conde
-            turn_left(degrees=35),
+            turn_left().until(after_degrees(35) | after_seconds(0.7)),
             parallel(
                 turn_to_heading_right(0, 1.0),
                 Defs.pom_arm.high_up(150),
@@ -50,7 +50,7 @@ class M060DriveToBasketsMission(Mission):
                 turn_right(degrees=10),
                 Defs.pom_arm.down(150),
             ),
-            turn_left(degrees=50),
+            turn_left().until(after_degrees(50) | after_seconds(1.0)),
             parallel(
                 turn_to_heading_right(0, 1.0),
                 Defs.pom_arm.start(90),

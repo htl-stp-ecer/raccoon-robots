@@ -9,12 +9,13 @@ class M070DropSortedPomsMission(Mission):
             # grab the one basket
             Defs.shild.above_pasked(),
             strafe_right(cm=1),
-            Defs.shild.down(),
+            Defs.shild.grab_pasked(),
 
             # pull the basktet out
             strafe_left().until(
-                on_black(Defs.front.right)
-            ),
+                on_black(Defs.front.right) >
+                on_white(Defs.front.right)
+        ),
             Defs.shild.above_pasked(),
             strafe_left(cm=5),
 

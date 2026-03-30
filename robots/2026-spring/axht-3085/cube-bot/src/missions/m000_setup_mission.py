@@ -19,15 +19,6 @@ class M000SetupMission(Mission):
 
             Defs.shild.up(),
 
-            wait_for_button(),
-            EtScanAlign(
-                50,
-                "right",
-                0.7,
-                0,
-                Defs.distance_sensor
-            ),
-
             #auto_tune(
             #    vel_axes=["vy"],
             #    tune_motion=False,

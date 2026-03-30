@@ -16,7 +16,7 @@ class M030GrabSecondPomsMission(Mission):
 
             #push the oragne pom on the left to the side
             turn_left(10).speed(0.4),
-            turn_right(40).speed(0.4),
+            turn_right(35),
             turn_to_heading_right(15),
             strafe_left(cm=5),
 
