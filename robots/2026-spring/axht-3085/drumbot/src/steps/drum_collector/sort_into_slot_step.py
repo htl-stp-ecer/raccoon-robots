@@ -24,7 +24,7 @@ class SortIntoSlotStep(Step):
 
         color = await color_service.detect_color()
         target = sorting_service.assign_slot(color)
-        await drum_service.go_to_pocket(target)
+        await drum_service.go_to_pocket(target, precise=False)
 
 
 @dsl(hidden=True)
