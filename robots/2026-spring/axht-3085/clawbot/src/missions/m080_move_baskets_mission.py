@@ -40,7 +40,7 @@ class M080MoveBasketsMission(Mission):
 
             strafe_left().until(
                 on_black(Defs.front.right) >
-                after_cm(15)
+                after_cm(12)
             ),
 
             drive_backward() .until(
@@ -48,6 +48,7 @@ class M080MoveBasketsMission(Mission):
                 after_cm(15)
             ),
 
+            #let basktes go
             Defs.shild._45deg(),
 
 

@@ -9,27 +9,25 @@ class M100DropMachedPomsMission(Mission):
         return seq([
             #move over basket
             strafe_left().until(
-                on_black(Defs.front.right) >
-                on_white(Defs.front.right) >
-                after_cm(5),
+                on_black(Defs.front.left) >
+                #on_white(Defs.front.left) >
+                after_cm(5)
             ),
             turn_to_heading_right(0),
-            wait_for_button(),
             EtScanAlign(
-               50,
+               60,
                 "right",
-                0.7,
+                1.0,
                 0,
                 Defs.distance_sensor
             ),
-            wait_for_button(),
 
             #move arm down and open
             Defs.pom_arm.up(),
-            Defs.pom_grab.slightly_open(75),
+            Defs.pom_grab.slightly_open(100),
 
-            shake_servo(Defs.pom_grab, 3, 60, 90),
-            Defs.pom_grab.slightly_open(75),
+            shake_servo(Defs.pom_grab, 2, 60, 90),
+            Defs.pom_grab.slightly_open(100),
 
             #compress down
             Defs.pom_arm.drop_poms_pos(),
@@ -40,17 +38,18 @@ class M100DropMachedPomsMission(Mission):
                     Defs.pom_arm.down(50),
                     Defs.pom_arm.drop_poms_pos(100),
                 ]),
-                iterations=3
+                iterations=1
             ),
 
-            drive_forward(cm=3),
+            drive_forward(cm=5),
 
             loop_for(
                 seq([
-                    Defs.pom_grab.wide_open(60),
-                    Defs.pom_grab.pom_width(),
+                    Defs.pom_grab.closed(),
+                    Defs.pom_grab.wide_open(),
+                    wait_for_seconds(1.0),
                 ]),
-                iterations=9
+                iterations=2
             ),
 
         ])
