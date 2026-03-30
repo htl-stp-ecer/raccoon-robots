@@ -191,7 +191,7 @@ definitions:
       down: 180
       normal_drive: 175
       above_pasked: 132
-      grab_pasked: 157
+      grab_pasked: 165
       m06_above_paskted: 140
       m06_on_paskted: 150
   pom_arm:
