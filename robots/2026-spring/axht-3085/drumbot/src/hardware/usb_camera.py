@@ -21,12 +21,15 @@ from libstp import debug, error, info, warn
 
 @dataclass
 class ColorProfile:
-    """A named color with one or more HSV ranges (for hue wraparound)."""
+    """A named color with HSV or LAB+saturation-gate ranges."""
 
     name: str
     hsv_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]]
     min_area: int = 900
     min_dimension: int = 20
+    # When set, detection uses LAB ranges + HSV saturation gate instead of hsv_ranges.
+    lab_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None
+    sat_min: int = 0
 
 
 @dataclass
@@ -98,8 +101,8 @@ class USBCamera:
         self._capture_fps = capture_fps
         self._codec = codec
         self._presence_threshold = presence_threshold
-        self._morph_kernel = np.ones(
-            (morph_kernel_size, morph_kernel_size), np.uint8,
+        self._morph_kernel = cv2.getStructuringElement(
+            cv2.MORPH_ELLIPSE, (morph_kernel_size, morph_kernel_size),
         )
 
         self._colors: dict[str, ColorProfile] = {}
@@ -125,6 +128,8 @@ class USBCamera:
         hsv_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]],
         min_area: int = 900,
         min_dimension: int = 20,
+        lab_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None,
+        sat_min: int = 0,
     ) -> None:
         """Register a color profile for detection."""
         self._colors[name] = ColorProfile(
@@ -132,8 +137,11 @@ class USBCamera:
             hsv_ranges=hsv_ranges,
             min_area=min_area,
             min_dimension=min_dimension,
+            lab_ranges=lab_ranges,
+            sat_min=sat_min,
         )
-        debug(f"Registered color '{name}' with {len(hsv_ranges)} HSV range(s)")
+        mode = "LAB+sat" if lab_ranges else "HSV"
+        debug(f"Registered color '{name}' ({mode}, {len(lab_ranges or hsv_ranges)} range(s))")
 
     def remove_color(self, name: str) -> None:
         """Remove a registered color profile."""
@@ -270,35 +278,60 @@ class USBCamera:
         with self._lock:
             return self._buffer[-1].copy() if self._buffer else None
 
+    # -- Preprocessing --------------------------------------------------------
+
+    @staticmethod
+    def _preprocess(frame: np.ndarray) -> np.ndarray:
+        """Gray-world white balance + Gaussian blur."""
+        # Gray-world WB: scale each channel so the average is neutral gray
+        avg = frame.mean(axis=(0, 1))
+        avg_all = avg.mean()
+        scale = avg_all / (avg + 1e-6)
+        wb = np.clip(frame * scale, 0, 255).astype(np.uint8)
+        # Light Gaussian blur to reduce speckle noise before thresholding
+        return cv2.GaussianBlur(wb, (3, 3), 0)
+
     # -- Per-frame analysis ---------------------------------------------------
 
     def _analyze_frame(
         self, frame: np.ndarray,
     ) -> dict[str, BlobResult]:
         """Analyze a single frame for all registered colors."""
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        pp = self._preprocess(frame)
+        hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
+        # LAB conversion is deferred — only computed if any profile needs it
+        lab = None
         results: dict[str, BlobResult] = {}
 
         for name, profile in self._colors.items():
-            # Build combined mask from all HSV ranges
-            mask = None
-            for lower, upper in profile.hsv_ranges:
-                range_mask = cv2.inRange(
-                    hsv, np.array(lower), np.array(upper),
-                )
-                mask = (
-                    range_mask
-                    if mask is None
-                    else cv2.bitwise_or(mask, range_mask)
-                )
+            if profile.lab_ranges:
+                # LAB-based detection with HSV saturation gate
+                if lab is None:
+                    lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
+                mask = None
+                for lower, upper in profile.lab_ranges:
+                    m = cv2.inRange(lab, np.array(lower), np.array(upper))
+                    mask = m if mask is None else cv2.bitwise_or(mask, m)
+                if mask is None:
+                    results[name] = BlobResult(present=False)
+                    continue
+                # Saturation gate: reject low-saturation false positives
+                if profile.sat_min > 0:
+                    sat_mask = (hsv[:, :, 1] >= profile.sat_min).astype(np.uint8) * 255
+                    mask = cv2.bitwise_and(mask, sat_mask)
+            else:
+                # HSV-based detection
+                mask = None
+                for lower, upper in profile.hsv_ranges:
+                    m = cv2.inRange(hsv, np.array(lower), np.array(upper))
+                    mask = m if mask is None else cv2.bitwise_or(mask, m)
+                if mask is None:
+                    results[name] = BlobResult(present=False)
+                    continue
 
-            if mask is None:
-                results[name] = BlobResult(present=False)
-                continue
-
-            # Morphological close then open to reduce noise
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self._morph_kernel)
+            # Morphological open then close (open removes noise, close fills gaps)
             mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, self._morph_kernel)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self._morph_kernel)
 
             # Find contours
             contours, _ = cv2.findContours(

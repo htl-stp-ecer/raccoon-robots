@@ -78,7 +78,7 @@ class CamPublisher:
     def __init__(
         self,
         camera_index: int | str = "/dev/video0",
-        resolution: tuple[int, int] = (320, 240),
+        resolution: tuple[int, int] = (160, 120),
         fps: int = 10,
         jpeg_quality: int = 70,
     ):

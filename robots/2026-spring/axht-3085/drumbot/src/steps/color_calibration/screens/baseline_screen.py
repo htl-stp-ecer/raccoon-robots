@@ -15,41 +15,26 @@ class BaselineScreen(UIScreen[bool]):
     def __init__(self):
         super().__init__()
         self.title = "Color Calibration"
-        self.sample_count: int = 0
-        self.blue_noise: int = 0
-        self.pink_noise: int = 0
-        self.sampling = False
 
     def build(self) -> Widget:
         right = [
             Row(children=[
-                StatusBadge("BASELINE", color="grey", glow=self.sampling),
+                StatusBadge("BASELINE", color="grey", glow=False),
             ], align="center"),
             Text("Remove all drums from view", size="large", align="center"),
             Spacer(height=8),
             HintBox(
                 "Clear the camera view completely. "
-                "The background will be measured and excluded "
-                "from color detection.",
+                "A single frame will be captured when you press Confirm "
+                "and used to exclude background from color detection.",
                 icon="visibility_off",
             ),
             Spacer(height=8),
         ]
 
-        if self.sample_count > 0:
-            right.append(
-                Card(title="Background Sample", children=[
-                    Text(f"{self.sample_count} frames captured", size="medium"),
-                    Text(
-                        "Background HSV will be excluded from color ranges",
-                        size="small", muted=True,
-                    ),
-                ]),
-            )
-
         right.extend([
             Spacer(height=8),
-            Button("confirm", "Confirm", style="success"),
+            Button("confirm", "Capture & Confirm", style="success"),
         ])
 
         return Split(

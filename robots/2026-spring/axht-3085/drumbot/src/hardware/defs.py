@@ -8,6 +8,7 @@ from libstp import (
     Motor,
     MotorCalibration,
     Servo,
+    ServoPreset,
 )
 from libstp import IMU as Imu
 
@@ -24,14 +25,14 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.8228360744548812e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.8240197487649492e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.5692527261225303e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.573536843398401e-05, vel_lpf_alpha=1.0
         ),
     )
     drum_motor = Motor(
@@ -45,7 +46,10 @@ class Defs:
         calibration=MotorCalibration(ticks_to_rad=1e-05, vel_lpf_alpha=1.0),
     )
     drum_pusher_servo = Servo(port=0)
-    pom_remover_servo = Servo(port=3)
+    pom_remover_servo = ServoPreset(
+        Servo(port=3),
+        positions={"start": 154.4, "push_first_orange_pom_away": 30, "standby": 145},
+    )
     lift_drums_servo = Servo(port=1)
     analog_sensors = [
         front_left_ir_sensor,

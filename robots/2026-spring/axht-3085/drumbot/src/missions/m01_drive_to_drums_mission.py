@@ -1,25 +1,25 @@
 from libstp import *
 
+from src.hardware.defs import Defs
 from src.steps.drum_lifting_step import drum_lifting_up
-from src.steps.servo_steps import driving_position_pom_remover_servo, swap_pom_remover_servo
 
 
 class M01DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            Defs.pom_remover_servo.push_first_orange_pom_away(),
             parallel(
-                 drum_lifting_up(),
+                drum_lifting_up(),
                  seq([
                      wait_for_seconds(0.4),
                      turn_right(90),
                  ]),
              ),
              parallel(
-                 drive_forward(65,1),
+                 drive_forward(65),
                  seq([
-                     swap_pom_remover_servo(),
-                     wait_for_seconds(1.1),
-                     driving_position_pom_remover_servo()
-                 ]),
+                     wait_until_distance(35),
+                     Defs.pom_remover_servo.standby(),
+                 ])
              ),
         ])

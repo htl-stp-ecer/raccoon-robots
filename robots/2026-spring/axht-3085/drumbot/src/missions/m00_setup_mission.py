@@ -1,22 +1,21 @@
 from libstp import *
-from libstp.mission.api import *
 from libstp.step.sequential import *
 
-from src.hardware.defs import *
-from src.steps.drum_collector import align_edge, calibrate_drum_collector, drum_retreat
-from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up
-from src.steps.range_finder import calibrate_range_finder
-from src.steps.servo_steps import *
 from src.steps.camera_lifecycle_step import start_camera
 from src.steps.color_calibration import calibrate_colors
 from src.steps.debug_wait_step import debug_wait
-from src.steps.drive_to_pipe import drive_to_first_pipe, drive_to_second_pipe
+from src.steps.drive_to_pipe import drive_to_first_pipe
+from src.steps.drum_collector import align_edge, calibrate_drum_collector
+from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up
+from src.steps.range_finder import calibrate_range_finder
+from src.steps.servo_steps import *
 
 
 class M00SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
             wait_for_button(),
+            Defs.pom_remover_servo.start(),
             drum_lifting_up(slow_mode=False),
             calibrate(distance_cm=50, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
@@ -30,10 +29,10 @@ class M00SetupMission(SetupMission):
             ]),
 
             # Follows line until at the second pipe
-            calibrate_range_finder(turn_speed=0.2, profile="second_pipe", setup_steps=[
-                debug_wait("Place at the seed position for second pipe"),
-                drive_to_second_pipe(),
-            ]),
+            # calibrate_range_finder(turn_speed=0.2, profile="second_pipe", setup_steps=[
+            #     debug_wait("Place at the seed position for second pipe"),
+            #     drive_to_second_pipe(),
+            # ]),
 
             drum_lifting_down(),
             open_drum_pusher(),
@@ -42,5 +41,4 @@ class M00SetupMission(SetupMission):
             start_camera(),
             calibrate_drum_collector(calibration_time=5.0),
             align_edge(),
-            driving_position_pom_remover_servo(),
         ])

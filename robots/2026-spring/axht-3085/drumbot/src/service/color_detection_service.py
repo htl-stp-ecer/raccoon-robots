@@ -7,10 +7,13 @@ from libstp.step.calibration.store import CalibrationStore
 
 from src.hardware.usb_camera import USBCamera
 
-# Default HSV ranges — used when no calibration data exists.
-DEFAULT_BLUE_HSV_RANGES = [((85, 25, 25), (135, 255, 255))]
-DEFAULT_PINK_HSV_RANGES = [((140, 25, 25), (180, 255, 255)),
-                            ((0, 25, 25), (10, 255, 255))]  # wrap around red
+# Default LAB ranges — used when no calibration data exists.
+# Blue in LAB: low a* (green side), low b* (blue side)
+DEFAULT_BLUE_LAB_RANGES = [((0, 100, 70), (200, 128, 120))]
+DEFAULT_BLUE_SAT_MIN = 50
+# Pink in LAB: high a* (magenta side)
+DEFAULT_PINK_LAB_RANGES = [((0, 148, 100), (255, 210, 165))]
+DEFAULT_PINK_SAT_MIN = 50
 
 ANALYSIS_FRAMES = 2
 PRESENCE_THRESHOLD = 0.5
@@ -19,17 +22,23 @@ PRESENCE_THRESHOLD = 0.5
 DEFAULT_MIN_AREA = 300
 
 
-def _load_calibration() -> tuple[list, list, int] | None:
-    """Try loading HSV ranges + min_area from racoon.calibration.yml."""
+def _load_calibration() -> dict | None:
+    """Try loading calibration data from racoon.calibration.yml."""
     store = CalibrationStore()
     data = store.load("color-detection", "default")
     if data is None:
         return None
     try:
-        blue = [(tuple(lo), tuple(hi)) for lo, hi in data.get("blue_ranges", [])]
-        pink = [(tuple(lo), tuple(hi)) for lo, hi in data.get("pink_ranges", [])]
-        min_area = int(data.get("min_area", DEFAULT_MIN_AREA))
-        return blue, pink, min_area
+        result = {
+            "blue_lab_ranges": [(tuple(lo), tuple(hi)) for lo, hi in data.get("blue_lab_ranges", [])],
+            "blue_sat_min": int(data.get("blue_sat_min", 0)),
+            "pink_lab_ranges": [(tuple(lo), tuple(hi)) for lo, hi in data.get("pink_lab_ranges", [])],
+            "pink_sat_min": int(data.get("pink_sat_min", 0)),
+            "min_area": int(data.get("min_area", DEFAULT_MIN_AREA)),
+        }
+        if result["blue_lab_ranges"] or result["pink_lab_ranges"]:
+            return result
+        return None
     except (TypeError, ValueError):
         return None
 
@@ -49,15 +58,21 @@ class ColorDetectionService(RobotService):
         super().__init__(robot)
 
         calibrated = _load_calibration()
-        if calibrated and calibrated[0] and calibrated[1]:
-            blue_ranges, pink_ranges, min_area = calibrated
+        if calibrated:
+            blue_lab_ranges = calibrated["blue_lab_ranges"]
+            blue_sat_min = calibrated["blue_sat_min"]
+            pink_lab_ranges = calibrated["pink_lab_ranges"]
+            pink_sat_min = calibrated["pink_sat_min"]
+            min_area = calibrated["min_area"]
             self.info(
                 f"Loaded calibrated color ranges from racoon.calibration.yml "
                 f"(min_area={min_area})",
             )
         else:
-            blue_ranges = DEFAULT_BLUE_HSV_RANGES
-            pink_ranges = DEFAULT_PINK_HSV_RANGES
+            blue_lab_ranges = DEFAULT_BLUE_LAB_RANGES
+            blue_sat_min = DEFAULT_BLUE_SAT_MIN
+            pink_lab_ranges = DEFAULT_PINK_LAB_RANGES
+            pink_sat_min = DEFAULT_PINK_SAT_MIN
             min_area = DEFAULT_MIN_AREA
             self.info("Using default color ranges (no calibration found)")
 
@@ -71,13 +86,14 @@ class ColorDetectionService(RobotService):
             get_time=lambda: time.monotonic() - self._camera_start_time,
             codec="YUYV",
         )
-        # min_area was calibrated at 320x240 — scale to actual resolution
-        scale = (160 * 120) / (320 * 240)  # 0.25
-        scaled_min_area = max(50, int(min_area * scale))
-        self._camera.add_color("blue", hsv_ranges=blue_ranges,
-                               min_area=scaled_min_area, min_dimension=5)
-        self._camera.add_color("pink", hsv_ranges=pink_ranges,
-                               min_area=scaled_min_area, min_dimension=5)
+        self._camera.add_color("blue", hsv_ranges=[],
+                               lab_ranges=blue_lab_ranges,
+                               sat_min=blue_sat_min,
+                               min_area=min_area, min_dimension=5)
+        self._camera.add_color("pink", hsv_ranges=[],
+                               lab_ranges=pink_lab_ranges,
+                               sat_min=pink_sat_min,
+                               min_area=min_area, min_dimension=5)
 
         self._camera_start_time: float = 0.0
         self._lock = threading.Lock()
@@ -298,20 +314,23 @@ class ColorDetectionService(RobotService):
 
     def apply_calibration(
         self,
-        blue_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
-        pink_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
+        blue_lab_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
+        pink_lab_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
+        blue_sat_min: int = 0,
+        pink_sat_min: int = 0,
         min_area: int = DEFAULT_MIN_AREA,
     ) -> None:
-        """Hot-swap HSV ranges and min_area on the running camera."""
-        w, h = self._camera._resolution
-        scale = (w * h) / (320 * 240)
-        scaled = max(50, int(min_area * scale))
-        if blue_ranges:
+        """Hot-swap color ranges on the running camera."""
+        if blue_lab_ranges:
             self._camera.remove_color("blue")
-            self._camera.add_color("blue", hsv_ranges=blue_ranges,
-                                   min_area=scaled, min_dimension=5)
-        if pink_ranges:
+            self._camera.add_color("blue", hsv_ranges=[],
+                                   lab_ranges=blue_lab_ranges,
+                                   sat_min=blue_sat_min,
+                                   min_area=min_area, min_dimension=5)
+        if pink_lab_ranges:
             self._camera.remove_color("pink")
-            self._camera.add_color("pink", hsv_ranges=pink_ranges,
-                                   min_area=scaled, min_dimension=5)
-        self.info(f"Color calibration applied at runtime (min_area={min_area}→{scaled} scaled)")
+            self._camera.add_color("pink", hsv_ranges=[],
+                                   lab_ranges=pink_lab_ranges,
+                                   sat_min=pink_sat_min,
+                                   min_area=min_area, min_dimension=5)
+        self.info(f"Color calibration applied at runtime (min_area={min_area})")

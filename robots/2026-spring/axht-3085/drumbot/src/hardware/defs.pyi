@@ -11,6 +11,15 @@ from libstp.step.servo.preset import ServoPreset, _PresetPosition
 from typing import List
 
 
+class _PomRemoverServoPreset(ServoPreset):
+    start: _PresetPosition
+    push_first_orange_pom_away: _PresetPosition
+    standby: _PresetPosition
+
+    @property
+    def device(self) -> "Servo": ...
+
+
 class Defs:
     imu: Imu
     button: DigitalSensor
@@ -24,6 +33,6 @@ class Defs:
     drum_motor: Motor
     servo_help_motor: Motor
     drum_pusher_servo: Servo
-    pom_remover_servo: Servo
+    pom_remover_servo: _PomRemoverServoPreset
     lift_drums_servo: Servo
     analog_sensors: List[AnalogSensor]

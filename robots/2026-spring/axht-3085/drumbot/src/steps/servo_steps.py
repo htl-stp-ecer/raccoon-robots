@@ -11,10 +11,3 @@ def use_drum_to_block():
 
 def close_drum_pusher():
     return servo(Defs.drum_pusher_servo, 0)
-
-
-def driving_position_pom_remover_servo():
-    return servo(Defs.pom_remover_servo,170)
-
-def swap_pom_remover_servo():
-    return servo(Defs.pom_remover_servo, 0)

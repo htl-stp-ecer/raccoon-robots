@@ -48,8 +48,11 @@ MAX_BG_MATCH_RATE = 0.10
 
 @dataclass
 class ColorCalibration:
-    blue_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]] = field(default_factory=list)
-    pink_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]] = field(default_factory=list)
+    # Both colors use LAB color space + HSV saturation gate
+    blue_lab_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]] = field(default_factory=list)
+    blue_sat_min: int = 0
+    pink_lab_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]] = field(default_factory=list)
+    pink_sat_min: int = 0
     min_area: int = MIN_AREA_FLOOR
 
 
@@ -57,7 +60,7 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
     def __init__(
         self,
         camera_index: int | str = "/dev/video0",
-        resolution: tuple[int, int] = (320, 240),
+        resolution: tuple[int, int] = (160, 120),
     ):
         super().__init__(store_section="color-detection", store_set="default")
         self._camera_index = camera_index
@@ -77,18 +80,28 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
             self._publisher.stop()
             self._publisher = None
 
-    # -- HSV sampling --------------------------------------------------------
+    # -- Preprocessing (matches USBCamera._preprocess) -----------------------
 
-    def _sample_roi_at(
+    @staticmethod
+    def _preprocess(frame: np.ndarray) -> np.ndarray:
+        """Gray-world white balance + Gaussian blur."""
+        avg = frame.mean(axis=(0, 1))
+        avg_all = avg.mean()
+        scale = avg_all / (avg + 1e-6)
+        wb = np.clip(frame * scale, 0, 255).astype(np.uint8)
+        return cv2.GaussianBlur(wb, (3, 3), 0)
+
+    # -- Pixel sampling --------------------------------------------------------
+
+    def _extract_roi(
         self, frame: np.ndarray, norm_x: float, norm_y: float,
     ) -> np.ndarray | None:
-        """Extract HSV pixels from a circular region around (norm_x, norm_y)."""
+        """Extract BGR ROI pixels from a circular region."""
         h, w = frame.shape[:2]
         cx = int(norm_x * w)
         cy = int(norm_y * h)
         radius = int(min(w, h) * TAP_ROI_FRACTION)
 
-        # Clamp to frame bounds
         x1 = max(0, cx - radius)
         y1 = max(0, cy - radius)
         x2 = min(w, cx + radius)
@@ -96,14 +109,37 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         if x2 <= x1 or y2 <= y1:
             return None
 
-        roi = frame[y1:y2, x1:x2]
+        return frame[y1:y2, x1:x2]
+
+    def _sample_roi_at(
+        self, frame: np.ndarray, norm_x: float, norm_y: float,
+    ) -> np.ndarray | None:
+        """Extract HSV pixels from a circular region around (norm_x, norm_y)."""
+        roi = self._extract_roi(frame, norm_x, norm_y)
+        if roi is None:
+            return None
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
         return hsv.reshape(-1, 3)
+
+    def _sample_roi_lab_at(
+        self, frame: np.ndarray, norm_x: float, norm_y: float,
+    ) -> np.ndarray | None:
+        """Extract LAB pixels from a circular region around (norm_x, norm_y)."""
+        roi = self._extract_roi(frame, norm_x, norm_y)
+        if roi is None:
+            return None
+        lab = cv2.cvtColor(roi, cv2.COLOR_BGR2LAB)
+        return lab.reshape(-1, 3)
 
     def _sample_full_frame(self, frame: np.ndarray) -> np.ndarray:
         """Extract HSV pixels from the entire frame (for baseline)."""
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         return hsv.reshape(-1, 3)
+
+    def _sample_full_frame_lab(self, frame: np.ndarray) -> np.ndarray:
+        """Extract LAB pixels from the entire frame (for baseline)."""
+        lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+        return lab.reshape(-1, 3)
 
     # -- Range computation with iterative baseline exclusion -----------------
 
@@ -111,25 +147,29 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         self,
         color_pixels: np.ndarray,
         baseline_pixels: np.ndarray | None = None,
+        h_margin: int = H_MARGIN,
+        s_margin: int = S_MARGIN,
+        v_margin: int = V_MARGIN,
     ) -> tuple[tuple[int, ...], tuple[int, ...]]:
-        """Compute an HSV range that matches the drum but not the background.
+        """Compute a 3-channel range that matches the color but not the background.
 
-        1. Start with tight percentile range of the color sample + small margin.
-        2. If baseline provided, iteratively raise saturation floor until
-           the false-positive rate on background drops below threshold.
-           If that's not enough, tighten hue and value too.
+        Works for both HSV and LAB pixel arrays — channels are treated generically.
+
+        1. Start with tight percentile range of the color sample + margin.
+        2. If baseline provided, iteratively tighten until the false-positive
+           rate on background drops below threshold.
         """
         ch = color_pixels[:, 0].astype(float)
         cs = color_pixels[:, 1].astype(float)
         cv_ = color_pixels[:, 2].astype(float)
 
         # Tight range from color sample
-        h_lo = max(0, int(np.percentile(ch, 10) - H_MARGIN))
-        h_hi = min(179, int(np.percentile(ch, 90) + H_MARGIN))
-        s_lo = max(0, int(np.percentile(cs, 10) - S_MARGIN))
-        s_hi = min(255, int(np.percentile(cs, 90) + S_MARGIN))
-        v_lo = max(0, int(np.percentile(cv_, 10) - V_MARGIN))
-        v_hi = min(255, int(np.percentile(cv_, 90) + V_MARGIN))
+        h_lo = max(0, int(np.percentile(ch, 10) - h_margin))
+        h_hi = min(255, int(np.percentile(ch, 90) + h_margin))
+        s_lo = max(0, int(np.percentile(cs, 10) - s_margin))
+        s_hi = min(255, int(np.percentile(cs, 90) + s_margin))
+        v_lo = max(0, int(np.percentile(cv_, 10) - v_margin))
+        v_hi = min(255, int(np.percentile(cv_, 90) + v_margin))
 
         if baseline_pixels is None or len(baseline_pixels) == 0:
             return (h_lo, s_lo, v_lo), (h_hi, s_hi, v_hi)
@@ -200,49 +240,39 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 
         return (h_lo, s_lo, v_lo), (h_hi, s_hi, v_hi)
 
-    def _compute_pink_ranges(
-        self,
-        all_pixels: np.ndarray,
-        baseline_pixels: np.ndarray | None = None,
-    ) -> list[tuple[tuple[int, ...], tuple[int, ...]]]:
-        """Compute pink HSV ranges, handling hue wraparound near 0/180."""
-        h_vals = all_pixels[:, 0].astype(float)
-
-        low_count = np.sum(h_vals < 30)
-        high_count = np.sum(h_vals > 150)
-
-        if low_count > len(h_vals) * 0.1 and high_count > len(h_vals) * 0.1:
-            high_pixels = all_pixels[all_pixels[:, 0] > 90]
-            low_pixels = all_pixels[all_pixels[:, 0] <= 90]
-            ranges = []
-            if len(high_pixels) > 0:
-                ranges.append(self._compute_range(high_pixels, baseline_pixels))
-            if len(low_pixels) > 0:
-                ranges.append(self._compute_range(low_pixels, baseline_pixels))
-            return ranges if ranges else [self._compute_range(all_pixels, baseline_pixels)]
-
-        return [self._compute_range(all_pixels, baseline_pixels)]
-
     # -- Noise area measurement (secondary safety net) -----------------------
 
     def _measure_noise_area(
         self,
         frame: np.ndarray,
-        hsv_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
+        ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
+        color_space: str = "hsv",
+        sat_min: int = 0,
     ) -> int:
-        """Return the largest blob area for the given HSV ranges in one frame."""
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        kernel = np.ones((3, 3), np.uint8)
+        """Return the largest blob area for the given ranges in one frame."""
+        pp = self._preprocess(frame)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+
+        if color_space == "lab":
+            converted = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
+        else:
+            converted = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
 
         mask = None
-        for lower, upper in hsv_ranges:
-            m = cv2.inRange(hsv, np.array(lower), np.array(upper))
+        for lower, upper in ranges:
+            m = cv2.inRange(converted, np.array(lower), np.array(upper))
             mask = m if mask is None else cv2.bitwise_or(mask, m)
         if mask is None:
             return 0
 
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        # Apply saturation gate for LAB mode
+        if color_space == "lab" and sat_min > 0:
+            hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
+            sat_mask = (hsv[:, :, 1] >= sat_min).astype(np.uint8) * 255
+            mask = cv2.bitwise_and(mask, sat_mask)
+
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if not contours:
             return 0
@@ -250,15 +280,21 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 
     # -- Interactive sampling ------------------------------------------------
 
+    @dataclass
+    class _ColorSamples:
+        hsv: list[np.ndarray]
+        lab: list[np.ndarray]
+
     async def _sample_color(
         self, color_name: str, instruction: str,
-    ) -> list[np.ndarray] | None:
-        """Show sampling screen with tap-to-select. Returns raw pixel arrays."""
+    ) -> _ColorSamples | None:
+        """Show sampling screen with tap-to-select. Returns HSV + LAB pixel arrays."""
         screen = SamplingScreen(color_name, instruction)
         self._publisher.set_overlay(f"Sampling: {color_name.upper()}")
         self._publisher.set_roi_enabled(False)
 
-        all_pixels: list[np.ndarray] = []
+        hsv_pixels: list[np.ndarray] = []
+        lab_pixels: list[np.ndarray] = []
 
         async def collect_samples():
             screen.sampling = True
@@ -267,16 +303,17 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
                 if screen.tap_x is not None and screen.tap_y is not None:
                     frame = self._publisher.grab_frame()
                     if frame is not None:
-                        pixels = self._sample_roi_at(
-                            frame, screen.tap_x, screen.tap_y,
-                        )
-                        if pixels is not None:
-                            all_pixels.append(pixels)
-                            combined = np.vstack(all_pixels)
+                        pp = self._preprocess(frame)
+                        hsv = self._sample_roi_at(pp, screen.tap_x, screen.tap_y)
+                        lab = self._sample_roi_lab_at(pp, screen.tap_x, screen.tap_y)
+                        if hsv is not None and lab is not None:
+                            hsv_pixels.append(hsv)
+                            lab_pixels.append(lab)
+                            combined = np.vstack(hsv_pixels)
                             screen.h_mean = float(np.mean(combined[:, 0]))
                             screen.s_mean = float(np.mean(combined[:, 1]))
                             screen.v_mean = float(np.mean(combined[:, 2]))
-                            screen.sample_count = len(all_pixels)
+                            screen.sample_count = len(hsv_pixels)
                             await screen.refresh()
                 await asyncio.sleep(0.15)
 
@@ -288,42 +325,106 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         except asyncio.CancelledError:
             pass
 
-        if not confirmed or len(all_pixels) < MIN_SAMPLE_FRAMES:
+        if not confirmed or len(hsv_pixels) < MIN_SAMPLE_FRAMES:
             return None
 
-        return all_pixels
+        return self._ColorSamples(hsv=hsv_pixels, lab=lab_pixels)
 
-    async def _sample_baseline(self) -> list[np.ndarray]:
-        """Sample the empty background (full frame). Returns raw pixel arrays."""
+    @dataclass
+    class _BaselineSamples:
+        raw_frame: np.ndarray | None  # raw BGR frame for noise measurement
+        hsv: np.ndarray | None
+        lab: np.ndarray | None
+
+    async def _sample_baseline(self) -> _BaselineSamples:
+        """Capture a single background frame when the user confirms."""
         screen = BaselineScreen()
         self._publisher.set_overlay("BASELINE - remove drums")
         self._publisher.set_roi_enabled(False)
 
-        all_pixels: list[np.ndarray] = []
-
-        async def collect_baseline():
-            screen.sampling = True
-            await screen.refresh()
-            while not screen.is_closed:
-                frame = self._publisher.grab_frame()
-                if frame is not None:
-                    pixels = self._sample_full_frame(frame)
-                    all_pixels.append(pixels)
-                    screen.sample_count = len(all_pixels)
-                    await screen.refresh()
-                await asyncio.sleep(0.15)
-
-        task = asyncio.create_task(collect_baseline())
         await self.show(screen)
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
 
-        return all_pixels
+        # Grab a single frame at the moment the user clicks confirm
+        frame = self._publisher.grab_frame()
+        if frame is not None:
+            pp = self._preprocess(frame)
+            return self._BaselineSamples(
+                raw_frame=frame,
+                hsv=self._sample_full_frame(pp),
+                lab=self._sample_full_frame_lab(pp),
+            )
+        return self._BaselineSamples(raw_frame=None, hsv=None, lab=None)
 
     # -- CalibrateStep hooks -------------------------------------------------
+
+    def _compute_calibration(
+        self,
+        blue_samples: _ColorSamples | None,
+        pink_samples: _ColorSamples | None,
+        baseline: _BaselineSamples,
+    ) -> ColorCalibration:
+        """Compute LAB ranges + saturation gates for both colors."""
+        lab_margin = dict(h_margin=10, s_margin=15, v_margin=20)  # L, a*, b*
+
+        self.info("Computing blue ranges (LAB)...")
+        blue_lab_ranges = []
+        blue_sat_min = 0
+        if blue_samples:
+            lab_combined = np.vstack(blue_samples.lab)
+            blue_lab_ranges = [self._compute_range(
+                lab_combined, baseline.lab, **lab_margin,
+            )]
+            hsv_combined = np.vstack(blue_samples.hsv)
+            sat_values = hsv_combined[:, 1].astype(float)
+            blue_sat_min = max(30, int(np.percentile(sat_values, 2)) - 10)
+            self.info(f"  Blue saturation gate: S >= {blue_sat_min}")
+
+        self.info("Computing pink ranges (LAB)...")
+        pink_lab_ranges = []
+        pink_sat_min = 0
+        if pink_samples:
+            lab_combined = np.vstack(pink_samples.lab)
+            pink_lab_ranges = [self._compute_range(
+                lab_combined, baseline.lab, **lab_margin,
+            )]
+            hsv_combined = np.vstack(pink_samples.hsv)
+            sat_values = hsv_combined[:, 1].astype(float)
+            pink_sat_min = max(30, int(np.percentile(sat_values, 2)) - 10)
+            self.info(f"  Pink saturation gate: S >= {pink_sat_min}")
+
+        return ColorCalibration(
+            blue_lab_ranges=blue_lab_ranges,
+            blue_sat_min=blue_sat_min,
+            pink_lab_ranges=pink_lab_ranges,
+            pink_sat_min=pink_sat_min,
+            min_area=MIN_AREA_FLOOR,
+        )
+
+    def _measure_noise_from_baseline(
+        self, baseline_frame: np.ndarray, calibration: ColorCalibration,
+    ) -> ColorCalibration:
+        """Measure noise on the baseline frame (no drums) and set min_area."""
+        has_ranges = calibration.blue_lab_ranges or calibration.pink_lab_ranges
+        if not has_ranges:
+            return calibration
+
+        worst_noise = 0
+        if calibration.blue_lab_ranges:
+            area = self._measure_noise_area(
+                baseline_frame, calibration.blue_lab_ranges,
+                color_space="lab", sat_min=calibration.blue_sat_min,
+            )
+            worst_noise = max(worst_noise, area)
+        if calibration.pink_lab_ranges:
+            area = self._measure_noise_area(
+                baseline_frame, calibration.pink_lab_ranges,
+                color_space="lab", sat_min=calibration.pink_sat_min,
+            )
+            worst_noise = max(worst_noise, area)
+
+        calibration.min_area = max(int(worst_noise * 2) + 100, MIN_AREA_FLOOR)
+        self.info(f"Noise check: worst={worst_noise}px, min_area={calibration.min_area}px")
+        return calibration
 
     async def _collect(self, robot: GenericRobot) -> ColorCalibration | None:
         self._start_publisher()
@@ -331,82 +432,81 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
             self._publisher.set_overlay("Color Calibration")
 
             # Phase 1 & 2: tap on drums to sample colors
-            blue_pixels = await self._sample_color(
+            blue_samples = await self._sample_color(
                 "blue", "Place BLUE drum, tap on it",
             )
-            pink_pixels = await self._sample_color(
+            pink_samples = await self._sample_color(
                 "pink", "Place PINK drum, tap on it",
             )
 
-            if blue_pixels is None and pink_pixels is None:
+            if blue_samples is None and pink_samples is None:
                 return None
 
-            # Phase 3: sample empty background
-            baseline_pixel_list = await self._sample_baseline()
-            baseline = (
-                np.vstack(baseline_pixel_list)
-                if baseline_pixel_list
-                else None
-            )
-            if baseline is not None:
-                # Subsample to keep memory reasonable
-                if len(baseline) > 500_000:
-                    idx = np.random.choice(len(baseline), 500_000, replace=False)
-                    baseline = baseline[idx]
+            # Phase 3: sample empty background (single frame on confirm)
+            baseline = await self._sample_baseline()
 
-            # Compute ranges, tightened against baseline
-            self.info("Computing blue ranges...")
-            blue_ranges = []
-            if blue_pixels:
-                combined = np.vstack(blue_pixels)
-                blue_ranges = [self._compute_range(combined, baseline)]
+            # Compute ranges and measure noise on the baseline frame
+            calibration = self._compute_calibration(blue_samples, pink_samples, baseline)
+            if baseline.raw_frame is not None:
+                calibration = self._measure_noise_from_baseline(
+                    baseline.raw_frame, calibration,
+                )
 
-            self.info("Computing pink ranges...")
-            pink_ranges = []
-            if pink_pixels:
-                combined = np.vstack(pink_pixels)
-                pink_ranges = self._compute_pink_ranges(combined, baseline)
+            # Retry loop: allow retrying individual colors without restarting
+            while True:
+                result = await self._show_confirm(calibration)
 
-            # Measure remaining noise as secondary safety net
-            min_area = MIN_AREA_FLOOR
-            all_ranges = blue_ranges + pink_ranges
-            if all_ranges:
-                worst_noise = 0
-                for _ in range(10):
-                    frame = self._publisher.grab_frame()
-                    if frame is not None:
-                        for r in [blue_ranges, pink_ranges]:
-                            if r:
-                                area = self._measure_noise_area(frame, r)
-                                worst_noise = max(worst_noise, area)
-                    await asyncio.sleep(0.05)
-                min_area = max(int(worst_noise * 2) + 100, MIN_AREA_FLOOR)
-                self.info(f"Noise check: worst={worst_noise}px, min_area={min_area}px")
+                if result == "confirm":
+                    return calibration
+                elif result == "retry_all":
+                    return None  # base class will call _collect again
+                elif result == "retry_blue":
+                    blue_samples = await self._sample_color(
+                        "blue", "Place BLUE drum, tap on it",
+                    )
+                    calibration = self._compute_calibration(
+                        blue_samples, pink_samples, baseline,
+                    )
+                    if baseline.raw_frame is not None:
+                        calibration = self._measure_noise_from_baseline(
+                            baseline.raw_frame, calibration,
+                        )
+                elif result == "retry_pink":
+                    pink_samples = await self._sample_color(
+                        "pink", "Place PINK drum, tap on it",
+                    )
+                    calibration = self._compute_calibration(
+                        blue_samples, pink_samples, baseline,
+                    )
+                    if baseline.raw_frame is not None:
+                        calibration = self._measure_noise_from_baseline(
+                            baseline.raw_frame, calibration,
+                        )
 
-            return ColorCalibration(
-                blue_ranges=blue_ranges,
-                pink_ranges=pink_ranges,
-                min_area=min_area,
-            )
         except Exception:
             self._stop_publisher()
             raise
 
-    async def _confirm(
-        self, robot: GenericRobot, calibration: ColorCalibration,
-    ) -> tuple[bool, ColorCalibration]:
-        blue_display = calibration.blue_ranges[0] if calibration.blue_ranges else None
-        pink_display = calibration.pink_ranges or None
+    async def _show_confirm(self, calibration: ColorCalibration) -> str:
+        """Show confirm screen and return the user's choice."""
+        blue_display = calibration.blue_lab_ranges[0] if calibration.blue_lab_ranges else None
+        pink_display = calibration.pink_lab_ranges or None
 
         screen = ColorConfirmScreen(
             blue_range=blue_display,
+            blue_sat_min=calibration.blue_sat_min,
             pink_ranges=pink_display,
+            pink_sat_min=calibration.pink_sat_min,
             min_area=calibration.min_area,
         )
-        confirmed = await self.show(screen)
+        return await self.show(screen)
 
-        if confirmed:
-            await self._run_test(robot, calibration)
+    async def _confirm(
+        self, robot: GenericRobot, calibration: ColorCalibration,
+    ) -> tuple[bool, ColorCalibration]:
+        # Confirm screen is already handled inside _collect's retry loop.
+        # If we get here, the user confirmed — run the live test.
+        await self._run_test(robot, calibration)
 
         # Stop publisher before returning — its Transport's background
         # LCM subscriptions must be cleaned up before the next UIStep
@@ -414,7 +514,7 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         self._stop_publisher()
         await self.close_ui()
 
-        return confirmed, calibration
+        return True, calibration
 
     async def _run_test(
         self, robot: GenericRobot, calibration: ColorCalibration,
@@ -423,19 +523,12 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         screen = ColorTestScreen()
         self._publisher.set_overlay("TEST MODE - place drum")
 
-        colors_config = {}
-        if calibration.blue_ranges:
-            colors_config["blue"] = calibration.blue_ranges
-        if calibration.pink_ranges:
-            colors_config["pink"] = calibration.pink_ranges
-        min_area = calibration.min_area
-
         async def detect_loop():
             while not screen.is_closed:
                 frame = self._publisher.grab_frame()
                 if frame is not None:
                     color, confidence, detections = self._detect_from_frame(
-                        frame, colors_config, min_area,
+                        frame, calibration,
                     )
                     screen.detected_color = color
                     screen.confidence = confidence
@@ -456,82 +549,105 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
     def _detect_from_frame(
         self,
         frame: np.ndarray,
-        colors: dict[str, list[tuple[tuple[int, ...], tuple[int, ...]]]],
-        min_area: int = MIN_AREA_FLOOR,
+        calibration: ColorCalibration,
     ) -> tuple[str | None, float, list[dict]]:
-        """Run single-frame color detection with calibrated thresholds."""
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        """Run single-frame color detection matching the runtime pipeline."""
+        pp = self._preprocess(frame)
+        hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
+        lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
         h, w = frame.shape[:2]
-        kernel = np.ones((3, 3), np.uint8)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         best_color = None
         best_area = 0
         detections = []
 
-        for name, ranges in colors.items():
+        for name, lab_ranges, sat_min in [
+            ("blue", calibration.blue_lab_ranges, calibration.blue_sat_min),
+            ("pink", calibration.pink_lab_ranges, calibration.pink_sat_min),
+        ]:
+            if not lab_ranges:
+                continue
             mask = None
-            for lower, upper in ranges:
-                m = cv2.inRange(hsv, np.array(lower), np.array(upper))
+            for lower, upper in lab_ranges:
+                m = cv2.inRange(lab, np.array(lower), np.array(upper))
                 mask = m if mask is None else cv2.bitwise_or(mask, m)
             if mask is None:
                 continue
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            if not contours:
-                continue
-            largest = max(contours, key=cv2.contourArea)
-            area = int(cv2.contourArea(largest))
-            if area < min_area:
-                continue
-            x, y, bw, bh = cv2.boundingRect(largest)
-            cx = (x + bw / 2) / w
-            cy = (y + bh / 2) / h
-            detections.append({
-                "label": name,
-                "x": cx,
-                "y": cy,
-                "width": bw / w,
-                "height": bh / h,
-                "area": area,
-                "confidence": min(area / 5000.0, 1.0),
-            })
-            if area > best_area:
-                best_area = area
-                best_color = name
+            if sat_min > 0:
+                sat_mask = (hsv[:, :, 1] >= sat_min).astype(np.uint8) * 255
+                mask = cv2.bitwise_and(mask, sat_mask)
+            det = self._contour_detect(mask, kernel, name, w, h, calibration.min_area)
+            if det:
+                detections.append(det)
+                if det["area"] > best_area:
+                    best_area = det["area"]
+                    best_color = name
 
         confidence = min(best_area / 5000.0, 1.0) if best_color else 0.0
         return best_color, confidence, detections
+
+    @staticmethod
+    def _contour_detect(
+        mask: np.ndarray, kernel: np.ndarray,
+        label: str, w: int, h: int, min_area: int,
+    ) -> dict | None:
+        """Find largest contour in mask and return detection dict or None."""
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            return None
+        largest = max(contours, key=cv2.contourArea)
+        area = int(cv2.contourArea(largest))
+        if area < min_area:
+            return None
+        x, y, bw, bh = cv2.boundingRect(largest)
+        return {
+            "label": label,
+            "x": (x + bw / 2) / w,
+            "y": (y + bh / 2) / h,
+            "width": bw / w,
+            "height": bh / h,
+            "area": area,
+            "confidence": min(area / 5000.0, 1.0),
+        }
 
     def _apply(self, robot: GenericRobot, calibration: ColorCalibration) -> None:
         from src.service.color_detection_service import ColorDetectionService
 
         service = robot.get_service(ColorDetectionService)
         service.apply_calibration(
-            calibration.blue_ranges,
-            calibration.pink_ranges,
-            calibration.min_area,
+            blue_lab_ranges=calibration.blue_lab_ranges,
+            blue_sat_min=calibration.blue_sat_min,
+            pink_lab_ranges=calibration.pink_lab_ranges,
+            pink_sat_min=calibration.pink_sat_min,
+            min_area=calibration.min_area,
         )
         self.info("Color calibration applied to detection service")
 
     def _serialize(self, calibration: ColorCalibration) -> dict:
         return {
-            "blue_ranges": [
-                [list(lo), list(hi)] for lo, hi in calibration.blue_ranges
+            "blue_lab_ranges": [
+                [list(lo), list(hi)] for lo, hi in calibration.blue_lab_ranges
             ],
-            "pink_ranges": [
-                [list(lo), list(hi)] for lo, hi in calibration.pink_ranges
+            "blue_sat_min": calibration.blue_sat_min,
+            "pink_lab_ranges": [
+                [list(lo), list(hi)] for lo, hi in calibration.pink_lab_ranges
             ],
+            "pink_sat_min": calibration.pink_sat_min,
             "min_area": calibration.min_area,
         }
 
     def _deserialize(self, data: dict) -> ColorCalibration:
         return ColorCalibration(
-            blue_ranges=[
-                (tuple(lo), tuple(hi)) for lo, hi in data.get("blue_ranges", [])
+            blue_lab_ranges=[
+                (tuple(lo), tuple(hi)) for lo, hi in data.get("blue_lab_ranges", [])
             ],
-            pink_ranges=[
-                (tuple(lo), tuple(hi)) for lo, hi in data.get("pink_ranges", [])
+            blue_sat_min=int(data.get("blue_sat_min", 0)),
+            pink_lab_ranges=[
+                (tuple(lo), tuple(hi)) for lo, hi in data.get("pink_lab_ranges", [])
             ],
+            pink_sat_min=int(data.get("pink_sat_min", 0)),
             min_area=data.get("min_area", MIN_AREA_FLOOR),
         )
 
@@ -539,7 +655,7 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 @dsl()
 def calibrate_colors(
     camera_index: int | str = "/dev/video0",
-    resolution: tuple[int, int] = (320, 240),
+    resolution: tuple[int, int] = (160, 120),
 ) -> ColorCalibrationStep:
     """Interactive HSV color calibration for drum detection."""
     return ColorCalibrationStep(
