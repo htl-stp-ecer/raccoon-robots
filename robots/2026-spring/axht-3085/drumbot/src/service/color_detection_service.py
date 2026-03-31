@@ -69,6 +69,7 @@ class ColorDetectionService(RobotService):
             save_frames=False,
             frames_dir="frames",
             get_time=lambda: time.monotonic() - self._camera_start_time,
+            codec="YUYV",
         )
         # min_area was calibrated at 320x240 — scale to actual resolution
         scale = (160 * 120) / (320 * 240)  # 0.25
@@ -85,6 +86,7 @@ class ColorDetectionService(RobotService):
         self._detection_paused: bool = False
         self._detection_thread: threading.Thread | None = None
         self._running = False
+        self._color_event = threading.Event()  # signaled when a color is first detected
 
     def start_camera(self) -> None:
         """Start background capture and continuous detection."""
@@ -165,6 +167,7 @@ class ColorDetectionService(RobotService):
                 with self._lock:
                     if not self._color_locked:
                         self._latest_color = color
+                        self._color_event.set()
 
             # Log performance every 5 seconds
             log_elapsed = time.monotonic() - log_window_start
@@ -256,6 +259,20 @@ class ColorDetectionService(RobotService):
         with self._lock:
             self._latest_color = None
             self._color_locked = False
+        self._color_event.clear()
+
+    async def wait_for_color(self, timeout: float) -> bool:
+        """Await until the background loop detects a color, or timeout.
+
+        Returns True if a color was detected, False on timeout.
+        Does not block the asyncio event loop.
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        detected = await loop.run_in_executor(
+            None, self._color_event.wait, timeout,
+        )
+        return detected
 
     @property
     def peek_color(self) -> str | None:
@@ -263,10 +280,10 @@ class ColorDetectionService(RobotService):
         with self._lock:
             return self._latest_color
 
-    async def detect_color(self) -> str:
+    async def detect_color(self) -> str | None:
         """Return the last detected color and clear it.
 
-        Logs an error if no color was detected.
+        Returns None if no color was detected (caller should handle fallback).
         """
         with self._lock:
             color = self._latest_color
@@ -274,7 +291,7 @@ class ColorDetectionService(RobotService):
 
         if color is None:
             self.error("No color detected by camera — could not determine drum color")
-            return "blue"
+            return None
 
         self.info(f"Detected color: {color}")
         return color

@@ -23,6 +23,9 @@ class SortIntoSlotStep(Step):
         drum_service = robot.get_service(DrumMotorService)
 
         color = await color_service.detect_color()
+        if color is None:
+            color = sorting_service.guess_color()
+            self.warn(f"Camera failed — guessed color: {color}")
         target = sorting_service.assign_slot(color)
         await drum_service.go_to_pocket(target, precise=False)
 

@@ -25,7 +25,7 @@ class CameraTestLoopStep(UIStep):
         while True:
             await self.wait_for_button("Press button to detect color (hold to exit)")
             color = await color_service.detect_color()
-            color_service.info(f">>> Detected: {color} <<<")
+            color_service.info(f">>> Detected: {color or 'NONE'} <<<")
 
 
 @dsl()

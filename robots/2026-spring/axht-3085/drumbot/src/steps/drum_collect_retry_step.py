@@ -4,7 +4,7 @@ from libstp import GenericRobot, dsl
 from libstp.step import Step
 
 from src.hardware.defs import Defs
-from src.service.drum_motor_service import DrumMotorService
+from src.service.drum_motor_service import DrumMotorService, MotorStalledError
 
 TURN_TIMEOUT = 2.0        # max seconds to wait for one pocket retreat
 RETRY_BACK_SPEED = 50     # motor speed % when backing up during retry
@@ -56,7 +56,7 @@ class DrumMotorTurnWithRetryStep(Step):
                 self.info(f"Motor turn succeeded on attempt {attempt}")
                 break
 
-            except TimeoutError:
+            except (TimeoutError, MotorStalledError):
                 # motor didn't complete the pocket transition in time
                 motor.set_speed(0)
                 motor.brake()

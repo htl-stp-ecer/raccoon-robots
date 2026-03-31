@@ -28,10 +28,10 @@ from .screens import (
     SamplingScreen,
 )
 
-# Padding on the tight percentile range before baseline exclusion.
-H_MARGIN = 10
-S_MARGIN = 15
-V_MARGIN = 20
+# Padding on the percentile range before baseline exclusion.
+H_MARGIN = 15
+S_MARGIN = 25
+V_MARGIN = 30
 
 # Tap ROI radius as fraction of frame shortest side.
 TAP_ROI_FRACTION = 0.12
@@ -43,7 +43,7 @@ MIN_SAMPLE_FRAMES = 5
 MIN_AREA_FLOOR = 300
 
 # Maximum allowed false-positive rate on background pixels.
-MAX_BG_MATCH_RATE = 0.02
+MAX_BG_MATCH_RATE = 0.10
 
 
 @dataclass
@@ -153,7 +153,7 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         )
 
         # Strategy 1: raise saturation floor (most effective for colored objects)
-        color_s_floor = int(np.percentile(cs, 5))
+        color_s_floor = int(np.percentile(cs, 2))
         while rate > MAX_BG_MATCH_RATE and s_lo < color_s_floor:
             s_lo = min(s_lo + 5, color_s_floor)
             rate = bg_match_rate()
@@ -163,8 +163,8 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
             return (h_lo, s_lo, v_lo), (h_hi, s_hi, v_hi)
 
         # Strategy 2: tighten value bounds
-        color_v_lo_floor = int(np.percentile(cv_, 5))
-        color_v_hi_ceil = int(np.percentile(cv_, 95))
+        color_v_lo_floor = int(np.percentile(cv_, 2))
+        color_v_hi_ceil = int(np.percentile(cv_, 98))
         while rate > MAX_BG_MATCH_RATE and v_lo < color_v_lo_floor:
             v_lo = min(v_lo + 5, color_v_lo_floor)
             rate = bg_match_rate()
@@ -179,8 +179,8 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
             return (h_lo, s_lo, v_lo), (h_hi, s_hi, v_hi)
 
         # Strategy 3: tighten hue bounds
-        color_h_lo_floor = int(np.percentile(ch, 5))
-        color_h_hi_ceil = int(np.percentile(ch, 95))
+        color_h_lo_floor = int(np.percentile(ch, 2))
+        color_h_hi_ceil = int(np.percentile(ch, 98))
         while rate > MAX_BG_MATCH_RATE and (h_lo < color_h_lo_floor or h_hi > color_h_hi_ceil):
             if h_lo < color_h_lo_floor:
                 h_lo = min(h_lo + 2, color_h_lo_floor)

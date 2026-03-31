@@ -1,7 +1,16 @@
 
+import random
+
 from libstp import GenericRobot, RobotService
 
 NUM_SLOTS = 9
+TOTAL_BLUE = 4
+TOTAL_PINK = 4
+
+# First drum uses the empirically known timeout; learning refines from there.
+DEFAULT_DETECTION_TIMEOUT = 0.8
+# Safety margin added on top of the learned average.
+TIMING_MARGIN = 1.05  # +5 %
 
 
 class SortingService(RobotService):
@@ -13,6 +22,9 @@ class SortingService(RobotService):
         self.blue_next: int = 0
         self.pink_next: int = 8
         self.slots: list[str | None] = [None] * NUM_SLOTS
+        self._blue_detected: int = 0
+        self._pink_detected: int = 0
+        self._detection_deltas: list[float] = []
 
     def assign_slot(self, color: str) -> int:
         """Return the target slot for *color* and advance the pointer."""
@@ -24,9 +36,11 @@ class SortingService(RobotService):
         if color == "blue":
             target = self.blue_next
             self.blue_next += 1
+            self._blue_detected += 1
         elif color == "pink":
             target = self.pink_next
             self.pink_next -= 1
+            self._pink_detected += 1
         else:
             raise ValueError(f"Unknown color: {color!r}")
 
@@ -36,6 +50,60 @@ class SortingService(RobotService):
             f"(blue_next={self.blue_next}, pink_next={self.pink_next})",
         )
         return target
+
+    def guess_color(self) -> str:
+        """Guess the most likely color based on remaining distribution.
+
+        With 4 blue and 4 pink total, if e.g. 3 blue are already detected,
+        the remaining unknown is 75% likely pink. Uses weighted random so
+        the sorting stays balanced over multiple unknowns.
+        """
+        blue_remaining = max(0, TOTAL_BLUE - self._blue_detected)
+        pink_remaining = max(0, TOTAL_PINK - self._pink_detected)
+        total_remaining = blue_remaining + pink_remaining
+
+        if total_remaining == 0:
+            self.warn("All drums accounted for — defaulting to blue")
+            return "blue"
+
+        pink_probability = pink_remaining / total_remaining
+        blue_probability = blue_remaining / total_remaining
+
+        guess = random.choices(
+            ["blue", "pink"],
+            weights=[blue_probability, pink_probability],
+        )[0]
+
+        self.info(
+            f"Color guess: {guess} "
+            f"(blue remaining: {blue_remaining}/{TOTAL_BLUE}, "
+            f"pink remaining: {pink_remaining}/{TOTAL_PINK}, "
+            f"P(blue)={blue_probability:.0%}, P(pink)={pink_probability:.0%})"
+        )
+        return guess
+
+    # ── Adaptive timeout learning ──────────────────────────────────
+
+    def record_detection_delta(self, delta: float) -> None:
+        """Record how long after polling start the camera detected a drum."""
+        self._detection_deltas.append(delta)
+        self.info(
+            f"Detection delta: {delta:.3f}s "
+            f"(history: {[f'{d:.3f}' for d in self._detection_deltas]})"
+        )
+
+    @property
+    def learned_timeout(self) -> float:
+        """Return adaptive timeout based on past detections + safety margin.
+
+        Uses the *maximum* observed delta (not average) plus margin,
+        so we don't close too early on a slightly slower drum.
+        Falls back to a generous default if no data yet.
+        """
+        if not self._detection_deltas:
+            return DEFAULT_DETECTION_TIMEOUT
+        timeout = max(self._detection_deltas) * TIMING_MARGIN
+        return max(timeout, 0.05)  # floor at 50 ms
 
     @property
     def blue_slots(self) -> list[int]:

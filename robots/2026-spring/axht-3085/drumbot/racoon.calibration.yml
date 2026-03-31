@@ -1,4 +1,21 @@
 root:
+  color-detection:
+    default:
+      blue_ranges:
+      - - - 85
+          - 78
+          - 126
+        - - 117
+          - 182
+          - 197
+      min_area: 300
+      pink_ranges:
+      - - - 158
+          - 113
+          - 171
+        - - 179
+          - 196
+          - 250
   drum-collector:
     default:
       blocked: 2160.763358778626

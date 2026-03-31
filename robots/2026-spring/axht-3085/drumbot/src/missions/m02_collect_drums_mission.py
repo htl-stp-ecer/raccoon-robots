@@ -5,7 +5,9 @@ from libstp.ui.screen import UIScreen
 from libstp.ui.step import UIStep
 from libstp.ui.widgets import Center, Column, Row, Spacer, StatusBadge, Text, Widget
 
+from src.hardware.defs import Defs
 from src.service.color_detection_service import ColorDetectionService
+from src.service.drum_motor_service import DrumMotorService, MotorStalledError
 from src.steps.drum_collector.sort_into_slot_step import (
     advance_to_midpoint,
     block_timer_check,
@@ -16,6 +18,10 @@ from src.steps.drum_collector.sort_into_slot_step import (
 from src.steps.drum_lifting_step import *
 from src.steps.servo_steps import close_drum_pusher, open_drum_pusher, use_drum_to_block
 from src.steps.wait_for_drum_step import wait_for_drum
+
+# If less than this many seconds remain before the next drum arrives,
+# abort and enter safe mode to prevent hardware damage.
+TIMING_SAFETY_THRESHOLD = 0.5
 
 
 class DrumCollectionScreen(UIScreen[None]):
@@ -64,7 +70,7 @@ class DrumCollectionScreen(UIScreen[None]):
         ])
 
 
-START_OFFSET = 10
+START_OFFSET = 9.5
 DRUMS = 8
 TIME_BETWEEN_DRUMS = 7
 
@@ -84,32 +90,84 @@ class CollectDrumsStep(UIStep):
         )
 
         try:
+            drum_service = robot.get_service(DrumMotorService)
+
             for i in range(DRUMS):
                 drum_number = i + 1
                 checkpoint = START_OFFSET + i * TIME_BETWEEN_DRUMS
+
+                # Skip if already in safe mode (motor stalled or timing blown)
+                if drum_service.collection_failed:
+                    self.warn(f"Skipping drum #{drum_number} — safe mode active")
+                    continue
 
                 # Reset detection for new drum + update screen
                 color_service.reset()
                 screen.drum_number = drum_number
                 screen.status = "Waiting for drum..."
 
-                # Build and run the block steps
-                block = seq([
-                    open_drum_pusher(),
-                    wait_for_drum(checkpoint=checkpoint, timeout=0.3),
-                    block_timer_start(),
-                    use_drum_to_block(),
-                    drum_align_on_back(),
-                    parallel(
-                        drum_lifting_down(),
-                        sort_into_slot(),
-                    ),
-                    close_drum_pusher(),
-                    wait_for_seconds(0.1),
-                    go_to_empty_slot(),
-                    block_timer_check(drum_number),
-                ])
-                await block.run_step(robot)
+                # Phase 1: Receive drum and sort into slot
+                # If the motor stalls here, enter safe mode immediately
+                try:
+                    phase1 = seq([
+                        open_drum_pusher(),
+                        wait_for_drum(checkpoint=checkpoint),
+                        block_timer_start(),
+                        drum_align_on_back(),
+                        parallel(
+                            drum_lifting_down(),
+                            sort_into_slot(),
+                        ),
+                    ])
+                    await phase1.run_step(robot)
+                except MotorStalledError:
+                    self.warn(
+                        f"Motor stalled during drum #{drum_number} — "
+                        "entering safe mode, keeping servo open"
+                    )
+                    drum_service.motor.set_velocity(0)
+                    Defs.drum_pusher_servo.set_position(170)
+                    drum_service.collection_failed = True
+                    continue
+
+                # Phase 2: Timing window safety check
+                # If the next drum is about to arrive, do NOT close the servo
+                if i < DRUMS - 1:
+                    next_checkpoint = START_OFFSET + (i + 1) * TIME_BETWEEN_DRUMS
+                    try:
+                        elapsed = robot.synchronizer.get_time()
+                        time_until_next = next_checkpoint - elapsed
+                    except (TypeError, AttributeError):
+                        time_until_next = float("inf")
+
+                    if time_until_next < TIMING_SAFETY_THRESHOLD:
+                        self.warn(
+                            f"TIMING BLOWN: only {time_until_next:.2f}s until "
+                            f"next drum — entering safe mode to protect hardware"
+                        )
+                        drum_service.motor.set_velocity(0)
+                        Defs.drum_pusher_servo.set_position(170)
+                        drum_service.collection_failed = True
+                        continue
+
+                # Phase 3: Close pusher and move to empty slot (safe to proceed)
+                try:
+                    phase3 = seq([
+                        close_drum_pusher(),
+                        wait_for_seconds(0.1),
+                        go_to_empty_slot(),
+                        block_timer_check(drum_number),
+                    ])
+                    await phase3.run_step(robot)
+                except MotorStalledError:
+                    self.warn(
+                        f"Motor stalled moving to empty slot after drum "
+                        f"#{drum_number} — entering safe mode"
+                    )
+                    drum_service.motor.set_velocity(0)
+                    Defs.drum_pusher_servo.set_position(170)
+                    drum_service.collection_failed = True
+                    continue
 
                 screen.status = "Done"
         finally:

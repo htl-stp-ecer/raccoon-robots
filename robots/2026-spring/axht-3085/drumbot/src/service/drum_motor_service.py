@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from libstp import AnalogSensor, GenericRobot, IRSensor, KMeans, Motor, RobotService
 
@@ -7,6 +8,15 @@ SAMPLE_INTERVAL = 0.01  # ~100 Hz
 HYSTERESIS_FRACTION = 0.15
 FULL_VELOCITY = 1700  # max velocity for set_velocity / move_to_position
 CREEP_VELOCITY = 500  # creep speed for precise edge measurement
+STALL_TIMEOUT = 0.5   # seconds without sufficient encoder progress → stalled
+STALL_RETRIES = 3     # back-up-and-retry attempts before giving up
+STALL_MIN_TICKS = 1000 # minimum encoder movement to count as "not stalled"
+                      # filters out BEMF noise that drifts position while stuck
+
+
+class MotorStalledError(Exception):
+    """Raised when the drum motor encoder stops moving."""
+    pass
 
 
 class DrumMotorService(RobotService):
@@ -182,6 +192,30 @@ class DrumMotorService(RobotService):
         self.info(f"Reset: pocket {self._current_pocket} → {pocket}")
         self._current_pocket = pocket
 
+    # ── stall detection ─────────────────────────────────────────
+
+    def _make_stall_checker(self) -> callable:
+        """Return a callable that raises MotorStalledError if encoder stops making progress.
+
+        Uses STALL_MIN_TICKS threshold to ignore small BEMF-induced encoder
+        drift that occurs even when the motor is physically stuck.
+        """
+        state = [self.motor.get_position(), time.monotonic()]
+
+        def check():
+            pos = self.motor.get_position()
+            now = time.monotonic()
+            if abs(pos - state[0]) >= STALL_MIN_TICKS:
+                state[0] = pos
+                state[1] = now
+            elif now - state[1] > STALL_TIMEOUT:
+                raise MotorStalledError(
+                    f"Motor stalled — only {abs(pos - state[0])} ticks in "
+                    f"{now - state[1]:.2f}s (need {STALL_MIN_TICKS})"
+                )
+
+        return check
+
     # ── navigation ───────────────────────────────────────────────
 
     async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
@@ -218,21 +252,40 @@ class DrumMotorService(RobotService):
         return await self.go_to_pocket(target_edge // 2)
 
     async def _move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
+        """Move N pockets with stall detection and automatic retry.
+
+        On stall: backs up slightly and retries up to STALL_RETRIES times.
+        Raises MotorStalledError if all retries are exhausted.
+        """
+        for attempt in range(1, STALL_RETRIES + 1):
+            try:
+                await self._do_move(pockets, forward=forward, precise=precise)
+                return
+            except MotorStalledError:
+                self.motor.set_velocity(0)
+                if attempt >= STALL_RETRIES:
+                    self.warn(f"Motor stalled after {STALL_RETRIES} retries — giving up")
+                    raise
+                self.warn(f"Motor stalled (attempt {attempt}/{STALL_RETRIES}) — backing up to retry")
+                sign = -1 if forward else 1
+                self.motor.set_velocity(int(FULL_VELOCITY * 0.3) * sign)
+                await asyncio.sleep(0.15)
+                self.motor.set_velocity(0)
+                await asyncio.sleep(0.05)
+
+    async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
         """Move N pockets at full velocity, counting stripe transitions.
 
         Runs at FULL_VELOCITY, polls sensor to count black stripes using
         encoder skip to avoid re-detecting the starting stripe.
-
-        precise=False: stops immediately when last stripe detected (fast,
-        may overshoot slightly — fine for non-critical positioning).
-        precise=True: after detecting last stripe, returns to entry position
-        and creeps across stripe to find center (direction-independent).
+        Raises MotorStalledError if the encoder stops moving.
         """
         assert self._ticks_per_pocket is not None, "Calibrate first (need ticks_per_pocket)"
         assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
         sign = 1 if forward else -1
         tpp = self._ticks_per_pocket
         skip_ticks = tpp // 3
+        stall_check = self._make_stall_checker()
 
         direction = "fwd" if forward else "bwd"
         self.info(f"{direction} {pockets} pockets {'precise' if precise else 'fast'} (midpoint={self._at_midpoint})")
@@ -249,12 +302,14 @@ class DrumMotorService(RobotService):
         # If at midpoint, clear the extra half-pocket first
         if self._at_midpoint:
             while abs(self.motor.get_position() - start_pos) < tpp // 2:
+                stall_check()
                 await asyncio.sleep(SAMPLE_INTERVAL)
 
         if stripes_to_count > 0:
             # Skip past current stripe
             skip_start = self.motor.get_position()
             while abs(self.motor.get_position() - skip_start) < skip_ticks:
+                stall_check()
                 await asyncio.sleep(SAMPLE_INTERVAL)
 
             # Count stripe transitions at full speed
@@ -263,6 +318,7 @@ class DrumMotorService(RobotService):
             entry_pos = 0
 
             while stripes_counted < stripes_to_count:
+                stall_check()
                 reading = self._is_black()
                 if reading and not on_black:
                     stripes_counted += 1
@@ -312,9 +368,11 @@ class DrumMotorService(RobotService):
         """Move forward half a pocket using set_velocity (no PID settle)."""
         assert self._ticks_per_pocket is not None
         ticks = self._ticks_per_pocket // 2
+        stall_check = self._make_stall_checker()
         start = self.motor.get_position()
         self.motor.set_velocity(FULL_VELOCITY)
         while abs(self.motor.get_position() - start) < ticks:
+            stall_check()
             await asyncio.sleep(SAMPLE_INTERVAL)
         self.motor.set_velocity(0)
         self._at_midpoint = True
@@ -323,9 +381,11 @@ class DrumMotorService(RobotService):
         """Move backward half a pocket using set_velocity (no PID settle)."""
         assert self._ticks_per_pocket is not None
         ticks = self._ticks_per_pocket // 2
+        stall_check = self._make_stall_checker()
         start = self.motor.get_position()
         self.motor.set_velocity(-FULL_VELOCITY)
         while abs(self.motor.get_position() - start) < ticks:
+            stall_check()
             await asyncio.sleep(SAMPLE_INTERVAL)
         self.motor.set_velocity(0)
         self._at_midpoint = False
