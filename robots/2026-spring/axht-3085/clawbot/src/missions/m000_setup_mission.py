@@ -4,7 +4,7 @@ from src.hardware.defs import Defs
 from src.steps.et_scan_align import EtScanAlign
 
 
-class M000SetupMission(Mission):
+class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
             parallel(
@@ -18,6 +18,12 @@ class M000SetupMission(Mission):
             ),
 
             Defs.shild.up(),
+
+
+            #timeout_or(drive_forward().until(after_seconds(3)),
+            #           seconds=1,
+            #           fallback=drive_backward(cm=5),
+            #           ),
 
             #auto_tune(
             #    vel_axes=["vy"],

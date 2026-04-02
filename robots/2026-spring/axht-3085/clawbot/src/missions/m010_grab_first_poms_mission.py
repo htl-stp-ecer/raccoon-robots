@@ -38,7 +38,7 @@ class M010GrabFirstPomsMission(Mission):
                     speed=1.0,
                     side=LineSide.LEFT,
                     kp=0.6,
-                    kd=0.3,
+                    kd=0.4,
                 ).until(after_cm(125) > on_black(Defs.front.left)),
                 seq([
                     # close the claw a bit, so fully closing it is faster
