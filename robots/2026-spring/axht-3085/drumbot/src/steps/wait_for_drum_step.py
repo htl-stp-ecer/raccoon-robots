@@ -1,5 +1,6 @@
-"""Wait until the camera detects a drum (any color), then close immediately."""
+"""Wait until the camera detects a drum (any color), then close after a short delay."""
 
+import asyncio
 import time
 
 from libstp import GenericRobot, dsl
@@ -9,7 +10,8 @@ from src.hardware.defs import Defs
 from src.service.color_detection_service import ColorDetectionService
 from src.service.sorting_service import SortingService
 
-BLOCK_ANGLE = 40  # servo angle to block the drum
+BLOCK_ANGLE = 40       # servo angle to block the drum
+CLOSE_DELAY = 0.15     # seconds to wait after detection before closing servo
 
 
 @dsl(hidden=True)
@@ -20,16 +22,18 @@ class WaitForDrumStep(Step):
     as it sees a color, and we await that event with the learned timeout.
     No polling, no pausing the detection loop.
 
-    Closes the pusher servo *immediately* on detection/timeout to
-    prevent the drum from rolling back out.
+    Closes the pusher servo after CLOSE_DELAY seconds to let the drum
+    roll fully into position before blocking.
     """
 
     def __init__(
         self,
         checkpoint: float | None = None,
+        close_delay: float = CLOSE_DELAY,
     ) -> None:
         super().__init__()
         self.checkpoint = checkpoint
+        self.close_delay = close_delay
 
     async def _execute_step(self, robot: GenericRobot) -> None:
         color_service = robot.get_service(ColorDetectionService)
@@ -43,18 +47,17 @@ class WaitForDrumStep(Step):
         color_service.reset()
 
         timeout = sorting_service.learned_timeout
-        self.info(f"Waiting for drum (timeout={timeout:.3f}s)")
+        self.info(f"Waiting for drum (timeout={timeout:.3f}s, close_delay={self.close_delay:.3f}s)")
 
         t0 = time.monotonic()
         detected = await color_service.wait_for_color(timeout)
-
-        # Close servo IMMEDIATELY
-        Defs.drum_pusher_servo.set_position(BLOCK_ANGLE)
+        detection_delta = time.monotonic() - t0
 
         if detected:
-            delta = time.monotonic() - t0
-            sorting_service.record_detection_delta(delta)
+            sorting_service.record_detection_delta(detection_delta)
             color_service.lock_color()
+            self.info(f"Drum detected at {detection_delta:.3f}s — closing servo in {self.close_delay:.3f}s")
+            await asyncio.sleep(self.close_delay)
         else:
             self.warn(
                 f"Timeout ({timeout:.3f}s) waiting for drum — "
@@ -62,10 +65,13 @@ class WaitForDrumStep(Step):
             )
             color_service.lock_color()
 
+        Defs.drum_pusher_servo.set_position(BLOCK_ANGLE)
+
 
 @dsl()
 def wait_for_drum(
     checkpoint: float | None = None,
+    close_delay: float = CLOSE_DELAY,
 ) -> WaitForDrumStep:
     """Wait until the camera sees a drum, optionally after a checkpoint."""
-    return WaitForDrumStep(checkpoint=checkpoint)
+    return WaitForDrumStep(checkpoint=checkpoint, close_delay=close_delay)
