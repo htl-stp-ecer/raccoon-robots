@@ -15,6 +15,10 @@ class M090ReturnSortedPomsMission(Mission):
             strafe_right().until(
                 on_black(Defs.front.left)
             ),
+            #drop sorted poms a second time to be sure we roped poms
+            Defs.shild_graber.open(),
+            Defs.shild_graber.closed(),
+
             strafe_left(cm=20),
 
             Defs.shild.down(),
