@@ -5,8 +5,8 @@ from libstp import GenericRobot, RobotService
 
 from src.hardware.usb_camera import USBCamera
 
-ANALYSIS_FRAMES = 2
-PRESENCE_THRESHOLD = 0.5
+ANALYSIS_FRAMES = 5
+PRESENCE_THRESHOLD = 0.7
 DEFAULT_MIN_AREA = 300
 
 
@@ -249,33 +249,24 @@ class ColorDetectionService(RobotService):
         self.info(f"Detected color: {color}")
         return color
 
-    def apply_calibration(
-        self,
-        blue_lab_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
-        pink_lab_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]],
-        blue_sat_min: int = 0,
-        pink_sat_min: int = 0,
-        min_area: int = DEFAULT_MIN_AREA,
-    ) -> None:
-        """Hot-swap color ranges on the running camera."""
-        if blue_lab_ranges:
-            self._camera.remove_color("blue")
-            self._camera.add_color(
-                "blue",
-                hsv_ranges=[],
-                lab_ranges=blue_lab_ranges,
-                sat_min=blue_sat_min,
-                min_area=min_area,
-                min_dimension=5,
-            )
-        if pink_lab_ranges:
-            self._camera.remove_color("pink")
-            self._camera.add_color(
-                "pink",
-                hsv_ranges=[],
-                lab_ranges=pink_lab_ranges,
-                sat_min=pink_sat_min,
-                min_area=min_area,
-                min_dimension=5,
-            )
-        self.info(f"Color calibration applied at runtime (min_area={min_area})")
+    def apply_calibration(self, sat_threshold: int) -> None:
+        """Apply sat_threshold from ColorCalibrationStep."""
+        self._camera.remove_color("blue")
+        self._camera.add_color(
+            "blue",
+            hsv_ranges=[],
+            lab_ranges=[],
+            sat_min=sat_threshold,
+            min_area=DEFAULT_MIN_AREA,
+            min_dimension=5,
+        )
+        self._camera.remove_color("pink")
+        self._camera.add_color(
+            "pink",
+            hsv_ranges=[],
+            lab_ranges=[],
+            sat_min=sat_threshold,
+            min_area=DEFAULT_MIN_AREA,
+            min_dimension=5,
+        )
+        self.info(f"Color calibration applied: sat_threshold={sat_threshold}")

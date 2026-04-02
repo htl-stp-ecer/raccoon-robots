@@ -28,9 +28,7 @@ class ColorConfirmScreen(UIScreen[str]):
         margin_below = min(self.blue_sat, self.pink_sat) - self.sat_threshold
         ok = margin_above > 0 and margin_below > 0
 
-        children = [
-            Text("Calibration Results", size="large", align="center"),
-            Spacer(height=12),
+        left = [
             Card(title="Saturation Samples", children=[
                 ResultsTable(rows=[
                     ("Blue drum", str(self.blue_sat), None),
@@ -39,33 +37,25 @@ class ColorConfirmScreen(UIScreen[str]):
                     ("Threshold", str(self.sat_threshold), "success" if ok else "error"),
                 ]),
             ]),
-            Spacer(height=8),
         ]
 
-        if ok:
-            children.append(
-                HintBox(
-                    f"+{margin_above} above empty  |  -{margin_below} below drums",
-                    icon="check_circle",
-                )
-            )
-        else:
-            children.append(
-                HintBox(
-                    "Threshold too close to background — consider better lighting.",
-                    icon="warning",
-                )
-            )
-
-        children.extend([
+        right = [
+            Text("Calibration Results", size="large", align="center"),
+            Spacer(height=12),
+            HintBox(
+                f"+{margin_above} above empty  |  -{margin_below} below drums"
+                if ok else
+                "Threshold too close to background — consider better lighting.",
+                icon="check_circle" if ok else "warning",
+            ),
             Spacer(height=16),
             Row(children=[
                 Button("retry_all", "Retry All", style="secondary"),
                 Button("confirm", "Confirm & Test", style="success"),
             ], align="center", spacing=12),
-        ])
+        ]
 
-        return Column(children=children)
+        return Split(left=left, right=right, ratio=(1, 1))
 
     @on_click("confirm")
     async def on_confirm(self):
