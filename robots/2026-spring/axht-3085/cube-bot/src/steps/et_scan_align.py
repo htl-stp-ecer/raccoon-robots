@@ -9,6 +9,7 @@ from src.hardware.defs import Defs
 class EtScanAlign(Step):
     """Rotates while sampling the ET sensor, detects an object's edges,
     then centers the heading between start and end of the object.
+    Optionally strafes to also center laterally on the object.
 
     The sensor is expected to read *above* `threshold` when it sees the object
     and *below* when it sees empty space (>30 cm away).
@@ -19,6 +20,10 @@ class EtScanAlign(Step):
         speed: Rotation speed (0.0–1.0).
         threshold: Analog value above which the object is considered detected.
         sensor: The ET sensor to sample (defaults to Defs.et_sensor).
+        strafe_scan: If True, after heading alignment strafe to center laterally.
+        strafe_scan_cm: How far to strafe during the lateral scan.
+        strafe_direction: "left" or "right" — which way to strafe for the scan.
+        strafe_speed: Strafe speed for both the scan and the centering move.
     """
 
     def __init__(
@@ -28,6 +33,10 @@ class EtScanAlign(Step):
         speed: float = 0.4,
         threshold: float = 1500,
         sensor=None,
+        strafe_scan: bool = False,
+        strafe_scan_cm: float = 30,
+        strafe_direction: str = "left",
+        strafe_speed: float = 0.3,
     ):
         super().__init__()
         self.scan_degrees = scan_degrees
@@ -35,7 +44,12 @@ class EtScanAlign(Step):
         self.speed = speed
         self.threshold = threshold
         self.sensor = sensor or Defs.et_sensor
+        self.strafe_scan = strafe_scan
+        self.strafe_scan_cm = strafe_scan_cm
+        self.strafe_direction = strafe_direction
+        self.strafe_speed = strafe_speed
         self._samples: list[tuple[float, float]] = []  # (heading_deg, value)
+        self._strafe_samples: list[tuple[float, float]] = []  # (lateral_cm_rel, value)
 
     async def _execute_step(self, robot) -> None:
         # Phase 1: Scan — turn while sampling the ET sensor
@@ -82,7 +96,61 @@ class EtScanAlign(Step):
 
         await center_step._execute_step(robot)
 
+        if not self.strafe_scan:
+            return
+
+        # Phase 4: Strafe scan — strafe while sampling to find lateral center
+        self._strafe_samples = []
+        start_lateral_m = robot.odometry.get_distance_from_origin().lateral
+        strafe_sampling = True
+
+        async def strafe_sample_loop():
+            while strafe_sampling:
+                lateral_cm = (robot.odometry.get_distance_from_origin().lateral - start_lateral_m) * 100
+                value = self.sensor.read()
+                self._strafe_samples.append((lateral_cm, value))
+                await asyncio.sleep(0.01)
+
+        if self.strafe_direction == "left":
+            strafe_step = strafe_left(self.strafe_scan_cm, self.strafe_speed)
+        else:
+            strafe_step = strafe_right(self.strafe_scan_cm, self.strafe_speed)
+
+        strafe_task = asyncio.create_task(strafe_sample_loop())
+        try:
+            await strafe_step._execute_step(robot)
+        finally:
+            strafe_sampling = False
+            await strafe_task
+
+        # Phase 5: Strafe to lateral center
+        lateral_target_cm = self._find_lateral_center()
+        if lateral_target_cm is None:
+            return
+
+        current_lateral_cm = (robot.odometry.get_distance_from_origin().lateral - start_lateral_m) * 100
+        error_cm = lateral_target_cm - current_lateral_cm
+
+        if abs(error_cm) < 0.5:
+            return
+
+        if error_cm > 0:
+            center_strafe = strafe_right(abs(error_cm), self.strafe_speed)
+        else:
+            center_strafe = strafe_left(abs(error_cm), self.strafe_speed)
+
+        await center_strafe._execute_step(robot)
+
     # --- analysis ---
+
+    def _find_lateral_center(self) -> float | None:
+        """Find the center lateral position (cm, relative to strafe scan start)."""
+        if not self._strafe_samples:
+            return None
+        above = [(lat, v) for lat, v in self._strafe_samples if v >= self.threshold]
+        if not above:
+            return None
+        return (above[0][0] + above[-1][0]) / 2
 
     def _find_center(self) -> float | None:
         """Find the center heading between the first and last threshold crossing."""
@@ -119,6 +187,10 @@ class EtScanAlign(Step):
     @property
     def samples(self) -> list[tuple[float, float]]:
         return list(self._samples)
+
+    @property
+    def strafe_samples(self) -> list[tuple[float, float]]:
+        return list(self._strafe_samples)
 
     # --- helpers ---
 
