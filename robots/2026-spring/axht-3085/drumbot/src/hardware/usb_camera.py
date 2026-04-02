@@ -269,33 +269,37 @@ class USBCamera:
             except Exception:
                 ret = False
 
-            if ret:
-                consecutive_failures = 0
-                with self._lock:
-                    self._buffer.append(frame)
-                self._total_frames += 1
-                fps_frame_count += 1
-                if self._save_frames and self._io_pool is not None:
-                    self._frame_count += 1
-                    sync_time = self._get_time() if self._get_time else 0.0
-                    self._io_pool.submit(
-                        self._save_frame, frame, sync_time, self._frame_count,
-                    )
-            else:
-                consecutive_failures += 1
-                if consecutive_failures == _DISCONNECT_THRESHOLD:
-                    error("Camera disconnected — USB cable pulled?")
-                    self._disconnected = True
-                    self._running = False
-                    break
+            try:
+                if ret:
+                    consecutive_failures = 0
+                    with self._lock:
+                        self._buffer.append(frame)
+                    self._total_frames += 1
+                    fps_frame_count += 1
+                    if self._save_frames and self._io_pool is not None:
+                        self._frame_count += 1
+                        sync_time = self._get_time() if self._get_time else 0.0
+                        self._io_pool.submit(
+                            self._save_frame, frame, sync_time, self._frame_count,
+                        )
+                else:
+                    consecutive_failures += 1
+                    if consecutive_failures == _DISCONNECT_THRESHOLD:
+                        error("Camera disconnected — USB cable pulled?")
+                        self._disconnected = True
+                        self._running = False
+                        break
 
-            # Log actual FPS every 5 seconds
-            fps_elapsed = t0 - fps_window_start
-            if fps_elapsed >= 5.0:
-                actual_fps = fps_frame_count / fps_elapsed
-                info(f"Camera FPS: {actual_fps:.1f} (target {self._capture_fps})")
-                fps_window_start = t0
-                fps_frame_count = 0
+                # Log actual FPS every 5 seconds
+                fps_elapsed = t0 - fps_window_start
+                if fps_elapsed >= 5.0:
+                    actual_fps = fps_frame_count / fps_elapsed
+                    info(f"Camera FPS: {actual_fps:.1f} (target {self._capture_fps})")
+                    fps_window_start = t0
+                    fps_frame_count = 0
+            except Exception:
+                pass  # never let frame processing kill the capture thread
+
             elapsed = time.monotonic() - t0
             sleep_time = interval - elapsed
             if sleep_time > 0:
