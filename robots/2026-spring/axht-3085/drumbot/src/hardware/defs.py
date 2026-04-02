@@ -60,4 +60,6 @@ class Defs:
     ]
 
 
-__all__ = ["Defs"]
+defs = Defs()
+
+__all__ = ["Defs", "defs"]

@@ -94,6 +94,7 @@ class USBCamera:
             cv2.MORPH_ELLIPSE, (morph_kernel_size, morph_kernel_size)
         )
 
+        self._sat_threshold: int = 50  # calibrated via set_sat_threshold()
         self._colors: dict[str, ColorProfile] = {}
         self._buffer: deque[np.ndarray] = deque(maxlen=buffer_size)
         self._lock = threading.Lock()
@@ -132,6 +133,10 @@ class USBCamera:
     def remove_color(self, name: str) -> None:
         """Remove a registered color profile."""
         self._colors.pop(name, None)
+
+    def set_sat_threshold(self, value: int) -> None:
+        """Set the global saturation gate threshold used in _analyze_frame."""
+        self._sat_threshold = value
 
     def start(self) -> "USBCamera":
         """Open the camera and start the background capture thread."""
@@ -269,61 +274,51 @@ class USBCamera:
         return cv2.GaussianBlur(wb, (3, 3), 0)
 
     def _analyze_frame(self, frame: np.ndarray) -> dict[str, BlobResult]:
-        """Analyze a single frame for all registered colors."""
+        """Analyze a single frame for all registered colors.
+
+        Two-stage detection:
+        1. Frame-level saturation gate — gray/white scene means no drum.
+        2. LAB a* discriminator — pink has a* > 128, blue has a* < 128.
+           No per-color calibration needed.
+        """
+        absent = {name: BlobResult(present=False) for name in self._colors}
+
+        # Stage 1: saturation gate on the raw frame.
+        hsv_raw = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        if int(hsv_raw[:, :, 1].max()) < self._sat_threshold:
+            return absent
+
         pp = self._preprocess(frame)
         hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
-        lab = None
-        results: dict[str, BlobResult] = {}
+        lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
 
-        for name, profile in self._colors.items():
-            if profile.lab_ranges:
-                if lab is None:
-                    lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
-                mask = None
-                for lower, upper in profile.lab_ranges:
-                    m = cv2.inRange(lab, np.array(lower), np.array(upper))
-                    mask = m if mask is None else cv2.bitwise_or(mask, m)
-                if mask is None:
-                    results[name] = BlobResult(present=False)
-                    continue
-                if profile.sat_min > 0:
-                    sat_mask = (hsv[:, :, 1] >= profile.sat_min).astype(np.uint8) * 255
-                    mask = cv2.bitwise_and(mask, sat_mask)
-            else:
-                mask = None
-                for lower, upper in profile.hsv_ranges:
-                    m = cv2.inRange(hsv, np.array(lower), np.array(upper))
-                    mask = m if mask is None else cv2.bitwise_or(mask, m)
-                if mask is None:
-                    results[name] = BlobResult(present=False)
-                    continue
+        # Mask of all saturated pixels — the drum is the only saturated object.
+        sat_mask = (hsv[:, :, 1] >= self._sat_threshold).astype(np.uint8) * 255
+        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_OPEN, self._morph_kernel)
+        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_CLOSE, self._morph_kernel)
 
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, self._morph_kernel)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self._morph_kernel)
+        contours, _ = cv2.findContours(sat_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            return absent
 
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        largest = max(contours, key=cv2.contourArea)
+        area = int(cv2.contourArea(largest))
+        x, y, w, h = cv2.boundingRect(largest)
 
-            if not contours:
-                results[name] = BlobResult(present=False)
-                continue
+        first_profile = next(iter(self._colors.values()))
+        if area < first_profile.min_area or w < first_profile.min_dimension or h < first_profile.min_dimension:
+            return absent
 
-            largest = max(contours, key=cv2.contourArea)
-            area = int(cv2.contourArea(largest))
-            x, y, w, h = cv2.boundingRect(largest)
+        # Stage 2: LAB a* discriminator — pink is magenta (a* > 128), blue is cool (a* < 128).
+        contour_mask = np.zeros(lab.shape[:2], dtype=np.uint8)
+        cv2.drawContours(contour_mask, [largest], -1, 255, cv2.FILLED)
+        mean_a = float(lab[:, :, 1][contour_mask == 255].mean())
+        detected = "pink" if mean_a > 128 else "blue"
 
-            if area < profile.min_area or w < profile.min_dimension or h < profile.min_dimension:
-                results[name] = BlobResult(present=False)
-                continue
-
-            cx = x + w // 2
-            cy = y + h // 2
-            results[name] = BlobResult(
-                present=True,
-                area=area,
-                bounding_box=(x, y, w, h),
-                center=(cx, cy),
-            )
-
+        cx = x + w // 2
+        cy = y + h // 2
+        results = absent.copy()
+        results[detected] = BlobResult(present=True, area=area, bounding_box=(x, y, w, h), center=(cx, cy))
         return results
 
     def analyze(
