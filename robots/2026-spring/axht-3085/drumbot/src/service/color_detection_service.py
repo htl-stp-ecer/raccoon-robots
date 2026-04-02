@@ -47,10 +47,23 @@ class ColorDetectionService(RobotService):
         self._running = False
         self._color_event = threading.Event()  # signaled when a color is first detected
 
+    @property
+    def camera_connected(self) -> bool:
+        return self._running and not self._camera.is_disconnected
+
     def start_camera(self) -> None:
-        """Start background capture and continuous detection."""
+        """Start background capture and continuous detection.
+
+        If the camera can't be opened (e.g. USB not connected), logs an error
+        and continues without crashing — color detection will return None and
+        the probabilistic guessing fallback takes over.
+        """
         self._camera_start_time = time.monotonic()
-        self._camera.start()
+        try:
+            self._camera.start()
+        except RuntimeError as e:
+            self.error(f"Camera failed to start: {e} — running blind, guessing will handle it")
+            return
         self._running = True
         self._detection_thread = threading.Thread(
             target=self._detection_loop, daemon=True,
@@ -82,7 +95,16 @@ class ColorDetectionService(RobotService):
         max_wait_ms = 0.0
         color_counts: dict[str | None, int] = {}
 
+        _disconnected_logged = False
+
         while self._running:
+            if self._camera.is_disconnected:
+                if not _disconnected_logged:
+                    self.error("Camera disconnected mid-run — color detection disabled, guessing takes over")
+                    _disconnected_logged = True
+                time.sleep(0.1)
+                continue
+
             if self._detection_paused:
                 time.sleep(0.05)
                 continue

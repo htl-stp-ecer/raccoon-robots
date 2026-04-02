@@ -110,6 +110,7 @@ class USBCamera:
         self._lock = threading.Lock()
         self._cap: cv2.VideoCapture | None = None
         self._running = False
+        self._disconnected = False
         self._thread: threading.Thread | None = None
         self._total_frames: int = 0
 
@@ -155,7 +156,17 @@ class USBCamera:
             warn("Camera is already running")
             return self
 
-        self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
+        # V4L2 sometimes holds the device briefly after a prior handle is released
+        # (e.g. CamPublisher from calibration). Retry for up to ~2 s.
+        import time as _time
+        _retries = 10
+        for _attempt in range(_retries):
+            self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
+            if self._cap.isOpened():
+                break
+            self._cap.release()
+            if _attempt < _retries - 1:
+                _time.sleep(0.2)
         if not self._cap.isOpened():
             error(f"Could not open camera at index {self._camera_index}")
             raise RuntimeError(
@@ -207,6 +218,10 @@ class USBCamera:
         return self._running
 
     @property
+    def is_disconnected(self) -> bool:
+        return self._disconnected
+
+    @property
     def buffer_count(self) -> int:
         with self._lock:
             return len(self._buffer)
@@ -243,10 +258,19 @@ class USBCamera:
         interval = 1.0 / self._capture_fps
         fps_window_start = time.monotonic()
         fps_frame_count = 0
+        consecutive_failures = 0
+        # Declare disconnected after ~1 s of consecutive read failures
+        _DISCONNECT_THRESHOLD = max(10, self._capture_fps)
+
         while self._running:
             t0 = time.monotonic()
-            ret, frame = self._cap.read()
+            try:
+                ret, frame = self._cap.read()
+            except Exception:
+                ret = False
+
             if ret:
+                consecutive_failures = 0
                 with self._lock:
                     self._buffer.append(frame)
                 self._total_frames += 1
@@ -258,7 +282,13 @@ class USBCamera:
                         self._save_frame, frame, sync_time, self._frame_count,
                     )
             else:
-                warn("Failed to capture frame")
+                consecutive_failures += 1
+                if consecutive_failures == _DISCONNECT_THRESHOLD:
+                    error("Camera disconnected — USB cable pulled?")
+                    self._disconnected = True
+                    self._running = False
+                    break
+
             # Log actual FPS every 5 seconds
             fps_elapsed = t0 - fps_window_start
             if fps_elapsed >= 5.0:
