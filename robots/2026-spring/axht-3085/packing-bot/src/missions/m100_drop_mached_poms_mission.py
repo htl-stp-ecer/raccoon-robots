@@ -21,12 +21,15 @@ class M100DropMachedPomsMission(Mission):
                 0,
                 Defs.distance_sensor
             ),
+            Defs.pom_arm.above_basket(),
+            turn_right().until(after_degrees(30) | after_seconds(0.5)),
+            turn_to_heading_right(0),
 
             #move arm down and open
             Defs.pom_arm.up(),
             Defs.pom_grab.slightly_open(100),
 
-            shake_servo(Defs.pom_grab, 2, 60, 90),
+            shake_servo(Defs.pom_grab, 1.5, 60, 90),
             Defs.pom_grab.slightly_open(100),
 
             #compress down

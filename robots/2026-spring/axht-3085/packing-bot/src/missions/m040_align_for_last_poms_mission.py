@@ -5,7 +5,7 @@ from src.hardware.defs import Defs
 class M040AlignForLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drive_forward(25, 1.0),
+            drive_forward(27.5, 1.0),
             #push a blue pom to collect it later
             parallel(
                 turn_to_heading_right(90),
@@ -17,9 +17,8 @@ class M040AlignForLastPomsMission(Mission):
 
             turn_to_heading_right(90, 1.0),
             parallel(
-
                 seq([
-                    strafe_right().until(on_black(Defs.rear.right)),
+                    strafe_right().until(on_black(Defs.rear.right)), #TODO: make use a timout if we don't find the black line
                     strafe_left(13, 1.0), #magic hardcoded value :)
                 ]),
 
