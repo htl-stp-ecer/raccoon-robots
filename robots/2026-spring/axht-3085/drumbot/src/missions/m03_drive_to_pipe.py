@@ -11,10 +11,10 @@ class M03DriveToPipe(Mission):
         return seq([
             drum_retreat(),
             drum_lifting_remove_D(),
-            drum_lifting_up(15),
+            drive_backward(15),
             turn_to_heading_right(90),
             parallel(
-                    wait_until_distance(20),
+                    drive_backward(20),
                     drum_lifting_up(),
             ),
             turn_to_heading_left(90),
