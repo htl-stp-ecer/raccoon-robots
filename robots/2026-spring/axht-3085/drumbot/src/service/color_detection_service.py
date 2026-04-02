@@ -7,7 +7,7 @@ from src.hardware.usb_camera import USBCamera
 
 ANALYSIS_FRAMES = 1
 PRESENCE_THRESHOLD = 0.9
-DEFAULT_MIN_AREA = 300
+DEFAULT_MIN_AREA = 500
 
 
 class ColorDetectionService(RobotService):
@@ -251,6 +251,7 @@ class ColorDetectionService(RobotService):
 
     def apply_calibration(self, sat_threshold: int) -> None:
         """Apply sat_threshold from ColorCalibrationStep."""
+        self._camera.set_sat_threshold(sat_threshold)
         self._camera.remove_color("blue")
         self._camera.add_color(
             "blue",

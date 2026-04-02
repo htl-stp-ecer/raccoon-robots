@@ -1,7 +1,7 @@
 root:
   color-detection:
     default:
-      sat_threshold: 118
+      sat_threshold: 101
   drum-collector:
     default:
       blocked: 2269.2056074766356
