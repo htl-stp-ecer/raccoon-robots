@@ -2,11 +2,14 @@ claw_servo:
   type: Servo
   port: 2
   positions:
-    closed: 135
-    open: 30
+    closed: 154
+    half_open: 75
+    open: 45
 cone_arm_servo:
   type: Servo
   port: 1
   positions:
-    up: 32
-    down: 160
+    up: 28
+    down: 162
+    slight_up: 150
+    more_slight_up: 130
