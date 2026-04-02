@@ -331,6 +331,12 @@ class USBCamera:
         self, frame: np.ndarray,
     ) -> dict[str, BlobResult]:
         """Analyze a single frame for all registered colors."""
+        # Frame-level saturation gate: if no pixel in the raw frame exceeds this
+        # saturation, the scene is gray/white (no drum present) — skip detection.
+        hsv_raw = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        if int(hsv_raw[:, :, 1].max()) < 50:
+            return {name: BlobResult(present=False) for name in self._colors}
+
         pp = self._preprocess(frame)
         hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
         # LAB conversion is deferred — only computed if any profile needs it
