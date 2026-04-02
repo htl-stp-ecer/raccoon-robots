@@ -22,5 +22,10 @@ def reject_drums() -> Sequential:
 class M04RejectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            wait_for_button(),
+            #wait_for_button(),
+            reject_drums(),
+            reject_drums(),
+            reject_drums(),
+            reject_drums(),
+            #reject_drums(),
         ])

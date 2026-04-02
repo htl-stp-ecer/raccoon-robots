@@ -1,11 +1,15 @@
-from libstp import seq, dsl, drive_forward, on_white, follow_line_single, on_black, LineSide, after_cm
+from libstp import seq, dsl, drive_forward, on_white, follow_line_single, on_black, LineSide, after_cm, __all__
+from libstp import *
+
 
 from src.hardware.defs import Defs
+from src.steps.drum_lifting_step import shake_drums
 
 
 @dsl
 def drive_to_first_pipe():
     return seq([
+        drive_forward().until(on_black(Defs.front_right_ir_sensor)),
         drive_forward().until(on_white(Defs.front_right_ir_sensor)),
         drive_forward(23, 1),
     ])

@@ -2,7 +2,7 @@ from libstp import *
 
 from src.steps.drive_to_pipe import drive_to_first_pipe
 from src.steps.drum_collector import drum_retreat
-from src.steps.drum_lifting_step import drum_lifting_up, shake_drums
+from src.steps.drum_lifting_step import drum_lifting_up, shake_drums, drum_lifting_remove_D
 from src.steps.range_finder import turn_to_peak
 
 
@@ -10,8 +10,15 @@ class M03DriveToPipe(Mission):
     def sequence(self) -> Sequential:
         return seq([
             drum_retreat(),
-            drum_lifting_up(),
-            drive_backward(35, 1),
+            drum_lifting_remove_D(),
+            parallel(
+                drive_backward(35,1),
+                seq([
+                    wait_until_distance(15),
+                    drum_lifting_up(),
+                ]),
+            ),
+
             turn_right(180, 1),
 
             drive_to_first_pipe(),
