@@ -1,4 +1,6 @@
-- M00SetupMission: setup
-- M01DriveToConeMission
-- M02CollectConeMission
-- M03CollectBotguyMission
+- M000SetupMission: setup
+- M010DriveToConeMission
+- M020CollectConeMission
+- M025CollectSecondConeMission
+- M027DriveToBotguyMission
+- M030CollectBotguyMission

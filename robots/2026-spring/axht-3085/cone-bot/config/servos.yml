@@ -9,7 +9,7 @@ cone_arm_servo:
   type: Servo
   port: 1
   positions:
-    up: 28
-    down: 162
-    slight_up: 150
-    more_slight_up: 130
+    container_pos: 34
+    down: 168
+    _20deg: 156
+    _45deg: 136
