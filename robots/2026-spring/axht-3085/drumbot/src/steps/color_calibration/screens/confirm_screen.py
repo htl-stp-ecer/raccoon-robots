@@ -4,83 +4,44 @@ from src.ui.widgets import CamFeed
 
 
 class ColorConfirmScreen(UIScreen[str]):
-    """Split-screen: live feed (left) + calibrated ranges + confirm (right).
+    """Split-screen: live feed (left) + calibrated sat threshold + confirm (right).
 
-    Closes with: "confirm", "retry_all", "retry_blue", or "retry_pink".
+    Closes with: "confirm" or "retry_all".
     """
 
     _primary_button_id = "confirm"
 
-    def __init__(
-        self,
-        blue_range: tuple[tuple[int, ...], tuple[int, ...]] | None,
-        blue_sat_min: int = 0,
-        pink_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
-        pink_sat_min: int = 0,
-        min_area: int = 300,
-        complete: bool = True,
-    ):
+    def __init__(self, sat_threshold: int, blue_sat: int, pink_sat: int, empty_sat: int):
         super().__init__()
         self.title = "Confirm Calibration"
-        self.blue_range = blue_range
-        self.blue_sat_min = blue_sat_min
-        self.pink_ranges = pink_ranges
-        self.pink_sat_min = pink_sat_min
-        self.min_area = min_area
-        self.complete = complete
-
-    def _fmt_hsv(self, lower: tuple[int, ...], upper: tuple[int, ...]) -> str:
-        return f"H:{lower[0]}-{upper[0]}  S:{lower[1]}-{upper[1]}  V:{lower[2]}-{upper[2]}"
-
-    def _fmt_lab(self, lower: tuple[int, ...], upper: tuple[int, ...]) -> str:
-        return f"L:{lower[0]}-{upper[0]}  a*:{lower[1]}-{upper[1]}  b*:{lower[2]}-{upper[2]}"
+        self.sat_threshold = sat_threshold
+        self.blue_sat = blue_sat
+        self.pink_sat = pink_sat
+        self.empty_sat = empty_sat
 
     def build(self) -> Widget:
+        margin = min(self.blue_sat, self.pink_sat) - self.sat_threshold
+        empty_margin = self.sat_threshold - self.empty_sat
+
         right = [
-            Text("Calibrated Ranges", size="large", align="center", bold=True),
+            Text("Saturation Gate", size="large", align="center", bold=True),
             Spacer(height=8),
-        ]
-
-        if self.blue_range:
-            lo, hi = self.blue_range
-            blue_children = [Text(self._fmt_lab(lo, hi), size="medium")]
-            if self.blue_sat_min > 0:
-                blue_children.append(Text(f"Sat gate: S >= {self.blue_sat_min}", size="small", muted=True))
-            blue_children.append(Button("retry_blue", "Retry Blue", style="secondary"))
-            right.append(Card(title="Blue (LAB)", children=blue_children))
-        else:
-            right.append(Card(title="Blue (LAB)", children=[
-                Text("NOT CALIBRATED — tap the blue drum", size="medium", color="red"),
-                Button("retry_blue", "Calibrate Blue", style="primary"),
-            ]))
-
-        if self.pink_ranges:
-            widgets = []
-            for i, (lo, hi) in enumerate(self.pink_ranges):
-                prefix = f"Range {i + 1}: " if len(self.pink_ranges) > 1 else ""
-                widgets.append(Text(f"{prefix}{self._fmt_lab(lo, hi)}", size="medium"))
-            if self.pink_sat_min > 0:
-                widgets.append(Text(f"Sat gate: S >= {self.pink_sat_min}", size="small", muted=True))
-            widgets.append(Button("retry_pink", "Retry Pink", style="secondary"))
-            right.append(Card(title="Pink (LAB)", children=widgets))
-        else:
-            right.append(Card(title="Pink (LAB)", children=[
-                Text("NOT CALIBRATED — tap the pink drum", size="medium", color="red"),
-                Button("retry_pink", "Calibrate Pink", style="primary"),
-            ]))
-
-        right.append(Card(title="Noise Rejection", children=[
-            Text(f"Min blob area: {self.min_area} px", size="medium"),
-        ]))
-
-        right.extend([
+            Card(title="Captured Values", children=[
+                Text(f"Blue drum:  S_max = {self.blue_sat}", size="medium"),
+                Text(f"Pink drum:  S_max = {self.pink_sat}", size="medium"),
+                Text(f"Empty:      S_max = {self.empty_sat}", size="medium"),
+            ]),
+            Card(title="Threshold", children=[
+                Text(f"sat_threshold = {self.sat_threshold}", size="medium", bold=True),
+                Text(f"Margin above empty: +{empty_margin}", size="small", muted=True),
+                Text(f"Margin below drums: -{margin}", size="small", muted=True),
+            ]),
             Spacer(height=8),
             Row(children=[
-                Button("retry_all", "Retry All", style="secondary"),
-                Button("confirm", "Save & Test", style="success",
-                       disabled=not self.complete),
+                Button("retry_all", "Retry", style="secondary"),
+                Button("confirm", "Save & Test", style="success"),
             ], align="center", spacing=12),
-        ])
+        ]
 
         return Split(
             left=[CamFeed()],
@@ -95,11 +56,3 @@ class ColorConfirmScreen(UIScreen[str]):
     @on_click("retry_all")
     async def on_retry_all(self):
         self.close("retry_all")
-
-    @on_click("retry_blue")
-    async def on_retry_blue(self):
-        self.close("retry_blue")
-
-    @on_click("retry_pink")
-    async def on_retry_pink(self):
-        self.close("retry_pink")

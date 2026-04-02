@@ -12,22 +12,22 @@ class BaselineScreen(UIScreen[bool]):
 
     _primary_button_id = "confirm"
 
-    def __init__(self):
+    def __init__(self, instruction: str = "Remove all drums from view", badge: str = "CAPTURE"):
         super().__init__()
         self.title = "Color Calibration"
+        self._instruction = instruction
+        self._badge = badge
 
     def build(self) -> Widget:
         right = [
             Row(children=[
-                StatusBadge("BASELINE", color="grey", glow=False),
+                StatusBadge(self._badge, color="grey", glow=False),
             ], align="center"),
-            Text("Remove all drums from view", size="large", align="center"),
+            Text(self._instruction, size="large", align="center"),
             Spacer(height=8),
             HintBox(
-                "Clear the camera view completely. "
-                "A single frame will be captured when you press Confirm "
-                "and used to exclude background from color detection.",
-                icon="visibility_off",
+                "A single frame will be captured when you press Confirm.",
+                icon="photo_camera",
             ),
             Spacer(height=8),
         ]
