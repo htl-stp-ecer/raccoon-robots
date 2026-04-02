@@ -1,20 +1,39 @@
 root:
+  color-detection:
+    default:
+      blue_lab_ranges:
+      - - - 0
+          - 117
+          - 94
+        - - 255
+          - 141
+          - 113
+      blue_sat_min: 108
+      min_area: 12022
+      pink_lab_ranges:
+      - - - 0
+          - 151
+          - 88
+        - - 255
+          - 187
+          - 179
+      pink_sat_min: 109
   drum-collector:
     default:
-      blocked: 2160.763358778626
-      pocket: 297.33910034602076
-      ticks_per_pocket: 136613
+      blocked: 2152.6614173228345
+      pocket: 291.88216560509557
+      ticks_per_pocket: 137841
   ir-calibration:
     default_port1:
-      black_tresh: 3320.75708
-      white_tresh: 179.160172
+      black_tresh: 3453.44995
+      white_tresh: 214.202423
     default_port2:
-      black_tresh: 3593.89038
-      white_tresh: 1022.5307
+      black_tresh: 3262.75
+      white_tresh: 1110.76624
   range-finder:
     first_pipe:
-      t_enter: 788.7530108210559
-      t_exit: 737.8525741321373
+      t_enter: 1646.7986367387462
+      t_exit: 1260.2332670503297
     second_pipe:
       t_enter: 2218.9294187142577
       t_exit: 1824.3941280713861

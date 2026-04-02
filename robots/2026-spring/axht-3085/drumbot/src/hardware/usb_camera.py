@@ -27,7 +27,6 @@ class ColorProfile:
     hsv_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]]
     min_area: int = 900
     min_dimension: int = 20
-    # When set, detection uses LAB ranges + HSV saturation gate instead of hsv_ranges.
     lab_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None
     sat_min: int = 0
 
@@ -38,7 +37,7 @@ class BlobResult:
 
     present: bool
     area: int = 0
-    bounding_box: tuple[int, int, int, int] = (0, 0, 0, 0)  # x, y, w, h
+    bounding_box: tuple[int, int, int, int] = (0, 0, 0, 0)
     center: tuple[int, int] = (0, 0)
 
 
@@ -70,17 +69,7 @@ class AnalysisResult:
 
 
 class USBCamera:
-    """USB camera with background capture and on-demand color blob analysis.
-
-    Usage:
-        camera = USBCamera()
-        camera.add_color("orange", hsv_ranges=[((5, 150, 100), (15, 255, 255))])
-        camera.start()
-        result = camera.analyze(last_n_frames=10)
-        if result.is_present("orange"):
-            print(result.get("orange").median_center)
-        camera.stop()
-    """
+    """USB camera with background capture and on-demand color blob analysis."""
 
     def __init__(
         self,
@@ -102,27 +91,22 @@ class USBCamera:
         self._codec = codec
         self._presence_threshold = presence_threshold
         self._morph_kernel = cv2.getStructuringElement(
-            cv2.MORPH_ELLIPSE, (morph_kernel_size, morph_kernel_size),
+            cv2.MORPH_ELLIPSE, (morph_kernel_size, morph_kernel_size)
         )
 
-        self._sat_threshold: int = 50  # set via set_sat_threshold() after calibration
         self._colors: dict[str, ColorProfile] = {}
         self._buffer: deque[np.ndarray] = deque(maxlen=buffer_size)
         self._lock = threading.Lock()
         self._cap: cv2.VideoCapture | None = None
         self._running = False
-        self._disconnected = False
         self._thread: threading.Thread | None = None
         self._total_frames: int = 0
 
-        # Frame recording
         self._save_frames = save_frames
         self._frames_dir = frames_dir
         self._get_time = get_time
         self._io_pool: ThreadPoolExecutor | None = None
         self._frame_count = 0
-
-    # -- Color registration --------------------------------------------------
 
     def add_color(
         self,
@@ -149,29 +133,13 @@ class USBCamera:
         """Remove a registered color profile."""
         self._colors.pop(name, None)
 
-    def set_sat_threshold(self, value: int) -> None:
-        """Set the global saturation gate threshold used in _analyze_frame."""
-        self._sat_threshold = value
-
-    # -- Lifecycle ------------------------------------------------------------
-
     def start(self) -> "USBCamera":
         """Open the camera and start the background capture thread."""
         if self._running:
             warn("Camera is already running")
             return self
 
-        # V4L2 sometimes holds the device briefly after a prior handle is released
-        # (e.g. CamPublisher from calibration). Retry for up to ~2 s.
-        import time as _time
-        _retries = 10
-        for _attempt in range(_retries):
-            self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
-            if self._cap.isOpened():
-                break
-            self._cap.release()
-            if _attempt < _retries - 1:
-                _time.sleep(0.2)
+        self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
         if not self._cap.isOpened():
             error(f"Could not open camera at index {self._camera_index}")
             raise RuntimeError(
@@ -188,13 +156,11 @@ class USBCamera:
             self._io_pool = ThreadPoolExecutor(max_workers=1)
 
         self._running = True
-        self._thread = threading.Thread(
-            target=self._capture_loop, daemon=True,
-        )
+        self._thread = threading.Thread(target=self._capture_loop, daemon=True)
         self._thread.start()
         info(
             f"Camera started (index={self._camera_index}, "
-            f"res={self._resolution}, fps={self._capture_fps})",
+            f"res={self._resolution}, fps={self._capture_fps})"
         )
         return self
 
@@ -223,17 +189,12 @@ class USBCamera:
         return self._running
 
     @property
-    def is_disconnected(self) -> bool:
-        return self._disconnected
-
-    @property
     def buffer_count(self) -> int:
         with self._lock:
             return len(self._buffer)
 
     @property
     def total_frames(self) -> int:
-        """Monotonically increasing count of captured frames."""
         return self._total_frames
 
     def clear_buffer(self) -> None:
@@ -246,15 +207,18 @@ class USBCamera:
     def __exit__(self, *_) -> None:
         self.stop()
 
-    # -- Background capture ---------------------------------------------------
-
     def _save_frame(self, frame: np.ndarray, sync_time: float, seq: int) -> None:
-        """Annotate and write a frame to disk (runs in IO thread pool)."""
+        """Annotate and write a frame to disk."""
         label = f"t={sync_time:.2f}s"
         annotated = frame.copy()
         cv2.putText(
-            annotated, label,
-            (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2,
+            annotated,
+            label,
+            (10, 25),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            (255, 255, 255),
+            2,
         )
         path = os.path.join(self._frames_dir, f"frame_{seq:04d}_t{sync_time:.2f}s.jpg")
         cv2.imwrite(path, annotated)
@@ -263,142 +227,111 @@ class USBCamera:
         interval = 1.0 / self._capture_fps
         fps_window_start = time.monotonic()
         fps_frame_count = 0
-        consecutive_failures = 0
-        # Declare disconnected after ~1 s of consecutive read failures
-        _DISCONNECT_THRESHOLD = max(10, self._capture_fps)
-
         while self._running:
             t0 = time.monotonic()
-            try:
-                ret, frame = self._cap.read()
-            except Exception:
-                ret = False
+            ret, frame = self._cap.read()
+            if ret:
+                with self._lock:
+                    self._buffer.append(frame)
+                self._total_frames += 1
+                fps_frame_count += 1
+                if self._save_frames and self._io_pool is not None:
+                    self._frame_count += 1
+                    sync_time = self._get_time() if self._get_time else 0.0
+                    self._io_pool.submit(self._save_frame, frame, sync_time, self._frame_count)
+            else:
+                warn("Failed to capture frame")
 
-            try:
-                if ret:
-                    consecutive_failures = 0
-                    with self._lock:
-                        self._buffer.append(frame)
-                    self._total_frames += 1
-                    fps_frame_count += 1
-                    if self._save_frames and self._io_pool is not None:
-                        self._frame_count += 1
-                        sync_time = self._get_time() if self._get_time else 0.0
-                        self._io_pool.submit(
-                            self._save_frame, frame, sync_time, self._frame_count,
-                        )
-                else:
-                    consecutive_failures += 1
-                    if consecutive_failures == _DISCONNECT_THRESHOLD:
-                        error("Camera disconnected — USB cable pulled?")
-                        self._disconnected = True
-                        self._running = False
-                        break
-
-                # Log actual FPS every 5 seconds
-                fps_elapsed = t0 - fps_window_start
-                if fps_elapsed >= 5.0:
-                    actual_fps = fps_frame_count / fps_elapsed
-                    info(f"Camera FPS: {actual_fps:.1f} (target {self._capture_fps})")
-                    fps_window_start = t0
-                    fps_frame_count = 0
-            except Exception:
-                pass  # never let frame processing kill the capture thread
+            fps_elapsed = t0 - fps_window_start
+            if fps_elapsed >= 5.0:
+                actual_fps = fps_frame_count / fps_elapsed
+                info(f"Camera FPS: {actual_fps:.1f} (target {self._capture_fps})")
+                fps_window_start = t0
+                fps_frame_count = 0
 
             elapsed = time.monotonic() - t0
             sleep_time = interval - elapsed
             if sleep_time > 0:
                 time.sleep(sleep_time)
 
-    # -- Frame access ---------------------------------------------------------
-
     def grab_frame(self) -> np.ndarray | None:
         """Return the most recent frame, or None if buffer is empty."""
         with self._lock:
             return self._buffer[-1].copy() if self._buffer else None
 
-    # -- Preprocessing --------------------------------------------------------
-
     @staticmethod
     def _preprocess(frame: np.ndarray) -> np.ndarray:
-        """Gray-world white balance + Gaussian blur."""
-        # Gray-world WB: scale each channel so the average is neutral gray
+        """Gray-world white balance plus Gaussian blur."""
         avg = frame.mean(axis=(0, 1))
         avg_all = avg.mean()
         scale = avg_all / (avg + 1e-6)
         wb = np.clip(frame * scale, 0, 255).astype(np.uint8)
-        # Light Gaussian blur to reduce speckle noise before thresholding
         return cv2.GaussianBlur(wb, (3, 3), 0)
 
-    # -- Per-frame analysis ---------------------------------------------------
-
-    def _analyze_frame(
-        self, frame: np.ndarray,
-    ) -> dict[str, BlobResult]:
-        """Analyze a single frame for all registered colors.
-
-        Detection is two-stage:
-        1. Frame-level saturation gate — if the scene is gray/white, no drum is present.
-        2. LAB a* discriminator — among the saturated blob, pink has high a* (magenta
-           side) and blue has low a* (cool side). No calibration needed.
-        """
-        absent = {name: BlobResult(present=False) for name in self._colors}
-
-        # Stage 1: frame-level saturation gate on the raw frame.
-        # If no pixel exceeds the calibrated threshold, the scene is gray/white — no drum.
-        hsv_raw = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        if int(hsv_raw[:, :, 1].max()) < self._sat_threshold:
-            return absent
-
+    def _analyze_frame(self, frame: np.ndarray) -> dict[str, BlobResult]:
+        """Analyze a single frame for all registered colors."""
         pp = self._preprocess(frame)
         hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
-        lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
+        lab = None
+        results: dict[str, BlobResult] = {}
 
-        # Build a mask from all saturated pixels — the drum is the only saturated object.
-        sat_mask = (hsv[:, :, 1] >= self._sat_threshold).astype(np.uint8) * 255
-        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_OPEN, self._morph_kernel)
-        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_CLOSE, self._morph_kernel)
+        for name, profile in self._colors.items():
+            if profile.lab_ranges:
+                if lab is None:
+                    lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
+                mask = None
+                for lower, upper in profile.lab_ranges:
+                    m = cv2.inRange(lab, np.array(lower), np.array(upper))
+                    mask = m if mask is None else cv2.bitwise_or(mask, m)
+                if mask is None:
+                    results[name] = BlobResult(present=False)
+                    continue
+                if profile.sat_min > 0:
+                    sat_mask = (hsv[:, :, 1] >= profile.sat_min).astype(np.uint8) * 255
+                    mask = cv2.bitwise_and(mask, sat_mask)
+            else:
+                mask = None
+                for lower, upper in profile.hsv_ranges:
+                    m = cv2.inRange(hsv, np.array(lower), np.array(upper))
+                    mask = m if mask is None else cv2.bitwise_or(mask, m)
+                if mask is None:
+                    results[name] = BlobResult(present=False)
+                    continue
 
-        contours, _ = cv2.findContours(sat_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if not contours:
-            return absent
+            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, self._morph_kernel)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self._morph_kernel)
 
-        largest = max(contours, key=cv2.contourArea)
-        area = int(cv2.contourArea(largest))
-        x, y, w, h = cv2.boundingRect(largest)
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Use min_area/min_dimension from the first profile (shared between blue/pink).
-        first_profile = next(iter(self._colors.values()))
-        if area < first_profile.min_area or w < first_profile.min_dimension or h < first_profile.min_dimension:
-            return absent
+            if not contours:
+                results[name] = BlobResult(present=False)
+                continue
 
-        # Stage 2: LAB a* discriminator.
-        # Pink/magenta has a* > 128; blue has a* < 128. No calibration required.
-        contour_mask = np.zeros(lab.shape[:2], dtype=np.uint8)
-        cv2.drawContours(contour_mask, [largest], -1, 255, cv2.FILLED)
-        mean_a = float(lab[:, :, 1][contour_mask == 255].mean())
-        detected = "pink" if mean_a > 128 else "blue"
+            largest = max(contours, key=cv2.contourArea)
+            area = int(cv2.contourArea(largest))
+            x, y, w, h = cv2.boundingRect(largest)
 
-        cx = x + w // 2
-        cy = y + h // 2
-        results = absent.copy()
-        results[detected] = BlobResult(present=True, area=area, bounding_box=(x, y, w, h), center=(cx, cy))
+            if area < profile.min_area or w < profile.min_dimension or h < profile.min_dimension:
+                results[name] = BlobResult(present=False)
+                continue
+
+            cx = x + w // 2
+            cy = y + h // 2
+            results[name] = BlobResult(
+                present=True,
+                area=area,
+                bounding_box=(x, y, w, h),
+                center=(cx, cy),
+            )
+
         return results
-
-    # -- Multi-frame consensus ------------------------------------------------
 
     def analyze(
         self,
         last_n_frames: int | None = None,
         presence_threshold: float | None = None,
     ) -> AnalysisResult:
-        """Analyze buffered frames and return consensus results.
-
-        Args:
-            last_n_frames: Number of recent frames to analyze (default: all buffered).
-            presence_threshold: Fraction of frames a color must appear in
-                                to be considered present (default: instance setting).
-        """
+        """Analyze buffered frames and return consensus results."""
         if not self._colors:
             warn("No colors registered, nothing to analyze")
             return AnalysisResult(timestamp=time.time())
@@ -409,7 +342,6 @@ class USBCamera:
             else self._presence_threshold
         )
 
-        # Snapshot frames from buffer
         with self._lock:
             frames = list(self._buffer)
 
@@ -420,25 +352,18 @@ class USBCamera:
             warn("No frames in buffer to analyze")
             return AnalysisResult(timestamp=time.time())
 
-        # Analyze each frame
-        per_frame: list[dict[str, BlobResult]] = [
-            self._analyze_frame(f) for f in frames
-        ]
+        per_frame: list[dict[str, BlobResult]] = [self._analyze_frame(f) for f in frames]
 
         n = len(per_frame)
         consensus: dict[str, ColorConsensus] = {}
 
         for name in self._colors:
-            detections = [
-                r[name] for r in per_frame if name in r and r[name].present
-            ]
+            detections = [r[name] for r in per_frame if name in r and r[name].present]
             confidence = len(detections) / n
             present = confidence >= threshold
 
             if not detections:
-                consensus[name] = ColorConsensus(
-                    present=False, confidence=confidence,
-                )
+                consensus[name] = ColorConsensus(present=False, confidence=confidence)
                 continue
 
             areas = [d.area for d in detections]
@@ -465,14 +390,9 @@ class USBCamera:
         debug(
             f"Analyzed {n} frames: "
             + ", ".join(
-                f"{name}={'present' if c.present else 'absent'}"
-                f"({c.confidence:.0%})"
+                f"{name}={'present' if c.present else 'absent'}({c.confidence:.0%})"
                 for name, c in consensus.items()
-            ),
+            )
         )
 
-        return AnalysisResult(
-            colors=consensus,
-            frames_analyzed=n,
-            timestamp=time.time(),
-        )
+        return AnalysisResult(colors=consensus, frames_analyzed=n, timestamp=time.time())

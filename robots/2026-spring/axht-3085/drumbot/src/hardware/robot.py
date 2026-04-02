@@ -111,7 +111,7 @@ class Robot(GenericRobot):
         ),
         angular=AxisConstraints(max_velocity=2, acceleration=3, deceleration=3),
     )
-    shutdown_in = 12000
+    shutdown_in = 120
     missions = [
         M01DriveToDrumsMission(),
         M02CollectDrumsMission(),
