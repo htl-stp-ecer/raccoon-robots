@@ -1,23 +1,23 @@
 root:
   color-detection:
     default:
-      sat_threshold: 125
+      sat_threshold: 118
   drum-collector:
     default:
-      blocked: 2153.909090909091
-      pocket: 295.73234200743497
-      ticks_per_pocket: 133621
+      blocked: 2269.2056074766356
+      pocket: 346.9007352941176
+      ticks_per_pocket: 136067
   ir-calibration:
     default_port1:
-      black_tresh: 3419.3501
-      white_tresh: 204.233765
+      black_tresh: 3396.28564
+      white_tresh: 188.480347
     default_port2:
-      black_tresh: 3674.04761
-      white_tresh: 1230.56958
+      black_tresh: 3635.77271
+      white_tresh: 1229.9342
   range-finder:
     first_pipe:
-      t_enter: 1656.1912888733586
-      t_exit: 1223.1560410321933
+      t_enter: 1524.2771830857253
+      t_exit: 1143.1847887238168
     second_pipe:
       t_enter: 2218.9294187142577
       t_exit: 1824.3941280713861

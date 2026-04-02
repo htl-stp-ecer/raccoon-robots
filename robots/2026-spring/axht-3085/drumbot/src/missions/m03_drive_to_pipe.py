@@ -11,21 +11,19 @@ class M03DriveToPipe(Mission):
         return seq([
             drum_retreat(),
             drum_lifting_remove_D(),
+            drum_lifting_up(15),
+            turn_to_heading_right(90),
             parallel(
-                drive_backward(35,1),
-                seq([
-                    wait_until_distance(15),
+                    wait_until_distance(20),
                     drum_lifting_up(),
-                ]),
             ),
-
-            turn_right(180, 1),
+            turn_to_heading_left(90),
 
             drive_to_first_pipe(),
             turn_to_peak(turn_speed=0.4, profile="first_pipe"),
             turn_left(19, 1),
 
-            wall_align_forward(speed=0.3, accel_threshold=0.25, settle_duration=0, max_duration=3, grace_period=0.4),
+            wall_align_forward(speed=0.3, accel_threshold=0.35, settle_duration=0, max_duration=3, grace_period=0.4),
             parallel(drive_backward(2.5, 1), shake_drums()),
 
         ])

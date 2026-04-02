@@ -7,6 +7,7 @@ from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_down
 class M01DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            mark_heading_reference(),
             Defs.pom_remover_servo.push_first_orange_pom_away(),
             parallel(
                 drum_lifting_up(),

@@ -5,8 +5,8 @@ from libstp import GenericRobot, RobotService
 
 from src.hardware.usb_camera import USBCamera
 
-ANALYSIS_FRAMES = 5
-PRESENCE_THRESHOLD = 0.7
+ANALYSIS_FRAMES = 1
+PRESENCE_THRESHOLD = 0.9
 DEFAULT_MIN_AREA = 300
 
 
