@@ -37,7 +37,7 @@ V_MARGIN = 30
 TAP_ROI_FRACTION = 0.12
 
 # Minimum frames to consider a valid sample.
-MIN_SAMPLE_FRAMES = 5
+MIN_SAMPLE_FRAMES = 1
 
 # Absolute floor for min_area (pixels).
 MIN_AREA_FLOOR = 300
@@ -374,7 +374,11 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         sat_mask = baseline.hsv[:, 1] >= sat_min
         filtered = baseline.lab[sat_mask]
         # Need at least a handful of pixels for meaningful exclusion
-        return filtered if len(filtered) >= 50 else baseline.lab
+        # If very few high-saturation background pixels exist (typical in a
+        # competition arena), the sat gate handles all that background anyway.
+        # Return None so _compute_range skips tightening entirely — b* stays
+        # at the full margin width rather than being squeezed to compensate.
+        return filtered if len(filtered) >= 50 else None
 
     @staticmethod
     def _widen_for_illumination(
@@ -500,7 +504,10 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
                 result = await self._show_confirm(calibration)
 
                 if result == "confirm":
-                    return calibration
+                    test_result = await self._run_test(robot, calibration)
+                    if test_result == "done":
+                        return calibration
+                    # "retry" → fall through to show confirm screen again
                 elif result == "retry_all":
                     return None  # base class will call _collect again
                 elif result == "retry_blue":
@@ -541,19 +548,16 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
             pink_ranges=pink_display,
             pink_sat_min=calibration.pink_sat_min,
             min_area=calibration.min_area,
+            complete=bool(calibration.blue_lab_ranges and calibration.pink_lab_ranges),
         )
         return await self.show(screen)
 
     async def _confirm(
         self, robot: GenericRobot, calibration: ColorCalibration,
     ) -> tuple[bool, ColorCalibration]:
-        # Confirm screen is already handled inside _collect's retry loop.
-        # If we get here, the user confirmed — run the live test.
-        await self._run_test(robot, calibration)
-
-        # Stop publisher before returning — its Transport's background
-        # LCM subscriptions must be cleaned up before the next UIStep
-        # tries to use the same channels.
+        # The test is run inside _collect's retry loop before returning,
+        # so by the time we get here the user has already accepted.
+        # Just clean up and confirm.
         self._stop_publisher()
         await self.close_ui()
 
@@ -561,8 +565,11 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 
     async def _run_test(
         self, robot: GenericRobot, calibration: ColorCalibration,
-    ) -> None:
-        """Live test phase: detect colors and show results."""
+    ) -> str:
+        """Live test phase: detect colors and show results.
+
+        Returns "done" (user accepted) or "retry" (user wants to recalibrate).
+        """
         screen = ColorTestScreen()
         self._publisher.set_overlay("TEST MODE - place drum")
 
@@ -582,12 +589,14 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
                 await asyncio.sleep(0.1)
 
         task = asyncio.create_task(detect_loop())
-        await self.show(screen)
+        result = await self.show(screen)
         task.cancel()
         try:
             await task
         except asyncio.CancelledError:
             pass
+
+        return result or "done"
 
     def _detect_from_frame(
         self,
@@ -657,6 +666,13 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 
     def _apply(self, robot: GenericRobot, calibration: ColorCalibration) -> None:
         from src.service.color_detection_service import ColorDetectionService
+
+        if not calibration.blue_lab_ranges or not calibration.pink_lab_ranges:
+            missing = "blue" if not calibration.blue_lab_ranges else "pink"
+            raise RuntimeError(
+                f"Incomplete calibration: {missing} has no ranges. "
+                f"Both colors must be tapped before saving."
+            )
 
         service = robot.get_service(ColorDetectionService)
         service.apply_calibration(

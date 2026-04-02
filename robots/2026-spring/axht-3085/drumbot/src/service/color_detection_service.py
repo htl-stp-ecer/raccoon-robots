@@ -3,78 +3,24 @@ import threading
 import time
 
 from libstp import GenericRobot, RobotService
-from libstp.step.calibration.store import CalibrationStore
 
 from src.hardware.usb_camera import USBCamera
 
-# Default LAB ranges — used when no calibration data exists.
-# Blue in LAB: low a* (green side), low b* (blue side)
-DEFAULT_BLUE_LAB_RANGES = [((0, 100, 70), (200, 128, 120))]
-DEFAULT_BLUE_SAT_MIN = 50
-# Pink in LAB: high a* (magenta side)
-DEFAULT_PINK_LAB_RANGES = [((0, 148, 100), (255, 210, 165))]
-DEFAULT_PINK_SAT_MIN = 50
-
 ANALYSIS_FRAMES = 2
 PRESENCE_THRESHOLD = 0.5
-
-
 DEFAULT_MIN_AREA = 300
-
-
-def _load_calibration() -> dict | None:
-    """Try loading calibration data from racoon.calibration.yml."""
-    store = CalibrationStore()
-    data = store.load("color-detection", "default")
-    if data is None:
-        return None
-    try:
-        result = {
-            "blue_lab_ranges": [(tuple(lo), tuple(hi)) for lo, hi in data.get("blue_lab_ranges", [])],
-            "blue_sat_min": int(data.get("blue_sat_min", 0)),
-            "pink_lab_ranges": [(tuple(lo), tuple(hi)) for lo, hi in data.get("pink_lab_ranges", [])],
-            "pink_sat_min": int(data.get("pink_sat_min", 0)),
-            "min_area": int(data.get("min_area", DEFAULT_MIN_AREA)),
-        }
-        if result["blue_lab_ranges"] or result["pink_lab_ranges"]:
-            return result
-        return None
-    except (TypeError, ValueError):
-        return None
 
 
 class ColorDetectionService(RobotService):
     """Continuously detect drum color (blue/pink) via USB camera.
 
-    A background thread analyzes frames as fast as it can.
-    The latest detected color is always available. Consuming it clears
-    the cached value so stale data is never reused.
-
-    HSV ranges are loaded from calibration YAML if available,
-    otherwise falls back to hardcoded defaults.
+    Calibration is always injected via apply_calibration() — called by
+    ColorCalibrationStep._apply() whether running live or with --no-calibrate.
+    No YAML loading here; no defaults; no fallbacks.
     """
 
     def __init__(self, robot: "GenericRobot") -> None:
         super().__init__(robot)
-
-        calibrated = _load_calibration()
-        if calibrated:
-            blue_lab_ranges = calibrated["blue_lab_ranges"]
-            blue_sat_min = calibrated["blue_sat_min"]
-            pink_lab_ranges = calibrated["pink_lab_ranges"]
-            pink_sat_min = calibrated["pink_sat_min"]
-            min_area = calibrated["min_area"]
-            self.info(
-                f"Loaded calibrated color ranges from racoon.calibration.yml "
-                f"(min_area={min_area})",
-            )
-        else:
-            blue_lab_ranges = DEFAULT_BLUE_LAB_RANGES
-            blue_sat_min = DEFAULT_BLUE_SAT_MIN
-            pink_lab_ranges = DEFAULT_PINK_LAB_RANGES
-            pink_sat_min = DEFAULT_PINK_SAT_MIN
-            min_area = DEFAULT_MIN_AREA
-            self.info("Using default color ranges (no calibration found)")
 
         self._camera = USBCamera(
             camera_index="/dev/video0",
@@ -86,14 +32,11 @@ class ColorDetectionService(RobotService):
             get_time=lambda: time.monotonic() - self._camera_start_time,
             codec="YUYV",
         )
-        self._camera.add_color("blue", hsv_ranges=[],
-                               lab_ranges=blue_lab_ranges,
-                               sat_min=blue_sat_min,
-                               min_area=min_area, min_dimension=5)
-        self._camera.add_color("pink", hsv_ranges=[],
-                               lab_ranges=pink_lab_ranges,
-                               sat_min=pink_sat_min,
-                               min_area=min_area, min_dimension=5)
+        # Ranges are empty until apply_calibration() is called
+        self._camera.add_color("blue", hsv_ranges=[], lab_ranges=[],
+                               sat_min=0, min_area=DEFAULT_MIN_AREA, min_dimension=5)
+        self._camera.add_color("pink", hsv_ranges=[], lab_ranges=[],
+                               sat_min=0, min_area=DEFAULT_MIN_AREA, min_dimension=5)
 
         self._camera_start_time: float = 0.0
         self._lock = threading.Lock()

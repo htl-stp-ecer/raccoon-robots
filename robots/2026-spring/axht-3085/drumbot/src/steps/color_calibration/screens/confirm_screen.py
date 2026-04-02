@@ -18,6 +18,7 @@ class ColorConfirmScreen(UIScreen[str]):
         pink_ranges: list[tuple[tuple[int, ...], tuple[int, ...]]] | None = None,
         pink_sat_min: int = 0,
         min_area: int = 300,
+        complete: bool = True,
     ):
         super().__init__()
         self.title = "Confirm Calibration"
@@ -26,6 +27,7 @@ class ColorConfirmScreen(UIScreen[str]):
         self.pink_ranges = pink_ranges
         self.pink_sat_min = pink_sat_min
         self.min_area = min_area
+        self.complete = complete
 
     def _fmt_hsv(self, lower: tuple[int, ...], upper: tuple[int, ...]) -> str:
         return f"H:{lower[0]}-{upper[0]}  S:{lower[1]}-{upper[1]}  V:{lower[2]}-{upper[2]}"
@@ -48,8 +50,8 @@ class ColorConfirmScreen(UIScreen[str]):
             right.append(Card(title="Blue (LAB)", children=blue_children))
         else:
             right.append(Card(title="Blue (LAB)", children=[
-                Text("Not calibrated (defaults)", size="medium", muted=True),
-                Button("retry_blue", "Retry Blue", style="secondary"),
+                Text("NOT CALIBRATED — tap the blue drum", size="medium", color="red"),
+                Button("retry_blue", "Calibrate Blue", style="primary"),
             ]))
 
         if self.pink_ranges:
@@ -63,8 +65,8 @@ class ColorConfirmScreen(UIScreen[str]):
             right.append(Card(title="Pink (LAB)", children=widgets))
         else:
             right.append(Card(title="Pink (LAB)", children=[
-                Text("Not calibrated (defaults)", size="medium", muted=True),
-                Button("retry_pink", "Retry Pink", style="secondary"),
+                Text("NOT CALIBRATED — tap the pink drum", size="medium", color="red"),
+                Button("retry_pink", "Calibrate Pink", style="primary"),
             ]))
 
         right.append(Card(title="Noise Rejection", children=[
@@ -75,7 +77,8 @@ class ColorConfirmScreen(UIScreen[str]):
             Spacer(height=8),
             Row(children=[
                 Button("retry_all", "Retry All", style="secondary"),
-                Button("confirm", "Save & Test", style="success"),
+                Button("confirm", "Save & Test", style="success",
+                       disabled=not self.complete),
             ], align="center", spacing=12),
         ])
 

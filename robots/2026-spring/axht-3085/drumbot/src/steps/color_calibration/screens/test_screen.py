@@ -3,8 +3,11 @@ from libstp.ui import *
 from src.ui.widgets import CamFeed
 
 
-class ColorTestScreen(UIScreen[None]):
-    """Split-screen: live feed with detections (left) + result display (right)."""
+class ColorTestScreen(UIScreen[str]):
+    """Split-screen: live feed with detections (left) + result display (right).
+
+    Closes with "done" or "retry" (go back to confirm/retry screen).
+    """
 
     _primary_button_id = "done"
 
@@ -45,7 +48,10 @@ class ColorTestScreen(UIScreen[None]):
                 ], align="center", spacing=12),
             ]),
             Spacer(height=16),
-            Button("done", "Done", style="success"),
+            Row(children=[
+                Button("retry", "Retry", style="secondary"),
+                Button("done", "Done", style="success"),
+            ], align="center", spacing=12),
         ]
 
         return Split(
@@ -56,4 +62,8 @@ class ColorTestScreen(UIScreen[None]):
 
     @on_click("done")
     async def on_done(self):
-        self.close()
+        self.close("done")
+
+    @on_click("retry")
+    async def on_retry(self):
+        self.close("retry")
