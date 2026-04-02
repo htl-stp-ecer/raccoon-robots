@@ -1,6 +1,7 @@
 from libstp import *
 
 from src.hardware.defs import Defs
+from src.missions.m04_reject_drums_mission import reject_drums
 from src.steps.drum_lifting_step import *
 from src.steps.range_finder import turn_to_peak
 from src.steps.drive_to_pipe import drive_to_second_pipe
@@ -21,19 +22,19 @@ class M05DriveToOtherPipe(Mission):
             drive_forward(10, 1),
 
             drive_to_second_pipe(),
-            turn_to_peak(turn_speed=0.4, profile="second_pipe"),
+            turn_to_peak(turn_speed=0.4, profile="first_pipe"),
             turn_left(20, 1),
 
             wall_align_forward(speed=0.3, accel_threshold=0.25, settle_duration=0, max_duration=3, grace_period=0.4),
             parallel(drive_backward(2.5, 1), shake_drums()),
 
             wait_for_button(),
-            # reject_drums(),
-            # reject_drums(),
+             reject_drums(),
+             reject_drums(),
             # shake_drums(),
             # dispense_drums(),
-            # reject_drums(),
-            # reject_drums(),
-            # reject_drums(),
+             reject_drums(),
+             reject_drums(),
+             reject_drums(),
 
         ])
