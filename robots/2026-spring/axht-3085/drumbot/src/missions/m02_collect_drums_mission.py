@@ -217,7 +217,6 @@ def collect_drums() -> CollectDrumsStep:
 class M02CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drum_lifting_down(slow_mode=False),
             collect_drums(),
             advance_to_midpoint(),
         ])

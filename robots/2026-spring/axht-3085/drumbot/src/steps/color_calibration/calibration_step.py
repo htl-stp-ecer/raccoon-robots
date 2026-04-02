@@ -357,6 +357,39 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 
     # -- CalibrateStep hooks -------------------------------------------------
 
+    @staticmethod
+    def _sat_filtered_baseline(
+        baseline: "_BaselineSamples", sat_min: int,
+    ) -> np.ndarray | None:
+        """Return baseline LAB pixels filtered to those above sat_min.
+
+        The saturation gate (HSV S >= sat_min) already rejects gray/neutral
+        background at runtime.  Passing only the surviving pixels to
+        _compute_range prevents the background-exclusion loop from tightening
+        the b* window to compensate for unsaturated pixels it will never see.
+        Falls back to unfiltered baseline if too few pixels survive.
+        """
+        if baseline.hsv is None or baseline.lab is None:
+            return baseline.lab
+        sat_mask = baseline.hsv[:, 1] >= sat_min
+        filtered = baseline.lab[sat_mask]
+        # Need at least a handful of pixels for meaningful exclusion
+        return filtered if len(filtered) >= 50 else baseline.lab
+
+    @staticmethod
+    def _widen_for_illumination(
+        lo: tuple[int, ...], hi: tuple[int, ...],
+    ) -> tuple[tuple[int, ...], tuple[int, ...]]:
+        """Pin the L channel to [0, 255] so detection is shadow-invariant.
+
+        In LAB space, L* encodes illumination only.  a*/b* encode color and
+        are largely illumination-invariant.  By ignoring L entirely we let
+        a*/b* + the HSV saturation gate do all the discrimination, which means
+        the calibration works regardless of whether the user tapped a shadowed
+        or well-lit part of the drum.
+        """
+        return (0, lo[1], lo[2]), (255, hi[1], hi[2])
+
     def _compute_calibration(
         self,
         blue_samples: _ColorSamples | None,
@@ -364,33 +397,43 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         baseline: _BaselineSamples,
     ) -> ColorCalibration:
         """Compute LAB ranges + saturation gates for both colors."""
-        lab_margin = dict(h_margin=10, s_margin=15, v_margin=20)  # L, a*, b*
+        # h_margin=120: keeps L wide from the start so the background-exclusion
+        # loop is forced to tighten a*/b* (not L) — even if the user tapped in shadow.
+        # v_margin=40: shadow compresses b* toward neutral; extra margin bridges
+        # the gap between shadow-blue and well-lit-blue in b* space.
+        lab_margin = dict(h_margin=120, s_margin=15, v_margin=40)  # L, a*, b*
 
         self.info("Computing blue ranges (LAB)...")
         blue_lab_ranges = []
         blue_sat_min = 0
         if blue_samples:
             lab_combined = np.vstack(blue_samples.lab)
-            blue_lab_ranges = [self._compute_range(
-                lab_combined, baseline.lab, **lab_margin,
-            )]
             hsv_combined = np.vstack(blue_samples.hsv)
             sat_values = hsv_combined[:, 1].astype(float)
             blue_sat_min = max(30, int(np.percentile(sat_values, 2)) - 10)
             self.info(f"  Blue saturation gate: S >= {blue_sat_min}")
+            # Only consider background pixels that would survive the sat gate.
+            # Without this, _compute_range over-tightens b* to exclude gray/neutral
+            # background that the sat gate already handles — producing a b* window
+            # so narrow (~14 units) that any lighting variation breaks detection.
+            bg_lab = self._sat_filtered_baseline(baseline, blue_sat_min)
+            lo, hi = self._compute_range(lab_combined, bg_lab, **lab_margin)
+            lo, hi = self._widen_for_illumination(lo, hi)
+            blue_lab_ranges = [(lo, hi)]
 
         self.info("Computing pink ranges (LAB)...")
         pink_lab_ranges = []
         pink_sat_min = 0
         if pink_samples:
             lab_combined = np.vstack(pink_samples.lab)
-            pink_lab_ranges = [self._compute_range(
-                lab_combined, baseline.lab, **lab_margin,
-            )]
             hsv_combined = np.vstack(pink_samples.hsv)
             sat_values = hsv_combined[:, 1].astype(float)
             pink_sat_min = max(30, int(np.percentile(sat_values, 2)) - 10)
             self.info(f"  Pink saturation gate: S >= {pink_sat_min}")
+            bg_lab = self._sat_filtered_baseline(baseline, pink_sat_min)
+            lo, hi = self._compute_range(lab_combined, bg_lab, **lab_margin)
+            lo, hi = self._widen_for_illumination(lo, hi)
+            pink_lab_ranges = [(lo, hi)]
 
         return ColorCalibration(
             blue_lab_ranges=blue_lab_ranges,

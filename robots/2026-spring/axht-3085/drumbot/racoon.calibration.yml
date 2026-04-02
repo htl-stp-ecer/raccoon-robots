@@ -1,23 +1,17 @@
 root:
   color-detection:
     default:
-      blue_lab_ranges:
-      - - - 88
-          - 102
-          - 85
-        - - 118
-          - 137
-          - 131
-      blue_sat_min: 44
+      blue_lab_ranges: []
+      blue_sat_min: 0
       min_area: 300
       pink_lab_ranges:
-      - - - 89
-          - 146
-          - 113
-        - - 119
-          - 182
-          - 165
-      pink_sat_min: 31
+      - - - 0
+          - 155
+          - 93
+        - - 255
+          - 189
+          - 177
+      pink_sat_min: 124
   drum-collector:
     default:
       blocked: 2160.763358778626
