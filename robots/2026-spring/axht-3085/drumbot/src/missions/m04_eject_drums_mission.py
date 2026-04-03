@@ -1,22 +1,13 @@
 from libstp import *
 
-from src.steps.drum_collector import drum_retreat
+from src.steps.drum_collector import eject_nearest_color
 
 
 @dsl
 def eject_drums() -> Sequential:
-    sequence = []
-    drums = 1
-
-    def _block():
-        return seq([
-            drum_retreat(),
-        ])
-
-    for _i in range(drums):
-        sequence.append(_block())
-
-    return seq(sequence)
+    return seq([
+        eject_nearest_color(),
+    ])
 
 
 class M04EjectDrumsMission(Mission):
@@ -24,8 +15,4 @@ class M04EjectDrumsMission(Mission):
         return seq([
             #wait_for_button(),
             eject_drums(),
-            eject_drums(),
-            eject_drums(),
-            eject_drums(),
-            #eject_drums(),
         ])

@@ -29,11 +29,6 @@ class M05DriveToOtherPipe(Mission):
             parallel(drive_backward(2.5, 1), shake_drums()),
 
             wait_for_button(),
-             eject_drums(),
-             eject_drums(),
-            # shake_drums(),
-             eject_drums(),
-             eject_drums(),
-             eject_drums(),
+            eject_drums(),
 
         ])

@@ -109,6 +109,45 @@ def sort_into_slot() -> SortIntoSlotStep:
     return SortIntoSlotStep()
 
 
+@dsl(hidden=True)
+class EjectNearestColorStep(Step):
+    """Navigate to each slot of the nearest color group and eject all four drums."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        sorting_service = robot.get_service(SortingService)
+        drum_service = robot.get_service(DrumMotorService)
+
+        blue = sorting_service.blue_slots
+        pink = sorting_service.pink_slots
+
+        if not blue and not pink:
+            drum_service.warn("No drums assigned yet — nothing to eject")
+            return
+
+        def nearest_dist(slots):
+            cur = drum_service.current_pocket
+            n = 9  # NUM_SLOTS ring size
+            return min(min(abs(cur - s), n - abs(cur - s)) for s in slots) if slots else float("inf")
+
+        if not pink or nearest_dist(blue) <= nearest_dist(pink):
+            slots = blue
+            color = "blue"
+        else:
+            slots = pink
+            color = "pink"
+
+        drum_service.info(f"Ejecting {color} slots: {slots}")
+        for slot in slots:
+            await drum_service.go_to_pocket(slot, precise=False)
+            await drum_service.eject()
+
+
+@dsl()
+def eject_nearest_color() -> EjectNearestColorStep:
+    """Navigate to each slot of the nearest color group and eject all four drums."""
+    return EjectNearestColorStep()
+
+
 @dsl()
 def go_to_empty_slot() -> GoToEmptySlotStep:
     """Move revolver to nearest empty slot (safe to open pusher)."""
