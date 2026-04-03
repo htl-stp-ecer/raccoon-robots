@@ -116,7 +116,7 @@ class Robot(GenericRobot):
         M01DriveToDrumsMission(),
         M02CollectDrumsMission(),
         M03DriveToPipe(),
-        M04RejectDrumsMission(),
+        M04EjectDrumsMission(),
         M05DriveToOtherPipe(),
     ]
     setup_mission = M00SetupMission()

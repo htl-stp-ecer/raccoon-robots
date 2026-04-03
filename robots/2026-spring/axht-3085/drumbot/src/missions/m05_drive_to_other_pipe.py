@@ -19,11 +19,11 @@ class M05DriveToOtherPipe(Mission):
             turn_left().until(on_black(Defs.front_right_ir_sensor)),
             follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1, side=LineSide.RIGHT).until(
                 on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
-            drive_forward(10, 1),
+            drive_forward(12, 1),
 
             drive_to_second_pipe(),
             turn_to_peak(turn_speed=0.4, profile="first_pipe"),
-            turn_left(20, 1),
+            turn_left(19.5, 1),
 
             wall_align_forward(speed=0.3, accel_threshold=0.35, settle_duration=0, max_duration=3, grace_period=0.4),
             parallel(drive_backward(2.5, 1), shake_drums()),
