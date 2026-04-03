@@ -138,15 +138,26 @@ class USBCamera:
         """Set the global saturation gate threshold used in _analyze_frame."""
         self._sat_threshold = value
 
-    def start(self) -> "USBCamera":
+    def start(self, open_retries: int = 5, retry_delay: float = 1.0) -> "USBCamera":
         """Open the camera and start the background capture thread."""
         if self._running:
             warn("Camera is already running")
             return self
 
-        self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
-        if not self._cap.isOpened():
-            error(f"Could not open camera at index {self._camera_index}")
+        for attempt in range(1, open_retries + 1):
+            self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
+            if self._cap.isOpened():
+                break
+            self._cap.release()
+            self._cap = None
+            if attempt < open_retries:
+                warn(
+                    f"Could not open camera at index {self._camera_index} "
+                    f"(attempt {attempt}/{open_retries}), retrying in {retry_delay}s..."
+                )
+                time.sleep(retry_delay)
+        else:
+            error(f"Could not open camera at index {self._camera_index} after {open_retries} attempts")
             raise RuntimeError(
                 f"Could not open camera at index {self._camera_index}",
             )

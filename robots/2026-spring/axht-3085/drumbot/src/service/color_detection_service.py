@@ -1,3 +1,5 @@
+import atexit
+import signal
 import threading
 import time
 
@@ -59,6 +61,8 @@ class ColorDetectionService(RobotService):
 
     def start_camera(self) -> None:
         """Start background capture and continuous detection."""
+        atexit.register(self.stop_camera)
+        signal.signal(signal.SIGTERM, lambda *_: self.stop_camera())
         self._camera_start_time = time.monotonic()
         self._camera.start()
         self._running = True

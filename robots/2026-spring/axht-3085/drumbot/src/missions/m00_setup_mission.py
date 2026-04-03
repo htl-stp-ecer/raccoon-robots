@@ -7,7 +7,6 @@ from src.steps.debug_wait_step import debug_wait
 from src.steps.drive_to_pipe import drive_to_first_pipe
 from src.steps.drum_collector import align_edge, calibrate_drum_collector
 from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up
-from src.steps.range_finder import calibrate_range_finder
 from src.steps.servo_steps import *
 
 
@@ -23,13 +22,13 @@ class M00SetupMission(SetupMission):
             ]),
 
             # Drives to black and hardcoded cm forward
-            calibrate_range_finder(sweep_deg=45,
-                                   turn_speed=0.2,
-                                   profile="first_pipe",
-                                   setup_steps=[
-                debug_wait("Place on black tape for seed first pipe position"),
-                drive_to_first_pipe(),
-            ]),
+            # calibrate_range_finder(sweep_deg=45,
+            #                        turn_speed=0.2,
+            #                        profile="first_pipe",
+            #                        setup_steps=[
+            #     debug_wait("Place on black tape for seed first pipe position"),
+            #     drive_to_first_pipe(),
+            # ]),
 
             # Follows line until at the second pipe
             # calibrate_range_finder(turn_speed=0.2, profile="second_pipe", setup_steps=[
@@ -37,6 +36,8 @@ class M00SetupMission(SetupMission):
             #     drive_to_second_pipe(),
             # ]),
 
+            calibrate_analog_sensor(Defs.et_range_finder),
+            wait_for_button(),
             drum_lifting_down(),
             open_drum_pusher(),
             #calibrate_colors(),

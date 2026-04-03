@@ -8,6 +8,7 @@ class DrumConfirmScreen(UIScreen[DrumCalibrationResult]):
     """Confirm drum calibration thresholds (blocked vs pocket)."""
 
     title = "Drum Calibration"
+    _primary_button_id = "confirm"
 
     def __init__(
         self,

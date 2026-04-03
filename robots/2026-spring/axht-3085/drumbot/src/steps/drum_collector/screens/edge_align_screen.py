@@ -7,6 +7,7 @@ class EdgeAlignScreen(UIScreen[bool]):
     """Let the user visually confirm pocket alignment before resetting to pocket 0."""
 
     title = "Pocket Alignment"
+    _primary_button_id = "confirm"
 
     def __init__(self, drum_service: DrumMotorService):
         super().__init__()
