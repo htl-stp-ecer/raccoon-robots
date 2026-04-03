@@ -1,7 +1,7 @@
 from libstp import *
 
 from src.hardware.defs import Defs
-from src.missions.m04_reject_drums_mission import reject_drums
+from src.missions.m04_eject_drums_mission import eject_drums
 from src.steps.drum_lifting_step import *
 from src.steps.range_finder import turn_to_peak
 from src.steps.drive_to_pipe import drive_to_second_pipe
@@ -29,11 +29,11 @@ class M05DriveToOtherPipe(Mission):
             parallel(drive_backward(2.5, 1), shake_drums()),
 
             wait_for_button(),
-             reject_drums(),
-             reject_drums(),
+             eject_drums(),
+             eject_drums(),
             # shake_drums(),
-             reject_drums(),
-             reject_drums(),
-             reject_drums(),
+             eject_drums(),
+             eject_drums(),
+             eject_drums(),
 
         ])

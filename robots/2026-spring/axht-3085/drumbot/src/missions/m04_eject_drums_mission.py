@@ -4,7 +4,7 @@ from src.steps.drum_collector import drum_retreat
 
 
 @dsl
-def reject_drums() -> Sequential:
+def eject_drums() -> Sequential:
     sequence = []
     drums = 1
 
@@ -19,13 +19,13 @@ def reject_drums() -> Sequential:
     return seq(sequence)
 
 
-class M04RejectDrumsMission(Mission):
+class M04EjectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #wait_for_button(),
-            reject_drums(),
-            reject_drums(),
-            reject_drums(),
-            reject_drums(),
-            #reject_drums(),
+            eject_drums(),
+            eject_drums(),
+            eject_drums(),
+            eject_drums(),
+            #eject_drums(),
         ])

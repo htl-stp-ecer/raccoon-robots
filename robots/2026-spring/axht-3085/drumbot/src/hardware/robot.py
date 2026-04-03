@@ -25,7 +25,7 @@ from src.missions.m99_shutdown_mission import M99ShutdownMission
 from src.missions.m01_drive_to_drums_mission import M01DriveToDrumsMission
 from src.missions.m02_collect_drums_mission import M02CollectDrumsMission
 from src.missions.m03_drive_to_pipe import M03DriveToPipe
-from src.missions.m04_reject_drums_mission import M04RejectDrumsMission
+from src.missions.m04_eject_drums_mission import M04EjectDrumsMission
 from src.missions.m05_drive_to_other_pipe import M05DriveToOtherPipe
 
 

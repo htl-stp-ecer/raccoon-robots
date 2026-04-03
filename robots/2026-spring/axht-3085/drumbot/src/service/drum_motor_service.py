@@ -94,8 +94,8 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     self.warn(f"Motor stalled after {STALL_RETRIES} retries — giving up")
                     raise
                 self.warn(f"Motor stalled (attempt {attempt}/{STALL_RETRIES}) — backing up to retry")
-                self.motor.set_velocity(int(FULL_VELOCITY * 0.3) * backup_sign)
-                await asyncio.sleep(0.15)
+                self.motor.set_velocity(int(FULL_VELOCITY * 0.7) * backup_sign)
+                await asyncio.sleep(0.30)
                 self.motor.set_velocity(0)
                 await asyncio.sleep(0.05)
 
@@ -113,10 +113,10 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         assert self.is_calibrated
         await self._move(pockets, forward=False, precise=precise)
 
-    async def reject(self, pockets: int = 1) -> None:
-        self.info(f"reject({pockets}) from pocket {self._current_pocket}")
+    async def eject(self, pockets: int = 1) -> None:
+        self.info(f"eject({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
-        await self._move(pockets, forward=False)
+        await self._move(pockets, forward=False, velocity=int(FULL_VELOCITY * 0.8))
 
     async def go_to_pocket(self, pocket: int, *, precise: bool = False) -> str:
         delta = (pocket - self._current_pocket) % NUM_POCKETS
@@ -134,16 +134,16 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         """Compat: convert edge to pocket and go there."""
         return await self.go_to_pocket(target_edge // 2)
 
-    async def _move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
+    async def _move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
         """Move N pockets with stall detection and automatic retry."""
         backup_sign = -1 if forward else 1
         await self._retry_on_stall(
-            lambda: self._do_move(pockets, forward=forward, precise=precise),
+            lambda: self._do_move(pockets, forward=forward, precise=precise, velocity=velocity),
             backup_sign=backup_sign,
         )
 
-    async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
-        """Move N pockets at full velocity, counting stripe transitions."""
+    async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
+        """Move N pockets counting stripe transitions."""
         assert self._ticks_per_pocket is not None, "Calibrate first (need ticks_per_pocket)"
         assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
         sign = 1 if forward else -1
@@ -157,7 +157,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             stripes_to_count -= 1
 
         start_pos = self.motor.get_position()
-        self.motor.set_velocity(FULL_VELOCITY * sign)
+        self.motor.set_velocity(velocity * sign)
 
         if self._at_midpoint:
             while abs(self.motor.get_position() - start_pos) < tpp // 2:
