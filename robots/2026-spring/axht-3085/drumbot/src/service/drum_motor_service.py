@@ -1,5 +1,6 @@
 import asyncio
 import time
+from collections import deque
 
 from libstp import AnalogSensor, GenericRobot, IRSensor, KMeans, Motor, RobotService
 
@@ -8,10 +9,10 @@ SAMPLE_INTERVAL = 0.01  # ~100 Hz
 HYSTERESIS_FRACTION = 0.15
 FULL_VELOCITY = 1700  # max velocity for set_velocity / move_to_position
 CREEP_VELOCITY = 500  # creep speed for precise edge measurement
-STALL_TIMEOUT = 0.5   # seconds without sufficient encoder progress → stalled
 STALL_RETRIES = 3     # back-up-and-retry attempts before giving up
-STALL_MIN_TICKS = 1000 # minimum encoder movement to count as "not stalled"
-                      # filters out BEMF noise that drifts position while stuck
+STALL_WINDOW = 0.2    # rolling window for stall detection (seconds)
+STALL_MIN_NET_TICKS = 400  # minimum net ticks in commanded direction over the window
+                           # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 
 
 class MotorStalledError(Exception):
@@ -194,24 +195,31 @@ class DrumMotorService(RobotService):
 
     # ── stall detection ─────────────────────────────────────────
 
-    def _make_stall_checker(self) -> callable:
-        """Return a callable that raises MotorStalledError if encoder stops making progress.
+    def _make_stall_checker(self, direction: int = 1) -> callable:
+        """Return a callable that raises MotorStalledError if the motor isn't making progress.
 
-        Uses STALL_MIN_TICKS threshold to ignore small BEMF-induced encoder
-        drift that occurs even when the motor is physically stuck.
+        Uses a rolling STALL_WINDOW-second window of (time, position) samples.
+        Net displacement = (newest - oldest) * direction.
+        - BEMF when stuck goes in the wrong direction → net is negative → immediate fail.
+        - BEMF noise that happens to go the right way but is tiny → net < threshold → fail.
+        Only evaluates once the window is at least 90% full to avoid false triggers at startup.
         """
-        state = [self.motor.get_position(), time.monotonic()]
+        history: deque = deque()  # (monotonic_time, encoder_position)
 
         def check():
-            pos = self.motor.get_position()
             now = time.monotonic()
-            if abs(pos - state[0]) >= STALL_MIN_TICKS:
-                state[0] = pos
-                state[1] = now
-            elif now - state[1] > STALL_TIMEOUT:
+            pos = self.motor.get_position()
+            history.append((now, pos))
+            while history and now - history[0][0] > STALL_WINDOW:
+                history.popleft()
+            oldest_time, oldest_pos = history[0]
+            if now - oldest_time < STALL_WINDOW * 0.9:
+                return  # window not full yet — too early to judge
+            net = (pos - oldest_pos) * direction
+            if net < STALL_MIN_NET_TICKS:
                 raise MotorStalledError(
-                    f"Motor stalled — only {abs(pos - state[0])} ticks in "
-                    f"{now - state[1]:.2f}s (need {STALL_MIN_TICKS})"
+                    f"Motor stalled — {net} net ticks in {now - oldest_time:.2f}s "
+                    f"(need {STALL_MIN_NET_TICKS}, direction={direction:+d})"
                 )
 
         return check
@@ -251,15 +259,14 @@ class DrumMotorService(RobotService):
         """Compat: convert edge to pocket and go there."""
         return await self.go_to_pocket(target_edge // 2)
 
-    async def _move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
-        """Move N pockets with stall detection and automatic retry.
+    async def _retry_on_stall(self, coro_fn, backup_sign: int) -> None:
+        """Run coro_fn() with stall-retry: backs up and retries up to STALL_RETRIES times.
 
-        On stall: backs up slightly and retries up to STALL_RETRIES times.
-        Raises MotorStalledError if all retries are exhausted.
+        backup_sign: +1 to back up forward, -1 to back up backward (opposite of intended motion).
         """
         for attempt in range(1, STALL_RETRIES + 1):
             try:
-                await self._do_move(pockets, forward=forward, precise=precise)
+                await coro_fn()
                 return
             except MotorStalledError:
                 self.motor.set_velocity(0)
@@ -267,11 +274,18 @@ class DrumMotorService(RobotService):
                     self.warn(f"Motor stalled after {STALL_RETRIES} retries — giving up")
                     raise
                 self.warn(f"Motor stalled (attempt {attempt}/{STALL_RETRIES}) — backing up to retry")
-                sign = -1 if forward else 1
-                self.motor.set_velocity(int(FULL_VELOCITY * 0.3) * sign)
+                self.motor.set_velocity(int(FULL_VELOCITY * 0.3) * backup_sign)
                 await asyncio.sleep(0.15)
                 self.motor.set_velocity(0)
                 await asyncio.sleep(0.05)
+
+    async def _move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
+        """Move N pockets with stall detection and automatic retry."""
+        backup_sign = -1 if forward else 1
+        await self._retry_on_stall(
+            lambda: self._do_move(pockets, forward=forward, precise=precise),
+            backup_sign=backup_sign,
+        )
 
     async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
         """Move N pockets at full velocity, counting stripe transitions.
@@ -285,7 +299,7 @@ class DrumMotorService(RobotService):
         sign = 1 if forward else -1
         tpp = self._ticks_per_pocket
         skip_ticks = tpp // 3
-        stall_check = self._make_stall_checker()
+        stall_check = self._make_stall_checker(direction=sign)
 
         direction = "fwd" if forward else "bwd"
         self.info(f"{direction} {pockets} pockets {'precise' if precise else 'fast'} (midpoint={self._at_midpoint})")
@@ -365,27 +379,35 @@ class DrumMotorService(RobotService):
         self.info(f"Move done: pocket={self._current_pocket}")
 
     async def move_to_midpoint(self) -> None:
-        """Move forward half a pocket using set_velocity (no PID settle)."""
+        """Move forward half a pocket with stall retry."""
         assert self._ticks_per_pocket is not None
-        ticks = self._ticks_per_pocket // 2
-        stall_check = self._make_stall_checker()
-        start = self.motor.get_position()
-        self.motor.set_velocity(FULL_VELOCITY)
-        while abs(self.motor.get_position() - start) < ticks:
-            stall_check()
-            await asyncio.sleep(SAMPLE_INTERVAL)
-        self.motor.set_velocity(0)
+
+        async def _do():
+            ticks = self._ticks_per_pocket // 2
+            stall_check = self._make_stall_checker(direction=1)
+            start = self.motor.get_position()
+            self.motor.set_velocity(FULL_VELOCITY)
+            while abs(self.motor.get_position() - start) < ticks:
+                stall_check()
+                await asyncio.sleep(SAMPLE_INTERVAL)
+            self.motor.set_velocity(0)
+
+        await self._retry_on_stall(_do, backup_sign=-1)
         self._at_midpoint = True
 
     async def move_from_midpoint(self) -> None:
-        """Move backward half a pocket using set_velocity (no PID settle)."""
+        """Move backward half a pocket with stall retry."""
         assert self._ticks_per_pocket is not None
-        ticks = self._ticks_per_pocket // 2
-        stall_check = self._make_stall_checker()
-        start = self.motor.get_position()
-        self.motor.set_velocity(-FULL_VELOCITY)
-        while abs(self.motor.get_position() - start) < ticks:
-            stall_check()
-            await asyncio.sleep(SAMPLE_INTERVAL)
-        self.motor.set_velocity(0)
+
+        async def _do():
+            ticks = self._ticks_per_pocket // 2
+            stall_check = self._make_stall_checker(direction=-1)
+            start = self.motor.get_position()
+            self.motor.set_velocity(-FULL_VELOCITY)
+            while abs(self.motor.get_position() - start) < ticks:
+                stall_check()
+                await asyncio.sleep(SAMPLE_INTERVAL)
+            self.motor.set_velocity(0)
+
+        await self._retry_on_stall(_do, backup_sign=1)
         self._at_midpoint = False

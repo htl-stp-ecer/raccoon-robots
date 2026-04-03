@@ -11,7 +11,7 @@ def drive_to_first_pipe():
     return seq([
         drive_forward().until(on_black(Defs.front_right_ir_sensor)),
         drive_forward().until(on_white(Defs.front_right_ir_sensor)),
-        drive_forward(23, 1),
+        drive_forward(24, 1),
     ])
 
 
