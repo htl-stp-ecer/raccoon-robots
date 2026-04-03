@@ -32,7 +32,6 @@ class M05DriveToOtherPipe(Mission):
              reject_drums(),
              reject_drums(),
             # shake_drums(),
-            # dispense_drums(),
              reject_drums(),
              reject_drums(),
              reject_drums(),

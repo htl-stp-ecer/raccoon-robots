@@ -1,80 +1,18 @@
-"""Publish JPEG camera frames to botui's camera viewer via LCM.
+"""Background thread that captures frames and publishes them to botui."""
 
-Encodes frames in the cam_frame_t binary format that the Dart
-CamFrameT decoder expects, including optional detection overlays.
-"""
-
-import struct
 import threading
 import time
-from io import BytesIO
 
 import cv2
 import numpy as np
 from raccoon_transport import Transport
-
-# LCM fingerprints must match the Dart-generated decoders exactly.
-CAM_FRAME_FINGERPRINT = 0x4879ec21b38f492b
-CAM_BLOB_FINGERPRINT = 0xccbdb8fa6cd129bf
+from raccoon_transport.types.raccoon.cam_blob_t import cam_blob_t
+from raccoon_transport.types.raccoon.cam_frame_t import cam_frame_t
 
 CHANNEL = "libstp/cam/frame"
 
 
-def _encode_cam_blob(
-    label: str,
-    x: float,
-    y: float,
-    width: float,
-    height: float,
-    area: int,
-    confidence: float,
-    timestamp: int = 0,
-) -> bytes:
-    """Encode a single CamBlobT body (no fingerprint prefix)."""
-    buf = BytesIO()
-    buf.write(struct.pack(">q", timestamp))
-    label_bytes = label.encode("utf-8")
-    buf.write(struct.pack(">I", len(label_bytes) + 1))
-    buf.write(label_bytes)
-    buf.write(b"\x00")
-    buf.write(struct.pack(">ffff", x, y, width, height))
-    buf.write(struct.pack(">i", area))
-    buf.write(struct.pack(">f", confidence))
-    return buf.getvalue()
-
-
-def encode_cam_frame(
-    jpeg_data: bytes,
-    frame_width: int,
-    frame_height: int,
-    detections: list[dict] | None = None,
-) -> bytes:
-    """Encode a cam_frame_t message matching the Dart CamFrameT decoder."""
-    buf = BytesIO()
-    timestamp = int(time.time() * 1_000_000)
-    buf.write(struct.pack(">Q", CAM_FRAME_FINGERPRINT))
-    buf.write(struct.pack(">q", timestamp))
-    buf.write(struct.pack(">iii", frame_width, frame_height, len(jpeg_data)))
-    buf.write(jpeg_data)
-    dets = detections or []
-    buf.write(struct.pack(">i", len(dets)))
-    for det in dets:
-        buf.write(_encode_cam_blob(
-            label=det["label"],
-            x=det["x"],
-            y=det["y"],
-            width=det["width"],
-            height=det["height"],
-            area=det.get("area", 0),
-            confidence=det.get("confidence", 0.0),
-            timestamp=timestamp,
-        ))
-    return buf.getvalue()
-
-
 class CamPublisher:
-    """Background thread that captures frames and publishes them to botui."""
-
     def __init__(
         self,
         camera_index: int | str = "/dev/video0",
@@ -152,39 +90,43 @@ class CamPublisher:
 
             h, w = frame.shape[:2]
 
-            # Draw ROI rectangle in center
             if roi_enabled:
                 roi_size = min(w, h) // 3
-                rx = w // 2 - roi_size // 2
-                ry = h // 2 - roi_size // 2
-                cv2.rectangle(
-                    frame, (rx, ry), (rx + roi_size, ry + roi_size),
-                    (0, 255, 0), 2,
-                )
+                rx, ry = w // 2 - roi_size // 2, h // 2 - roi_size // 2
+                cv2.rectangle(frame, (rx, ry), (rx + roi_size, ry + roi_size), (0, 255, 0), 2)
 
-            # Overlay text at top
             if overlay:
-                cv2.putText(
-                    frame, overlay,
-                    (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
-                    (0, 0, 0), 3, cv2.LINE_AA,
-                )
-                cv2.putText(
-                    frame, overlay,
-                    (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
-                    (255, 255, 255), 1, cv2.LINE_AA,
-                )
+                for color, thickness in [((0, 0, 0), 3), ((255, 255, 255), 1)]:
+                    cv2.putText(frame, overlay, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, thickness, cv2.LINE_AA)
 
-            # Encode as JPEG
-            _, jpeg = cv2.imencode(
-                ".jpg", frame,
-                [cv2.IMWRITE_JPEG_QUALITY, self._jpeg_quality],
-            )
-            msg_bytes = encode_cam_frame(
-                jpeg.tobytes(), w, h, detections,
-            )
-            self._transport._lcm.publish(CHANNEL, msg_bytes)
+            _, jpeg = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, self._jpeg_quality])
+            jpeg_bytes = jpeg.tobytes()
+
+            timestamp = int(time.time() * 1_000_000)
+            msg = cam_frame_t()
+            msg.timestamp = timestamp
+            msg.frame_width = w
+            msg.frame_height = h
+            msg.frame_data = jpeg_bytes
+            msg.frame_size = len(jpeg_bytes)
+            msg.detections = [_make_blob(d, timestamp) for d in detections]
+            msg.num_detections = len(msg.detections)
+
+            self._transport.publish(CHANNEL, msg)
 
             elapsed = time.monotonic() - t0
             if elapsed < interval:
                 time.sleep(interval - elapsed)
+
+
+def _make_blob(det: dict, timestamp: int) -> cam_blob_t:
+    blob = cam_blob_t()
+    blob.timestamp = timestamp
+    blob.label = det["label"]
+    blob.x = det["x"]
+    blob.y = det["y"]
+    blob.width = det["width"]
+    blob.height = det["height"]
+    blob.area = det.get("area", 0)
+    blob.confidence = det.get("confidence", 0.0)
+    return blob

@@ -2,32 +2,33 @@ import asyncio
 import time
 from collections import deque
 
-from libstp import AnalogSensor, GenericRobot, IRSensor, KMeans, Motor, RobotService
+from libstp import AnalogSensor, GenericRobot, Motor, RobotService
+
+from .drum_motor_calibration_mixin import (
+    DrumMotorCalibrationMixin,
+    FULL_VELOCITY,
+    SAMPLE_INTERVAL,
+)
 
 NUM_POCKETS = 9
-SAMPLE_INTERVAL = 0.01  # ~100 Hz
-HYSTERESIS_FRACTION = 0.15
-FULL_VELOCITY = 1700  # max velocity for set_velocity / move_to_position
-CREEP_VELOCITY = 500  # creep speed for precise edge measurement
-STALL_RETRIES = 3     # back-up-and-retry attempts before giving up
-STALL_WINDOW = 0.2    # rolling window for stall detection (seconds)
+CREEP_VELOCITY = 500   # creep speed for precise edge measurement
+STALL_RETRIES = 3      # back-up-and-retry attempts before giving up
+STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 400  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 
 
 class MotorStalledError(Exception):
-    """Raised when the drum motor encoder stops moving."""
+    """Raised when the drum motor encoder stops making progress."""
     pass
 
 
-class DrumMotorService(RobotService):
+class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
     """Drum motor: calibrate black/white, move by pockets."""
 
     def __init__(self, robot: "GenericRobot") -> None:
         super().__init__(robot)
-        self._blocked_threshold: float | None = None
-        self._pocket_threshold: float | None = None
-        self._ticks_per_pocket: int | None = None
+        self._init_calibration()
         self._current_pocket: int = 0
         self._at_midpoint: bool = False  # True when offset +half pocket from stripe
         self.collection_failed: bool = False
@@ -40,149 +41,6 @@ class DrumMotorService(RobotService):
     def light_sensor(self) -> AnalogSensor:
         return self.robot.defs.drum_light_sensor
 
-    # ── calibration ──────────────────────────────────────────────
-
-    @property
-    def is_calibrated(self) -> bool:
-        return self._blocked_threshold is not None and self._pocket_threshold is not None
-
-    @property
-    def midpoint(self) -> float:
-        assert self.is_calibrated
-        return (self._blocked_threshold + self._pocket_threshold) / 2
-
-    @property
-    def hysteresis_thresholds(self) -> tuple[float, float]:
-        assert self.is_calibrated
-        mid = self.midpoint
-        band = (self._blocked_threshold - self._pocket_threshold) * HYSTERESIS_FRACTION
-        return (mid - band, mid + band)
-
-    @property
-    def blocked_threshold(self) -> float | None:
-        return self._blocked_threshold
-
-    @property
-    def pocket_threshold(self) -> float | None:
-        return self._pocket_threshold
-
-    async def sample(self, duration: float, motor_speed: float = 1.0) -> list[float]:
-        """Spin motor, collect light sensor readings with encoder positions."""
-        self.info(f"Sampling: duration={duration}s, motor_speed={motor_speed}")
-        samples: list[float] = []
-        self._sample_positions: list[int] = []
-        velocity = int(motor_speed * FULL_VELOCITY)
-        start_encoder = self.motor.get_position()
-        self.motor.set_velocity(velocity)
-        try:
-            loop = asyncio.get_event_loop()
-            t_end = loop.time() + duration
-            while loop.time() < t_end:
-                samples.append(float(self.light_sensor.read()))
-                self._sample_positions.append(self.motor.get_position())
-                await asyncio.sleep(SAMPLE_INTERVAL)
-        finally:
-            self.motor.set_velocity(0)
-        end_encoder = self.motor.get_position()
-        self._sample_total_ticks = abs(end_encoder - start_encoder)
-        if samples:
-            self.info(f"Collected {len(samples)} samples — min={min(samples):.0f}, max={max(samples):.0f}, avg={sum(samples)/len(samples):.0f}, ticks={self._sample_total_ticks}")
-        return samples
-
-    def cluster(self, samples: list[float]) -> tuple[float, float]:
-        """Run 2-means clustering. Returns (pocket, blocked) centroids."""
-        km = KMeans(max_iterations=10)
-        result = km.fit(samples)
-        pocket = min(result.centroid1, result.centroid2)
-        blocked = max(result.centroid1, result.centroid2)
-        self.info(f"Cluster: pocket={pocket:.0f}, blocked={blocked:.0f}, spread={blocked - pocket:.0f}")
-        return pocket, blocked
-
-    def analyse_stripe_spacing(
-        self,
-        samples: list[float],
-        blocked: float,
-        pocket: float,
-    ) -> tuple[int, list[int], list[int]]:
-        """Find stripe transitions in sample data, return (count, spacings, encoder_positions)."""
-        mid = (blocked + pocket) / 2
-        band = (blocked - pocket) * HYSTERESIS_FRACTION
-        s_low, s_high = mid - band, mid + band
-
-        on_black = False
-        stripe_positions: list[int] = []
-        positions = getattr(self, "_sample_positions", [])
-
-        for i, val in enumerate(samples):
-            if not on_black and val >= s_high:
-                on_black = True
-                if i < len(positions):
-                    stripe_positions.append(positions[i])
-            elif on_black and val <= s_low:
-                on_black = False
-
-        spacings = [
-            abs(stripe_positions[i + 1] - stripe_positions[i])
-            for i in range(len(stripe_positions) - 1)
-        ]
-        return len(stripe_positions), spacings, stripe_positions
-
-    def check_spacing_uniformity(
-        self, spacings: list[int], tolerance: float = 0.35
-    ) -> tuple[bool, float]:
-        """Check that stripe spacings are uniform within *tolerance* fraction."""
-        if len(spacings) < 2:
-            return False, 1.0
-        median = sorted(spacings)[len(spacings) // 2]
-        if median == 0:
-            return False, 1.0
-        max_dev = max(abs(s - median) / median for s in spacings)
-        return max_dev <= tolerance, max_dev
-
-    def apply_calibration(
-        self,
-        blocked: float,
-        pocket: float,
-        samples: list[float] | None = None,
-        ticks_per_pocket: int | None = None,
-    ) -> None:
-        self._blocked_threshold = blocked
-        self._pocket_threshold = pocket
-        if isinstance(self.light_sensor, IRSensor):
-            self.light_sensor.setCalibration(blocked, pocket)
-        low, high = self.hysteresis_thresholds
-
-        if ticks_per_pocket is not None:
-            self._ticks_per_pocket = ticks_per_pocket
-            self.info(f"Ticks per pocket (stored): {self._ticks_per_pocket}")
-        elif samples is not None and hasattr(self, "_sample_total_ticks"):
-            stripe_count, spacings, _ = self.analyse_stripe_spacing(samples, blocked, pocket)
-            if stripe_count > 0:
-                if spacings:
-                    self._ticks_per_pocket = sorted(spacings)[len(spacings) // 2]
-                else:
-                    self._ticks_per_pocket = self._sample_total_ticks // stripe_count
-                self.info(f"Ticks per pocket: {self._ticks_per_pocket} ({stripe_count} stripes, spacings={spacings})")
-                ok, dev = self.check_spacing_uniformity(spacings)
-                if ok:
-                    self.info(f"Spacing uniformity OK (max deviation {dev:.1%})")
-                else:
-                    self.warn(f"Spacing NOT uniform (max deviation {dev:.1%}) — may need longer sampling")
-
-        self.info(f"Calibration: pocket={pocket:.0f}, blocked={blocked:.0f}, hysteresis=[{low:.0f}, {high:.0f}]")
-
-    # ── sensor helpers ───────────────────────────────────────────
-
-    def _is_black(self) -> bool:
-        """Read sensor and return True if on a black pocket (using high threshold)."""
-        _, high = self.hysteresis_thresholds
-        return float(self.light_sensor.read()) >= high
-
-    def _is_white(self) -> bool:
-        """Read sensor and return True if on white (using low threshold)."""
-        low, _ = self.hysteresis_thresholds
-        return float(self.light_sensor.read()) <= low
-
     # ── position tracking ────────────────────────────────────────
 
     @property
@@ -193,7 +51,7 @@ class DrumMotorService(RobotService):
         self.info(f"Reset: pocket {self._current_pocket} → {pocket}")
         self._current_pocket = pocket
 
-    # ── stall detection ─────────────────────────────────────────
+    # ── stall detection ──────────────────────────────────────────
 
     def _make_stall_checker(self, direction: int = 1) -> callable:
         """Return a callable that raises MotorStalledError if the motor isn't making progress.
@@ -223,6 +81,23 @@ class DrumMotorService(RobotService):
                 )
 
         return check
+
+    async def _retry_on_stall(self, coro_fn, backup_sign: int) -> None:
+        """Run coro_fn() with stall-retry: backs up and retries up to STALL_RETRIES times."""
+        for attempt in range(1, STALL_RETRIES + 1):
+            try:
+                await coro_fn()
+                return
+            except MotorStalledError:
+                self.motor.set_velocity(0)
+                if attempt >= STALL_RETRIES:
+                    self.warn(f"Motor stalled after {STALL_RETRIES} retries — giving up")
+                    raise
+                self.warn(f"Motor stalled (attempt {attempt}/{STALL_RETRIES}) — backing up to retry")
+                self.motor.set_velocity(int(FULL_VELOCITY * 0.3) * backup_sign)
+                await asyncio.sleep(0.15)
+                self.motor.set_velocity(0)
+                await asyncio.sleep(0.05)
 
     # ── navigation ───────────────────────────────────────────────
 
@@ -259,26 +134,6 @@ class DrumMotorService(RobotService):
         """Compat: convert edge to pocket and go there."""
         return await self.go_to_pocket(target_edge // 2)
 
-    async def _retry_on_stall(self, coro_fn, backup_sign: int) -> None:
-        """Run coro_fn() with stall-retry: backs up and retries up to STALL_RETRIES times.
-
-        backup_sign: +1 to back up forward, -1 to back up backward (opposite of intended motion).
-        """
-        for attempt in range(1, STALL_RETRIES + 1):
-            try:
-                await coro_fn()
-                return
-            except MotorStalledError:
-                self.motor.set_velocity(0)
-                if attempt >= STALL_RETRIES:
-                    self.warn(f"Motor stalled after {STALL_RETRIES} retries — giving up")
-                    raise
-                self.warn(f"Motor stalled (attempt {attempt}/{STALL_RETRIES}) — backing up to retry")
-                self.motor.set_velocity(int(FULL_VELOCITY * 0.3) * backup_sign)
-                await asyncio.sleep(0.15)
-                self.motor.set_velocity(0)
-                await asyncio.sleep(0.05)
-
     async def _move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
         """Move N pockets with stall detection and automatic retry."""
         backup_sign = -1 if forward else 1
@@ -288,24 +143,15 @@ class DrumMotorService(RobotService):
         )
 
     async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True) -> None:
-        """Move N pockets at full velocity, counting stripe transitions.
-
-        Runs at FULL_VELOCITY, polls sensor to count black stripes using
-        encoder skip to avoid re-detecting the starting stripe.
-        Raises MotorStalledError if the encoder stops moving.
-        """
+        """Move N pockets at full velocity, counting stripe transitions."""
         assert self._ticks_per_pocket is not None, "Calibrate first (need ticks_per_pocket)"
         assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
         sign = 1 if forward else -1
         tpp = self._ticks_per_pocket
-        skip_ticks = tpp // 3
         stall_check = self._make_stall_checker(direction=sign)
 
-        direction = "fwd" if forward else "bwd"
-        self.info(f"{direction} {pockets} pockets {'precise' if precise else 'fast'} (midpoint={self._at_midpoint})")
+        self.info(f"{'fwd' if forward else 'bwd'} {pockets} pockets {'precise' if precise else 'fast'} (midpoint={self._at_midpoint})")
 
-        # When at midpoint going forward, the half-pocket clearing crosses
-        # into the next pocket's stripe, so we need one fewer counted stripe.
         stripes_to_count = pockets
         if self._at_midpoint and forward:
             stripes_to_count -= 1
@@ -313,20 +159,17 @@ class DrumMotorService(RobotService):
         start_pos = self.motor.get_position()
         self.motor.set_velocity(FULL_VELOCITY * sign)
 
-        # If at midpoint, clear the extra half-pocket first
         if self._at_midpoint:
             while abs(self.motor.get_position() - start_pos) < tpp // 2:
                 stall_check()
                 await asyncio.sleep(SAMPLE_INTERVAL)
 
         if stripes_to_count > 0:
-            # Skip past current stripe
             skip_start = self.motor.get_position()
-            while abs(self.motor.get_position() - skip_start) < skip_ticks:
+            while abs(self.motor.get_position() - skip_start) < tpp // 3:
                 stall_check()
                 await asyncio.sleep(SAMPLE_INTERVAL)
 
-            # Count stripe transitions at full speed
             on_black = self._is_black()
             stripes_counted = 0
             entry_pos = 0
@@ -340,43 +183,41 @@ class DrumMotorService(RobotService):
                 on_black = reading
                 await asyncio.sleep(SAMPLE_INTERVAL)
 
-        # Stop
         self.motor.set_velocity(0)
 
         if precise:
-            # Return to entry, then creep to find stripe center
-            self.motor.move_to_position(FULL_VELOCITY, entry_pos)
-            while not self.motor.is_done():
-                await asyncio.sleep(SAMPLE_INTERVAL)
-
-            # Creep backward off stripe
-            self.motor.set_velocity(-CREEP_VELOCITY)
-            while self._is_black():
-                await asyncio.sleep(SAMPLE_INTERVAL)
-            self.motor.set_velocity(0)
-
-            # Creep forward across stripe to find both edges
-            self.motor.set_velocity(CREEP_VELOCITY)
-            while not self._is_black():
-                await asyncio.sleep(SAMPLE_INTERVAL)
-            edge1 = self.motor.get_position()
-            while self._is_black():
-                await asyncio.sleep(SAMPLE_INTERVAL)
-            edge2 = self.motor.get_position()
-            self.motor.set_velocity(0)
-
-            center = (edge1 + edge2) // 2
-            self.motor.move_to_position(FULL_VELOCITY, center)
-            while not self.motor.is_done():
-                await asyncio.sleep(SAMPLE_INTERVAL)
+            await self._center_on_stripe(entry_pos)
 
         self._at_midpoint = False
         if forward:
             self._current_pocket = (self._current_pocket + pockets) % NUM_POCKETS
         else:
             self._current_pocket = (self._current_pocket - pockets) % NUM_POCKETS
-
         self.info(f"Move done: pocket={self._current_pocket}")
+
+    async def _center_on_stripe(self, entry_pos: int) -> None:
+        """Creep back and forth to find the center of the current stripe."""
+        self.motor.move_to_position(FULL_VELOCITY, entry_pos)
+        while not self.motor.is_done():
+            await asyncio.sleep(SAMPLE_INTERVAL)
+
+        self.motor.set_velocity(-CREEP_VELOCITY)
+        while self._is_black():
+            await asyncio.sleep(SAMPLE_INTERVAL)
+        self.motor.set_velocity(0)
+
+        self.motor.set_velocity(CREEP_VELOCITY)
+        while not self._is_black():
+            await asyncio.sleep(SAMPLE_INTERVAL)
+        edge1 = self.motor.get_position()
+        while self._is_black():
+            await asyncio.sleep(SAMPLE_INTERVAL)
+        edge2 = self.motor.get_position()
+        self.motor.set_velocity(0)
+
+        self.motor.move_to_position(FULL_VELOCITY, (edge1 + edge2) // 2)
+        while not self.motor.is_done():
+            await asyncio.sleep(SAMPLE_INTERVAL)
 
     async def move_to_midpoint(self) -> None:
         """Move forward half a pocket with stall retry."""
