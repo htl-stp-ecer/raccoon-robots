@@ -9,15 +9,8 @@ root:
       ticks_per_pocket: 139219
   ir-calibration:
     default_port1:
-      black_tresh: 3503.05566
-      white_tresh: 185.064941
+      black_tresh: 3548.52637
+      white_tresh: 189.094269
     default_port2:
-      black_tresh: 3598
-      white_tresh: 1137.1322
-  range-finder:
-    first_pipe:
-      t_enter: 1860.8999210862298
-      t_exit: 1378.2315468207532
-    second_pipe:
-      t_enter: 2218.9294187142577
-      t_exit: 1824.3941280713861
+      black_tresh: 3582.6521
+      white_tresh: 1208.50415

@@ -9,9 +9,11 @@ from src.steps.drum_lifting_step import shake_drums
 @dsl
 def drive_to_first_pipe():
     return seq([
-        drive_forward().until(on_black(Defs.front_right_ir_sensor)),
-        drive_forward().until(on_white(Defs.front_right_ir_sensor)),
-        drive_forward(24, 1),
+        drive_forward().until(
+            (on_black(Defs.front_right_ir_sensor) >
+            on_white(Defs.front_right_ir_sensor)) >
+            after_cm(20)
+        )
     ])
 
 

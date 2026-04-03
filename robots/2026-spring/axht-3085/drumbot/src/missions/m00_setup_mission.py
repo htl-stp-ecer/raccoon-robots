@@ -23,7 +23,10 @@ class M00SetupMission(SetupMission):
             ]),
 
             # Drives to black and hardcoded cm forward
-            calibrate_range_finder(turn_speed=0.2, profile="first_pipe", setup_steps=[
+            calibrate_range_finder(sweep_deg=45,
+                                   turn_speed=0.2,
+                                   profile="first_pipe",
+                                   setup_steps=[
                 debug_wait("Place on black tape for seed first pipe position"),
                 drive_to_first_pipe(),
             ]),
@@ -36,7 +39,7 @@ class M00SetupMission(SetupMission):
 
             drum_lifting_down(),
             open_drum_pusher(),
-            calibrate_colors(),
+            #calibrate_colors(),
             wait_for_button(),
             start_camera(),
             calibrate_drum_collector(calibration_time=5.0),
