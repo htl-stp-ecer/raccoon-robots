@@ -220,7 +220,7 @@ class ColorDetectionService(RobotService):
         with self._lock:
             self._latest_color = None
             self._color_locked = False
-        self._color_event.clear()
+            self._color_event.clear()
 
     async def wait_for_color(self, timeout: float) -> bool:
         """Await until the background loop detects a color, or timeout."""

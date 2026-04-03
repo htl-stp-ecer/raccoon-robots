@@ -102,7 +102,8 @@ class SortingService(RobotService):
         """
         if not self._detection_deltas:
             return DEFAULT_DETECTION_TIMEOUT
-        timeout = max(self._detection_deltas) * TIMING_MARGIN
+        max_delta = max(self._detection_deltas)
+        timeout = max(max_delta * TIMING_MARGIN, max_delta + 0.050)
         return max(timeout, 0.05)  # floor at 50 ms
 
     @property

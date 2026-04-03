@@ -51,6 +51,11 @@ class WaitForDrumStep(Step):
 
         t0 = time.monotonic()
         detected = await color_service.wait_for_color(timeout)
+
+        if not detected:
+            # Drum may have arrived just after timeout — one brief extra window
+            detected = await color_service.wait_for_color(0.050)
+
         detection_delta = time.monotonic() - t0
 
         if detected:
