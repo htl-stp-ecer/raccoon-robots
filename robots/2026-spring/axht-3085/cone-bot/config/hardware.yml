@@ -1,11 +1,14 @@
 button:
   type: DigitalSensor
-  port: 10
+  port: 0
 imu:
   type: IMU
 front_right_ir_sensor:
   type: IRSensor
   port: 0
+distance_sensor:
+  type: AnalogSensor
+  port: 1
 cone_arm_down_button:
   type: DigitalSensor
   port: 0

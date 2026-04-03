@@ -11,5 +11,7 @@ class M000SetupMission(SetupMission):
             Defs.cone_arm_servo.container_pos(),
             calibrate(distance_cm=50),
 
+            Defs.cone_arm_servo.handl_hight(),
+
             Defs.cone_arm_servo.down()
         ])

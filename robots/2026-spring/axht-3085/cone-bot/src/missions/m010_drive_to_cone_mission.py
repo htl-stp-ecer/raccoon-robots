@@ -6,15 +6,23 @@ from src.hardware.defs import Defs
 class M010DriveToConeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            #align on pipe
-            Defs.cone_arm_servo._45deg(),
-            drive_backward(cm=3),
-            turn_right(55),
-            wall_align_backward(
-                speed=0.5,
-                accel_threshold=0.3,
+            #magical stuff so we don't hit the T pice of the pipe
+            parallel(
+                seq([
+                    turn_left(5),
+                    drive_backward(3),
+                ]),
+                Defs.cone_arm_servo._45deg(),
             ),
-            mark_heading_reference(),
+
+            #align on pipe
+            turn_right(65),
+            wall_align_backward(
+                speed=0.3,
+                accel_threshold=0.3,
+                settle_duration=0,
+            ),
+            mark_heading_reference(origin_offset_deg=0),
 
             #push the sorted pom
             drive_forward(cm=2),
@@ -35,9 +43,19 @@ class M010DriveToConeMission(Mission):
                 turn_to_heading_right(0),
                 Defs.cone_arm_servo._45deg(),
             ),
+
+            #align the second time on the pipe
+            wall_align_backward(
+                speed=0.3,
+                accel_threshold=0.3,
+                settle_duration=0,
+            ),
+            mark_heading_reference(origin_offset_deg=0),
+
+            #drive over black line
             drive_forward().until(
               on_black(Defs.front_right_ir_sensor) >
-              after_cm(25),
+              after_cm(25)
             ),
 
             #drive to position where we dorp the pom
@@ -46,7 +64,7 @@ class M010DriveToConeMission(Mission):
 
             #drop pom
             parallel(
-                turn_right(35),
+                turn_left(40),
             ),
             Defs.claw_servo.open(),
             Defs.claw_servo.closed(),

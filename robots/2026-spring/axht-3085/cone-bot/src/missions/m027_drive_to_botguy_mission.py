@@ -7,9 +7,12 @@ class M027DriveToBotguyMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #drive back in front of dores
-            drive_backward().until(
-                on_black(Defs.front_right_ir_sensor) >
-                on_white(Defs.front_right_ir_sensor)
+            parallel(
+                drive_backward().until(
+                    on_black(Defs.front_right_ir_sensor) >
+                    on_white(Defs.front_right_ir_sensor)
+                ),
+                Defs.claw_servo.closed(120),
             ),
 
             #turn to dors
