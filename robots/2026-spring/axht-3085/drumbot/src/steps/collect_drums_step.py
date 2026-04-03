@@ -58,10 +58,10 @@ class CollectDrumsStep(UIStep):
                         wait_for_drum(checkpoint=checkpoint),
                         block_timer_start(),
                         drum_align_on_back(),
-                        parallel(
+                        #parallel(
                             drum_lifting_down(),
                             sort_into_slot(),
-                        ),
+                        #),
                     ])
                     await phase1.run_step(robot)
                 except MotorStalledError:
