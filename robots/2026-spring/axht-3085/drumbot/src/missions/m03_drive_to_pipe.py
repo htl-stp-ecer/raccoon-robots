@@ -23,7 +23,7 @@ class M03DriveToPipe(Mission):
             turn_to_peak(turn_speed=0.4, profile="first_pipe"),
             turn_left(19.5, 1),
 
-            wall_align_forward(speed=0.3, accel_threshold=0.35, settle_duration=0, max_duration=3, grace_period=0.4),
-            parallel(drive_backward(2.5, 1), shake_drums()),
+            wall_align_forward(speed=0.3, accel_threshold=0.3, settle_duration=0, max_duration=3, grace_period=0.4),
+            parallel(drive_backward(3.2, 1), shake_drums()),
 
         ])
