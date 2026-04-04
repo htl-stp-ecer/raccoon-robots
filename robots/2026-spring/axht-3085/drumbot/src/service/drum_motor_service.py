@@ -118,14 +118,6 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         assert self.is_calibrated
         await self._move(pockets, forward=False, velocity=int(FULL_VELOCITY * 0.8))
 
-    async def eject_sweep(self, pockets: int, *, forward: bool = False) -> None:
-        """Sweep N pockets at 70% speed using raw encoder ticks.
-
-        Bypasses stripe counting and stall detection intentionally — this must be
-        one uninterrupted motion so all drums clear the eject point cleanly.
-        """
-        assert self.is_calibrated
-        await self._move(pockets, forward=forward, precise=False, velocity=int(FULL_VELOCITY * 0.7))
 
     async def go_to_pocket(self, pocket: int, *, precise: bool = False) -> str:
         delta = (pocket - self._current_pocket) % NUM_POCKETS

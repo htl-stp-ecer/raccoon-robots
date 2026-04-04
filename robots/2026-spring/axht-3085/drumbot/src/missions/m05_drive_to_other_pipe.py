@@ -22,13 +22,17 @@ class M05DriveToOtherPipe(Mission):
             drive_forward(12, 1),
 
             drive_to_second_pipe(),
+            drum_seek(),
             turn_to_peak(turn_speed=0.4, profile="first_pipe"),
-            #turn_left(19.5, 1),
+            turn_left(3.5, 1),
 
             drive_to_analog_target(Defs.et_range_finder),
             #turn_left(19.5, 1),
 
-            parallel(drive_backward(2.5, 1), shake_drums()),
+            parallel(
+                drive_backward(2.5, 1),
+                drum_eject_position(),
+            ),
 
             wait_for_button(),
             eject_nearest_color(),

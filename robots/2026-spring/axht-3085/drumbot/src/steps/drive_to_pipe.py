@@ -3,7 +3,7 @@ from libstp import *
 
 
 from src.hardware.defs import Defs
-from src.steps.drum_lifting_step import shake_drums
+from src.steps.drum_lifting_step import drum_eject_position
 
 
 @dsl
@@ -27,6 +27,6 @@ def drive_to_second_pipe():
             side=LineSide.RIGHT,
         ).until(
             on_black(Defs.front_left_ir_sensor)
-            > after_cm(40.5)
+            > after_cm(40)
         ),
     ])

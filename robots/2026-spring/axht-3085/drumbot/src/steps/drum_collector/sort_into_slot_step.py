@@ -149,6 +149,7 @@ class EjectNearestColorStep(Step):
             start_slot, forward = lo, True   # lo → hi
         else:
             start_slot, forward = hi, False  # hi → lo
+        start_slot -= 1
 
         drum_service.info(
             f"Ejecting {color}: go to slot {start_slot}, "
@@ -156,10 +157,11 @@ class EjectNearestColorStep(Step):
             f"{sweep_pockets} pocket(s) at 70%"
         )
         await drum_service.go_to_pocket(start_slot, precise=False)
-        if sweep_pockets > 0:
-            await drum_service.eject_sweep(sweep_pockets, forward=forward)
-        else:
-            await drum_service.eject()
+        for _ in range(sweep_pockets):
+            if forward:
+                await drum_service.advance(1)
+            else:
+                await drum_service.retreat(1)
 
 
 @dsl()

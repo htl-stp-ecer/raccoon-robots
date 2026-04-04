@@ -3,14 +3,14 @@ front_left_motor:
   port: 0
   inverted: false
   calibration:
-    ticks_to_rad: 1.862542525695901e-05
+    ticks_to_rad: 1.8691138598737743e-05
     vel_lpf_alpha: 1.0
 front_right_motor:
   type: Motor
   port: 1
   inverted: true
   calibration:
-    ticks_to_rad: 1.5940999157403874e-05
+    ticks_to_rad: 1.583495971813689e-05
     vel_lpf_alpha: 1.0
 drum_motor:
   type: Motor
