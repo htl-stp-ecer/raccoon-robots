@@ -27,6 +27,6 @@ def drive_to_second_pipe():
             side=LineSide.RIGHT,
         ).until(
             on_black(Defs.front_left_ir_sensor)
-            > after_cm(42)
+            > after_cm(41)
         ),
     ])

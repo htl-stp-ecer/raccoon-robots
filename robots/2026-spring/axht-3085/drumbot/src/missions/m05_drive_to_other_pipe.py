@@ -48,7 +48,7 @@ class M05DriveToOtherPipe(Mission):
 
             wall_align_forward(speed=0.3, accel_threshold=0.3, settle_duration=0.2, max_duration=3, grace_period=0.4),
             parallel(
-                drive_backward(3.7, 1),
+                drive_backward(3.5, 1),
                 drum_eject_position()
             ),
 
