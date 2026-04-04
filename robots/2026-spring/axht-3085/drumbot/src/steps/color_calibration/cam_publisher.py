@@ -35,11 +35,17 @@ class CamPublisher:
         self._latest_frame: np.ndarray | None = None
         self._roi_enabled = False
 
-    def start(self) -> None:
+    def start(self, retries: int = 10, retry_delay: float = 0.5) -> None:
         if self._running:
             return
-        self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
-        if not self._cap.isOpened():
+        for attempt in range(retries):
+            self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
+            if self._cap.isOpened():
+                break
+            self._cap.release()
+            if attempt < retries - 1:
+                time.sleep(retry_delay)
+        else:
             raise RuntimeError(f"Cannot open camera {self._camera_index}")
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._resolution[0])
         self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self._resolution[1])
