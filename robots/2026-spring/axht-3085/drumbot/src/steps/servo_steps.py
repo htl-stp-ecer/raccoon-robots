@@ -7,7 +7,7 @@ def open_drum_pusher():
     return servo(Defs.drum_pusher_servo, 140)
 
 def use_drum_to_block():
-    return servo(Defs.drum_pusher_servo, 60)
+    return servo(Defs.drum_pusher_servo, 63)
 
 def close_drum_pusher():
     return servo(Defs.drum_pusher_servo, 0)

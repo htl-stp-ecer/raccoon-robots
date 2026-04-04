@@ -4,7 +4,7 @@ from libstp import GenericRobot, dsl
 from libstp.step import Step
 
 from src.service.color_detection_service import ColorDetectionService
-from src.service.drum_motor_service import DrumMotorService
+from src.service.drum_motor_service import DrumMotorService, NUM_POCKETS
 from src.service.sorting_service import SortingService
 
 DEADLINE_WARNING_SECS = 6.0
@@ -111,7 +111,7 @@ def sort_into_slot() -> SortIntoSlotStep:
 
 @dsl(hidden=True)
 class EjectNearestColorStep(Step):
-    """Navigate to each slot of the nearest color group and eject all four drums."""
+    """Sweep through all slots of the nearest color group in one continuous motion."""
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         sorting_service = robot.get_service(SortingService)
@@ -126,8 +126,7 @@ class EjectNearestColorStep(Step):
 
         def nearest_dist(slots):
             cur = drum_service.current_pocket
-            n = 9  # NUM_SLOTS ring size
-            return min(min(abs(cur - s), n - abs(cur - s)) for s in slots) if slots else float("inf")
+            return min(min(abs(cur - s), NUM_POCKETS - abs(cur - s)) for s in slots) if slots else float("inf")
 
         if not pink or nearest_dist(blue) <= nearest_dist(pink):
             slots = blue
@@ -136,9 +135,30 @@ class EjectNearestColorStep(Step):
             slots = pink
             color = "pink"
 
-        drum_service.info(f"Ejecting {color} slots: {slots}")
-        for slot in slots:
-            await drum_service.go_to_pocket(slot, precise=False)
+        # Choose the closer end of the group as the starting point, then sweep
+        # toward the other end — minimises total travel before ejection begins.
+        def ring_dist(a: int, b: int) -> int:
+            d = abs(a - b)
+            return min(d, NUM_POCKETS - d)
+
+        cur = drum_service.current_pocket
+        lo, hi = min(slots), max(slots)
+        sweep_pockets = len(slots) - 1
+
+        if ring_dist(cur, lo) <= ring_dist(cur, hi):
+            start_slot, forward = lo, True   # lo → hi
+        else:
+            start_slot, forward = hi, False  # hi → lo
+
+        drum_service.info(
+            f"Ejecting {color}: go to slot {start_slot}, "
+            f"then sweep {'forward' if forward else 'backward'} "
+            f"{sweep_pockets} pocket(s) at 70%"
+        )
+        await drum_service.go_to_pocket(start_slot, precise=False)
+        if sweep_pockets > 0:
+            await drum_service.eject_sweep(sweep_pockets, forward=forward)
+        else:
             await drum_service.eject()
 
 

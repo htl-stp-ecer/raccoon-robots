@@ -17,7 +17,7 @@ class M01DriveToDrumsMission(Mission):
                  ]),
              ),
              parallel(
-                 drive_forward(65),
+                 drive_forward(67),
                  seq([
                      wait_until_distance(15),
                      Defs.pom_remover_servo.standby(),

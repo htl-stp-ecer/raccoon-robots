@@ -4,6 +4,9 @@ root:
       sample_count: 300
       std: 4.147588322011828
       target_value: 2602.2533333333336
+  color-detection:
+    default:
+      sat_threshold: 104
   drum-collector:
     default:
       blocked: 2146.608333333333
@@ -11,12 +14,12 @@ root:
       ticks_per_pocket: 136349
   ir-calibration:
     default_port1:
-      black_tresh: 3309.86963
-      white_tresh: 178.304184
+      black_tresh: 3571.55005
+      white_tresh: 227.022995
     default_port2:
-      black_tresh: 3672.71997
-      white_tresh: 1185.4751
+      black_tresh: 3151.97729
+      white_tresh: 1076.09705
   range-finder:
     first_pipe:
-      t_enter: 1400.313748104029
-      t_exit: 1111.104496146152
+      t_enter: 1821.0892845523408
+      t_exit: 1598.5561897015607

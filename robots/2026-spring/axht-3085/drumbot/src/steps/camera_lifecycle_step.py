@@ -1,13 +1,41 @@
-from libstp import GenericRobot, UIStep, dsl
+import asyncio
+
+from libstp import GenericRobot, dsl, UIStep
 from libstp.step import Step
+from libstp.ui.screen import UIScreen
+from libstp.ui.widgets import Center, Column, Spacer, StatusBadge, Text, Widget
 
 from src.service.color_detection_service import ColorDetectionService
 
 
+class CameraStartingScreen(UIScreen[None]):
+    title = "Camera"
+
+    def build(self) -> Widget:
+        return Center(children=[
+            Column(children=[
+                StatusBadge("STARTING", color="grey", glow=True),
+                Spacer(height=16),
+                Text("Camera is warming up...", size="large", align="center"),
+                Spacer(height=8),
+                Text("This may take a few seconds.", size="small", align="center", color="#888888"),
+            ]),
+        ])
+
+
 @dsl(hidden=True)
-class StartCameraStep(Step):
+class StartCameraStep(UIStep):
     async def _execute_step(self, robot: "GenericRobot") -> None:
-        robot.get_service(ColorDetectionService).start_camera()
+        screen = CameraStartingScreen()
+        service = robot.get_service(ColorDetectionService)
+
+        async def _start_and_close():
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, service.start_camera)
+            screen.close(None)
+
+        asyncio.create_task(_start_and_close())
+        await self.show(screen)
 
 
 @dsl(hidden=True)

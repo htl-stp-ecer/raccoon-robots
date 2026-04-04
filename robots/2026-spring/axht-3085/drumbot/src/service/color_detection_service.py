@@ -61,10 +61,12 @@ class ColorDetectionService(RobotService):
 
     def start_camera(self) -> None:
         """Start background capture and continuous detection."""
+        import threading
         atexit.register(self.stop_camera)
-        signal.signal(signal.SIGTERM, lambda *_: self.stop_camera())
+        if threading.current_thread() is threading.main_thread():
+            signal.signal(signal.SIGTERM, lambda *_: self.stop_camera())
         self._camera_start_time = time.monotonic()
-        self._camera.start()
+        self._camera.start(open_retries=10, retry_delay=1.0)
         self._running = True
         self._detection_thread = threading.Thread(
             target=self._detection_loop, daemon=True
