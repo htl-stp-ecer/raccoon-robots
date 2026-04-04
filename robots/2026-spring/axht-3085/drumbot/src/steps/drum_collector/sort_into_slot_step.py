@@ -137,6 +137,11 @@ class EjectNearestColorStep(Step):
             slots = pink
             color = "pink"
 
+        # Retreat from midpoint first to get clean slot alignment.
+        if drum_service.at_midpoint:
+            drum_service.info("Retreating from midpoint before ejection")
+            await drum_service.move_from_midpoint()
+
         # Choose the closer end of the group as the starting point, then sweep
         # toward the other end — minimises total travel before ejection begins.
         def ring_dist(a: int, b: int) -> int:
@@ -145,25 +150,30 @@ class EjectNearestColorStep(Step):
 
         cur = drum_service.current_pocket
         lo, hi = min(slots), max(slots)
-        sweep_pockets = len(slots) - 1
 
         if ring_dist(cur, lo) <= ring_dist(cur, hi):
-            start_slot, forward = lo, True   # lo → hi
+            start_slot = lo - 1  # one before lo; advance through lo..hi
+            forward = True
         else:
-            start_slot, forward = hi, False  # hi → lo
-        start_slot -= 1
+            start_slot = hi + 1  # one after hi; retreat through hi..lo
+            forward = False
 
         drum_service.info(
             f"Ejecting {color}: go to slot {start_slot}, "
             f"then sweep {'forward' if forward else 'backward'} "
-            f"{sweep_pockets} pocket(s) at 70%"
+            f"{len(slots)} pocket(s)"
         )
         await drum_service.go_to_pocket(start_slot, precise=False)
-        for _ in range(sweep_pockets):
+        for _ in range(len(slots)):
             if forward:
                 await drum_service.advance(1)
             else:
                 await drum_service.retreat(1)
+
+        # Mark ejected slots as empty so the next eject call picks the other color.
+        for s in slots:
+            sorting_service.slots[s] = None
+        drum_service.info(f"Cleared {color} slots {slots} → {sorting_service.slots}")
 
 
 @dsl()

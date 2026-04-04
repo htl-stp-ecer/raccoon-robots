@@ -47,6 +47,10 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
     def current_pocket(self) -> int:
         return self._current_pocket
 
+    @property
+    def at_midpoint(self) -> bool:
+        return self._at_midpoint
+
     def reset_position(self, pocket: int = 0) -> None:
         self.info(f"Reset: pocket {self._current_pocket} → {pocket}")
         self._current_pocket = pocket
