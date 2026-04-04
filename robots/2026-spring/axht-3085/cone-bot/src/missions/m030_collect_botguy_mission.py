@@ -20,7 +20,7 @@ class M030CollectBotguyMission(Mission):
             ),
 
             #open left dor
-            drive_forward(cm=7),
+            drive_forward(cm=9), #hardcodes magic value to controll how hard we push into the dor
             turn_left().until(
                 after_degrees(50) | after_seconds(1.0) #turn 30 deg + 20 deg inital
             ),
@@ -33,16 +33,36 @@ class M030CollectBotguyMission(Mission):
                 after_degrees(50) | after_seconds(1.0)
             ),
 
-            #grab botguy
+            #align on botguy
             Defs.cone_arm_servo.container_pos(),
             turn_to_heading_right(0),
-            drive_backward(cm=10),
-            #parallel(
-            #    turn_to_heading_right(30),
-            #    Defs.claw_servo.half_open(),
-            #    Defs.cone_arm_servo._45deg(),
-            #),
-            #drive_forward(cm=15),
-            #Defs.claw_servo.closed(),
+            drive_backward().until(
+                on_black(Defs.front_right_ir_sensor)
+            ),
+
+            wait_for_button(),
+            #grab botguy
+            parallel(
+                turn_to_heading_right(16),
+                Defs.claw_servo.botguy_open(),
+                Defs.cone_arm_servo.botguy_head_hight(),
+            ),
+            drive_forward(cm=18),
+
+            wait_for_button(),
+            #move botguy out
+            Defs.claw_servo.botguy_closed(),
+            Defs.cone_arm_servo._45deg(),
+            drive_backward(cm=15),
+
+            #align on black line
+            turn_to_heading_left(0),
+            drive_backward().until(
+                on_black(Defs.front_right_ir_sensor) >
+                on_white(Defs.front_right_ir_sensor)
+            ),
+
+
+
 
         ])

@@ -8,13 +8,13 @@ class M020CollectConeMission(Mission):
         return seq([
             #position to grab cone
             drive_backward(15),
-            turn_to_heading_right(70),
-
-            #grab cone
             parallel(
                 Defs.claw_servo.open(),
-                Defs.cone_arm_servo.down(100),
+                turn_to_heading_right(70),
             ),
+
+            #grab cone
+                Defs.cone_arm_servo.down(100),
             Defs.claw_servo.closed(150),
 
             #drop cone into container
