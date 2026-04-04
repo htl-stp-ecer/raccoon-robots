@@ -1,9 +1,4 @@
-"""Peak turn: sweep an arc sampling the ET sensor, return to peak heading.
-
-Early-stop: once the reading has risen by at least ``min_rise`` from the
-start value and then drops by more than ``drop_factor`` of that rise, the
-sweep is cut short immediately and the robot turns back to the peak heading.
-"""
+"""Peak-tracking turn: reuses TurnMotion for search and return phases."""
 from __future__ import annotations
 
 import math
@@ -14,6 +9,7 @@ from libstp import dsl
 from libstp.motion import TurnConfig, TurnMotion
 from libstp.step.motion.motion_step import MotionStep
 
+from src.hardware.range_finder import DEFAULT_PROFILE
 from src.service.range_finder_service import RangeFinderService
 
 if TYPE_CHECKING:
@@ -21,51 +17,30 @@ if TYPE_CHECKING:
 
 
 class _Phase(Enum):
-    SWEEP = 1
-    RETURN = 2
+    SEARCH = 1       # turning, waiting for T_enter
+    TRACK_PEAK = 2   # inside spike zone, tracking max
+    RETURN = 3       # rotating back to peak heading
 
 
 @dsl(hidden=True)
 class TurnToPeakStep(MotionStep):
-    """Sweep sampling the ET sensor, then turn back to the peak heading.
+    """Turn until T_enter, track peak heading, then TurnMotion back to it."""
 
-    Stops early if the reading rises significantly and then drops by more
-    than ``drop_factor`` of the observed rise.
-    """
-
-    def __init__(
-        self,
-        direction: float,
-        turn_speed: float,
-        return_speed: float,
-        search_deg: float,
-        min_rise: float,
-        drop_factor: float,
-        dead_zone_deg: float,
-    ):
+    def __init__(self, direction: float, turn_speed: float, search_deg: float, profile: str):
         super().__init__()
         self._direction = direction
         self._turn_speed = turn_speed
-        self._return_speed = return_speed
         self._search_deg = search_deg
-        self._min_rise = min_rise
-        self._drop_factor = drop_factor
-        self._dead_zone_deg = dead_zone_deg
-        self._phase = _Phase.SWEEP
+        self._profile = profile
+        self._phase = _Phase.SEARCH
         self._motion: TurnMotion | None = None
-        self._start_heading: float = 0.0
-        self._start_value: float = 0.0
-        self._peak_filtered: float = 0.0   # filtered peak — used for drop detection
-        self._centroid_heading: float = 0.0
-        self._centroid_weight: float = 0.0
+        self._peak_value: float = 0.0
+        self._peak_heading: float = 0.0
         self._service: RangeFinderService | None = None
 
     def _generate_signature(self) -> str:
         d = "right" if self._direction < 0 else "left"
-        return (
-            f"TurnToPeak(dir={d}, speed={self._turn_speed:.2f}, "
-            f"search={self._search_deg:.0f}, min_rise={self._min_rise:.0f})"
-        )
+        return f"TurnToPeak(dir={d}, speed={self._turn_speed:.2f}, search={self._search_deg:.0f})"
 
     def _make_turn(self, robot: GenericRobot, angle_rad: float) -> TurnMotion:
         cfg = TurnConfig()
@@ -75,74 +50,50 @@ class TurnToPeakStep(MotionStep):
         motion.start()
         return motion
 
-    def _return_to_peak(self, robot: GenericRobot, reason: str) -> None:
-        if self._centroid_weight > 0:
-            target_heading = self._centroid_heading / self._centroid_weight
-        else:
-            target_heading = self._start_heading
-        self.info(
-            f"Peak turn: {reason} — centroid={math.degrees(target_heading):.1f} deg "
-            f"(weight={self._centroid_weight:.0f})"
-        )
-        error_rad = robot.odometry.get_heading_error(target_heading)
-        cfg = TurnConfig()
-        cfg.target_angle_rad = error_rad
-        cfg.speed_scale = self._return_speed
-        self._motion = TurnMotion(robot.drive, robot.odometry, robot.motion_pid_config, cfg)
-        self._motion.start()
-        self._phase = _Phase.RETURN
-
     def on_start(self, robot: GenericRobot) -> None:
         self._service = robot.get_service(RangeFinderService)
         rf = self._service.range_finder
+        rf.load_profile(self._profile)
+        assert rf.is_calibrated, "RangeFinder must be calibrated before turn_to_peak"
         rf.reset_filter()
 
-        self._start_heading = robot.odometry.get_heading()
-        raw = rf.read_raw()
-        rf.read_filtered()  # seed EMA with first raw read
-        self._start_value = raw
-        self._peak_filtered = raw
-        self._centroid_heading = self._start_heading
-        self._centroid_weight = 0.0
-
-        sweep_rad = self._direction * math.radians(self._search_deg)
-        self._motion = self._make_turn(robot, sweep_rad)
-        self._phase = _Phase.SWEEP
-        self.info(
-            f"Peak turn: sweeping {self._search_deg:.0f} deg, "
-            f"dead_zone={self._dead_zone_deg:.0f} deg, start={self._start_value:.0f}"
-        )
+        # Start a search turn in the given direction
+        search_rad = self._direction * math.radians(self._search_deg)
+        self._motion = self._make_turn(robot, search_rad)
+        self._phase = _Phase.SEARCH
+        self.info(f"Peak turn: searching (T_enter={rf.t_enter:.0f}, T_exit={rf.t_exit:.0f})")
 
     def on_update(self, robot: GenericRobot, dt: float) -> bool:
         self._motion.update(dt)
         rf = self._service.range_finder
-        raw = rf.read_raw()
-        filtered = rf.read_filtered()
+        value = rf.read_filtered()
         heading = robot.odometry.get_heading()
 
-        if self._phase == _Phase.SWEEP:
-            swept_deg = abs(math.degrees(heading - self._start_heading))
+        if self._phase == _Phase.SEARCH:
+            if rf.is_above_enter(value):
+                self._peak_value = value
+                self._peak_heading = heading
+                self._phase = _Phase.TRACK_PEAK
+                self.info(f"Peak turn: entered spike zone (value={value:.0f})")
+            elif self._motion.is_finished():
+                self.warn("Peak turn: search turn finished without finding T_enter")
+                return True
+            return False
 
-            # Accumulate weighted centroid using raw signal above baseline
-            weight = max(0.0, raw - self._start_value)
-            self._centroid_weight += weight
-            self._centroid_heading += weight * heading
+        if self._phase == _Phase.TRACK_PEAK:
+            if value > self._peak_value:
+                self._peak_value = value
+                self._peak_heading = heading
 
-            # Filtered peak used for drop detection (smoother signal)
-            if filtered > self._peak_filtered:
-                self._peak_filtered = filtered
-
-            if swept_deg >= self._dead_zone_deg:
-                rise = self._peak_filtered - self._start_value
-                drop = self._peak_filtered - filtered
-                if rise >= self._min_rise and drop >= self._drop_factor * rise:
-                    self._return_to_peak(robot, "early stop")
-                    return False
-
-            if self._motion.is_finished():
-                self._return_to_peak(robot, "sweep complete")
-                return False
-
+            if rf.is_below_exit(value):
+                self.info(
+                    f"Peak turn: exited spike zone "
+                    f"(peak={self._peak_value:.0f} at {math.degrees(self._peak_heading):.1f} deg)",
+                )
+                # Return to peak heading using odometry error
+                error_rad = robot.odometry.get_heading_error(self._peak_heading)
+                self._motion = self._make_turn(robot, error_rad)
+                self._phase = _Phase.RETURN
             return False
 
         # RETURN phase
@@ -152,37 +103,37 @@ class TurnToPeakStep(MotionStep):
 @dsl(tags=["motion", "sensor"])
 def turn_to_peak(
     direction: float = -1.0,
-    turn_speed: float = 0.3,
-    return_speed: float = 0.15,
-    search_deg: float = 45.0,
-    min_rise: float = 100.0,
-    drop_factor: float = 0.4,
-    dead_zone_deg: float = 10.0,
+    turn_speed: float = 0.5,
+    search_deg: float = 180.0,
+    profile: str = DEFAULT_PROFILE,
 ) -> TurnToPeakStep:
-    """Sweep the ET sensor and turn back to the peak heading.
+    """Peak-tracking turn using the calibrated ET range finder.
 
-    Stops early once the reading has risen by at least ``min_rise`` and
-    then dropped by more than ``drop_factor`` of that rise.
+    Turns until the sensor crosses T_enter, tracks the heading of the
+    maximum reading, then uses TurnMotion to rotate back to that peak
+    heading when the reading drops below T_exit.
+
+    Prerequisites:
+        Range finder must be calibrated via ``calibrate_range_finder(profile=...)``.
 
     Args:
         direction: -1.0 for right, +1.0 for left (default: right).
         turn_speed: Fraction of max angular speed, 0.0-1.0 (default 0.5).
-        search_deg: Maximum arc to sweep in degrees (default 45).
-        min_rise: Minimum rise from start value to treat as a real peak
-            (default 50). Filters out noise before the pipe zone.
-        return_speed: Speed for the return turn (default 0.15). Slower than
-            sweep so TurnMotion can stop precisely on the peak heading.
-        drop_factor: Fraction of the rise that must drop to trigger early
-            stop (default 0.4). Lower = stop sooner after peak.
-        dead_zone_deg: Degrees to sweep before early stop is eligible
-            (default 10). Prevents startup noise from firing the trigger.
+        search_deg: Max degrees to search before giving up (default 180).
+        profile: Named calibration profile to use (default "default").
+
+    Returns:
+        A TurnToPeakStep instance.
+
+    Example::
+
+        from src.steps.range_finder import turn_to_peak
+
+        turn_to_peak(direction=-1.0, turn_speed=0.3, profile="pipe_1")
     """
     return TurnToPeakStep(
         direction=direction,
         turn_speed=turn_speed,
-        return_speed=return_speed,
         search_deg=search_deg,
-        min_rise=min_rise,
-        drop_factor=drop_factor,
-        dead_zone_deg=dead_zone_deg,
+        profile=profile,
     )

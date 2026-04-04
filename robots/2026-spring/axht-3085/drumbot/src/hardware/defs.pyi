@@ -36,3 +36,4 @@ class Defs:
     pom_remover_servo: _PomRemoverServoPreset
     lift_drums_servo: Servo
     analog_sensors: List[AnalogSensor]
+    wait_for_light_mode: str
