@@ -30,10 +30,7 @@ from src.missions.m030_grab_second_poms_mission import M030GrabSecondPomsMission
 from src.missions.m040_align_for_last_poms_mission import M040AlignForLastPomsMission
 from src.missions.m050_collect_last_poms_mission import M050CollectLastPomsMission
 from src.missions.m060_drive_to_baskets_mission import M060DriveToBasketsMission
-from src.missions.m070_drop_sorted_poms_mission import M070DropSortedPomsMission
-from src.missions.m080_move_baskets_mission import M080MoveBasketsMission
-from src.missions.m090_return_sorted_poms_mission import M090ReturnSortedPomsMission
-from src.missions.m100_drop_mached_poms_mission import M100DropMachedPomsMission
+from src.missions.m070_pull_baskets_out_mission import M070PullBasketsOutMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -129,10 +126,7 @@ class Robot(GenericRobot):
         M040AlignForLastPomsMission(),
         M050CollectLastPomsMission(),
         M060DriveToBasketsMission(),
-        M070DropSortedPomsMission(),
-        M080MoveBasketsMission(),
-        M090ReturnSortedPomsMission(),
-        M100DropMachedPomsMission(),
+        M070PullBasketsOutMission(),
     ]
     setup_mission = M000SetupMission()
     shutdown_mission = M999ShutdownMission()
