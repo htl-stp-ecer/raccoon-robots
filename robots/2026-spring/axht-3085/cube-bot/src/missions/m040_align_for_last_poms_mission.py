@@ -1,21 +1,23 @@
 from libstp import *
+
 from src.hardware.defs import Defs
 
 
 class M040AlignForLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drive_forward(27.5, 1.0),
+            drive_forward(26, 1.0),
             #push a blue pom to collect it later
-            parallel(
-                turn_to_heading_right(90),
+            background(
                 seq([
                     wait_for_seconds(0.4),
                     Defs.pom_arm.high_up(100),
                 ]),
+                name="put claw up"
             ),
 
-            turn_to_heading_right(90, 1.0),
+            turn_to_heading_right(90),
+
             parallel(
                 seq([
                     strafe_right().until(on_black(Defs.rear.right)), #TODO: make use a timout if we don't find the black line

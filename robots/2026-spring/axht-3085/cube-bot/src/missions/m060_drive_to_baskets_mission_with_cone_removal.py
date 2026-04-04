@@ -24,19 +24,43 @@ def line_follow(speed = 1.0):
         speed=speed,
         side=LineSide.LEFT,
         kp=0.5,
-        kd=0.0,
+        kd=0.1,
     )
 
-
+""" not used! """
 class M060DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             strafe_left(speed=1.0).until(on_black(Defs.front.left)),
-            
-            #drive to baskets
-            line_follow().until(
-                over_line(Defs.rear.right) +
-                over_line(Defs.rear.right) +
-                after_cm(15)
+
+            #get rid of fist traffic conde
+            #turn_left().until(after_degrees(35) | after_seconds(0.7)),
+            parallel(
+                turn_to_heading_right(0, 1.0),
+                Defs.pom_arm.high_up(150),
             ),
+
+            #drive until line and 15cm higher
+            line_follow().until(
+                on_black(Defs.rear.right) > after_cm(15),
+            ),
+
+            #get rid of second traffic conde
+            parallel(
+                turn_right(degrees=10),
+                Defs.pom_arm.down(150),
+            ),
+            turn_left().until(after_degrees(50) | after_seconds(1.0)),
+            parallel(
+                turn_to_heading_right(0, 1.0),
+                Defs.pom_arm.start(90),
+            ),
+
+            #drive to first basket
+            line_follow().until(
+                after_seconds(1.3) > on_black(Defs.front.right) > after_cm(15)
+            ),
+
+
+
         ])
