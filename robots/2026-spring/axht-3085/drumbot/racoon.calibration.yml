@@ -2,24 +2,24 @@ root:
   analog-sensor:
     port3_default:
       sample_count: 300
-      std: 2.028625697910342
-      target_value: 2897.536666666667
+      std: 1.7130349934805444
+      target_value: 2897.213333333333
   color-detection:
     default:
-      sat_threshold: 104
+      sat_threshold: 98
   drum-collector:
     default:
-      blocked: 2146.608333333333
-      pocket: 335.7224199288256
-      ticks_per_pocket: 136349
+      blocked: 2228.2295081967213
+      pocket: 366.0429184549356
+      ticks_per_pocket: 140250
   ir-calibration:
     default_port1:
-      black_tresh: 3420.77783
-      white_tresh: 215.33197
+      black_tresh: 3390
+      white_tresh: 185.154861
     default_port2:
-      black_tresh: 3436.05444
-      white_tresh: 1079.02991
+      black_tresh: 3638.47363
+      white_tresh: 1083.79651
   range-finder:
     first_pipe:
-      t_enter: 1762.012752123011
-      t_exit: 1501.107793509318
+      t_enter: 1666.1143658037531
+      t_exit: 1400.8696587626278

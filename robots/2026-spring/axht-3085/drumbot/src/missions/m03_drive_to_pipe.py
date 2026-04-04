@@ -7,7 +7,17 @@ from src.steps.drum_lifting_step import drum_lifting_up, drum_eject_position, dr
 from src.steps.range_finder import turn_to_peak
 from src.hardware.defs import Defs
 from src.steps.servo_steps import close_drum_pusher
+from src.service.drum_motor_service import DrumMotorService
+from src.service.sorting_service import SortingService
 
+def print_debug_info(robot):
+    drum = robot.get_service(DrumMotorService)
+    sorting = robot.get_service(SortingService)
+    info(f"[DEBUG] Current pocket: {drum.current_pocket}")
+    info(f"[DEBUG] Slots: {sorting.slots}")
+    info(f"[DEBUG] Blue slots: {sorting.blue_slots}  (next: {sorting.blue_next})")
+    info(f"[DEBUG] Pink slots: {sorting.pink_slots}  (next: {sorting.pink_next})")
+    info(f"[DEBUG] Empty slot: {sorting.empty_slot}")
 
 class M03DriveToPipe(Mission):
     def sequence(self) -> Sequential:
@@ -33,6 +43,8 @@ class M03DriveToPipe(Mission):
             #wall_align_forward(speed=0.3, accel_threshold=0.3, settle_duration=0.4, max_duration=3, grace_period=0.4),
             #parallel(
                 #drive_backward(3.2, 1),
+            defer(print_debug_info),
+            wait_for_button(),
             drum_eject_position()
             #),
 

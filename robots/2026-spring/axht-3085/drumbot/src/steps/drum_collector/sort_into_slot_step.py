@@ -9,6 +9,9 @@ from src.service.sorting_service import SortingService
 
 DEADLINE_WARNING_SECS = 6.0
 
+# Physical slot index where the ejection hole is located.
+EJECT_HOLE_SLOT = 5
+
 # Shared timestamp set by BlockTimerStartStep, checked by BlockTimerCheckStep
 _block_start_time: float = 0.0
 
@@ -125,8 +128,7 @@ class EjectNearestColorStep(Step):
             return
 
         def nearest_dist(slots):
-            cur = drum_service.current_pocket
-            return min(min(abs(cur - s), NUM_POCKETS - abs(cur - s)) for s in slots) if slots else float("inf")
+            return min(min(abs(EJECT_HOLE_SLOT - s), NUM_POCKETS - abs(EJECT_HOLE_SLOT - s)) for s in slots) if slots else float("inf")
 
         if not pink or nearest_dist(blue) <= nearest_dist(pink):
             slots = blue
