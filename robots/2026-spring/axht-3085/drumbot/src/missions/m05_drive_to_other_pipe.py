@@ -13,13 +13,30 @@ class M05DriveToOtherPipe(Mission):
 
             parallel(drive_backward(7, 1), drum_lifting_up()),
             turn_left(20, 1),
-            drive_backward(40, 1),
-            drive_backward().until(on_black(Defs.front_right_ir_sensor)),
+            drive_backward().until(
+                after_cm(40) >
+                on_black(Defs.front_right_ir_sensor)
+
+            ),
+            #drive_backward(40, 1),
+            #drive_backward().until(on_black(Defs.front_right_ir_sensor)),
             drive_forward(2.5, 1),
             turn_left().until(on_black(Defs.front_right_ir_sensor)),
-            follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1, side=LineSide.RIGHT).until(
-                on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
-            drive_forward(12, 1),
+
+            follow_line_single(Defs.front_right_ir_sensor, kp=0.5, kd=0.1, side=LineSide.RIGHT, speed=1.0).until(
+                on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor) >
+                after_cm(12)
+
+            ),
+
+
+
+
+          #  follow_line_single(Defs.front_right_ir_sensor, kp=0.3, kd=0.1, side=LineSide.RIGHT).until(
+            #    on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)),
+           # drive_forward(12, 1),
+
+
 
             drive_to_second_pipe(),
             drum_seek(),
