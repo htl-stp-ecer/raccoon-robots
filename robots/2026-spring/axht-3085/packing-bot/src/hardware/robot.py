@@ -91,9 +91,9 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=5.9297,
+            kp=11.6,
             ki=0.0,
-            kd=0.0,
+            kd=0,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -119,9 +119,7 @@ class Robot(GenericRobot):
         lateral=AxisConstraints(
             max_velocity=0.2209, acceleration=0.6485, deceleration=0.4498
         ),
-        angular=AxisConstraints(
-            max_velocity=1.7005, acceleration=7.8594, deceleration=17.4353
-        ),
+        angular=AxisConstraints(max_velocity=2.34, acceleration=9.1, deceleration=20),
     )
     shutdown_in = 120
     missions = [
