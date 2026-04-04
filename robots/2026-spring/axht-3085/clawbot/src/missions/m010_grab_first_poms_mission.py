@@ -11,11 +11,11 @@ class M010GrabFirstPomsMission(Mission):
             mark_heading_reference(origin_offset_deg=-180),  # mark heading for use in drive down acess ramp
             # drive infront of poms
             parallel(
-            strafe_right(30, 1.0),
+            strafe_right(25, 1.0),
             ),
             parallel(
                 Defs.shild._45deg(), #put the shild only 45 deg up so the claw doesnt hit the shild
-                strafe_left(30, 1.0),
+                strafe_left(25, 1.0),
             ),
             parallel(
                 # turn and prepare to set down the claw
@@ -23,13 +23,15 @@ class M010GrabFirstPomsMission(Mission):
 
                 Defs.pom_grab.open(),
             ),
-            drive_backward(5, 1),
-            Defs.pom_arm.down(),
+            parallel(
+                drive_backward(5, 1),
+                Defs.pom_arm.down(),
+            ),
             parallel(
                 Defs.front.drive_over_line(),
                 Defs.shild.up(), #make usre we don't hit the cube
             ),
-            Defs.front.strafe_left_until_black(sensor=Defs.front.right),
+            #Defs.front.strafe_left_until_black(sensor=Defs.front.right),
 
             parallel(
                 # get poms and close claw
@@ -37,8 +39,8 @@ class M010GrabFirstPomsMission(Mission):
                     Defs.front.right,
                     speed=1.0,
                     side=LineSide.LEFT,
-                    kp=0.6,
-                    kd=0.4,
+                    kp=0.5,
+                    kd=0.0,
                 ).until(after_cm(125) > on_black(Defs.front.left)),
                 seq([
                     # close the claw a bit, so fully closing it is faster

@@ -55,9 +55,9 @@ robot:
       output_min: -10.0
       output_max: 10.0
     heading:
-      kp: 5.9297
+      kp: 11.6
       ki: 0.0
-      kd: 0.0
+      kd: 0
       integral_max: 10.0
       integral_deadband: 0.01
       derivative_lpf_alpha: 0.5
@@ -85,9 +85,9 @@ robot:
       acceleration: 0.6485
       deceleration: 0.4498
     angular:
-      max_velocity: 1.7005
-      acceleration: 7.8594
-      deceleration: 17.4353
+      max_velocity: 2.34
+      acceleration: 9.1
+      deceleration: 20
   physical:
     width_cm: 23.5
     length_cm: 29.6
@@ -157,28 +157,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.6424918895172657e-05
+      ticks_to_rad: 1.6836695263115105e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.5909062070242212e-05
+      ticks_to_rad: 1.6285339497230578e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.6482075796597578e-05
+      ticks_to_rad: 1.661629503812879e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.6568243622806188e-05
+      ticks_to_rad: 1.69817194140629e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
@@ -202,7 +202,7 @@ definitions:
       above_basket: 145
       up: 135
       drop_poms_pos: 90
-      start: 0
+      start: 5
       high_up: 30
   shild_graber:
     type: Servo
@@ -214,7 +214,7 @@ definitions:
   pom_grab:
     type: Servo
     port: 3
-    offset: 20
+    offset: 5
     positions:
       closed: 10
       start: 30

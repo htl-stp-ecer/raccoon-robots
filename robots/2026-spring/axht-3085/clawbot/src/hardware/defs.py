@@ -27,28 +27,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6393385318107723e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6575786290431456e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.590362269530425e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6015429623653166e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6554707323045188e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.638079795430057e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.65602076564301e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.668356144870973e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -73,7 +73,7 @@ class Defs:
             "above_basket": 145,
             "up": 135,
             "drop_poms_pos": 90,
-            "start": 0,
+            "start": 5,
             "high_up": 30,
         },
     )
@@ -91,7 +91,7 @@ class Defs:
             "wide_open": 140,
             "m05_collect_poms": 105,
         },
-        offset=20.0,
+        offset=5.0,
     )
     analog_sensors = [
         distance_sensor,
@@ -102,4 +102,6 @@ class Defs:
     ]
 
 
-__all__ = ["Defs"]
+defs = Defs()
+
+__all__ = ["Defs", "defs"]
