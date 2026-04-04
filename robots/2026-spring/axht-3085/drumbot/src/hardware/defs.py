@@ -48,7 +48,7 @@ class Defs:
     drum_pusher_servo = Servo(port=0)
     pom_remover_servo = ServoPreset(
         Servo(port=3),
-        positions={"start": 154.4, "push_first_orange_pom_away": 30, "standby": 145},
+        positions={"start": 158, "push_first_orange_pom_away": 0, "standby": 145},
     )
     lift_drums_servo = Servo(port=1)
     analog_sensors = [
@@ -58,9 +58,6 @@ class Defs:
         wait_for_light_sensor,
         et_range_finder,
     ]
-    wait_for_light_mode = "auto"
 
 
-defs = Defs()
-
-__all__ = ["Defs", "defs"]
+__all__ = ["Defs"]

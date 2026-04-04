@@ -5,8 +5,8 @@ pom_remover_servo:
   type: Servo
   port: 3
   positions:
-    start: 154.4
-    push_first_orange_pom_away: 30
+    start: 158
+    push_first_orange_pom_away: 0
     standby: 145
 lift_drums_servo:
   type: Servo

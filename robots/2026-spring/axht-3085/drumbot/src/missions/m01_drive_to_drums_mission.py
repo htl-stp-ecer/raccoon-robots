@@ -8,7 +8,6 @@ class M01DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             mark_heading_reference(),
-            Defs.pom_remover_servo.push_first_orange_pom_away(),
             parallel(
                 drum_lifting_up(),
                  seq([
@@ -19,8 +18,13 @@ class M01DriveToDrumsMission(Mission):
              parallel(
                  drive_forward(67),
                  seq([
+                     wait_until_distance(5),
+                     Defs.pom_remover_servo.push_first_orange_pom_away(),
                      wait_until_distance(15),
-                     Defs.pom_remover_servo.standby(),
+                     Defs.pom_remover_servo.start(),
+                     wait_until_distance(50),
+                     Defs.pom_remover_servo.push_first_orange_pom_away(),
+                     Defs.pom_remover_servo.start(),
                  ]),
                  seq([
                      wait_until_distance(55),
