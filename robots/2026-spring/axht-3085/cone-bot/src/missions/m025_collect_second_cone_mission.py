@@ -16,7 +16,7 @@ class M025CollectSecondConeMission(Mission):
             drive_backward(15),
             parallel(
                 Defs.claw_servo.open(),
-                turn_to_heading_right(70),
+                turn_to_heading_right(72),
             ),
 
             # grab cone

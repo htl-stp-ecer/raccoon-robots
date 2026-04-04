@@ -9,6 +9,9 @@ front_right_ir_sensor:
 distance_sensor:
   type: AnalogSensor
   port: 1
+wait_for_light_sensor:
+  type: AnalogSensor
+  port: 5
 cone_arm_down_button:
   type: DigitalSensor
   port: 0

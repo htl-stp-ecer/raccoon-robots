@@ -37,32 +37,24 @@ class M030CollectBotguyMission(Mission):
             Defs.cone_arm_servo.container_pos(),
             turn_to_heading_right(0),
             drive_backward().until(
-                on_black(Defs.front_right_ir_sensor)
+                on_black(Defs.front_right_ir_sensor) >
+                after_cm(5),
             ),
 
-            wait_for_button(),
             #grab botguy
             parallel(
-                turn_to_heading_right(16),
+                turn_to_heading_right(14),
                 Defs.claw_servo.botguy_open(),
                 Defs.cone_arm_servo.botguy_head_hight(),
             ),
-            drive_forward(cm=18),
+            drive_forward(cm=24),
 
-            wait_for_button(),
             #move botguy out
             Defs.claw_servo.botguy_closed(),
             Defs.cone_arm_servo._45deg(),
-            drive_backward(cm=15),
+            turn_to_heading_left(0),
+            drive_backward(cm=25),
 
             #align on black line
             turn_to_heading_left(0),
-            drive_backward().until(
-                on_black(Defs.front_right_ir_sensor) >
-                on_white(Defs.front_right_ir_sensor)
-            ),
-
-
-
-
         ])

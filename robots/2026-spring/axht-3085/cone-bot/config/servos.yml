@@ -5,7 +5,7 @@ claw_servo:
     closed: 154
     half_open: 70
     open: 45
-    botguy_open: 105
+    botguy_open: 90
     botguy_closed: 130
 cone_arm_servo:
   type: Servo
@@ -15,5 +15,6 @@ cone_arm_servo:
     down: 168
     _20deg: 156
     _45deg: 136
+    _90deg: 75
     handl_hight: 142
     botguy_head_hight: 150

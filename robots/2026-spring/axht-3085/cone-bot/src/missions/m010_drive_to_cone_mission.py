@@ -6,17 +6,19 @@ from src.hardware.defs import Defs
 class M010DriveToConeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            #magical stuff so we don't hit the T pice of the pipe
+            #drive forward so we don't colide with the second bot
+            mark_heading_reference(origin_offset_deg=-90),
+            drive_forward(cm=25),
+            turn_to_heading_left(90),
             parallel(
-                seq([
-                    turn_left(5),
-                    drive_backward(3),
-                ]),
                 Defs.cone_arm_servo._45deg(),
+                wait_for_seconds(7),
             ),
 
             #align on pipe
-            turn_right(65),
+            turn_left(10),
+            drive_backward(cm=30),
+            turn_to_heading_right(0),
             wall_align_backward(
                 speed=0.3,
                 accel_threshold=0.3,
