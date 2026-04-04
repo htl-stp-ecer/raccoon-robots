@@ -25,17 +25,6 @@ class M00SetupMission(SetupMission):
                 Defs.drum_light_sensor,
             ]),
 
-            wait_for_button(),
-            follow_line_single(Defs.front_right_ir_sensor, kp=0.5, kd=0.1, side=LineSide.RIGHT, speed=1.0).until(
-                after_cm(100)),
-
-            wait_for_button(),
-            follow_line_single(Defs.front_right_ir_sensor, kp=1, kd=0.1, side=LineSide.RIGHT, speed=1.0).until(
-                after_cm(100)),
-
-            wait_for_button(),
-            follow_line_single(Defs.front_right_ir_sensor, kp=2, kd=0.1, side=LineSide.RIGHT, speed=1.0).until(
-                after_cm(100)),
 
             # Drives to black and hardcoded cm forward
             drum_seek(),
