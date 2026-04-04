@@ -120,10 +120,7 @@ missions:
 - M040AlignForLastPomsMission
 - M050CollectLastPomsMission
 - M060DriveToBasketsMission
-- M070DropSortedPomsMission
-- M080MoveBasketsMission
-- M090ReturnSortedPomsMission
-- M100DropMachedPomsMission
+- M070PullBasketsOutMission
 definitions:
   button:
     type: DigitalSensor
@@ -164,7 +161,7 @@ definitions:
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.6285339497230578e-05
+      ticks_to_rad: 1.6285339497230577e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
@@ -227,5 +224,5 @@ connection:
   pi_address: 192.168.100.237
   pi_port: 8421
   pi_user: pi
-  remote_path: null
+  remote_path:
   auto_connect: true
