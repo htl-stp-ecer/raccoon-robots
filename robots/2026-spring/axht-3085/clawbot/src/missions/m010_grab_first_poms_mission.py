@@ -28,7 +28,10 @@ class M010GrabFirstPomsMission(Mission):
                 Defs.pom_arm.down(),
             ),
             parallel(
-                Defs.front.drive_over_line(),
+                drive_forward().until(
+                    over_line(Defs.front.left) |
+                    over_line(Defs.front.right)
+                ),
                 Defs.shild.up(), #make usre we don't hit the cube
             ),
             #Defs.front.strafe_left_until_black(sensor=Defs.front.right),
@@ -39,9 +42,12 @@ class M010GrabFirstPomsMission(Mission):
                     Defs.front.right,
                     speed=1.0,
                     side=LineSide.LEFT,
-                    kp=0.5,
+                    kp=0.4,
+                    ki=0.05,
                     kd=0.0,
-                ).until(after_cm(125) > on_black(Defs.front.left)),
+                ).until(
+                    over_line(Defs.rear.right) + after_cm(100) + on_black(Defs.front.left)
+                ),
                 seq([
                     # close the claw a bit, so fully closing it is faster
                     Defs.pom_grab.slightly_open(),
