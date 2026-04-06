@@ -27,28 +27,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7318945605031817e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7511256507890946e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.678757051607137e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.70323378697676e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.721300836975467e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7284906427588264e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7454972018162492e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.763178660350152e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -59,10 +59,8 @@ class Defs:
             "_45deg": 125,
             "down": 180,
             "normal_drive": 175,
-            "above_pasked": 132,
-            "grab_pasked": 165,
-            "m06_above_paskted": 140,
-            "m06_on_paskted": 150,
+            "above_pasked": 125,
+            "grab_pasked": 150,
         },
     )
     pom_arm = ServoPreset(
@@ -70,11 +68,14 @@ class Defs:
         positions={
             "down": 152,
             "above_pom": 135,
-            "above_basket": 145,
+            "high_above_basket": 95,
+            "above_basket": 125,
+            "in_basket": 145,
             "up": 135,
             "drop_poms_pos": 90,
             "start": 5,
             "high_up": 30,
+            "_90deg": 64,
         },
     )
     shild_graber = ServoPreset(
@@ -90,6 +91,8 @@ class Defs:
             "open": 120,
             "wide_open": 140,
             "m05_collect_poms": 105,
+            "shake_pos_a": 60,
+            "shake_pos_b": 110,
         },
         offset=5.0,
     )
