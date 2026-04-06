@@ -1,7 +1,7 @@
-- M00SetupMission: setup
-- M99ShutdownMission: shutdown
-- M01DriveToDrumsMission
-- M02CollectDrumsMission
-- M03DriveToPipeMission
-- M04EjectDrumsMission
-- M05DriveToOtherPipeMission
+- M000SetupMission: setup
+- M010DriveToDrumsMission
+- M020CollectDrumsMission
+- M030DriveToPipeMission
+- M040EjectDrumsMission
+- M050DriveToOtherPipeMission
+- M999ShutdownMission: shutdown

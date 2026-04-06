@@ -19,7 +19,7 @@ def print_debug_info(robot):
     info(f"[DEBUG] Pink slots: {sorting.pink_slots}  (next: {sorting.pink_next})")
     info(f"[DEBUG] Empty slot: {sorting.empty_slot}")
 
-class M03DriveToPipeMission(Mission):
+class M030DriveToPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #drum_retreat(),

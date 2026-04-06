@@ -11,7 +11,7 @@ from src.steps.range_finder import calibrate_range_finder
 from src.steps.servo_steps import *
 
 
-class M00SetupMission(SetupMission):
+class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
             wait_for_button(),

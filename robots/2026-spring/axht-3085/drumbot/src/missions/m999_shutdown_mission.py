@@ -22,7 +22,7 @@ from libstp import Mission, Sequential, seq
 from src.steps.camera_lifecycle_step import stop_camera
 
 
-class M99ShutdownMission(Mission):
+class M999ShutdownMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             stop_camera(),

@@ -4,7 +4,7 @@ from src.hardware.defs import Defs
 from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_down
 
 
-class M01DriveToDrumsMission(Mission):
+class M010DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             mark_heading_reference(),
