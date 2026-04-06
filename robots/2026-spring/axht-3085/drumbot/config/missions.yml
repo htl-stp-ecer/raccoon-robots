@@ -2,6 +2,6 @@
 - M99ShutdownMission: shutdown
 - M01DriveToDrumsMission
 - M02CollectDrumsMission
-- M03DriveToPipe
+- M03DriveToPipeMission
 - M04EjectDrumsMission
-- M05DriveToOtherPipe
+- M05DriveToOtherPipeMission

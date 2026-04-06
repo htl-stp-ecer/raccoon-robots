@@ -24,9 +24,9 @@ from src.missions.m00_setup_mission import M00SetupMission
 from src.missions.m99_shutdown_mission import M99ShutdownMission
 from src.missions.m01_drive_to_drums_mission import M01DriveToDrumsMission
 from src.missions.m02_collect_drums_mission import M02CollectDrumsMission
-from src.missions.m03_drive_to_pipe import M03DriveToPipe
+from src.missions.m03_drive_to_pipe_mission import M03DriveToPipe
 from src.missions.m04_eject_drums_mission import M04EjectDrumsMission
-from src.missions.m05_drive_to_other_pipe import M05DriveToOtherPipe
+from src.missions.m05_drive_to_other_pipe_mission import M05DriveToOtherPipe
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):

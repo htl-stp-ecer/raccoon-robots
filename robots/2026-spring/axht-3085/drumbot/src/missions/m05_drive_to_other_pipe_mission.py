@@ -7,7 +7,7 @@ from src.steps.range_finder import turn_to_peak
 from src.steps.drive_to_pipe import drive_to_second_pipe
 
 
-class M05DriveToOtherPipe(Mission):
+class M05DriveToOtherPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
 
