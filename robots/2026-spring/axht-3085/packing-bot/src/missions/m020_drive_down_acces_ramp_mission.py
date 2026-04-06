@@ -19,5 +19,8 @@ class M020DriveDownAccesRampMission(Mission):
             ),
             #strafe_right(3, 1.0),
             turn_to_heading_left(0, 1.0),
-            wall_align_backward(1.0, 0.4, 0.0, 0.3),
+
+            #align on poms and put the claw down
+            wall_align_backward(1.0, 0.5, 0.1, 0.3),
+            Defs.pom_arm.above_pom(150),
         ])
