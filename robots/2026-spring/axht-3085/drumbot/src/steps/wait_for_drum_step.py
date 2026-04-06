@@ -39,33 +39,55 @@ class WaitForDrumStep(Step):
         color_service = robot.get_service(ColorDetectionService)
         sorting_service = robot.get_service(SortingService)
 
-        # Wait until the checkpoint so we don't react to stale data
-        if self.checkpoint is not None:
-            await robot.synchronizer.wait_until_checkpoint(self.checkpoint)
-
-        # Clear stale detection — the background loop keeps running
+        # Clear stale detection first — start detecting immediately
         color_service.reset()
 
-        timeout = sorting_service.learned_timeout
-        self.info(f"Waiting for drum (timeout={timeout:.3f}s, close_delay={self.close_delay:.3f}s)")
+        learned_timeout = sorting_service.learned_timeout
 
-        t0 = time.monotonic()
-        detected = await color_service.wait_for_color(timeout)
+        if self.checkpoint is not None:
+            elapsed = robot.synchronizer.get_time()
+            remaining = max(self.checkpoint - elapsed, 0)
+            self.info(
+                f"Waiting for drum (checkpoint in {remaining:.3f}s, "
+                f"learned_timeout={learned_timeout:.3f}s, close_delay={self.close_delay:.3f}s)"
+            )
+
+            t0 = time.monotonic()
+
+            # Start detecting immediately — if camera sees something, react now
+            if remaining > 0:
+                detected = await color_service.wait_for_color(remaining)
+            else:
+                detected = False
+
+            if not detected:
+                # Checkpoint reached without detection — use learned timeout as fallback
+                detected = await color_service.wait_for_color(learned_timeout)
+        else:
+            self.info(f"Waiting for drum (timeout={learned_timeout:.3f}s, close_delay={self.close_delay:.3f}s)")
+            t0 = time.monotonic()
+            detected = await color_service.wait_for_color(learned_timeout)
 
         if not detected:
-            # Drum may have arrived just after timeout — one brief extra window
+            # One brief extra window
             detected = await color_service.wait_for_color(0.050)
 
-        detection_delta = time.monotonic() - t0
+        wall_delta = time.monotonic() - t0
 
         if detected:
-            sorting_service.record_detection_delta(detection_delta)
+            # Record delta relative to checkpoint — only post-checkpoint
+            # lateness matters for learning the fallback timeout.
+            if self.checkpoint is not None:
+                checkpoint_relative = wall_delta - remaining
+                sorting_service.record_detection_delta(max(0.0, checkpoint_relative))
+            else:
+                sorting_service.record_detection_delta(wall_delta)
             color_service.lock_color()
-            self.info(f"Drum detected at {detection_delta:.3f}s — closing servo in {self.close_delay:.3f}s")
+            self.info(f"Drum detected at {wall_delta:.3f}s — closing servo in {self.close_delay:.3f}s")
             await asyncio.sleep(self.close_delay)
         else:
             self.warn(
-                f"Timeout ({timeout:.3f}s) waiting for drum — "
+                f"Timeout ({learned_timeout:.3f}s) waiting for drum — "
                 f"closing anyway based on learned timing"
             )
             color_service.lock_color()
