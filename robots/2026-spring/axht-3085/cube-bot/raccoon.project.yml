@@ -55,9 +55,9 @@ robot:
       output_min: -10.0
       output_max: 10.0
     heading:
-      kp: 5.9297
+      kp: 11.6
       ki: 0.0
-      kd: 0.0
+      kd: 0
       integral_max: 10.0
       integral_deadband: 0.01
       derivative_lpf_alpha: 0.5
@@ -85,9 +85,9 @@ robot:
       acceleration: 0.6485
       deceleration: 0.4498
     angular:
-      max_velocity: 1.7005
-      acceleration: 7.8594
-      deceleration: 17.4353
+      max_velocity: 2.34
+      acceleration: 9.1
+      deceleration: 20
   physical:
     width_cm: 23.5
     length_cm: 29.6
@@ -120,11 +120,8 @@ missions:
 - M040AlignForLastPomsMission
 - M050CollectLastPomsMission
 - M060DriveToBasketsMission
-- M070DropSortedPomsMission
-- M071PushCubesDownMission
-- M080MoveBasketsMission
-- M090ReturnSortedPomsMission
-- M100DropMachedPomsMission
+- M070PullBasketsOutMission
+- M080dropMachingPomsMission
 definitions:
   button:
     type: DigitalSensor
@@ -158,28 +155,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.64382931596523e-05
+      ticks_to_rad: 1.721029134463264e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.5989446936703784e-05
+      ticks_to_rad: 1.6671015283417324e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.6501458597462377e-05
+      ticks_to_rad: 1.7140608668800984e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.6594096628777358e-05
+      ticks_to_rad: 1.7376061308434072e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
@@ -191,7 +188,7 @@ definitions:
       down: 180
       normal_drive: 175
       above_pasked: 132
-      grab_pasked: 157
+      grab_pasked: 165
       m06_above_paskted: 140
       m06_on_paskted: 150
   pom_arm:
@@ -200,10 +197,10 @@ definitions:
     positions:
       down: 152
       above_pom: 135
-      above_basket: 125
-      up: 130
+      above_basket: 145
+      up: 135
       drop_poms_pos: 90
-      start: 0
+      start: 5
       high_up: 30
   shild_graber:
     type: Servo
@@ -215,7 +212,7 @@ definitions:
   pom_grab:
     type: Servo
     port: 3
-    offset: 20
+    offset: 5
     positions:
       closed: 10
       start: 30

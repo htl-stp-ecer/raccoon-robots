@@ -1,0 +1,23 @@
+{
+  "entries": {
+    "defs.py": {
+      "config_hash": "d77f85236dfd60e49975a98cfce15131197dc8206cfdd5725d85d835bf6e456a",
+      "fingerprint": "ca337db350acaa3e0eb933c02f26217ccd7312b2d70da0b41b6f8dc9814b1d18",
+      "format_code": true,
+      "generator_source": "cb7f041925c1fbf67d5a230a84f2337164300c7a26b76a9527ba67f2d6be1d3b"
+    },
+    "defs.pyi": {
+      "config_hash": "d77f85236dfd60e49975a98cfce15131197dc8206cfdd5725d85d835bf6e456a",
+      "fingerprint": "a5ef59c6e41146c1cddd2d877445c47388e940a394a564e5224afac37c7e6b35",
+      "format_code": true,
+      "generator_source": "8343f3d41ab6ca304b93cea3c149e97a7f7a479fcd3164c0dcca48c441cb7004"
+    },
+    "robot.py": {
+      "config_hash": "675e37d595d6931140b71d0923b61e32ef80b6498fa536823b54595b72e65725",
+      "fingerprint": "151a1a5abc4b44baf6471b22c0f64752ec062f281da3a886c15ef1cf5794545c",
+      "format_code": true,
+      "generator_source": "309c44e7089609115702c8222d14d86f4ee89303f7660811cb99fe84799ffc25"
+    }
+  },
+  "version": 1
+}

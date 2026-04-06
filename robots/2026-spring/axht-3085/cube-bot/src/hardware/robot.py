@@ -30,11 +30,8 @@ from src.missions.m030_grab_second_poms_mission import M030GrabSecondPomsMission
 from src.missions.m040_align_for_last_poms_mission import M040AlignForLastPomsMission
 from src.missions.m050_collect_last_poms_mission import M050CollectLastPomsMission
 from src.missions.m060_drive_to_baskets_mission import M060DriveToBasketsMission
-from src.missions.m070_drop_sorted_poms_mission import M070DropSortedPomsMission
-from src.missions.m071_push_cubes_down_mission import M071PushCubesDownMission
-from src.missions.m080_move_baskets_mission import M080MoveBasketsMission
-from src.missions.m090_return_sorted_poms_mission import M090ReturnSortedPomsMission
-from src.missions.m100_drop_mached_poms_mission import M100DropMachedPomsMission
+from src.missions.m070_pull_baskets_out_mission import M070PullBasketsOutMission
+from src.missions.m080drop_maching_poms_mission import M080dropMachingPomsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -92,9 +89,9 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=5.9297,
+            kp=11.6,
             ki=0.0,
-            kd=0.0,
+            kd=0,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -120,9 +117,7 @@ class Robot(GenericRobot):
         lateral=AxisConstraints(
             max_velocity=0.2209, acceleration=0.6485, deceleration=0.4498
         ),
-        angular=AxisConstraints(
-            max_velocity=1.7005, acceleration=7.8594, deceleration=17.4353
-        ),
+        angular=AxisConstraints(max_velocity=2.34, acceleration=9.1, deceleration=20),
     )
     shutdown_in = 120
     missions = [
@@ -132,11 +127,8 @@ class Robot(GenericRobot):
         M040AlignForLastPomsMission(),
         M050CollectLastPomsMission(),
         M060DriveToBasketsMission(),
-        M070DropSortedPomsMission(),
-        M071PushCubesDownMission(),
-        M080MoveBasketsMission(),
-        M090ReturnSortedPomsMission(),
-        M100DropMachedPomsMission(),
+        M070PullBasketsOutMission(),
+        M080dropMachingPomsMission(),
     ]
     setup_mission = M000SetupMission()
     shutdown_mission = M999ShutdownMission()
