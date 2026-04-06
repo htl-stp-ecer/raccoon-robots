@@ -27,28 +27,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.643346629618684e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.712163231724553e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6005210183100793e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6575260003791185e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6494009231304352e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7072555690942695e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.659864099950014e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7290027391128007e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -60,7 +60,7 @@ class Defs:
             "down": 180,
             "normal_drive": 175,
             "above_pasked": 132,
-            "grab_pasked": 157,
+            "grab_pasked": 165,
             "m06_above_paskted": 140,
             "m06_on_paskted": 150,
         },
@@ -70,10 +70,10 @@ class Defs:
         positions={
             "down": 152,
             "above_pom": 135,
-            "above_basket": 125,
-            "up": 130,
+            "above_basket": 145,
+            "up": 135,
             "drop_poms_pos": 90,
-            "start": 0,
+            "start": 5,
             "high_up": 30,
         },
     )
@@ -91,7 +91,7 @@ class Defs:
             "wide_open": 140,
             "m05_collect_poms": 105,
         },
-        offset=20.0,
+        offset=5.0,
     )
     analog_sensors = [
         distance_sensor,
@@ -102,4 +102,6 @@ class Defs:
     ]
 
 
-__all__ = ["Defs"]
+defs = Defs()
+
+__all__ = ["Defs", "defs"]

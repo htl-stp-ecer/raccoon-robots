@@ -216,4 +216,4 @@ class EtScanAlign(Step):
         return mid
 
     def required_resources(self) -> frozenset[str]:
-        return frozenset({"drive"})
+        return frozenset({})
