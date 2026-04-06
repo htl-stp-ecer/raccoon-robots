@@ -32,7 +32,7 @@ class M050CollectLastPomsMission(Mission):
                     Defs.pom_grab.wide_open(),
 
                     #make sure we collect ALL lost poms
-                    wait_until_distance(cm=30),
+                    wait_until_distance(cm=33),
                     Defs.pom_grab.closed(),
                     Defs.pom_grab.slightly_open(),
                 ])
