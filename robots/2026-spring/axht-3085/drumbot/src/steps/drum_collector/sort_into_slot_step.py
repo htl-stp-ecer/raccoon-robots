@@ -158,13 +158,15 @@ class EjectNearestColorStep(Step):
             start_slot = hi + 1  # one after hi; retreat through hi..lo
             forward = False
 
+
+        pockets_to_eject = len(slots) - 1
         drum_service.info(
             f"Ejecting {color}: go to slot {start_slot}, "
             f"then sweep {'forward' if forward else 'backward'} "
-            f"{len(slots)} pocket(s)"
+            f"{pockets_to_eject} pocket(s)"
         )
         await drum_service.go_to_pocket(start_slot, precise=False)
-        for _ in range(len(slots)):
+        for _ in range(pockets_to_eject):
             if forward:
                 await drum_service.advance(1)
             else:

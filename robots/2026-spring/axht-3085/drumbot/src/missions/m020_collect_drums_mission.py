@@ -8,5 +8,5 @@ class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             collect_drums(),
-            advance_to_midpoint(),
+            advance_to_midpoint()
         ])
