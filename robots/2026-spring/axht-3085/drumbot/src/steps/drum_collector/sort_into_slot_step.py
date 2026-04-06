@@ -184,10 +184,30 @@ def eject_nearest_color() -> EjectNearestColorStep:
     return EjectNearestColorStep()
 
 
+@dsl(hidden=True)
+class GoToEmptySlotPlusOneStep(Step):
+    """Move revolver to the nearest empty slot + 1 pocket."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        sorting_service = robot.get_service(SortingService)
+        drum_service = robot.get_service(DrumMotorService)
+
+        empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
+        target = (empty + 1) % NUM_POCKETS
+        drum_service.info(f"Moving to empty slot {empty} + 1 = pocket {target}")
+        await drum_service.go_to_pocket(target, precise=False)
+
+
 @dsl()
 def go_to_empty_slot() -> GoToEmptySlotStep:
     """Move revolver to nearest empty slot (safe to open pusher)."""
     return GoToEmptySlotStep()
+
+
+@dsl()
+def go_to_empty_slot_plus_one() -> GoToEmptySlotPlusOneStep:
+    """Move revolver to nearest empty slot + 1 pocket."""
+    return GoToEmptySlotPlusOneStep()
 
 
 @dsl()

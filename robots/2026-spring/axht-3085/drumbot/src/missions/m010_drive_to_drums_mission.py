@@ -26,5 +26,5 @@ class M010DriveToDrumsMission(Mission):
                      wait_until_distance(55),
                      drum_lifting_down(slow_mode=False),
                  ])
-             ),
+             )
         ])
