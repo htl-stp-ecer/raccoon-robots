@@ -1,10 +1,17 @@
 from libstp import *
 
 from src.hardware.defs import Defs
+from src.steps.line_cross_detecting_turn import LineCrossDetectingTurn
 
 
 class M040AlignForLastPomsMission(Mission):
     def sequence(self) -> Sequential:
+        line_turn = LineCrossDetectingTurn(
+            target_heading=90,
+            tracking_start_deg=45,
+            sensor=Defs.rear.right,
+        )
+
         return seq([
             #push a blue pom to collect it later
             background(
@@ -14,23 +21,18 @@ class M040AlignForLastPomsMission(Mission):
                 ]),
                 name="put claw up"
             ),
-            # TODO: make sure we are on black
-            #in the line strafe_right().until(on_black(Defs.rear.right)), we expect that we are on the black line or on the right of the black line
-            #it should be deteckteed that we are on the left side of the black line and acount it.
-            #The solution woud be that we track the Defs.rear.right ir sensor while we do the turn_to_heading_right(90),
-            #the code shoud start when we reach 45deg and track which sensor reading we have.
-            #if we only detected if we saw white then black (and white again; not not necessary)
-            #we can do the strafe_right().until(on_black(Defs.rear.right)),
-            #if we only saw white we should do strafe_left().until(over_line(Defs.rear.right)
-            #in any cas we want to do the strafe left(13,1.0) afterwords
 
-
-            turn_to_heading_right(90),
-
+            line_turn,
 
             parallel(
                 seq([
-                    strafe_right().until(on_black(Defs.rear.right)),
+                    # If we crossed the line during the turn, we're on the right
+                    # side — strafe right to re-find it. Otherwise strafe left.
+                    defer(lambda robot: (
+                        strafe_right().until(on_black(Defs.rear.right))
+                        if line_turn.crossed_line
+                        else strafe_left().until(on_black(Defs.rear.right))
+                    )),
                     strafe_left(13, 1.0), #magic hardcoded value :)
                 ]),
 
