@@ -31,6 +31,7 @@ from src.missions.m040_align_for_last_poms_mission import M040AlignForLastPomsMi
 from src.missions.m050_collect_last_poms_mission import M050CollectLastPomsMission
 from src.missions.m060_drive_to_baskets_mission import M060DriveToBasketsMission
 from src.missions.m070_pull_baskets_out_mission import M070PullBasketsOutMission
+from src.missions.m080drop_maching_poms_mission import M080dropMachingPomsMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -127,6 +128,7 @@ class Robot(GenericRobot):
         M050CollectLastPomsMission(),
         M060DriveToBasketsMission(),
         M070PullBasketsOutMission(),
+        M080dropMachingPomsMission(),
     ]
     setup_mission = M000SetupMission()
     shutdown_mission = M999ShutdownMission()

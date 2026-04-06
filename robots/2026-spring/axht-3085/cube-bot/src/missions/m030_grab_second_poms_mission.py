@@ -20,8 +20,10 @@ class M030GrabSecondPomsMission(Mission):
 
 
             parallel(
-                drive_forward().until(on_black(Defs.front.left)),
                 Defs.pom_grab.closed(),
+                drive_forward().until(
+                    on_black(Defs.front.left) +
+                    after_cm(26),
+                ),
             ),
-
         ])
