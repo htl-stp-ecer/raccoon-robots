@@ -24,6 +24,7 @@ def line_follow(speed = 1.0):
         speed=speed,
         side=LineSide.LEFT,
         kp=0.5,
+        ki=0.05,
         kd=0.0,
     )
 
@@ -31,12 +32,17 @@ def line_follow(speed = 1.0):
 class M060DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            backround(
-                Defs.shild.save_up(),
-                Defs.pom_arm.start(),
+            background(
+                seq([
+                    Defs.shild.save_up(),
+                    Defs.pom_arm.start(),
+                ]),
             ),
             #TODO: replace the strafe with a diagonal with 20 deg to left
-            strafe_left(speed=1.0).until(on_black(Defs.front.left)),
+            #strafe_left(speed=1.0).until(on_black(Defs.front.left)),
+
+            #make sure we face straight
+            turn_to_heading_right(0),
 
             #drive to baskets
             line_follow().until(
