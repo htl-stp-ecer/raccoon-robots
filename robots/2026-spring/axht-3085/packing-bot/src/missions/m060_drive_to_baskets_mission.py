@@ -24,7 +24,7 @@ def line_follow(speed = 1.0):
         speed=speed,
         side=LineSide.LEFT,
         kp=0.5,
-        ki=0.05,
+        ki=0.1,
         kd=0.0,
     )
 
@@ -46,7 +46,7 @@ class M060DriveToBasketsMission(Mission):
 
             #drive to baskets
             line_follow().until(
-                over_line(Defs.rear.right) +
+                after_cm(50) +  #drive hardcoded distanve over first line so we have no isssues with bot jumping
                 over_line(Defs.rear.right) +
                 after_cm(15)
             ),
