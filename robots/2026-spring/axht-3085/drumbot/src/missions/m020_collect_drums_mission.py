@@ -1,12 +1,15 @@
 from libstp import *
 
 from src.steps.collect_drums_step import collect_drums
-from src.steps.drum_collector.sort_into_slot_step import advance_to_midpoint
+from src.steps.drum_collector import drum_advance
+from src.steps.servo_steps import close_drum_pusher
 
 
 class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             collect_drums(),
-            advance_to_midpoint()
+            close_drum_pusher(),
+            drum_advance(),
+            # advance_to_midpoint()
         ])

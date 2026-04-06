@@ -74,6 +74,8 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 
             if blue_frame is None or pink_frame is None or empty_frame is None:
                 self.warn("Missing frames - retrying calibration")
+                self._stop_publisher()
+                await asyncio.sleep(0.3)
                 return None
 
             blue_sat, _ = dominant_blob(blue_frame)
@@ -91,6 +93,17 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
             save_debug_mask({"blue": blue_frame, "pink": pink_frame, "empty": empty_frame}, threshold)
             save_debug_frame(empty_frame)
 
+            margin_above = threshold - empty_sat
+            margin_below = min(blue_sat, pink_sat) - threshold
+            if margin_above <= 0 or margin_below <= 0:
+                self.warn(
+                    f"Bad calibration: margin_above={margin_above}, "
+                    f"margin_below={margin_below} — forcing retry"
+                )
+                self._stop_publisher()
+                await asyncio.sleep(0.3)
+                return None
+
             while True:
                 screen = ColorConfirmScreen(
                     sat_threshold=threshold,
@@ -104,6 +117,8 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
                     if test_result == "done":
                         return calibration
                 else:
+                    self._stop_publisher()
+                    await asyncio.sleep(0.3)
                     return None  # retry_all
 
         except Exception:
