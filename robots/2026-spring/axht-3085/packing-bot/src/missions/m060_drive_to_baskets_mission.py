@@ -24,7 +24,7 @@ def line_follow(speed = 1.0):
         speed=speed,
         side=LineSide.LEFT,
         kp=0.5,
-        ki=0.1,
+        ki=0.2,
         kd=0.0,
     )
 
@@ -32,22 +32,36 @@ def line_follow(speed = 1.0):
 class M060DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            background(
-                seq([
-                    Defs.shild.save_up(),
-                    Defs.pom_arm.start(),
-                ]),
-            ),
-            #TODO: replace the strafe with a diagonal with 20 deg to left
-            #strafe_left(speed=1.0).until(on_black(Defs.front.left)),
+            mark_heading_reference(), #FIXME: remove after testing
+            Defs.pom_arm.down(),#FIXME: remove after testing
+            #background(
+            #    seq([
+            #        Defs.shild.save_up(),
+            #        Defs.pom_arm.start(),
+            #    ]),
+            #),
 
             #make sure we face straight
             turn_to_heading_right(0),
 
             #drive to baskets
             line_follow().until(
-                after_cm(50) +  #drive hardcoded distanve over first line so we have no isssues with bot jumping
-                over_line(Defs.rear.right) +
+                on_black(Defs.rear.right) +
+                after_cm(22)
+            ),
+
+            turn_left().until(after_degrees(50) | after_seconds(1.0)),
+            #put the arm back up
+            background(
+                seq([
+                    Defs.pom_arm.start(90),
+                ]),
+            ),
+            #turn back straight
+            turn_to_heading_right(0, 1.0),
+
+            line_follow().until(
+                    over_line(Defs.rear.right) +
                 after_cm(15)
             ),
         ])

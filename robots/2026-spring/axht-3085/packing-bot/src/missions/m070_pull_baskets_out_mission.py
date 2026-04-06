@@ -6,12 +6,13 @@ from src.hardware.defs import Defs
 class M070PullBasketsOutMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            #drive to baskets and grab
             Defs.shild.above_pasked(),
-            strafe_right(cm=5),
+            strafe_right(cm=7),
             Defs.shild.grab_pasked(),
 
             strafe_left().until(on_black(Defs.rear.right)),
-            turn_right(110),
+            turn_right(70),
             #drop sorted poms
             parallel(
                 Defs.shild.above_pasked(),
