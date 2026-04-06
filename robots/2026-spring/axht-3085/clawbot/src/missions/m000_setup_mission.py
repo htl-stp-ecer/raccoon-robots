@@ -7,6 +7,7 @@ from src.steps.et_scan_align import EtScanAlign
 class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
+            mark_heading_reference(),
             parallel(
                 Defs.shild.down(),
                 Defs.shild_graber.closed(),
