@@ -1,7 +1,7 @@
 from libstp import *
 
 from src.hardware.defs import Defs
-from src.missions.m04_eject_drums_mission import eject_nearest_color
+from src.missions.m040_eject_drums_mission import eject_nearest_color
 from src.steps.drum_lifting_step import *
 from src.steps.range_finder import turn_to_peak
 from src.steps.drive_to_pipe import drive_to_second_pipe
@@ -12,7 +12,7 @@ class M050DriveToOtherPipeMission(Mission):
         return seq([
 
             parallel(drive_backward(7, 1), drum_lifting_up()),
-            turn_left(20, 1),
+            turn_left(15, 1),
             drive_backward().until(
                 after_cm(40) >
                 on_black(Defs.front_right_ir_sensor)

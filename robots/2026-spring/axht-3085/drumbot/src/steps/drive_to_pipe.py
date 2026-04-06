@@ -12,7 +12,7 @@ def drive_to_first_pipe():
         drive_forward().until(
             (on_black(Defs.front_right_ir_sensor) >
             on_white(Defs.front_right_ir_sensor)) >
-            after_cm(23)
+            after_cm(22)
         )
     ])
 
@@ -27,6 +27,6 @@ def drive_to_second_pipe():
             side=LineSide.RIGHT,
         ).until(
             on_black(Defs.front_left_ir_sensor)
-            > after_cm(41)
+            > after_cm(44)
         ),
     ])

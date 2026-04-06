@@ -20,13 +20,13 @@ from libstp import (
 from src.hardware.defs import Defs
 
 
-from src.missions.m00_setup_mission import M00SetupMission
-from src.missions.m99_shutdown_mission import M99ShutdownMission
-from src.missions.m01_drive_to_drums_mission import M01DriveToDrumsMission
-from src.missions.m02_collect_drums_mission import M02CollectDrumsMission
-from src.missions.m03_drive_to_pipe_mission import M03DriveToPipe
-from src.missions.m04_eject_drums_mission import M04EjectDrumsMission
-from src.missions.m05_drive_to_other_pipe_mission import M05DriveToOtherPipe
+from src.missions.m000_setup_mission import M000SetupMission
+from src.missions.m010_drive_to_drums_mission import M010DriveToDrumsMission
+from src.missions.m020_collect_drums_mission import M020CollectDrumsMission
+from src.missions.m030_drive_to_pipe_mission import M030DriveToPipeMission
+from src.missions.m040_eject_drums_mission import M040EjectDrumsMission
+from src.missions.m050_drive_to_other_pipe_mission import M050DriveToOtherPipeMission
+from src.missions.m999_shutdown_mission import M999ShutdownMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -113,14 +113,14 @@ class Robot(GenericRobot):
     )
     shutdown_in = 1200
     missions = [
-        M01DriveToDrumsMission(),
-        M02CollectDrumsMission(),
-        M03DriveToPipe(),
-        M04EjectDrumsMission(),
-        M05DriveToOtherPipe(),
+        M010DriveToDrumsMission(),
+        M020CollectDrumsMission(),
+        M030DriveToPipeMission(),
+        M040EjectDrumsMission(),
+        M050DriveToOtherPipeMission(),
     ]
-    setup_mission = M00SetupMission()
-    shutdown_mission = M99ShutdownMission()
+    setup_mission = M000SetupMission()
+    shutdown_mission = M999ShutdownMission()
     width_cm = 13.0
     length_cm = 19.0
     rotation_center_forward_cm = -4.0
