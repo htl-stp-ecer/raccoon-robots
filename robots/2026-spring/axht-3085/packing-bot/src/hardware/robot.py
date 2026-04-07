@@ -21,10 +21,19 @@ from src.hardware.defs import Defs
 
 
 from src.missions.m000_setup_mission import M000SetupMission
-from src.missions.m999_shutdown_mission import M999ShutdownMission
+from src.missions.m010_grab_first_poms_mission import M010GrabFirstPomsMission
+from src.missions.m020_drive_down_acces_ramp_mission import (
+    M020DriveDownAccesRampMission,
+)
+from src.missions.m030_grab_second_poms_mission import M030GrabSecondPomsMission
+from src.missions.m040_align_for_last_poms_mission import M040AlignForLastPomsMission
+from src.missions.m050_collect_last_poms_mission import M050CollectLastPomsMission
 from src.missions.m060_drive_to_baskets_mission import M060DriveToBasketsMission
 from src.missions.m070_pull_baskets_out_mission import M070PullBasketsOutMission
 from src.missions.m080drop_maching_poms_mission import M080dropMachingPomsMission
+from src.missions.m090_retrun_baskets_mission import M090RetrunBasketsMission
+from src.missions.m999_shutdown_mission import M999ShutdownMission
+from src.missions.m100_drive_away_mission import M100DriveAwayMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -114,9 +123,16 @@ class Robot(GenericRobot):
     )
     shutdown_in = 120
     missions = [
+        M010GrabFirstPomsMission(),
+        M020DriveDownAccesRampMission(),
+        M030GrabSecondPomsMission(),
+        M040AlignForLastPomsMission(),
+        M050CollectLastPomsMission(),
         M060DriveToBasketsMission(),
         M070PullBasketsOutMission(),
         M080dropMachingPomsMission(),
+        M090RetrunBasketsMission(),
+        M100DriveAwayMission(),
     ]
     setup_mission = M000SetupMission()
     shutdown_mission = M999ShutdownMission()
