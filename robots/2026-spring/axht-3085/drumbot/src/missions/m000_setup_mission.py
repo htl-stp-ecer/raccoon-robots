@@ -48,6 +48,8 @@ class M000SetupMission(SetupMission):
             calibrate_colors(),
             wait_for_button(),
             start_camera(),
-            calibrate_drum_collector(calibration_time=5.0),
+            calibrate_drum_collector(calibration_time=5),
             align_edge(),
+            defer(factory=None),
+            stop(hard=None)
         ])
