@@ -18,5 +18,9 @@ wait_for_light_sensor:
 et_range_finder:
   type: ETSensor
   port: 3
+IR_Distanz_to_pipe_sensor:
+  type: ETSensor
+  port: 4
+
 _motors: !include-merge 'motors.yml'
 _servos: !include-merge 'servos.yml'

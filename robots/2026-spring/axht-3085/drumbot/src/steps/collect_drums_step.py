@@ -57,6 +57,7 @@ class CollectDrumsStep(UIStep):
                         open_drum_pusher(),
                         wait_for_drum(checkpoint=checkpoint),
                         block_timer_start(),
+                        wait_for_seconds(0.5),
                         #drum_align_on_back(),
                         #parallel(
                         #    drum_lifting_down(),

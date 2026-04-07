@@ -193,7 +193,7 @@ class GoToEmptySlotPlusOneStep(Step):
         drum_service = robot.get_service(DrumMotorService)
 
         empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
-        target = (empty + 1) % NUM_POCKETS
+        target = (empty - 1) % NUM_POCKETS
         drum_service.info(f"Moving to empty slot {empty} + 1 = pocket {target}")
         await drum_service.go_to_pocket(target, precise=False)
 

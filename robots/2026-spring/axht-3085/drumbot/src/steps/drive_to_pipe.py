@@ -20,13 +20,20 @@ def drive_to_first_pipe():
 @dsl
 def drive_to_second_pipe():
     return seq([
-        follow_line_single(
-            Defs.front_right_ir_sensor,
-            kp=0.3,
-            kd=0.1,
-            side=LineSide.RIGHT,
-        ).until(
-            on_black(Defs.front_left_ir_sensor)
-            > after_cm(44)
-        ),
+        parallel(
+            follow_line_single(
+             Defs.front_right_ir_sensor,
+             kp=0.3,
+             kd=0.1,
+             side=LineSide.LEFT,
+         ).until(
+               on_black(Defs.front_left_ir_sensor)
+             > after_cm(45)
+         ),
+            seq([
+                wait_until_distance(35),
+                Defs.pom_remover_servo.push_first_orange_pom_away(),
+                Defs.pom_remover_servo.start(),
+            ])
+        )
     ])

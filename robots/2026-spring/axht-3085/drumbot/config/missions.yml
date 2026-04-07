@@ -1,6 +1,6 @@
 - M000SetupMission: setup
 - M010DriveToDrumsMission
-- M020CollectDrumsMission
+#- M020CollectDrumsMission
 - M030DriveToPipeMission
 - M040EjectDrumsMission
 - M050DriveToOtherPipeMission

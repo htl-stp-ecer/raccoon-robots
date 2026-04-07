@@ -21,18 +21,19 @@ class Defs:
     drum_light_sensor = IRSensor(port=0)
     wait_for_light_sensor = AnalogSensor(port=5)
     et_range_finder = ETSensor(port=3)
+    IR_Distanz_to_pipe_sensor = ETSensor(port=4)
     front_left_motor = Motor(
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.931104988453613e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.948586498082425e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6110877056896662e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.587361640374804e-05, vel_lpf_alpha=1.0
         ),
     )
     drum_motor = Motor(
@@ -57,6 +58,7 @@ class Defs:
         drum_light_sensor,
         wait_for_light_sensor,
         et_range_finder,
+        IR_Distanz_to_pipe_sensor,
     ]
 
 

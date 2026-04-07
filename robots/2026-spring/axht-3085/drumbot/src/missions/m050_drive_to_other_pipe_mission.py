@@ -22,14 +22,15 @@ class M050DriveToOtherPipeMission(Mission):
             #drive_backward().until(on_black(Defs.front_right_ir_sensor)),
             drive_forward(2.5, 1),
             turn_left().until(on_black(Defs.front_right_ir_sensor)),
-            wait_for_checkpoint(60 + 34),
+            wait_for_checkpoint(60 + 33),
 
             follow_line_single(Defs.front_right_ir_sensor, kp=1, kd=0.1, side=LineSide.RIGHT, speed=1.0).until(
                 on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor) >
                 after_cm(12)
-
             ),
-
+            turn_to_heading_right(160),
+            turn_left(20,1),
+            drive_forward(8, 1),
 
 
 
@@ -44,14 +45,16 @@ class M050DriveToOtherPipeMission(Mission):
             turn_to_peak(turn_speed=0.4, profile="first_pipe"),
             turn_left(5, 1),
 
-            #drive_to_analog_target(Defs.et_range_finder),
+            drive_to_analog_target(Defs.IR_Distanz_to_pipe_sensor, 0.2),
             #turn_left(19.5, 1),
-
-            wall_align_forward(speed=0.7, accel_threshold=0.3, settle_duration=0.2, max_duration=3, grace_period=0.4),
-            parallel(
-                drive_backward(3.3, 1),
-                drum_eject_position()
-            ),
+            #drive_to_analog_target(Defs.et_range_finder),
+            #drive_forward(speed=0.1).until(on_analog_above(Defs.IR_Distanz_to_pipe_sensor, 1900)),
+            #wall_align_forward(speed=1, accel_threshold=0.35, settle_duration=0, max_duration=2, grace_period=0.25),
+            #parallel(
+                #drive_backward(3.3, 1),
+                #drive_forward(3,1),
+                drum_eject_position(),
+            #),
 
             eject_nearest_color(),
         ])

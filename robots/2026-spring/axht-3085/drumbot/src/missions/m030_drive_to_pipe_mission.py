@@ -39,11 +39,14 @@ class M030DriveToPipeMission(Mission):
             turn_to_peak(turn_speed=0.4, profile="first_pipe"),
             turn_left(3.5, 1),
 
-            # drive_to_analog_target(Defs.et_range_finder),
-            wall_align_forward(speed=0.7, accel_threshold=0.3, settle_duration=0, max_duration=3, grace_period=0.4),
-            parallel(
-                drive_backward(3.3, 1),
+            #drive_forward().until(on_analog_above(Defs.IR_Distanz_to_pipe_sensor, 2300)),
+            drive_to_analog_target(Defs.IR_Distanz_to_pipe_sensor, 0.2),
+            #drive_to_analog_target(Defs.et_range_finder),
+            #wall_align_forward(speed=1, accel_threshold=0.35, settle_duration=0, max_duration=2, grace_period=0.25),
+            #parallel(
+                #drive_backward(3.3, 1),
+                #drive_forward(3,1),
                 drum_eject_position()
-            ),
+            #),
 
         ])
