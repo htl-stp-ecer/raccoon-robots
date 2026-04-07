@@ -18,6 +18,7 @@ class _ShildPreset(ServoPreset):
     normal_drive: _PresetPosition
     above_pasked: _PresetPosition
     grab_pasked: _PresetPosition
+    high_up: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...
@@ -56,6 +57,7 @@ class _PomGrabPreset(ServoPreset):
     open: _PresetPosition
     wide_open: _PresetPosition
     m05_collect_poms: _PresetPosition
+    m05_slightly_open: _PresetPosition
     shake_pos_a: _PresetPosition
     shake_pos_b: _PresetPosition
 
