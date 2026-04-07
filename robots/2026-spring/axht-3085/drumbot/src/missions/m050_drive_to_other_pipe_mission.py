@@ -52,5 +52,5 @@ class M050DriveToOtherPipeMission(Mission):
                 drum_eject_position()
             ),
 
-            eject_nearest_color()
+            eject_nearest_color(),
         ])

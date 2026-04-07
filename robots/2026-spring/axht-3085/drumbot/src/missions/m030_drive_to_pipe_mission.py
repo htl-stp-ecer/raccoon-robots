@@ -45,6 +45,5 @@ class M030DriveToPipeMission(Mission):
                 drive_backward(3.3, 1),
                 drum_eject_position()
             ),
-            calibrate(calibration_sets=None, distance_cm=None, ema_alpha=None, exclude_ir_sensors=None, persist_to_yaml=None)
 
         ])
