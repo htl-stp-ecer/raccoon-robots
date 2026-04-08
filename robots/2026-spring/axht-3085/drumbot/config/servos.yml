@@ -6,7 +6,7 @@ pom_remover_servo:
   port: 3
   positions:
     start: 158
-    push_first_orange_pom_away: 130
+    push_first_orange_pom_away: 50
     push_blue_pom_away: 0
     standby: 145
 lift_drums_servo:

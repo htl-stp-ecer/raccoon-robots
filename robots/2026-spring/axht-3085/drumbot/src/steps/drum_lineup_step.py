@@ -9,7 +9,7 @@ from src.steps.range_finder import turn_to_peak
 def lineup_drum_with_pipe():
     return seq([
         drum_seek(),
-        turn_to_peak(turn_speed=0.4, profile="first_pipe"),
+        turn_to_peak(turn_speed=0.4),
         turn_left(3.5, 1),
 
         # drive_forward().until(on_analog_above(Defs.IR_Distanz_to_pipe_sensor, 2300)),

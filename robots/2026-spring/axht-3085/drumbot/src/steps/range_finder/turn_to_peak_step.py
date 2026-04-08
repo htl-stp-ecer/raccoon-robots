@@ -1,4 +1,4 @@
-"""Peak-tracking turn: reuses TurnMotion for search and return phases."""
+"""Peak-tracking turn: full sweep then turn to absolute peak heading."""
 from __future__ import annotations
 
 import math
@@ -9,7 +9,6 @@ from libstp import dsl
 from libstp.motion import TurnConfig, TurnMotion
 from libstp.step.motion.motion_step import MotionStep
 
-from src.hardware.range_finder import DEFAULT_PROFILE
 from src.service.range_finder_service import RangeFinderService
 
 if TYPE_CHECKING:
@@ -17,30 +16,34 @@ if TYPE_CHECKING:
 
 
 class _Phase(Enum):
-    SEARCH = 1       # turning, waiting for T_enter
-    TRACK_PEAK = 2   # inside spike zone, tracking max
-    RETURN = 3       # rotating back to peak heading
+    SWEEP = 1   # full sweep, tracking peak heading
+    RETURN = 2  # turning to absolute peak heading
 
 
 @dsl(hidden=True)
 class TurnToPeakStep(MotionStep):
-    """Turn until T_enter, track peak heading, then TurnMotion back to it."""
+    """Full sweep tracking peak sensor value, then turn to that absolute heading."""
 
-    def __init__(self, direction: float, turn_speed: float, search_deg: float, profile: str):
+    STUCK_WINDOW = 0.3          # seconds of no heading change to consider stuck
+    STUCK_THRESHOLD_DEG = 3.0   # minimum heading change within window
+
+    def __init__(self, direction: float, turn_speed: float, sweep_deg: float):
         super().__init__()
         self._direction = direction
         self._turn_speed = turn_speed
-        self._search_deg = search_deg
-        self._profile = profile
-        self._phase = _Phase.SEARCH
+        self._sweep_deg = sweep_deg
+        self._phase = _Phase.SWEEP
         self._motion: TurnMotion | None = None
         self._peak_value: float = 0.0
         self._peak_heading: float = 0.0
         self._service: RangeFinderService | None = None
+        self._stuck_ref_heading: float = 0.0
+        self._stuck_ref_time: float = 0.0
+        self._elapsed: float = 0.0
 
     def _generate_signature(self) -> str:
         d = "right" if self._direction < 0 else "left"
-        return f"TurnToPeak(dir={d}, speed={self._turn_speed:.2f}, search={self._search_deg:.0f})"
+        return f"TurnToPeak(dir={d}, speed={self._turn_speed:.2f}, sweep={self._sweep_deg:.0f})"
 
     def _make_turn(self, robot: GenericRobot, angle_rad: float) -> TurnMotion:
         cfg = TurnConfig()
@@ -53,15 +56,37 @@ class TurnToPeakStep(MotionStep):
     def on_start(self, robot: GenericRobot) -> None:
         self._service = robot.get_service(RangeFinderService)
         rf = self._service.range_finder
-        rf.load_profile(self._profile)
-        assert rf.is_calibrated, "RangeFinder must be calibrated before turn_to_peak"
         rf.reset_filter()
 
-        # Start a search turn in the given direction
-        search_rad = self._direction * math.radians(self._search_deg)
-        self._motion = self._make_turn(robot, search_rad)
-        self._phase = _Phase.SEARCH
-        self.info(f"Peak turn: searching (T_enter={rf.t_enter:.0f}, T_exit={rf.t_exit:.0f})")
+        # Start full sweep in the given direction
+        sweep_rad = self._direction * math.radians(self._sweep_deg)
+        self._motion = self._make_turn(robot, sweep_rad)
+        self._phase = _Phase.SWEEP
+
+        # Initialize peak and stuck detection
+        self._peak_value = rf.read_filtered()
+        self._peak_heading = robot.odometry.get_heading()
+        self._stuck_ref_heading = self._peak_heading
+        self._stuck_ref_time = 0.0
+        self._elapsed = 0.0
+        self.info(f"Peak turn: sweeping {self._sweep_deg:.0f} deg")
+
+    def _is_stuck(self, heading: float, dt: float) -> bool:
+        self._elapsed += dt
+        heading_delta = abs(math.degrees(heading - self._stuck_ref_heading))
+        if heading_delta > self.STUCK_THRESHOLD_DEG:
+            self._stuck_ref_heading = heading
+            self._stuck_ref_time = self._elapsed
+        return self._elapsed - self._stuck_ref_time >= self.STUCK_WINDOW
+
+    def _transition_to_return(self, robot: GenericRobot, reason: str) -> None:
+        self.info(
+            f"Peak turn: {reason}, peak={self._peak_value:.0f} "
+            f"at {math.degrees(self._peak_heading):.1f} deg"
+        )
+        error_rad = robot.odometry.get_heading_error(self._peak_heading)
+        self._motion = self._make_turn(robot, error_rad)
+        self._phase = _Phase.RETURN
 
     def on_update(self, robot: GenericRobot, dt: float) -> bool:
         self._motion.update(dt)
@@ -69,31 +94,17 @@ class TurnToPeakStep(MotionStep):
         value = rf.read_filtered()
         heading = robot.odometry.get_heading()
 
-        if self._phase == _Phase.SEARCH:
-            if rf.is_above_enter(value):
-                self._peak_value = value
-                self._peak_heading = heading
-                self._phase = _Phase.TRACK_PEAK
-                self.info(f"Peak turn: entered spike zone (value={value:.0f})")
-            elif self._motion.is_finished():
-                self.warn("Peak turn: search turn finished without finding T_enter")
-                return True
-            return False
-
-        if self._phase == _Phase.TRACK_PEAK:
+        if self._phase == _Phase.SWEEP:
             if value > self._peak_value:
                 self._peak_value = value
                 self._peak_heading = heading
 
-            if rf.is_below_exit(value):
-                self.info(
-                    f"Peak turn: exited spike zone "
-                    f"(peak={self._peak_value:.0f} at {math.degrees(self._peak_heading):.1f} deg)",
-                )
-                # Return to peak heading using odometry error
-                error_rad = robot.odometry.get_heading_error(self._peak_heading)
-                self._motion = self._make_turn(robot, error_rad)
-                self._phase = _Phase.RETURN
+            if self._is_stuck(heading, dt):
+                self._transition_to_return(robot, "stuck — aborting sweep")
+            elif self._motion.is_finished():
+                self._transition_to_return(robot, "sweep done")
+            else:
+                return False
             return False
 
         # RETURN phase
@@ -104,36 +115,23 @@ class TurnToPeakStep(MotionStep):
 def turn_to_peak(
     direction: float = -1.0,
     turn_speed: float = 0.5,
-    search_deg: float = 30.0,
-    profile: str = DEFAULT_PROFILE,
+    sweep_deg: float = 30.0,
 ) -> TurnToPeakStep:
-    """Peak-tracking turn using the calibrated ET range finder.
+    """Peak-tracking turn using the ET range finder.
 
-    Turns until the sensor crosses T_enter, tracks the heading of the
-    maximum reading, then uses TurnMotion to rotate back to that peak
-    heading when the reading drops below T_exit.
-
-    Prerequisites:
-        Range finder must be calibrated via ``calibrate_range_finder(profile=...)``.
+    Does a full sweep, tracking the heading of the maximum sensor reading,
+    then turns to that absolute heading.
 
     Args:
         direction: -1.0 for right, +1.0 for left (default: right).
         turn_speed: Fraction of max angular speed, 0.0-1.0 (default 0.5).
-        search_deg: Max degrees to search before giving up (default 180).
-        profile: Named calibration profile to use (default "default").
+        sweep_deg: Degrees to sweep (default 30).
 
     Returns:
         A TurnToPeakStep instance.
-
-    Example::
-
-        from src.steps.range_finder import turn_to_peak
-
-        turn_to_peak(direction=-1.0, turn_speed=0.3, profile="pipe_1")
     """
     return TurnToPeakStep(
         direction=direction,
         turn_speed=turn_speed,
-        search_deg=search_deg,
-        profile=profile,
+        sweep_deg=sweep_deg,
     )

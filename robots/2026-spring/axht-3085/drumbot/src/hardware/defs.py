@@ -51,7 +51,7 @@ class Defs:
         Servo(port=3),
         positions={
             "start": 158,
-            "push_first_orange_pom_away": 130,
+            "push_first_orange_pom_away": 50,
             "push_blue_pom_away": 0,
             "standby": 145,
         },

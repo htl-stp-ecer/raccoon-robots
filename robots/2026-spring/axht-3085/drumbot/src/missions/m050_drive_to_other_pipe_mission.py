@@ -18,7 +18,7 @@ class M050DriveToOtherPipeMission(Mission):
             # drive_backward().until(on_black(Defs.front_right_ir_sensor)),
             drive_forward(2.5, 1),
             turn_left().until(on_black(Defs.front_right_ir_sensor)),
-            wait_for_checkpoint(60 + 33),
+            #wait_for_checkpoint(60 + 33),
 
             follow_line_single(Defs.front_right_ir_sensor, kp=1, kd=0.1, side=LineSide.RIGHT, speed=1.0).until(
                 on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor) >

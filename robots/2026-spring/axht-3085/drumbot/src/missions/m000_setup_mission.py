@@ -4,10 +4,8 @@ from libstp.step.sequential import *
 from src.steps.camera_lifecycle_step import start_camera
 from src.steps.color_calibration import calibrate_colors
 from src.steps.debug_wait_step import debug_wait
-from src.steps.drive_to_pipe import drive_to_first_pipe
 from src.steps.drum_collector import align_edge, calibrate_drum_collector
 from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up, drum_seek
-from src.steps.range_finder import calibrate_range_finder
 from src.steps.servo_steps import *
 
 
@@ -28,20 +26,7 @@ class M000SetupMission(SetupMission):
 
             # Drives to black and hardcoded cm forward
             drum_seek(),
-            calibrate_range_finder(sweep_deg=30,
-                                   turn_speed=0.2,
-                                   profile="first_pipe",
-                                   setup_steps=[
-                debug_wait("Place on black tape for seed first pipe position"),
-                drive_to_first_pipe(),
-            ]),
             calibrate_analog_sensor(Defs.et_range_finder),
-
-            # Follows line until at the second pipe
-            # calibrate_range_finder(turn_speed=0.2, profile="second_pipe", setup_steps=[
-            #     debug_wait("Place at the seed position for second pipe"),
-            #     drive_to_second_pipe(),
-            # ]),
 
             drum_lifting_down(),
             open_drum_pusher(),
