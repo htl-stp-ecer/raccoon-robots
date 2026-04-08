@@ -82,8 +82,8 @@ robot:
       deceleration: 2.0
     lateral:
       max_velocity: 0.23
-      acceleration: 1.0
-      deceleration: 2.0
+      acceleration: 0.8
+      deceleration: 1.6
     angular:
       max_velocity: 2.34
       acceleration: 9.1
