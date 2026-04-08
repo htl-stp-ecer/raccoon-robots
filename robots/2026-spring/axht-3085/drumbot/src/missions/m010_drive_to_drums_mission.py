@@ -12,7 +12,7 @@ class M010DriveToDrumsMission(Mission):
             parallel(
                 drum_lifting_up(),
                 seq([
-                    #wait_for_seconds(0.4), #TODO: comfirm if we need the wait
+                    wait_for_seconds(0.4), #TODO: comfirm if we need the wait
                     turn_right(90),
                 ]),
                 seq([
