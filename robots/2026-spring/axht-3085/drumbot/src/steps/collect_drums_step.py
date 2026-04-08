@@ -93,7 +93,7 @@ class CollectDrumsStep(UIStep):
                 try:
                     phase3 = seq([
                         close_drum_pusher(),
-                        wait_for_seconds(0.3),
+                        wait_for_seconds(0.5),
                         go_to_empty_slot(),
                         block_timer_check(drum_number),
                     ])

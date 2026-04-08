@@ -19,7 +19,7 @@ class M010DriveToDrumsMission(Mission):
                  drive_forward(67),
                  seq([
                      wait_until_distance(16),
-                     Defs.pom_remover_servo.push_first_orange_pom_away(),
+                     Defs.pom_remover_servo.push_blue_pom_away(),
                      Defs.pom_remover_servo.start(),
                  ]),
                  seq([

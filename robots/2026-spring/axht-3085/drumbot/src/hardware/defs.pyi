@@ -14,6 +14,7 @@ from typing import List
 class _PomRemoverServoPreset(ServoPreset):
     start: _PresetPosition
     push_first_orange_pom_away: _PresetPosition
+    push_blue_pom_away: _PresetPosition
     standby: _PresetPosition
 
     @property
@@ -37,3 +38,4 @@ class Defs:
     pom_remover_servo: _PomRemoverServoPreset
     lift_drums_servo: Servo
     analog_sensors: List[AnalogSensor]
+    wait_for_light_mode: str

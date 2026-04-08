@@ -4,9 +4,9 @@ from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
 from src.steps.drive_to_pipe import drive_to_first_pipe
-from src.steps.drum_lifting_step import drum_lifting_up, drum_eject_position, drum_seek
-from src.steps.range_finder import turn_to_peak
+from src.steps.drum_lifting_step import drum_lifting_up
 from src.steps.servo_steps import close_drum_pusher
+from src.steps.drum_lineup_step import lineup_drum_with_pipe
 
 
 def print_debug_info(robot):
@@ -34,19 +34,5 @@ class M030DriveToPipeMission(Mission):
             turn_to_heading_left(90),
 
             drive_to_first_pipe(),
-
-            drum_seek(),
-            turn_to_peak(turn_speed=0.4, profile="first_pipe"),
-            turn_left(3.5, 1),
-
-            #drive_forward().until(on_analog_above(Defs.IR_Distanz_to_pipe_sensor, 2300)),
-            drive_to_analog_target(Defs.IR_Distanz_to_pipe_sensor, 0.2),
-            #drive_to_analog_target(Defs.et_range_finder),
-            #wall_align_forward(speed=1, accel_threshold=0.35, settle_duration=0, max_duration=2, grace_period=0.25),
-            #parallel(
-                #drive_backward(3.3, 1),
-                #drive_forward(3,1),
-                drum_eject_position()
-            #),
-
+            lineup_drum_with_pipe(),
         ])

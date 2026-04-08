@@ -26,14 +26,14 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.948586498082425e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.9457676621234214e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.587361640374804e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.562801247834129e-05, vel_lpf_alpha=1.0
         ),
     )
     drum_motor = Motor(
@@ -49,7 +49,12 @@ class Defs:
     drum_pusher_servo = Servo(port=0)
     pom_remover_servo = ServoPreset(
         Servo(port=3),
-        positions={"start": 158, "push_first_orange_pom_away": 0, "standby": 145},
+        positions={
+            "start": 158,
+            "push_first_orange_pom_away": 130,
+            "push_blue_pom_away": 0,
+            "standby": 145,
+        },
     )
     lift_drums_servo = Servo(port=1)
     analog_sensors = [
@@ -60,6 +65,9 @@ class Defs:
         et_range_finder,
         IR_Distanz_to_pipe_sensor,
     ]
+    wait_for_light_mode = "auto"
 
 
-__all__ = ["Defs"]
+defs = Defs()
+
+__all__ = ["Defs", "defs"]

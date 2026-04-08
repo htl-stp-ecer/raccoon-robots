@@ -28,7 +28,7 @@ class M000SetupMission(SetupMission):
 
             # Drives to black and hardcoded cm forward
             drum_seek(),
-            calibrate_range_finder(sweep_deg=45,
+            calibrate_range_finder(sweep_deg=30,
                                    turn_speed=0.2,
                                    profile="first_pipe",
                                    setup_steps=[

@@ -104,7 +104,7 @@ class TurnToPeakStep(MotionStep):
 def turn_to_peak(
     direction: float = -1.0,
     turn_speed: float = 0.5,
-    search_deg: float = 180.0,
+    search_deg: float = 30.0,
     profile: str = DEFAULT_PROFILE,
 ) -> TurnToPeakStep:
     """Peak-tracking turn using the calibrated ET range finder.
