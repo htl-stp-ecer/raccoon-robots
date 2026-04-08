@@ -114,7 +114,7 @@ class Robot(GenericRobot):
         heading_saturation_error_rad=0.01,
         heading_recovery_error_rad=0.005,
         linear=AxisConstraints(max_velocity=0.22, acceleration=1.0, deceleration=2.0),
-        lateral=AxisConstraints(max_velocity=0.23, acceleration=1.0, deceleration=2.0),
+        lateral=AxisConstraints(max_velocity=0.23, acceleration=0.9, deceleration=1.6),
         angular=AxisConstraints(max_velocity=2.34, acceleration=9.1, deceleration=20),
     )
     shutdown_in = 120
