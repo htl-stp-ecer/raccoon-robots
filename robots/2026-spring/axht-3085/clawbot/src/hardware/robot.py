@@ -91,7 +91,7 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=17.6,
+            kp=11.6,
             ki=0.0,
             kd=0,
             integral_max=10.0,
