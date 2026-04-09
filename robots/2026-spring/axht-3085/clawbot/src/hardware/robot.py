@@ -81,9 +81,9 @@ class Robot(GenericRobot):
     )
     motion_pid_config = UnifiedMotionPidConfig(
         distance=PidConfig(
-            kp=17.5,
+            kp=3.8599,
             ki=0.0,
-            kd=1.0,
+            kd=0.2087,
             integral_max=10.0,
             integral_deadband=0.01,
             derivative_lpf_alpha=0.5,
@@ -91,7 +91,7 @@ class Robot(GenericRobot):
             output_max=10.0,
         ),
         heading=PidConfig(
-            kp=11.6,
+            kp=17.6,
             ki=0.0,
             kd=0,
             integral_max=10.0,
@@ -113,8 +113,12 @@ class Robot(GenericRobot):
         heading_recovery_rate=0.05,
         heading_saturation_error_rad=0.01,
         heading_recovery_error_rad=0.005,
-        linear=AxisConstraints(max_velocity=0.22, acceleration=1.0, deceleration=2.0),
-        lateral=AxisConstraints(max_velocity=0.23, acceleration=0.9, deceleration=1.6),
+        linear=AxisConstraints(
+            max_velocity=0.2139, acceleration=0.9402, deceleration=1.6644
+        ),
+        lateral=AxisConstraints(
+            max_velocity=0.2209, acceleration=0.6485, deceleration=0.4498
+        ),
         angular=AxisConstraints(max_velocity=2.34, acceleration=9.1, deceleration=20),
     )
     shutdown_in = 120
