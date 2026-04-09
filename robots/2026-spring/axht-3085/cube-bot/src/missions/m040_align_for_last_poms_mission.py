@@ -42,15 +42,15 @@ class M040AlignForLastPomsMission(Mission):
             ),
             turn_to_heading_right(90, 1.0),
 
-            drive_backward(25, 1.0),
+            drive_backward(30, 1.0),
 
-            wall_align_backward(1.0, 0.4, 0.0, 3.0),
+            wall_align_backward(1.0, 0.6, 0.1, 3.0),
             Defs.shild_graber.closed(70),
 
             # mark heading for collecting the poms (0 heading is now in the direction of the black line)
             mark_heading_reference(),
 
             #grab the pom set
-            drive_forward(cm=5, speed=0.6),
+            #drive_forward(cm=5, speed=0.6),
             Defs.shild.save_up(),
         ])

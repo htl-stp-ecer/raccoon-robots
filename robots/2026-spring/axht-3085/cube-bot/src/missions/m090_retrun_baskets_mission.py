@@ -22,19 +22,24 @@ class M090RetrunBasketsMission(Mission):
                     Defs.shild._45deg(),
                 ])
             ),
+
+            # put the shild up so we dont hit the wall
+            background(
+
+                Defs.shild.high_up(),
+            ),
+
             turn_to_heading_left(0, speed=0.3),  # turn straight
 
             #push basket further in
-            strafe_left(cm=17),
-            Defs.shild.down(),
-            strafe_right(cm=17),
-            strafe_left(cm=5),
-
-            #put the shild up so we dont hit the wall
-            background(
-                Defs.shild.save_up(),
+            #strafe_left(cm=17),
+            #Defs.shild.down(),
+            #strafe_right(cm=17),
+            Defs.shild.high_up(),
+            strafe_right().until(
+                on_black(Defs.rear.right),
             ),
-
+            strafe_left(cm=5),
 
             #position mached basket to return
             drive_backward().until(
@@ -44,11 +49,17 @@ class M090RetrunBasketsMission(Mission):
 
             #return mached basket
             turn_right(20),
-            Defs.pom_arm.high_above_basket(),
-            turn_left(50),
+            parallel(
+                Defs.pom_arm.high_above_basket(),
+                Defs.pom_grab.open(),
+            ),
+            parallel(
+                turn_left(50),
+                Defs.pom_grab.closed(),
+            ),
 
             Defs.pom_arm.down(),
-            turn_to_heading_right(35), #push basket in
+            turn_to_heading_right(30), #push basket in
 
 
 
