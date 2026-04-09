@@ -34,7 +34,6 @@ class M060DriveToBasketsMission(Mission):
         return seq([
             background(
                 seq([
-                    Defs.pom_grab.closed(),
                     Defs.shild.high_up(),
                 ]),
             ),

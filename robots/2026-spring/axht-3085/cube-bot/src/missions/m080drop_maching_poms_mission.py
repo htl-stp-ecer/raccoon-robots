@@ -16,7 +16,7 @@ class M080dropMachingPomsMission(Mission):
 
             #position over basket
             turn_right(20),
-            drive_angle(120, 18.5),
+            drive_angle(120, 19),
 
             #move the basket a bit forward
             drive_forward(cm=5),
@@ -29,12 +29,13 @@ class M080dropMachingPomsMission(Mission):
             #shake servos out
             Defs.pom_grab.shake_pos_a(100),
             wait_for_seconds(0.2),
+            Defs.pom_grab.closed(),
             loop_for(
                 seq([
-                    Defs.pom_grab.shake_pos_a(200),
-                    Defs.pom_grab.shake_pos_b(250)
+                    Defs.pom_grab.shake_pos_a(),
+                    Defs.pom_grab.shake_pos_b()
                     ]),
-                iterations=3,
+                iterations=2,
             ),
             #shake_servo(Defs.pom_grab,
             #            duration=1,
@@ -51,20 +52,20 @@ class M080dropMachingPomsMission(Mission):
             drive_forward(cm=7),
 
             #drop poms a second time
-            Defs.pom_grab.wide_open(),
+            Defs.pom_grab.wide_open(150),
             Defs.pom_arm.high_above_basket(),
             wait_for_seconds(0.5),
 
-            loop_for(
-               seq([
-                   Defs.pom_grab.closed(),
-                   wait_for_seconds(0.1),
-                   parallel(
-                       Defs.pom_grab.wide_open(),
-                   ),
-               ]),
-                iterations=1
-            ),
+            #compress poms
+            Defs.pom_grab.closed(),
+            Defs.pom_arm.in_basket(90),
+
+            #pull claw up again
+            Defs.pom_arm.high_above_basket(),
+            drive_forward(cm=7),
+            #drop poms a third time
+            Defs.pom_grab.wide_open(),
+            wait_for_seconds(0.1),
 
             #compress poms
             parallel(
