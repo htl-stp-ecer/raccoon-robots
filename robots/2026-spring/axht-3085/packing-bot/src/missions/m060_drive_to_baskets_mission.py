@@ -34,6 +34,7 @@ class M060DriveToBasketsMission(Mission):
         return seq([
             background(
                 seq([
+                    Defs.pom_grab.closed(),
                     Defs.shild.high_up(),
                 ]),
             ),
@@ -41,10 +42,11 @@ class M060DriveToBasketsMission(Mission):
             #make sure the bot straight
             turn_to_heading_right(0),
 
-            #drive to baskets
+            #drive to cone
             line_follow().until(
+                on_black(Defs.front.right) +
                 on_black(Defs.rear.right) +
-                after_cm(22)
+                after_cm(16)
             ),
 
             turn_left().until(after_degrees(50) | after_seconds(1.0)),

@@ -16,18 +16,22 @@ class M080dropMachingPomsMission(Mission):
 
             #position over basket
             turn_right(20),
-            drive_angle(120, 17.5),
+            drive_angle(120, 18.5),
 
             #move the basket a bit forward
-            drive_forward(cm=4),
-            drive_backward(cm=5),
-            Defs.pom_arm.above_basket(),
+            drive_forward(cm=5),
+            parallel(
+                drive_backward(cm=8),
+                Defs.pom_arm.above_basket(150),
+            ),
             wait_for_seconds(0.5),
 
             #shake servos out
+            Defs.pom_grab.shake_pos_a(100),
+            wait_for_seconds(0.2),
             loop_for(
                 seq([
-                    Defs.pom_grab.shake_pos_a(250),
+                    Defs.pom_grab.shake_pos_a(200),
                     Defs.pom_grab.shake_pos_b(250)
                     ]),
                 iterations=3,
