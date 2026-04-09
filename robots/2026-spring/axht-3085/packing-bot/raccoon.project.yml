@@ -157,28 +157,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.7383815306556367e-05
+      ticks_to_rad: 1.7534323221232692e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.6953111767804232e-05
+      ticks_to_rad: 1.7128585328263983e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.7341344629123642e-05
+      ticks_to_rad: 1.735671856792445e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.7565840241177734e-05
+      ticks_to_rad: 1.7699068842915253e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo

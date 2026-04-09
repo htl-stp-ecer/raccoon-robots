@@ -34,7 +34,10 @@ class M050CollectLastPomsMission(Mission):
                     wait_until_distance(cm=35),
                     Defs.pom_grab.m05_slightly_open(),
                     wait_for_seconds(0.8),
+
+                    #make sure we close the claw while we are moving
                     Defs.pom_grab.slightly_open(),
+                    Defs.pom_grab.closed(),
                 ])
             ),
 

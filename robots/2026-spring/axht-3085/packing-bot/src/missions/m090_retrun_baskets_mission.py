@@ -19,14 +19,9 @@ class M090RetrunBasketsMission(Mission):
 
                 seq([
                     wait_until_degrees(45),
-                    Defs.shild._45deg(),
+                    # put the shild up so we dont hit the wall
+                    Defs.shild.high_up(),
                 ])
-            ),
-
-            # put the shild up so we dont hit the wall
-            background(
-
-                Defs.shild.high_up(),
             ),
 
             turn_to_heading_left(0, speed=0.3),  # turn straight
@@ -35,11 +30,16 @@ class M090RetrunBasketsMission(Mission):
             #strafe_left(cm=17),
             #Defs.shild.down(),
             #strafe_right(cm=17),
-            Defs.shild.high_up(),
-            strafe_right().until(
-                on_black(Defs.rear.right),
-            ),
-            strafe_left(cm=5),
+            #Defs.shild.high_up(),
+            #timeout(
+            #    seq([
+            #        strafe_right().until(
+            #            on_black(Defs.rear.right)
+            #        ),
+            #        strafe_left(cm=5),
+            #    ]),
+            #    seconds=3,
+            #),
 
             #position mached basket to return
             drive_backward().until(
