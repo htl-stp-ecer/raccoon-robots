@@ -4,16 +4,21 @@ from libstp import *
 
 from src.hardware.defs import Defs
 from src.steps.drum_lifting_step import drum_eject_position
+from src.steps.servo_steps import push_orange_pom_away
 
 
 @dsl
 def drive_to_first_pipe():
     return seq([
-        drive_forward().until(
-            (on_black(Defs.front_right_ir_sensor) >
-            on_white(Defs.front_right_ir_sensor)) >
-            after_cm(20)
+        parallel(
+            drive_forward().until(
+             (on_black(Defs.front_right_ir_sensor) >
+             on_white(Defs.front_right_ir_sensor)) >
+             after_cm(20)
+            ),
+            push_orange_pom_away(),
         )
+
     ])
 
 
@@ -32,8 +37,8 @@ def drive_to_second_pipe():
          ),
             seq([
                 wait_until_distance(35),
-                Defs.pom_remover_servo.push_blue_pom_away(),
-                Defs.pom_remover_servo.start(),
+                #Defs.pom_remover_servo.push_blue_pom_away(),
+                #Defs.pom_remover_servo.start(),
             ])
         )
     ])

@@ -1,4 +1,4 @@
-from libstp import servo
+from libstp import servo, slow_servo
 
 from src.hardware.defs import Defs
 
@@ -11,3 +11,14 @@ def use_drum_to_block():
 
 def close_drum_pusher():
     return servo(Defs.drum_pusher_servo, 0)
+
+
+def push_orange_pom_away():
+    return servo(Defs.pom_remover_servo, 53)
+
+def Pom_puher_Start():
+    return servo(Defs.pom_remover_servo, 180)
+
+
+
+

@@ -25,7 +25,7 @@ class TurnToPeakStep(MotionStep):
     """Full sweep tracking peak sensor value, then turn to that absolute heading."""
 
     STUCK_WINDOW = 0.3          # seconds of no heading change to consider stuck
-    STUCK_THRESHOLD_DEG = 3.0   # minimum heading change within window
+    STUCK_THRESHOLD_DEG = 2.0   # minimum heading change within window
 
     def __init__(self, direction: float, turn_speed: float, sweep_deg: float):
         super().__init__()
@@ -115,7 +115,7 @@ class TurnToPeakStep(MotionStep):
 def turn_to_peak(
     direction: float = -1.0,
     turn_speed: float = 0.5,
-    sweep_deg: float = 50.0,
+    sweep_deg: float = 40,
 ) -> TurnToPeakStep:
     """Peak-tracking turn using the ET range finder.
 

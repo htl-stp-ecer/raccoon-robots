@@ -26,14 +26,14 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.9653106301354e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.9692998022972093e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6320251551841446e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.6277447615002908e-05, vel_lpf_alpha=1.0
         ),
     )
     drum_motor = Motor(
@@ -65,9 +65,6 @@ class Defs:
         et_range_finder,
         IR_Distanz_to_pipe_sensor,
     ]
-    wait_for_light_mode = "auto"
 
 
-defs = Defs()
-
-__all__ = ["Defs", "defs"]
+__all__ = ["Defs"]

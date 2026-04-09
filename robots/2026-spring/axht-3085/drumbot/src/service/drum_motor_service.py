@@ -99,9 +99,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     raise
                 self.warn(f"Motor stalled (attempt {attempt}/{STALL_RETRIES}) — backing up to retry")
                 self.motor.set_velocity(int(FULL_VELOCITY * 0.7) * backup_sign)
-                await asyncio.sleep(0.30)
-                self.motor.set_velocity(0)
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.7),           await asyncio.sleep(0.05)
 
     # ── navigation ───────────────────────────────────────────────
 

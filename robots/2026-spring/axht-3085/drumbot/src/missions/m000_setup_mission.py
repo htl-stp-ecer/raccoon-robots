@@ -12,11 +12,12 @@ from src.steps.servo_steps import *
 class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
+            turn_right(90, 1),
             wait_for_button(),
 
 
 
-            Defs.pom_remover_servo.start(),
+            Pom_puher_Start(),
             drum_lifting_up(slow_mode=False),
             calibrate(distance_cm=50, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
@@ -27,7 +28,7 @@ class M000SetupMission(SetupMission):
             # Drives to black and hardcoded cm forward
             drum_seek(),
             calibrate_analog_sensor(Defs.et_range_finder),
-
+            wait_for_button(),
             drum_lifting_down(),
             open_drum_pusher(),
             calibrate_colors(),
