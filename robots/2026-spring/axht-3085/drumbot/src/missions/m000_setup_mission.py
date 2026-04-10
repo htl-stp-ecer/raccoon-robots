@@ -13,6 +13,10 @@ class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
             fully_disable_servos(),
+            # Camera opens once here and stays open until the shutdown mission.
+            # All downstream steps (color calibration, color detection) share
+            # this single USBCamera instance.
+            start_camera(),
             wait_for_button(),
 
             drum_lifting_up(slow_mode=False),
@@ -32,7 +36,6 @@ class M000SetupMission(SetupMission):
             open_drum_pusher(),
             calibrate_colors(),
             wait_for_button(),
-            start_camera(),
             calibrate_drum_collector(calibration_time=5.0),
             align_edge(),
         ])

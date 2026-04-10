@@ -34,22 +34,15 @@ CONFIDENCE_THRESHOLD = 0.7  # must match PRESENCE_THRESHOLD in ColorDetectionSer
 
 
 class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
-    def __init__(
-        self,
-        camera_index: int | str = "/dev/video0",
-        resolution: tuple[int, int] = (160, 120),
-    ):
+    def __init__(self):
         super().__init__(store_section="color-detection", store_set="default")
-        self._camera_index = camera_index
-        self._resolution = resolution
         self._publisher: CamPublisher | None = None
 
-    def _start_publisher(self) -> None:
+    def _start_publisher(self, robot: GenericRobot) -> None:
         self._stop_publisher()
-        self._publisher = CamPublisher(
-            camera_index=self._camera_index,
-            resolution=self._resolution,
-        )
+        from src.service.color_detection_service import ColorDetectionService
+        camera = robot.get_service(ColorDetectionService).camera
+        self._publisher = CamPublisher(camera=camera)
         self._publisher.start()
 
     def _stop_publisher(self) -> None:
@@ -66,7 +59,7 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
     # -- CalibrateStep hooks -------------------------------------------------
 
     async def _collect(self, robot: GenericRobot) -> ColorCalibration | None:
-        self._start_publisher()
+        self._start_publisher(robot)
         try:
             blue_frame = await self._capture_frame("Place BLUE drum in view", "BLUE")
             pink_frame = await self._capture_frame("Place PINK drum in view", "PINK")
@@ -177,9 +170,11 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 
 
 @dsl()
-def calibrate_colors(
-    camera_index: int | str = "/dev/video0",
-    resolution: tuple[int, int] = (160, 120),
-) -> ColorCalibrationStep:
-    """Interactive saturation-gate calibration for drum detection."""
-    return ColorCalibrationStep(camera_index=camera_index, resolution=resolution)
+def calibrate_colors() -> ColorCalibrationStep:
+    """Interactive saturation-gate calibration for drum detection.
+
+    Uses the shared USBCamera from ``ColorDetectionService`` — the camera
+    must already be started (via ``start_camera()`` in the setup mission)
+    before this step runs.
+    """
+    return ColorCalibrationStep()

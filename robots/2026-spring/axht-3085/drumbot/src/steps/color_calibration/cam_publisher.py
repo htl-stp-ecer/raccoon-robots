@@ -1,4 +1,4 @@
-"""Background thread that captures frames and publishes them to botui."""
+"""Background thread that publishes frames from a shared USBCamera to botui."""
 
 import threading
 import time
@@ -9,24 +9,30 @@ from raccoon_transport import Transport
 from raccoon_transport.types.raccoon.cam_blob_t import cam_blob_t
 from raccoon_transport.types.raccoon.cam_frame_t import cam_frame_t
 
+from src.hardware.usb_camera import USBCamera
+
 CHANNEL = "libstp/cam/frame"
 
 
 class CamPublisher:
+    """Publishes frames from an already-running USBCamera to the UI channel.
+
+    Does not own the camera — the camera is started once in the setup mission
+    and stays open for the entire run. This publisher just samples its latest
+    frame at a configurable FPS and pushes it to ``libstp/cam/frame``.
+    """
+
     def __init__(
         self,
-        camera_index: int | str = "/dev/video0",
-        resolution: tuple[int, int] = (160, 120),
+        camera: USBCamera,
         fps: int = 10,
         jpeg_quality: int = 70,
     ):
-        self._camera_index = camera_index
-        self._resolution = resolution
+        self._camera = camera
         self._fps = fps
         self._jpeg_quality = jpeg_quality
 
         self._transport = Transport()
-        self._cap: cv2.VideoCapture | None = None
         self._running = False
         self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
@@ -35,20 +41,9 @@ class CamPublisher:
         self._latest_frame: np.ndarray | None = None
         self._roi_enabled = False
 
-    def start(self, retries: int = 10, retry_delay: float = 0.5) -> None:
+    def start(self) -> None:
         if self._running:
             return
-        for attempt in range(retries):
-            self._cap = cv2.VideoCapture(self._camera_index, cv2.CAP_V4L2)
-            if self._cap.isOpened():
-                break
-            self._cap.release()
-            if attempt < retries - 1:
-                time.sleep(retry_delay)
-        else:
-            raise RuntimeError(f"Cannot open camera {self._camera_index}")
-        self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._resolution[0])
-        self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self._resolution[1])
         self._running = True
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
@@ -58,9 +53,6 @@ class CamPublisher:
         if self._thread:
             self._thread.join(timeout=2.0)
             self._thread = None
-        if self._cap:
-            self._cap.release()
-            self._cap = None
         self._transport.close()
 
     def set_overlay(self, text: str) -> None:
@@ -83,8 +75,8 @@ class CamPublisher:
         interval = 1.0 / self._fps
         while self._running:
             t0 = time.monotonic()
-            ret, frame = self._cap.read()
-            if not ret:
+            frame = self._camera.grab_frame()
+            if frame is None:
                 time.sleep(0.01)
                 continue
 

@@ -16,6 +16,7 @@ STALL_RETRIES = 3      # back-up-and-retry attempts before giving up
 STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 400  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
+COAST_SETTLE_SECONDS = 0.20  # post-stop pause so the tracker can absorb any coast-through
 
 
 class MotorStalledError(Exception):
@@ -32,6 +33,15 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         self._current_pocket: int = 0
         self._at_midpoint: bool = False  # True when offset +half pocket from stripe
         self.collection_failed: bool = False
+        # ── continuous IR stripe tracker ──
+        # Background asyncio task that polls the drum light sensor and
+        # updates _current_pocket on every real stripe crossing. The tracker
+        # is the single source of truth for pocket position — _do_move
+        # simply commands motion and waits for the index to reach target.
+        self._tracker_task: asyncio.Task | None = None
+        self._tracker_on_black: bool = False
+        self._tracker_last_edge_pos: int = 0
+        self._last_entry_pos: int = 0  # motor position of the most recent counted stripe
 
     @property
     def motor(self) -> Motor:
@@ -54,6 +64,78 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
     def reset_position(self, pocket: int = 0) -> None:
         self.info(f"Reset: pocket {self._current_pocket} → {pocket}")
         self._current_pocket = pocket
+        self._tracker_last_edge_pos = self.motor.get_position()
+        self._last_entry_pos = self._tracker_last_edge_pos
+
+    # ── continuous IR stripe tracker ─────────────────────────────
+
+    def start_position_tracking(self) -> None:
+        """Spawn the background IR tracker. Call once after calibration."""
+        if self._tracker_task is not None and not self._tracker_task.done():
+            return
+        assert self._ticks_per_pocket is not None, "Calibrate before starting tracker"
+        self._tracker_on_black = self._is_black()
+        self._tracker_last_edge_pos = self.motor.get_position()
+        self._last_entry_pos = self._tracker_last_edge_pos
+        self._tracker_task = asyncio.create_task(self._track_position_loop())
+        self.info(
+            f"IR tracker started "
+            f"(on_black={self._tracker_on_black}, pos={self._tracker_last_edge_pos})"
+        )
+
+    async def stop_position_tracking(self) -> None:
+        """Cancel the background tracker (for shutdown / test teardown)."""
+        task = self._tracker_task
+        if task is None or task.done():
+            return
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+        self._tracker_task = None
+        self.info("IR tracker stopped")
+
+    async def _track_position_loop(self) -> None:
+        """Watch the IR sensor forever; update _current_pocket on every real crossing.
+
+        A "real" crossing is a rising edge (white → black) whose motor
+        position is at least half a pocket away from the previous
+        counted edge. That filter swallows small oscillations from
+        _center_on_stripe's creep without suppressing legitimate moves
+        (stripes are one full pocket apart).
+
+        Direction comes from the encoder delta between edges — not from
+        the commanded velocity — so coast-through after stop is tracked
+        the same as deliberate motion.
+        """
+        assert self._ticks_per_pocket is not None
+        min_ticks = max(1, self._ticks_per_pocket // 2)
+        try:
+            while True:
+                await asyncio.sleep(SAMPLE_INTERVAL)
+                try:
+                    reading = self._is_black()
+                except Exception as e:
+                    self.warn(f"IR tracker sensor read failed: {e}")
+                    continue
+                if reading and not self._tracker_on_black:
+                    pos = self.motor.get_position()
+                    delta = pos - self._tracker_last_edge_pos
+                    if abs(delta) >= min_ticks:
+                        direction = 1 if delta > 0 else -1
+                        old = self._current_pocket
+                        self._current_pocket = (old + direction) % NUM_POCKETS
+                        self._last_entry_pos = pos
+                        self._tracker_last_edge_pos = pos
+                        self._at_midpoint = False
+                        self.info(
+                            f"IR edge: pocket {old} → {self._current_pocket} "
+                            f"(pos={pos}, delta={delta:+d})"
+                        )
+                self._tracker_on_black = reading
+        except asyncio.CancelledError:
+            raise
 
     # ── stall detection ──────────────────────────────────────────
 
@@ -146,56 +228,55 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         )
 
     async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
-        """Move N pockets counting stripe transitions."""
+        """Move N pockets, trusting the continuous IR tracker for position.
+
+        The background tracker owns _current_pocket. This method commands
+        the motor and waits for the index to reach target, so coast-through
+        after stop is handled for free — it simply updates the index while
+        we're in the settling pause.
+        """
         assert self._ticks_per_pocket is not None, "Calibrate first (need ticks_per_pocket)"
         assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
         sign = 1 if forward else -1
-        tpp = self._ticks_per_pocket
         stall_check = self._make_stall_checker(direction=sign)
 
-        self.info(f"{'fwd' if forward else 'bwd'} {pockets} pockets {'precise' if precise else 'fast'} (midpoint={self._at_midpoint})")
+        if self._tracker_task is None or self._tracker_task.done():
+            self.start_position_tracking()
 
-        stripes_to_count = pockets
-        if self._at_midpoint and forward:
-            stripes_to_count -= 1
+        start_pocket = self._current_pocket
+        target_pocket = (start_pocket + pockets * sign) % NUM_POCKETS
+        self.info(
+            f"{'fwd' if forward else 'bwd'} {pockets} pockets "
+            f"{'precise' if precise else 'fast'} "
+            f"(from {start_pocket} → {target_pocket}, midpoint={self._at_midpoint})"
+        )
 
-        start_pos = self.motor.get_position()
         self.motor.set_velocity(velocity * sign)
 
-        if self._at_midpoint:
-            while abs(self.motor.get_position() - start_pos) < tpp // 2:
-                stall_check()
-                await asyncio.sleep(SAMPLE_INTERVAL)
-
-        if stripes_to_count > 0:
-            skip_start = self.motor.get_position()
-            while abs(self.motor.get_position() - skip_start) < tpp // 3:
-                stall_check()
-                await asyncio.sleep(SAMPLE_INTERVAL)
-
-            on_black = self._is_black()
-            stripes_counted = 0
-            entry_pos = 0
-
-            while stripes_counted < stripes_to_count:
-                stall_check()
-                reading = self._is_black()
-                if reading and not on_black:
-                    stripes_counted += 1
-                    entry_pos = self.motor.get_position()
-                on_black = reading
-                await asyncio.sleep(SAMPLE_INTERVAL)
+        while self._current_pocket != target_pocket:
+            stall_check()
+            await asyncio.sleep(SAMPLE_INTERVAL)
 
         self.motor.set_velocity(0)
 
+        # Let the tracker absorb any coast through the next stripe.
+        settle_deadline = time.monotonic() + COAST_SETTLE_SECONDS
+        while time.monotonic() < settle_deadline:
+            await asyncio.sleep(SAMPLE_INTERVAL)
+
+        if self._current_pocket != target_pocket:
+            drift = (self._current_pocket - target_pocket) % NUM_POCKETS
+            if drift > NUM_POCKETS // 2:
+                drift -= NUM_POCKETS
+            self.warn(
+                f"Coast drift: target={target_pocket}, actual={self._current_pocket} "
+                f"({drift:+d} pockets) — tracker index is authoritative"
+            )
+
         if precise:
-            await self._center_on_stripe(entry_pos)
+            await self._center_on_stripe(self._last_entry_pos)
 
         self._at_midpoint = False
-        if forward:
-            self._current_pocket = (self._current_pocket + pockets) % NUM_POCKETS
-        else:
-            self._current_pocket = (self._current_pocket - pockets) % NUM_POCKETS
         self.info(f"Move done: pocket={self._current_pocket}")
 
     async def _center_on_stripe(self, entry_pos: int) -> None:

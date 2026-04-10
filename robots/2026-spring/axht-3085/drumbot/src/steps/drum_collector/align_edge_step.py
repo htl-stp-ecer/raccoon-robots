@@ -23,9 +23,12 @@ class AlignEdgeStep(UIStep):
         # Let the user verify and nudge if needed
         await self.show(EdgeAlignScreen(drum))
 
-        # Lock in pocket 0
+        # Lock in pocket 0 and start the always-on IR tracker. From this
+        # point on, every stripe crossing (commanded motion OR coast) updates
+        # the pocket index automatically.
         drum.reset_position(0)
-        drum.info("Alignment confirmed — position reset to pocket 0")
+        drum.start_position_tracking()
+        drum.info("Alignment confirmed — position reset to pocket 0, tracker armed")
 
 
 @dsl()

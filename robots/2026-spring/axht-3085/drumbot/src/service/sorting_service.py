@@ -1,11 +1,10 @@
-
-import random
-
 from libstp import GenericRobot, RobotService
 
 NUM_SLOTS = 9
+# Game layout: 9 slots, 4 blue + 4 pink drums, slot 4 stays empty.
 TOTAL_BLUE = 4
 TOTAL_PINK = 4
+TOTAL_DRUMS = TOTAL_BLUE + TOTAL_PINK
 
 # First drum uses the empirically known timeout; learning refines from there.
 DEFAULT_DETECTION_TIMEOUT = 0.8
@@ -52,11 +51,12 @@ class SortingService(RobotService):
         return target
 
     def guess_color(self) -> str:
-        """Guess the most likely color based on remaining distribution.
+        """Guess the most likely remaining color. Deterministic argmax.
 
-        With 4 blue and 4 pink total, if e.g. 3 blue are already detected,
-        the remaining unknown is 75% likely pink. Uses weighted random so
-        the sorting stays balanced over multiple unknowns.
+        Example: 3 blue already detected, 1 pink already detected, totals
+        4/4 → remaining = 1 blue, 3 pink → pick pink (75 %).
+        Ties go to whichever side still has a slot free; if both sides
+        are tied and non-empty, prefer blue arbitrarily.
         """
         blue_remaining = max(0, TOTAL_BLUE - self._blue_detected)
         pink_remaining = max(0, TOTAL_PINK - self._pink_detected)
@@ -66,13 +66,15 @@ class SortingService(RobotService):
             self.warn("All drums accounted for — defaulting to blue")
             return "blue"
 
-        pink_probability = pink_remaining / total_remaining
         blue_probability = blue_remaining / total_remaining
+        pink_probability = pink_remaining / total_remaining
 
-        guess = random.choices(
-            ["blue", "pink"],
-            weights=[blue_probability, pink_probability],
-        )[0]
+        if pink_remaining > blue_remaining:
+            guess = "pink"
+        elif blue_remaining > pink_remaining:
+            guess = "blue"
+        else:
+            guess = "blue"
 
         self.info(
             f"Color guess: {guess} "

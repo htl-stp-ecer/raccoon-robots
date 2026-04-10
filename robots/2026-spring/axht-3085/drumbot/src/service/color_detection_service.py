@@ -59,6 +59,11 @@ class ColorDetectionService(RobotService):
         self._running = False
         self._color_event = threading.Event()
 
+    @property
+    def camera(self) -> USBCamera:
+        """Expose the shared USBCamera (e.g. for the calibration publisher)."""
+        return self._camera
+
     def start_camera(self) -> None:
         """Start background capture and continuous detection."""
         import threading
