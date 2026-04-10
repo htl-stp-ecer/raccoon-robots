@@ -59,6 +59,9 @@ class Defs:
         et_range_finder,
         IR_Distanz_to_pipe_sensor,
     ]
+    wait_for_light_mode = "auto"
 
 
-__all__ = ["Defs"]
+defs = Defs()
+
+__all__ = ["Defs", "defs"]
