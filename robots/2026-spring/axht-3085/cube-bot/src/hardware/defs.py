@@ -27,28 +27,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7510785130564194e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7531199960128214e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7107109087333023e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7065044742207843e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7370899232545466e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7270162032442082e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.767987973672575e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7655988411168714e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -58,7 +58,7 @@ class Defs:
             "save_up": 90,
             "_45deg": 125,
             "down": 180,
-            "normal_drive": 175,
+            "normal_drive": 170,
             "above_pasked": 125,
             "grab_pasked": 150,
             "high_up": 50,
@@ -105,6 +105,7 @@ class Defs:
         front_right_light_sensor,
         front_left_light_sensor,
     ]
+    wait_for_light_mode = "auto"
 
 
 defs = Defs()

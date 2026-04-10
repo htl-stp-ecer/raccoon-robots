@@ -84,3 +84,4 @@ class Defs:
     shild_graber: _ShildGraberPreset
     pom_grab: _PomGrabPreset
     analog_sensors: List[AnalogSensor]
+    wait_for_light_mode: str

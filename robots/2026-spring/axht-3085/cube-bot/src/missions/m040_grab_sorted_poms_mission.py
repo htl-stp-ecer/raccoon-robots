@@ -4,7 +4,7 @@ from src.hardware.defs import Defs
 from src.steps.line_cross_detecting_turn import LineCrossDetectingTurn
 
 
-class M040AlignForLastPomsMission(Mission):
+class M040GrabSortedPomsMission(Mission):
     def sequence(self) -> Sequential:
         line_turn = LineCrossDetectingTurn(
             target_heading=90,
@@ -23,6 +23,7 @@ class M040AlignForLastPomsMission(Mission):
             ),
 
             line_turn,
+            wait_for_background("put claw up"),
 
             parallel(
                 seq([
@@ -33,11 +34,11 @@ class M040AlignForLastPomsMission(Mission):
                         if line_turn.crossed_line
                         else strafe_left().until(on_black(Defs.rear.right))
                     )),
-                    strafe_left(13, 1.0), #magic hardcoded value :)
+                    strafe_left(cm=13), #magic hardcoded value :)
                 ]),
 
                 #prepare the shield to grab the sorted poms
-                Defs.shild.down(),
+                Defs.shild.normal_drive(),
                 Defs.shild_graber.wide_open(),
             ),
             turn_to_heading_right(90, 1.0),
