@@ -10,8 +10,6 @@ pom_remover_servo:
     left: 170
     center: 70
 
-
-
 lift_drums_servo:
   type: Servo
   port: 1
