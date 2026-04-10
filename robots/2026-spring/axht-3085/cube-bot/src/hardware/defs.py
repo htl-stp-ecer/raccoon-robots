@@ -27,28 +27,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7531199960128214e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.769676120052484e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7065044742207843e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.711028088178265e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7270162032442082e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7335903398182073e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7655988411168714e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7749900493507203e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -96,7 +96,7 @@ class Defs:
             "shake_pos_a": 60,
             "shake_pos_b": 90,
         },
-        offset=5.0,
+        offset=15.0,
     )
     analog_sensors = [
         distance_sensor,

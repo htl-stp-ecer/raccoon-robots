@@ -31,7 +31,7 @@ class M080dropMachingPomsMission(Mission):
             wait_for_seconds(0.2),
             Defs.pom_grab.closed(),
             loop_for(
-                seq([
+                step=seq([
                     Defs.pom_grab.shake_pos_a(),
                     Defs.pom_grab.shake_pos_b()
                     ]),
@@ -53,7 +53,7 @@ class M080dropMachingPomsMission(Mission):
 
             #compress poms
             Defs.pom_grab.closed(),
-            wall_align_backward(1.0, 0.6, 0.0, 0.7, 0.3),
+            wall_align_backward(1.0, 0.6, 0.0, 0.6, 0.3),
             Defs.pom_arm.in_basket(90),
 
             #pull claw up again
