@@ -6,8 +6,6 @@ from src.steps.color_calibration import calibrate_colors
 from src.steps.debug_wait_step import debug_wait
 from src.steps.drum_collector import align_edge, calibrate_drum_collector
 from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up, drum_seek
-from src.steps.servo_steps import *
-
 
 class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
@@ -17,7 +15,7 @@ class M000SetupMission(SetupMission):
             # All downstream steps (color calibration, color detection) share
             # this single USBCamera instance.
             start_camera(),
-            wait_for_button(),
+            wait_for_button("Move Servos"),
 
             drum_lifting_up(slow_mode=False),
             Defs.pom_remover_servo.start(),
@@ -28,14 +26,16 @@ class M000SetupMission(SetupMission):
             ]),
 
 
-            # Drives to black and hardcoded cm forward
             drum_seek(),
             calibrate_analog_sensor(Defs.et_range_finder),
-            wait_for_button(),
+
+            wait_for_button("Move Drum Down"),
             drum_lifting_down(),
-            open_drum_pusher(),
+            Defs.drum_pusher_servo.open(),
+
             calibrate_colors(),
-            wait_for_button(),
+
+            wait_for_button("calibrate drum collector"),
             calibrate_drum_collector(calibration_time=5.0),
             align_edge(),
         ])

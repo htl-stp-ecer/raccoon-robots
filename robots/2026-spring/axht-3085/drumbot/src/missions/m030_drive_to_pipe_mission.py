@@ -5,7 +5,6 @@ from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
 from src.steps.drive_to_pipe import drive_to_first_pipe
 from src.steps.drum_lifting_step import drum_lifting_up
-from src.steps.servo_steps import close_drum_pusher
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 
 
@@ -22,23 +21,29 @@ def print_debug_info(robot):
 class M030DriveToPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # drum_retreat(),
+            # lift drum
+            Defs.drum_pusher_servo.close(),
+            drum_lifting_up(),
 
             # drive to first black line and turn
-            close_drum_pusher(),
-            drum_lifting_up(),
-            parallel (
-             drive_backward().until(
-                    on_black(Defs.front_right_ir_sensor) >
-                    after_cm(7)),
+            parallel(
+                drive_backward().until(
+                    over_line(Defs.front_right_ir_sensor)
+                ),
                 seq([
                     wait_until_distance(6),
                     Defs.pom_remover_servo.center(),
                 ]),
-                ),
-            turn_to_heading_left(88),
+            ),
+            turn_to_heading_left(88),  # simons magic value don't touch TODO: try 90
 
-            drive_to_first_pipe(),
+            # drive to pipe
+            parallel(
+                drive_forward().until(
+                    over_line(Defs.front_right_ir_sensor) +
+                    after_cm(24)
+                ),
+            ),
+
             lineup_drum_with_pipe(),
-            #wait_for_button(),
         ])

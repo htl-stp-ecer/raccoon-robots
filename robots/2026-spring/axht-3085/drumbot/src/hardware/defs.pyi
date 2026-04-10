@@ -11,6 +11,14 @@ from raccoon.step.servo.preset import ServoPreset, _PresetPosition
 from typing import List
 
 
+class _DrumPusherServoPreset(ServoPreset):
+    close: _PresetPosition
+    open: _PresetPosition
+
+    @property
+    def device(self) -> "Servo": ...
+
+
 class _PomRemoverServoPreset(ServoPreset):
     start: _PresetPosition
     right: _PresetPosition
@@ -34,7 +42,7 @@ class Defs:
     front_right_motor: Motor
     drum_motor: Motor
     servo_help_motor: Motor
-    drum_pusher_servo: Servo
+    drum_pusher_servo: _DrumPusherServoPreset
     pom_remover_servo: _PomRemoverServoPreset
     lift_drums_servo: Servo
     analog_sensors: List[AnalogSensor]

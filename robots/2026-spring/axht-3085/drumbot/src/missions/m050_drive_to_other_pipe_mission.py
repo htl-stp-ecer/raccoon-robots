@@ -7,16 +7,28 @@ class M050DriveToOtherPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
 
-            parallel(drive_backward(7, 1), drum_lifting_up()),
-            turn_to_heading_left(87),
-            drive_backward().until(
-                after_cm(40) >
-                on_black(Defs.front_right_ir_sensor)
+            #parallel(
+            #    drive_backward(7, 1),
+            #    drum_lifting_up(),
+            #),
+            #turn_to_heading_left(87), # simons magic value don't touch TODO: try 90
+            #drive_backward().until(
+            #    after_cm(40) >
+            #    on_black(Defs.front_right_ir_sensor)
+            #),
+            ## drive_backward(40, 1),
+            ## drive_backward().until(on_black(Defs.front_right_ir_sensor)),
+            #drive_forward(2.5, 1),
+            #turn_left().until(on_black(Defs.front_right_ir_sensor)),
+
+            parallel(
+                drive_backward().until(
+                    over_line(Defs.front_right_ir_sensor) +
+                    over_line(Defs.front_right_ir_sensor)
+                ),
+                #    drum_lifting_up(),
             ),
-            # drive_backward(40, 1),
-            # drive_backward().until(on_black(Defs.front_right_ir_sensor)),
-            drive_forward(2.5, 1),
-            turn_left().until(on_black(Defs.front_right_ir_sensor)),
+
             wait_for_checkpoint(60 + 33),
 
             follow_line_single(Defs.front_right_ir_sensor, kp=1, kd=0.1, side=LineSide.RIGHT, speed=1.0).until(

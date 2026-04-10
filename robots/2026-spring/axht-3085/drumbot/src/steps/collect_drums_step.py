@@ -15,7 +15,6 @@ from src.steps.drum_collector.sort_into_slot_step import (
     sort_into_slot,
 )
 from src.steps.drum_lifting_step import drum_align_on_back, drum_lifting_down
-from src.steps.servo_steps import close_drum_pusher, open_drum_pusher
 from src.steps.wait_for_drum_step import wait_for_drum
 
 START_OFFSET = 9.5
@@ -54,7 +53,7 @@ class CollectDrumsStep(UIStep):
 
                 try:
                     phase1 = seq([
-                        open_drum_pusher(),
+                        Defs.drum_pusher_servo.open(),
                         wait_for_drum(checkpoint=checkpoint),
                         block_timer_start(),
                         wait_for_seconds(0.5),
@@ -92,7 +91,7 @@ class CollectDrumsStep(UIStep):
 
                 try:
                     phase3 = seq([
-                        close_drum_pusher(),
+                        Defs.drum_pusher_servo.close(),
                         wait_for_seconds(0.5),
                         go_to_empty_slot(),
                         block_timer_check(drum_number),

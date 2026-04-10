@@ -1,6 +1,9 @@
 drum_pusher_servo:
   type: Servo
   port: 0
+  positions:
+    close: 35
+    open: 170
 pom_remover_servo:
   type: Servo
   port: 3

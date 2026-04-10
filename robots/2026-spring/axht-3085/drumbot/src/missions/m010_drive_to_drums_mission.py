@@ -2,7 +2,6 @@ from raccoon import *
 
 from src.hardware.defs import *
 from src.steps.drum_lifting_step import *
-from src.steps.servo_steps import *
 
 
 class M010DriveToDrumsMission(Mission):

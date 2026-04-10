@@ -46,7 +46,7 @@ class Defs:
         inverted=False,
         calibration=MotorCalibration(ticks_to_rad=1e-05, vel_lpf_alpha=1.0),
     )
-    drum_pusher_servo = Servo(port=0)
+    drum_pusher_servo = ServoPreset(Servo(port=0), positions={"close": 35, "open": 170})
     pom_remover_servo = ServoPreset(
         Servo(port=3), positions={"start": 50, "right": 15, "left": 170, "center": 70}
     )

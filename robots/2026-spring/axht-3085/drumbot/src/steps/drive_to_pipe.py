@@ -4,20 +4,6 @@ from src.hardware.defs import Defs
 
 
 @dsl
-def drive_to_first_pipe():
-    return seq([
-        parallel(
-            drive_forward().until(
-                (on_black(Defs.front_right_ir_sensor) >
-                 on_white(Defs.front_right_ir_sensor)) >
-                after_cm(24)
-            ),
-        )
-
-    ])
-
-
-@dsl
 def drive_to_second_pipe():
     return seq([
         parallel(
