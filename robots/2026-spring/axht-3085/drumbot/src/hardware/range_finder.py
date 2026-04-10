@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from libstp.sensor_et import ETSensor
+from raccoon.sensor_et import ETSensor
 
 EMA_ALPHA = 0.3  # smoothing factor for sensor readings (lower = smoother)
 

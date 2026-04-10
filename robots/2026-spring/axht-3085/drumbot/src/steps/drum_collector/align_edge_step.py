@@ -1,5 +1,5 @@
-from libstp import GenericRobot, dsl
-from libstp.ui.step import UIStep
+from raccoon import GenericRobot, dsl
+from raccoon.ui.step import UIStep
 
 from src.service.drum_motor_service import DrumMotorService
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from libstp import GenericRobot, dsl
-from libstp.step.calibration import CalibrateStep
+from raccoon import GenericRobot, dsl
+from raccoon.step.calibration import CalibrateStep
 
 from src.service.drum_motor_service import DrumMotorService, NUM_POCKETS
 

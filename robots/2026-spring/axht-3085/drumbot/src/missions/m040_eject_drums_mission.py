@@ -1,4 +1,4 @@
-from libstp import *
+from raccoon import *
 
 from src.steps.drum_collector import eject_nearest_color
 

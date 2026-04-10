@@ -16,7 +16,7 @@ from typing import Callable
 
 import cv2
 import numpy as np
-from libstp import debug, error, info, warn
+from raccoon import debug, error, info, warn
 
 
 @dataclass

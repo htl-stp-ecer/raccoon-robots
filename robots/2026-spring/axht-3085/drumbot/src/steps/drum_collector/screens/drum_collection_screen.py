@@ -1,5 +1,5 @@
-from libstp.ui.screen import UIScreen
-from libstp.ui.widgets import Center, Column, Row, Spacer, StatusBadge, Text, Widget
+from raccoon.ui.screen import UIScreen
+from raccoon.ui.widgets import Center, Column, Row, Spacer, StatusBadge, Text, Widget
 
 
 class DrumCollectionScreen(UIScreen[None]):

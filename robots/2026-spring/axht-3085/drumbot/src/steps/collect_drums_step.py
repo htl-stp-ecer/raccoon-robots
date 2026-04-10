@@ -1,7 +1,7 @@
 import asyncio
 
-from libstp import GenericRobot, dsl, parallel, seq, wait_for_seconds
-from libstp.ui.step import UIStep
+from raccoon import GenericRobot, dsl, parallel, seq, wait_for_seconds
+from raccoon.ui.step import UIStep
 
 from src.hardware.defs import Defs
 from src.service.color_detection_service import ColorDetectionService

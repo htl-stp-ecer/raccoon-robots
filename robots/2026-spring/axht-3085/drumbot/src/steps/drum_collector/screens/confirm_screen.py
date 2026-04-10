@@ -1,5 +1,5 @@
 
-from libstp.ui import *
+from raccoon.ui import *
 
 from ..dataclasses import DrumCalibrationResult
 

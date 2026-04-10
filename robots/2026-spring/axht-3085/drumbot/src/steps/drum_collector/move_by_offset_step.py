@@ -1,4 +1,4 @@
-from libstp import GenericRobot, Step, dsl
+from raccoon import GenericRobot, Step, dsl
 
 from src.service.drum_motor_service import DrumMotorService, FULL_VELOCITY, SAMPLE_INTERVAL
 

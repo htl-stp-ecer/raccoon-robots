@@ -3,12 +3,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from libstp.ui.widgets import Widget
+from raccoon.ui.widgets import Widget
 
 
 @dataclass
 class CamFeed(Widget):
-    """Live camera feed from libstp/cam/frame channel.
+    """Live camera feed from raccoon/cam/frame channel.
 
     Renders inline in a dynamic UI screen. When tappable=True, tapping
     the image sends an on_change event with {'x': float, 'y': float}

@@ -1,4 +1,4 @@
-from libstp import GenericRobot, RobotService
+from raccoon import GenericRobot, RobotService
 
 NUM_SLOTS = 9
 # Game layout: 9 slots, 4 blue + 4 pink drums, slot 4 stays empty.

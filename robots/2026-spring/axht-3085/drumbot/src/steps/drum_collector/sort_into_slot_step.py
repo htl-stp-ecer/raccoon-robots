@@ -1,7 +1,7 @@
 import time
 
-from libstp import GenericRobot, dsl
-from libstp.step import Step
+from raccoon import GenericRobot, dsl
+from raccoon.step import Step
 
 from src.service.color_detection_service import ColorDetectionService
 from src.service.drum_motor_service import DrumMotorService, NUM_POCKETS

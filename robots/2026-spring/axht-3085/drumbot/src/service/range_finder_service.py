@@ -1,5 +1,5 @@
 
-from libstp import GenericRobot, RobotService
+from raccoon import GenericRobot, RobotService
 
 from src.hardware.range_finder import RangeFinder
 

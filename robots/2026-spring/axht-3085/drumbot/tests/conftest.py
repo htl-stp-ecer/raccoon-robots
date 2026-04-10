@@ -1,14 +1,14 @@
 """
-Test configuration: mock libstp since it only exists on the robot.
+Test configuration: mock raccoon since it only exists on the robot.
 
 This conftest runs before any test module imports, providing stubs
-for the libstp hardware classes so service logic can be tested offline.
+for the raccoon hardware classes so service logic can be tested offline.
 """
 import sys
 from unittest.mock import MagicMock
 
-# Create a mock libstp module hierarchy before any src imports
-libstp_mock = MagicMock()
+# Create a mock raccoon module hierarchy before any src imports
+raccoon_mock = MagicMock()
 
 # Provide class stubs that can be subclassed
 class _RobotService:
@@ -43,7 +43,7 @@ class _KMeans:
         return result
 
 def _dsl(*args, **kwargs):
-    """Identity decorator replacing libstp.dsl for offline tests."""
+    """Identity decorator replacing raccoon.dsl for offline tests."""
     # Usage: @dsl  (no parens) — args == (target,)
     if len(args) == 1 and callable(args[0]) and not kwargs:
         return args[0]
@@ -61,21 +61,21 @@ class _Step:
     def warn(self, msg): pass
 
 
-libstp_mock.RobotService = _RobotService
-libstp_mock.GenericRobot = _GenericRobot
-libstp_mock.Motor = _Motor
-libstp_mock.Servo = _Servo
-libstp_mock.AnalogSensor = _AnalogSensor
-libstp_mock.IRSensor = _IRSensor
-libstp_mock.ETSensor = _ETSensor
-libstp_mock.IMU = _IMU
-libstp_mock.KMeans = _KMeans
-libstp_mock.dsl = _dsl
-libstp_mock.Step = _Step
-libstp_mock.debug = lambda *a, **k: None
-libstp_mock.info = lambda *a, **k: None
-libstp_mock.warn = lambda *a, **k: None
-libstp_mock.error = lambda *a, **k: None
+raccoon_mock.RobotService = _RobotService
+raccoon_mock.GenericRobot = _GenericRobot
+raccoon_mock.Motor = _Motor
+raccoon_mock.Servo = _Servo
+raccoon_mock.AnalogSensor = _AnalogSensor
+raccoon_mock.IRSensor = _IRSensor
+raccoon_mock.ETSensor = _ETSensor
+raccoon_mock.IMU = _IMU
+raccoon_mock.KMeans = _KMeans
+raccoon_mock.dsl = _dsl
+raccoon_mock.Step = _Step
+raccoon_mock.debug = lambda *a, **k: None
+raccoon_mock.info = lambda *a, **k: None
+raccoon_mock.warn = lambda *a, **k: None
+raccoon_mock.error = lambda *a, **k: None
 
 class _UIScreen:
     """Generic-capable UIScreen stub (supports UIScreen[T] subscript)."""
@@ -101,8 +101,8 @@ class _AnyClass:
 import types as _types
 
 
-class _LibstpUIModule(_types.ModuleType):
-    """Dynamic libstp.ui stub: any attribute access returns a permissive stub class."""
+class _raccoonUIModule(_types.ModuleType):
+    """Dynamic raccoon.ui stub: any attribute access returns a permissive stub class."""
 
     _cache: dict = {}
 
@@ -116,9 +116,9 @@ class _LibstpUIModule(_types.ModuleType):
         return self._cache[name]
 
 
-_libstp_ui = _LibstpUIModule("libstp.ui")
-_libstp_ui.UIScreen = _UIScreen
-# Pre-seed common symbols so `from libstp.ui import *` works.
+_raccoon_ui = _raccoonUIModule("raccoon.ui")
+_raccoon_ui.UIScreen = _UIScreen
+# Pre-seed common symbols so `from raccoon.ui import *` works.
 for _sym in ["UIScreen", "Widget", "Text", "Box", "Column", "Row", "Spacer",
              "Button", "Label", "Container", "Center", "Align", "Padding",
              "Border", "Stack", "VStack", "HStack", "Divider", "ProgressBar",
@@ -130,20 +130,20 @@ for _sym in ["UIScreen", "Widget", "Text", "Box", "Column", "Row", "Spacer",
              "Color", "Style", "Theme", "Layout", "Screen"]:
     if _sym == "UIScreen":
         continue
-    setattr(_libstp_ui, _sym, type(_sym, (_AnyClass,), {}))
-_libstp_ui.__all__ = [a for a in dir(_libstp_ui) if not a.startswith("_")]
+    setattr(_raccoon_ui, _sym, type(_sym, (_AnyClass,), {}))
+_raccoon_ui.__all__ = [a for a in dir(_raccoon_ui) if not a.startswith("_")]
 
-_libstp_ui_step = _types.ModuleType("libstp.ui.step")
-_libstp_ui_step.UIStep = _Step
+_raccoon_ui_step = _types.ModuleType("raccoon.ui.step")
+_raccoon_ui_step.UIStep = _Step
 
-sys.modules["libstp"] = libstp_mock
-sys.modules["libstp.sensor_et"] = MagicMock(ETSensor=_ETSensor)
-sys.modules["libstp.step"] = MagicMock(Step=_Step)
-sys.modules["libstp.ui"] = _libstp_ui
-sys.modules["libstp.ui.step"] = _libstp_ui_step
+sys.modules["raccoon"] = raccoon_mock
+sys.modules["raccoon.sensor_et"] = MagicMock(ETSensor=_ETSensor)
+sys.modules["raccoon.step"] = MagicMock(Step=_Step)
+sys.modules["raccoon.ui"] = _raccoon_ui
+sys.modules["raccoon.ui.step"] = _raccoon_ui_step
 
 # Pre-register an empty stub for `src.steps.drum_collector` so its heavy
-# __init__.py (which pulls in UI screens requiring a full libstp.ui) is
+# __init__.py (which pulls in UI screens requiring a full raccoon.ui) is
 # skipped during tests. Submodules can still be imported directly.
 _stub_drum_collector = _types.ModuleType("src.steps.drum_collector")
 _stub_drum_collector.__path__ = [

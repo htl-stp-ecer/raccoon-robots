@@ -1,5 +1,5 @@
-from libstp import *
-from libstp.step.sequential import *
+from raccoon import *
+from raccoon.step.sequential import *
 
 from src.steps.camera_lifecycle_step import start_camera
 from src.steps.color_calibration import calibrate_colors

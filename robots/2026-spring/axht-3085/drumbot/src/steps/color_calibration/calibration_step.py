@@ -16,8 +16,8 @@ from __future__ import annotations
 import asyncio
 
 import numpy as np
-from libstp import GenericRobot, dsl
-from libstp.step.calibration import CalibrateStep
+from raccoon import GenericRobot, dsl
+from raccoon.step.calibration import CalibrateStep
 
 from .cam_publisher import CamPublisher
 from .color_frame_analysis import (

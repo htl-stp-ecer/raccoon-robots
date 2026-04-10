@@ -1,5 +1,5 @@
-from libstp import GenericRobot, Step, dsl
-from libstp.step.calibration import CalibrateStep
+from raccoon import GenericRobot, Step, dsl
+from raccoon.step.calibration import CalibrateStep
 
 from src.hardware.range_finder import DEFAULT_PROFILE, CalibrationProfile
 from src.service.range_finder_service import RangeFinderService

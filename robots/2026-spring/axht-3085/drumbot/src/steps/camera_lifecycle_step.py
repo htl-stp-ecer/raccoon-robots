@@ -1,9 +1,9 @@
 import asyncio
 
-from libstp import GenericRobot, dsl, UIStep
-from libstp.step import Step
-from libstp.ui.screen import UIScreen
-from libstp.ui.widgets import Center, Column, Spacer, StatusBadge, Text, Widget
+from raccoon import GenericRobot, dsl, UIStep
+from raccoon.step import Step
+from raccoon.ui.screen import UIScreen
+from raccoon.ui.widgets import Center, Column, Spacer, StatusBadge, Text, Widget
 
 from src.service.color_detection_service import ColorDetectionService
 

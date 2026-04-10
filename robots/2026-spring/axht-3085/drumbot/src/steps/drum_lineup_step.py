@@ -1,4 +1,4 @@
-from libstp import dsl, seq, turn_left, drive_to_analog_target, drive_forward
+from raccoon import dsl, seq, turn_left, drive_to_analog_target, drive_forward
 
 from src.hardware.defs import Defs
 from src.steps.drum_lifting_step import drum_seek, drum_eject_position

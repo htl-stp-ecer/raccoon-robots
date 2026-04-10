@@ -1,6 +1,6 @@
 import asyncio
 
-from libstp import AnalogSensor, IRSensor, KMeans, Motor
+from raccoon import AnalogSensor, IRSensor, KMeans, Motor
 
 HYSTERESIS_FRACTION = 0.15
 FULL_VELOCITY = 1700   # max velocity for set_velocity / move_to_position

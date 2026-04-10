@@ -1,4 +1,4 @@
-from libstp import servo, slow_servo
+from raccoon import servo, slow_servo
 
 from src.hardware.defs import Defs
 

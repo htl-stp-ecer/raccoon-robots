@@ -17,8 +17,8 @@
 - Keep hardware wiring/ports/kinematics in `raccoon.project.yml`; regenerate via `raccoon run` workflow.
 - Avoid placing long control logic directly inside mission files.
 - Prefer mission -> step -> service call flow for mechanism features.
-- Many functionalities are already provided by `libstp`; first check what exists before implementing custom code.
-- Default strategy: use `libstp` primitives where available, write custom logic only for missing capabilities.
+- Many functionalities are already provided by `raccoon`; first check what exists before implementing custom code.
+- Default strategy: use `raccoon` primitives where available, write custom logic only for missing capabilities.
 
 ## Raccoon Connection Workflow
 - Call `raccoon connect <ip>` only when:
@@ -37,7 +37,7 @@
 ## Calibration Command Note
 - `raccoon calibrate motors` / `raccoon calibrate motors -y` are considered not part of the active workflow here.
 
-## libstp Capability Discovery
-- If feature design depends on unknown `libstp` APIs, inspect available APIs first.
-- Preferred approach when needed: SSH to the Pi and run Python introspection (`python3`, `dir()`, `help()`, `inspect`) against installed `libstp`.
+## raccoon Capability Discovery
+- If feature design depends on unknown `raccoon` APIs, inspect available APIs first.
+- Preferred approach when needed: SSH to the Pi and run Python introspection (`python3`, `dir()`, `help()`, `inspect`) against installed `raccoon`.
 - Use this discovery step before inventing unsupported calls.

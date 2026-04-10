@@ -1,5 +1,5 @@
-from libstp import GenericRobot, dsl
-from libstp.step import Step
+from raccoon import GenericRobot, dsl
+from raccoon.step import Step
 
 from src.service.sorting_service import SortingService
 

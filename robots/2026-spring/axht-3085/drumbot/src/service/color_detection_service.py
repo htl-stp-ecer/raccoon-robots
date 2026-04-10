@@ -3,7 +3,7 @@ import signal
 import threading
 import time
 
-from libstp import GenericRobot, RobotService
+from raccoon import GenericRobot, RobotService
 
 from src.hardware.usb_camera import USBCamera
 

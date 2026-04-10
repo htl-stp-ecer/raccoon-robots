@@ -1,4 +1,4 @@
-from libstp import *
+from raccoon import *
 
 from src.hardware.defs import *
 from src.steps.drum_lifting_step import *
@@ -25,9 +25,12 @@ class M010DriveToDrumsMission(Mission):
                 ]),
             ),
 
-
              parallel(
-                 drive_forward(70),
+                 drive_forward().until(
+                     after_cm(20) +
+                     over_line(Defs.front_right_ir_sensor) +
+                     after_cm(27)
+                 ),
                  seq([
                      wait_until_distance(5),
                      Defs.pom_remover_servo.right(),

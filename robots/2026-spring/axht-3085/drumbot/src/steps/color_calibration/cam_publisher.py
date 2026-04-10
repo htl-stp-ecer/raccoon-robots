@@ -11,7 +11,7 @@ from raccoon_transport.types.raccoon.cam_frame_t import cam_frame_t
 
 from src.hardware.usb_camera import USBCamera
 
-CHANNEL = "libstp/cam/frame"
+CHANNEL = "raccoon/cam/frame"
 
 
 class CamPublisher:
@@ -19,7 +19,7 @@ class CamPublisher:
 
     Does not own the camera — the camera is started once in the setup mission
     and stays open for the entire run. This publisher just samples its latest
-    frame at a configurable FPS and pushes it to ``libstp/cam/frame``.
+    frame at a configurable FPS and pushes it to ``raccoon/cam/frame``.
     """
 
     def __init__(

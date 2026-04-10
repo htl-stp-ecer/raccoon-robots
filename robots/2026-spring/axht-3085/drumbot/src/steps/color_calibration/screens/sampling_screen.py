@@ -1,4 +1,4 @@
-from libstp.ui import *
+from raccoon.ui import *
 
 from src.ui.widgets import CamFeed
 

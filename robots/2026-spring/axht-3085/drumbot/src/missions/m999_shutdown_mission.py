@@ -17,7 +17,7 @@ Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
 
-from libstp import Mission, Sequential, seq
+from raccoon import Mission, Sequential, seq
 
 from src.steps.camera_lifecycle_step import stop_camera
 

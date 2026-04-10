@@ -5,14 +5,14 @@ import math
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from libstp import dsl
-from libstp.motion import TurnConfig, TurnMotion
-from libstp.step.motion.motion_step import MotionStep
+from raccoon import dsl
+from raccoon.motion import TurnConfig, TurnMotion
+from raccoon.step.motion.motion_step import MotionStep
 
 from src.service.range_finder_service import RangeFinderService
 
 if TYPE_CHECKING:
-    from libstp.robot.api import GenericRobot
+    from raccoon.robot.api import GenericRobot
 
 
 class _Phase(Enum):

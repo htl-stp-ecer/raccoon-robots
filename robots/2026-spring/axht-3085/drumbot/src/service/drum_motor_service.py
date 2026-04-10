@@ -2,7 +2,7 @@ import asyncio
 import time
 from collections import deque
 
-from libstp import AnalogSensor, GenericRobot, Motor, RobotService
+from raccoon import AnalogSensor, GenericRobot, Motor, RobotService
 
 from .drum_motor_calibration_mixin import (
     DrumMotorCalibrationMixin,
