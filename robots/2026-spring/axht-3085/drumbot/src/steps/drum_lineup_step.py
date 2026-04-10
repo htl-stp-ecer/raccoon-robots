@@ -10,7 +10,7 @@ def lineup_drum_with_pipe():
     return seq([
         drum_seek(),
         turn_to_peak(turn_speed=0.6),
-        turn_left(1.5, 1),
+        #turn_left(1.5, 1),
 
         # drive_forward().until(on_analog_above(Defs.IR_Distanz_to_pipe_sensor, 2300)),
         drive_to_analog_target(Defs.et_range_finder, 0.2),

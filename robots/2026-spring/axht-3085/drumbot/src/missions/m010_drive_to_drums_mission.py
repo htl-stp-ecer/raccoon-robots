@@ -27,7 +27,7 @@ class M010DriveToDrumsMission(Mission):
 
 
              parallel(
-                 drive_forward(69),
+                 drive_forward(70),
                  seq([
                      wait_until_distance(5),
                      Defs.pom_remover_servo.right(),
