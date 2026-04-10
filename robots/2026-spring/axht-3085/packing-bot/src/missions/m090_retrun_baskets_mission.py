@@ -42,6 +42,7 @@ class M090RetrunBasketsMission(Mission):
 
             #position mached basket to return
             drive_backward().until(
+                after_cm(30) +
                 on_black(Defs.front.right)
             ),
             drive_forward(cm=7),
