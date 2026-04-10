@@ -4,13 +4,13 @@ from src.hardware.defs import Defs
 
 
 def open_drum_pusher():
-    return servo(Defs.drum_pusher_servo, 140)
+    return servo(Defs.drum_pusher_servo, 170)
 
 def use_drum_to_block():
-    return servo(Defs.drum_pusher_servo, 66)
+    return servo(Defs.drum_pusher_servo, 73)
 
 def close_drum_pusher():
-    return servo(Defs.drum_pusher_servo, 0)
+    return servo(Defs.drum_pusher_servo, 35)
 
 
 def push_orange_pom_away():

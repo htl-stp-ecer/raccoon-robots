@@ -14,9 +14,8 @@ def drive_to_first_pipe():
             drive_forward().until(
              (on_black(Defs.front_right_ir_sensor) >
              on_white(Defs.front_right_ir_sensor)) >
-             after_cm(20)
+             after_cm(24)
             ),
-            push_orange_pom_away(),
         )
 
     ])
@@ -33,10 +32,10 @@ def drive_to_second_pipe():
              side=LineSide.LEFT,
          ).until(
                on_black(Defs.front_left_ir_sensor)
-             > after_cm(38)
+             > after_cm(43)
          ),
             seq([
-                wait_until_distance(35),
+                wait_until_distance(37),
                 #Defs.pom_remover_servo.push_blue_pom_away(),
                 #Defs.pom_remover_servo.start(),
             ])

@@ -115,7 +115,7 @@ class TurnToPeakStep(MotionStep):
 def turn_to_peak(
     direction: float = -1.0,
     turn_speed: float = 0.5,
-    sweep_deg: float = 40,
+    sweep_deg: float = 35,
 ) -> TurnToPeakStep:
     """Peak-tracking turn using the ET range finder.
 

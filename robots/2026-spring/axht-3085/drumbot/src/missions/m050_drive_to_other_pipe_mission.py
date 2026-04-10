@@ -8,7 +8,7 @@ class M050DriveToOtherPipeMission(Mission):
         return seq([
 
             parallel(drive_backward(7, 1), drum_lifting_up()),
-            turn_to_heading_left(90),
+            turn_to_heading_left(87),
             drive_backward().until(
                 after_cm(40) >
                 on_black(Defs.front_right_ir_sensor)
