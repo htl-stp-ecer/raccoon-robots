@@ -26,7 +26,7 @@ from src.missions.m020_drive_down_acces_ramp_mission import (
     M020DriveDownAccesRampMission,
 )
 from src.missions.m030_grab_second_poms_mission import M030GrabSecondPomsMission
-from src.missions.m040_align_for_last_poms_mission import M040AlignForLastPomsMission
+from src.missions.m040_grab_sorted_poms_mission import M040GrabSortedPomsMission
 from src.missions.m050_collect_last_poms_mission import M050CollectLastPomsMission
 from src.missions.m060_drive_to_baskets_mission import M060DriveToBasketsMission
 from src.missions.m070_pull_baskets_out_mission import M070PullBasketsOutMission
@@ -126,7 +126,7 @@ class Robot(GenericRobot):
         M010GrabFirstPomsMission(),
         M020DriveDownAccesRampMission(),
         M030GrabSecondPomsMission(),
-        M040AlignForLastPomsMission(),
+        M040GrabSortedPomsMission(),
         M050CollectLastPomsMission(),
         M060DriveToBasketsMission(),
         M070PullBasketsOutMission(),

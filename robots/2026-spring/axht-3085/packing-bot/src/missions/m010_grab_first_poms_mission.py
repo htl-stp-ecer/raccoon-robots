@@ -6,6 +6,7 @@ from src.hardware.defs import Defs
 class M010GrabFirstPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            Defs.shild.down(),
             Defs.shild.normal_drive(),
             switch_calibration_set("upper"),
             mark_heading_reference(origin_offset_deg=-180),  # mark heading for use in drive down acess ramp

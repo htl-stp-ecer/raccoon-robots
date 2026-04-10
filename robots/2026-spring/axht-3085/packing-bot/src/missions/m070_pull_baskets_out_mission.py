@@ -16,6 +16,9 @@ class M070PullBasketsOutMission(Mission):
             #drop sorted poms
             parallel(
                 Defs.shild.above_pasked(),
-                Defs.shild_graber.open(),
+                seq([ #wait shortly so the poms don't drop out
+                    wait_for_seconds(0.1),
+                    Defs.shild_graber.open(),
+                ])
             ),
         ])

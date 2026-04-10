@@ -2,6 +2,18 @@ from libstp import *
 
 from src.hardware.defs import Defs
 
+def strafte_if_on_black(sensor):
+    def _build(robot):
+        if sensor.isOnBlack():
+            return seq([
+                strafe_left().until(
+                    on_white(sensor) +
+                    after_cm(5)
+                )
+            ])
+        else:
+            return seq([])
+    return defer(_build) #defer = evaluate _build funciton at runtime and not compiletime
 
 class M090RetrunBasketsMission(Mission):
     def sequence(self) -> Sequential:
@@ -26,26 +38,13 @@ class M090RetrunBasketsMission(Mission):
 
             turn_to_heading_left(0, speed=0.3),  # turn straight
 
-            #push basket further in
-            #strafe_left(cm=17),
-            #Defs.shild.down(),
-            #strafe_right(cm=17),
-            #Defs.shild.high_up(),
-            #timeout(
-            #    seq([
-            #        strafe_right().until(
-            #            on_black(Defs.rear.right)
-            #        ),
-            #        strafe_left(cm=5),
-            #    ]),
-            #    seconds=3,
-            #),
+            strafte_if_on_black(Defs.rear.right),
 
             #position mached basket to return
             drive_backward().until(
-                over_line(Defs.rear.right) +
-                after_cm(17),
+                on_black(Defs.front.right)
             ),
+            drive_forward(cm=7),
 
             #return mached basket
             turn_right(20),
