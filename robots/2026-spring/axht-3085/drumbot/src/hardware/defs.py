@@ -48,13 +48,7 @@ class Defs:
     )
     drum_pusher_servo = Servo(port=0)
     pom_remover_servo = ServoPreset(
-        Servo(port=3),
-        positions={
-            "start": 158,
-            "push_first_orange_pom_away": 50,
-            "push_blue_pom_away": 0,
-            "standby": 145,
-        },
+        Servo(port=3), positions={"start": 50, "right": 15, "left": 170, "center": 70}
     )
     lift_drums_servo = Servo(port=1)
     analog_sensors = [

@@ -13,10 +13,15 @@ class M010DriveToDrumsMission(Mission):
         parallel(
                 drum_lifting_up(),
                 seq([
-                    wait_for_seconds(0.4), #TODO: comfirm if we need the wait
-                    push_orange_pom_away(),
+                    wait_for_seconds(0.4),
                     turn_right(90),
-
+                ]),
+                seq([
+                    #push orange pom away
+                    wait_for_seconds(0.9),
+                    Defs.pom_remover_servo.right(),
+                    wait_until_degrees(80),
+                    Defs.pom_remover_servo.left(),
                 ]),
             ),
 
@@ -24,8 +29,11 @@ class M010DriveToDrumsMission(Mission):
              parallel(
                  drive_forward(67),
                  seq([
-                     wait_until_distance(14),
-                     Pom_puher_Start(),
+                     wait_until_distance(5),
+                     Defs.pom_remover_servo.right(),
+                     wait_for(on_black(Defs.front_right_ir_sensor)),
+                     Defs.pom_remover_servo.left(),
+
                  ]),
                  seq([
                      wait_until_distance(55),

@@ -14,11 +14,12 @@ def close_drum_pusher():
 
 
 def push_orange_pom_away():
-    return servo(Defs.pom_remover_servo, 53)
+    return servo(Defs.pom_remover_servo, 170)
 
 def Pom_puher_Start():
-    return servo(Defs.pom_remover_servo, 180)
-
+    return servo(Defs.pom_remover_servo, 60)
+def Pom_pusher_oben():
+    return servo(Defs.pom_remover_servo, 30)
 
 
 

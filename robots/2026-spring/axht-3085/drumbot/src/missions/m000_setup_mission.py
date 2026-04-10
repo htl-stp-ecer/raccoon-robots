@@ -12,13 +12,12 @@ from src.steps.servo_steps import *
 class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
-            turn_right(90, 1),
+            fully_disable_servos(),
             wait_for_button(),
 
-
-
-            Pom_puher_Start(),
             drum_lifting_up(slow_mode=False),
+            Defs.pom_remover_servo.start(),
+
             calibrate(distance_cm=50, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
                 Defs.drum_light_sensor,

@@ -27,10 +27,15 @@ class M030DriveToPipeMission(Mission):
             # drive to first black line and turn
             close_drum_pusher(),
             drum_lifting_up(),
-            drive_backward().until(
-                on_black(Defs.front_right_ir_sensor) >
-                after_cm(7)
-            ),
+            parallel (
+             drive_backward().until(
+                    on_black(Defs.front_right_ir_sensor) >
+                    after_cm(7)),
+                seq([
+                    wait_until_distance(6),
+                    Defs.pom_remover_servo.center(),
+                ]),
+                ),
             turn_to_heading_left(90),
 
             drive_to_first_pipe(),

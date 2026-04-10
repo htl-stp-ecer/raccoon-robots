@@ -13,9 +13,9 @@ from typing import List
 
 class _PomRemoverServoPreset(ServoPreset):
     start: _PresetPosition
-    push_first_orange_pom_away: _PresetPosition
-    push_blue_pom_away: _PresetPosition
-    standby: _PresetPosition
+    right: _PresetPosition
+    left: _PresetPosition
+    center: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...
