@@ -36,7 +36,7 @@ class M030DriveToPipeMission(Mission):
                     Defs.pom_remover_servo.center(),
                 ]),
                 ),
-            turn_to_heading_left(90),
+            turn_to_heading_left(88),
 
             drive_to_first_pipe(),
             lineup_drum_with_pipe(),

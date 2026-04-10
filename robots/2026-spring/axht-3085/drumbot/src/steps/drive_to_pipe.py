@@ -14,9 +14,8 @@ def drive_to_first_pipe():
             drive_forward().until(
              (on_black(Defs.front_right_ir_sensor) >
              on_white(Defs.front_right_ir_sensor)) >
-             after_cm(20)
+             after_cm(24)
             ),
-            push_orange_pom_away(),
         )
 
     ])
