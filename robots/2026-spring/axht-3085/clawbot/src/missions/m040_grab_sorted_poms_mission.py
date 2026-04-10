@@ -45,13 +45,14 @@ class M040GrabSortedPomsMission(Mission):
 
             drive_backward(30, 1.0),
 
-            wall_align_backward(1.0, 0.6, 0.1, 3.0),
-            Defs.shild_graber.closed(70),
-
+            wall_align_backward(1.0, 0.6, 0.0, 3.0),
             # mark heading for collecting the poms (0 heading is now in the direction of the black line)
             mark_heading_reference(),
 
+            drive_angle(angle_deg=110).until(on_black(Defs.rear.right, threshold=0.3)),
+
+            Defs.shild.down(),
+            Defs.shild_graber.closed(70),
             #grab the pom set
-            #drive_forward(cm=5, speed=0.6),
             Defs.shild.save_up(),
         ])

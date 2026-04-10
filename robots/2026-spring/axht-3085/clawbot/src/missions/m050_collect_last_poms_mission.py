@@ -14,9 +14,6 @@ def line_follow(speed = 1.0):
 class M050CollectLastPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            strafe_right(speed=1.0).until(on_black(Defs.rear.right, threshold=0.3)),
-            #drive_backward(5.0, 1.0),
-
             #align for poms
             turn_to_heading_left(0, 1.0),
             Defs.pom_arm.down(100),
@@ -32,12 +29,12 @@ class M050CollectLastPomsMission(Mission):
 
                     #make sure we collect ALL lost poms
                     wait_until_distance(cm=35),
-                    Defs.pom_grab.m05_slightly_open(),
+                    Defs.pom_grab.m05_slightly_open(100),
                     wait_for_seconds(0.8),
 
                     #make sure we close the claw while we are moving
                     Defs.pom_grab.slightly_open(),
-                    Defs.pom_grab.closed(),
+                    Defs.pom_grab.closed(200),
                 ])
             ),
 
