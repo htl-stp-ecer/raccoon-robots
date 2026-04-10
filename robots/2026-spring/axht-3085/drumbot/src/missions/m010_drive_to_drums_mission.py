@@ -18,16 +18,16 @@ class M010DriveToDrumsMission(Mission):
                 ]),
                 seq([
                     #push orange pom away
-                    wait_for_seconds(0.9),
+                    wait_for_seconds(0.8),
                     Defs.pom_remover_servo.right(),
-                    wait_until_degrees(80),
+                    wait_until_degrees(60),
                     Defs.pom_remover_servo.left(),
                 ]),
             ),
 
 
              parallel(
-                 drive_forward(67),
+                 drive_forward(69),
                  seq([
                      wait_until_distance(5),
                      Defs.pom_remover_servo.right(),

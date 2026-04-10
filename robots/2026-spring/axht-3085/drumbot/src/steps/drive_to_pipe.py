@@ -32,10 +32,10 @@ def drive_to_second_pipe():
              side=LineSide.LEFT,
          ).until(
                on_black(Defs.front_left_ir_sensor)
-             > after_cm(38)
+             > after_cm(41)
          ),
             seq([
-                wait_until_distance(35),
+                wait_until_distance(37),
                 #Defs.pom_remover_servo.push_blue_pom_away(),
                 #Defs.pom_remover_servo.start(),
             ])

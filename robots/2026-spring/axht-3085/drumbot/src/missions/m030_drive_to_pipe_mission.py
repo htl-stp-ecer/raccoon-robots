@@ -40,4 +40,5 @@ class M030DriveToPipeMission(Mission):
 
             drive_to_first_pipe(),
             lineup_drum_with_pipe(),
+            wait_for_button(),
         ])
