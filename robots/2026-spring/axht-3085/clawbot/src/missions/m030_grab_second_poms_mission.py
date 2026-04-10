@@ -23,7 +23,7 @@ class M030GrabSecondPomsMission(Mission):
                 Defs.pom_grab.closed(),
                 drive_forward().until(
                     on_black(Defs.front.left) +
-                    after_cm(26),
+                    after_cm(27),
                 ),
             ),
         ])

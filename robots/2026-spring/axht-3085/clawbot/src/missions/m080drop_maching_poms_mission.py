@@ -37,11 +37,6 @@ class M080dropMachingPomsMission(Mission):
                     ]),
                 iterations=2,
             ),
-            #shake_servo(Defs.pom_grab,
-            #            duration=1,
-            #            angle_a=Defs.pom_grab.shake_pos_a.value,
-            #            angle_b=Defs.pom_grab.shake_pos_b.value,
-            #            ),
 
             #compress poms
             Defs.pom_grab.closed(),
@@ -58,6 +53,7 @@ class M080dropMachingPomsMission(Mission):
 
             #compress poms
             Defs.pom_grab.closed(),
+            wall_align_backward(1.0, 0.6, 0.0, 0.7, 0.3),
             Defs.pom_arm.in_basket(90),
 
             #pull claw up again
@@ -71,8 +67,9 @@ class M080dropMachingPomsMission(Mission):
             parallel(
                 Defs.pom_grab.closed(),
                 Defs.shild.grab_pasked(), #grab sorted poms
-                drive_backward(cm=12),
+                wall_align_backward(1.0, 0.6, 0.0, 0.7, 0.3),
             ),
+            mark_heading_reference(origin_offset_deg=90),
             Defs.pom_arm.in_basket(90),
 
 

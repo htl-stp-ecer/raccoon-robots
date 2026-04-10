@@ -10,5 +10,6 @@ class M100DriveAwayMission(Mission):
             turn_to_heading_right(0),
 
             strafe_right().until(on_black(Defs.rear.right) | after_seconds(2)),
-            turn_right(17),
+            turn_right(20),
+            turn_to_heading_left(0),
         ])
