@@ -32,13 +32,6 @@ class SortingService(RobotService):
                 f"Revolver full: blue_next={self.blue_next}, pink_next={self.pink_next}",
             )
 
-        if color == "blue" and self._blue_detected >= TOTAL_BLUE:
-            self.warn(f"Max blue ({TOTAL_BLUE}) already collected — reassigning to pink")
-            color = "pink"
-        elif color == "pink" and self._pink_detected >= TOTAL_PINK:
-            self.warn(f"Max pink ({TOTAL_PINK}) already collected — reassigning to blue")
-            color = "blue"
-
         if color == "blue":
             target = self.blue_next
             self.blue_next += 1
