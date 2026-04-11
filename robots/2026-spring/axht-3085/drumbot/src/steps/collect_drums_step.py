@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from raccoon import GenericRobot, dsl, parallel, seq, wait_for_seconds
 from raccoon.ui.step import UIStep
@@ -14,7 +15,7 @@ from src.steps.drum_collector.sort_into_slot_step import (
     go_to_empty_slot,
     sort_into_slot,
 )
-from src.steps.drum_lifting_step import drum_align_on_back, drum_lifting_down
+from src.steps.drum_lifting_step import drum_align_on_back, drum_lifting_down, drum_lifting_up
 from src.steps.wait_for_drum_step import wait_for_drum
 
 START_OFFSET = 9.5
@@ -34,12 +35,19 @@ class CollectDrumsStep(UIStep):
         screen.total_drums = DRUMS
         await self.display(screen)
 
+        self._shutdown_triggered = False
+
         ui_task = asyncio.create_task(
             self._ui_updater(screen, color_service, robot),
         )
         stuck_task = asyncio.create_task(
-            self._stuck_drum_monitor(color_service, drum_service),
+            self._stuck_drum_monitor(color_service, drum_service, robot),
         )
+
+        # Collection is stricter: one retry, then emergency shutdown.
+        # Restored in finally so ejection keeps the default 3-attempt budget.
+        prior_stall_retries = drum_service.stall_retries
+        drum_service.stall_retries = 2
 
         try:
             for i in range(DRUMS):
@@ -78,11 +86,12 @@ class CollectDrumsStep(UIStep):
                     ])
                     await phase1.run_step(robot)
                 except MotorStalledError:
-                    self.warn(f"Motor stalled during drum #{drum_number} — entering safe mode")
-                    drum_service.motor.brake()
-                    Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)
-                    drum_service.collection_failed = True
-                    continue
+                    await self._emergency_shutdown(
+                        drum_service,
+                        robot,
+                        f"Motor stalled during drum #{drum_number} after retry",
+                    )
+                    return
 
                 if i < DRUMS - 1:
                     next_checkpoint = START_OFFSET + (i + 1) * TIME_BETWEEN_DRUMS
@@ -120,11 +129,12 @@ class CollectDrumsStep(UIStep):
                     ])
                     await phase3.run_step(robot)
                 except MotorStalledError:
-                    self.warn(f"Motor stalled moving to empty slot after drum #{drum_number} — entering safe mode")
-                    drum_service.motor.brake()
-                    Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)
-                    drum_service.collection_failed = True
-                    continue
+                    await self._emergency_shutdown(
+                        drum_service,
+                        robot,
+                        f"Motor stalled moving to empty slot after drum #{drum_number} after retry",
+                    )
+                    return
 
                 try:
                     elapsed_done = robot.synchronizer.get_time()
@@ -136,6 +146,7 @@ class CollectDrumsStep(UIStep):
                 )
                 screen.status = "Done"
         finally:
+            drum_service.stall_retries = prior_stall_retries
             for task in (ui_task, stuck_task):
                 task.cancel()
                 try:
@@ -147,25 +158,55 @@ class CollectDrumsStep(UIStep):
         self,
         color_service: ColorDetectionService,
         drum_service: DrumMotorService,
+        robot: "GenericRobot",
     ) -> None:
         """Watchdog: if a color is continuously visible for >1s, the drum is stuck.
 
-        Immediately opens the pusher servo and kills the drum motor to prevent
-        hardware damage, then sets collection_failed so the main loop aborts.
+        Triggers emergency shutdown — this is a dead state that would only
+        further harm the hardware if collection continued.
         """
         STUCK_THRESHOLD = 1.0  # seconds — normal pass-through is ~400ms
         while True:
             await asyncio.sleep(0.1)
             duration = color_service.continuous_color_seconds
             if duration is not None and duration > STUCK_THRESHOLD:
-                self.warn(
-                    f"Drum stuck detected — color visible for {duration:.2f}s "
-                    f"(threshold {STUCK_THRESHOLD}s) — opening servo and stopping motor"
+                await self._emergency_shutdown(
+                    drum_service,
+                    robot,
+                    f"Drum stuck — color visible for {duration:.2f}s (threshold {STUCK_THRESHOLD}s)",
                 )
-                drum_service.motor.brake()
-                Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)  # open
-                drum_service.collection_failed = True
-                return  # watchdog done; main loop will see collection_failed
+                return
+
+    async def _emergency_shutdown(
+        self,
+        drum_service: DrumMotorService,
+        robot: "GenericRobot",
+        reason: str,
+    ) -> None:
+        """Dead state: open pusher, lift drum up, then kill the program.
+
+        Called when drum collection enters a state where continuing would
+        further harm the hardware. Terminates the process after securing
+        the mechanism so no downstream missions run.
+        """
+        if getattr(self, "_shutdown_triggered", False):
+            return
+        self._shutdown_triggered = True
+        self.warn(f"EMERGENCY SHUTDOWN: {reason}")
+        try:
+            drum_service.motor.brake()
+        except Exception as e:
+            self.warn(f"Emergency brake failed: {e}")
+        try:
+            Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)
+        except Exception as e:
+            self.warn(f"Emergency pusher-open failed: {e}")
+        try:
+            await drum_lifting_up(always_motor_support=True).run_step(robot)
+        except Exception as e:
+            self.warn(f"Emergency drum lift failed: {e}")
+        self.warn("Killing program — drum collection dead state, no further missions")
+        os._exit(1)
 
     async def _ui_updater(
         self,

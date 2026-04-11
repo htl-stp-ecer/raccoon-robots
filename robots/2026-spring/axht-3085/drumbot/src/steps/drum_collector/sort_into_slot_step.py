@@ -4,7 +4,7 @@ from raccoon import GenericRobot, dsl
 from raccoon.step import Step
 
 from src.service.color_detection_service import ColorDetectionService
-from src.service.drum_motor_service import DrumMotorService, NUM_POCKETS
+from src.service.drum_motor_service import DrumMotorService, MotorStalledError, NUM_POCKETS
 from src.service.sorting_service import SortingService
 
 DEADLINE_WARNING_SECS = 6.0
@@ -137,45 +137,54 @@ class EjectNearestColorStep(Step):
             slots = pink
             color = "pink"
 
-        # Retreat from midpoint first to get clean slot alignment.
-        if drum_service.at_midpoint:
-            drum_service.info("Retreating from midpoint before ejection")
-            await drum_service.move_from_midpoint()
+        try:
+            # Retreat from midpoint first to get clean slot alignment.
+            if drum_service.at_midpoint:
+                drum_service.info("Retreating from midpoint before ejection")
+                await drum_service.move_from_midpoint()
 
-        # Choose the closer end of the group as the starting point, then sweep
-        # toward the other end — minimises total travel before ejection begins.
-        def ring_dist(a: int, b: int) -> int:
-            d = abs(a - b)
-            return min(d, NUM_POCKETS - d)
+            # Choose the closer end of the group as the starting point, then sweep
+            # toward the other end — minimises total travel before ejection begins.
+            def ring_dist(a: int, b: int) -> int:
+                d = abs(a - b)
+                return min(d, NUM_POCKETS - d)
 
-        cur = drum_service.current_pocket
-        lo, hi = min(slots), max(slots)
+            cur = drum_service.current_pocket
+            lo, hi = min(slots), max(slots)
 
-        if ring_dist(cur, lo) <= ring_dist(cur, hi):
-            start_slot = lo - 1  # one before lo; advance through lo..hi
-            forward = True
-        else:
-            start_slot = hi + 1  # one after hi; retreat through hi..lo
-            forward = False
-
-
-        pockets_to_eject = len(slots) - 1
-        drum_service.info(
-            f"Ejecting {color}: go to slot {start_slot}, "
-            f"then sweep {'forward' if forward else 'backward'} "
-            f"{pockets_to_eject} pocket(s)"
-        )
-        await drum_service.go_to_pocket(start_slot, precise=False)
-        for _ in range(pockets_to_eject):
-            if forward:
-                await drum_service.advance(1)
+            if ring_dist(cur, lo) <= ring_dist(cur, hi):
+                start_slot = lo - 1  # one before lo; advance through lo..hi
+                forward = True
             else:
-                await drum_service.retreat(1)
+                start_slot = hi + 1  # one after hi; retreat through hi..lo
+                forward = False
 
-        # Mark ejected slots as empty so the next eject call picks the other color.
-        for s in slots:
-            sorting_service.slots[s] = None
-        drum_service.info(f"Cleared {color} slots {slots} → {sorting_service.slots}")
+
+            pockets_to_eject = len(slots) - 1
+            drum_service.info(
+                f"Ejecting {color}: go to slot {start_slot}, "
+                f"then sweep {'forward' if forward else 'backward'} "
+                f"{pockets_to_eject} pocket(s)"
+            )
+            await drum_service.go_to_pocket(start_slot, precise=False)
+            for _ in range(pockets_to_eject):
+                if forward:
+                    await drum_service.advance(1)
+                else:
+                    await drum_service.retreat(1)
+
+            # Mark ejected slots as empty so the next eject call picks the other color.
+            for s in slots:
+                sorting_service.slots[s] = None
+            drum_service.info(f"Cleared {color} slots {slots} → {sorting_service.slots}")
+        except MotorStalledError as e:
+            # Eject must never kill the program — mark this attempt as flawed and
+            # let the mission sequence continue. Retries (self.stall_retries) are
+            # exhausted by the time we get here.
+            drum_service.motor.brake()
+            drum_service.warn(
+                f"Eject ({color}) FAILED after retries — marking attempt as flawed and continuing: {e}"
+            )
 
 
 @dsl()
