@@ -158,7 +158,16 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     _black_entry_pos = pos
                     _black_entry_time = now
 
-                    if gate_last_edge and gate_move_start:
+                    # During an active move, Gate 2 (distance from move start) is the
+                    # authoritative guard — it prevents false triggers when starting
+                    # near a stripe. Gate 1 (distance from last edge) must NOT apply
+                    # during a move because _tracker_last_edge_pos still points at the
+                    # same stripe we may have just crossed from the other direction on
+                    # the previous move, making Gate 1 reject the very first real stripe.
+                    in_active_move = self._move_start_pos is not None
+                    gate_ok = gate_move_start if in_active_move else gate_last_edge
+
+                    if gate_ok:
                         direction = 1 if delta > 0 else -1
                         old = self._current_pocket
                         self._current_pocket = (old + direction) % NUM_POCKETS
@@ -169,7 +178,8 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                             f"[IR-EDGE] COUNTED pocket {old} → {self._current_pocket} "
                             f"pos={pos} delta_last_edge={delta:+d} "
                             f"delta_move_start={move_start_delta} "
-                            f"min_ticks={min_ticks} raw={raw:.0f}"
+                            f"min_ticks={min_ticks} raw={raw:.0f} "
+                            f"gate={'move_start' if in_active_move else 'last_edge'}"
                         )
                     else:
                         # ── REJECTED edge — key diagnostic ──────────
