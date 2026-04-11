@@ -13,7 +13,7 @@ def lineup_drum_with_pipe():
             step=seq([
                 turn_to_peak(
                     turn_speed=0.6,
-                    sweep_speed=40,
+                    sweep_deg=40,
                     ),
                 turn_left(2), #hardcoded magic value so we are aligned on pipe
                 drive_to_analog_target(Defs.et_range_finder, 0.2),

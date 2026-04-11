@@ -21,7 +21,7 @@ class M010DriveToDrumsMission(Mission):
                     # push orange pom away
                     wait_for_seconds(0.8),
                     Defs.pom_remover_servo.right(),
-                    wait_until_degrees(60),
+                    wait_until_degrees(50),
                     Defs.pom_remover_servo.left(),
                 ]),
             ),
