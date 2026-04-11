@@ -42,6 +42,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         self._tracker_on_black: bool = False
         self._tracker_last_edge_pos: int = 0
         self._last_entry_pos: int = 0  # motor position of the most recent counted stripe
+        self._move_start_pos: int | None = None  # set at start of each _do_move; gates early detection
 
     @property
     def motor(self) -> Motor:
@@ -122,7 +123,17 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                 if reading and not self._tracker_on_black:
                     pos = self.motor.get_position()
                     delta = pos - self._tracker_last_edge_pos
-                    if abs(delta) >= min_ticks:
+                    # Gate 1: must be >= half pocket from last counted edge
+                    gate_last_edge = abs(delta) >= min_ticks
+                    # Gate 2 (failsafe): when a pocket move is active, must also be
+                    # >= half pocket from where the move started. This prevents false
+                    # triggers early in a move when starting near the next stripe
+                    # (e.g. from midpoint), even if the last-edge delta looks large enough.
+                    if self._move_start_pos is not None:
+                        gate_move_start = abs(pos - self._move_start_pos) >= min_ticks
+                    else:
+                        gate_move_start = True
+                    if gate_last_edge and gate_move_start:
                         direction = 1 if delta > 0 else -1
                         old = self._current_pocket
                         self._current_pocket = (old + direction) % NUM_POCKETS
@@ -251,6 +262,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             f"(from {start_pocket} → {target_pocket}, midpoint={self._at_midpoint})"
         )
 
+        self._move_start_pos = self.motor.get_position()
         self.motor.set_velocity(velocity * sign)
 
         while self._current_pocket != target_pocket:
@@ -258,6 +270,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             await asyncio.sleep(SAMPLE_INTERVAL)
 
         self.motor.set_velocity(0)
+        self._move_start_pos = None  # lift the move-start gate
 
         # Let the tracker absorb any coast through the next stripe.
         settle_deadline = time.monotonic() + COAST_SETTLE_SECONDS

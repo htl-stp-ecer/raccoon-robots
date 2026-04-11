@@ -58,6 +58,7 @@ class ColorDetectionService(RobotService):
         self._detection_thread: threading.Thread | None = None
         self._running = False
         self._color_event = threading.Event()
+        self._color_first_seen: float | None = None  # monotonic time of current color streak start
 
     @property
     def camera(self) -> USBCamera:
@@ -88,6 +89,14 @@ class ColorDetectionService(RobotService):
         self._camera.stop()
         self.info("Camera stopped")
 
+    @property
+    def continuous_color_seconds(self) -> float | None:
+        """Seconds the camera has continuously seen any color, or None if nothing detected."""
+        first = self._color_first_seen  # float reads are atomic in CPython
+        if first is None:
+            return None
+        return time.monotonic() - first
+
     def _detection_loop(self) -> None:
         """Continuously analyze frames and cache the detected color."""
         import os
@@ -101,6 +110,7 @@ class ColorDetectionService(RobotService):
         total_wait_ms = 0.0
         max_wait_ms = 0.0
         color_counts: dict[str | None, int] = {}
+        _prev_color: str | None = None  # tracks previous frame's color for streak timing
 
         while self._running:
             if self._detection_paused:
@@ -141,6 +151,13 @@ class ColorDetectionService(RobotService):
                 color = None
 
             color_counts[color] = color_counts.get(color, 0) + 1
+
+            # Track continuous-detection streak for stuck-drum detection
+            if color is not None and _prev_color is None:
+                self._color_first_seen = time.monotonic()
+            elif color is None:
+                self._color_first_seen = None
+            _prev_color = color
 
             if color is not None:
                 with self._lock:
@@ -232,6 +249,7 @@ class ColorDetectionService(RobotService):
             self._latest_color = None
             self._color_locked = False
             self._color_event.clear()
+        self._color_first_seen = None  # restart streak timer for fresh cycle
 
     async def wait_for_color(self, timeout: float) -> bool:
         """Await until the background loop detects a color, or timeout."""
