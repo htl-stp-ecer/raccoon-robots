@@ -166,6 +166,11 @@ class DrumMotorCalibrationMixin:
         _, high = self.hysteresis_thresholds
         return float(self.light_sensor.read()) >= high
 
+    def _is_black_from_raw(self, raw: float) -> bool:
+        """Like _is_black() but uses an already-read raw value (avoids double reads)."""
+        _, high = self.hysteresis_thresholds
+        return raw >= high
+
     def _is_white(self) -> bool:
         low, _ = self.hysteresis_thresholds
         return float(self.light_sensor.read()) <= low

@@ -8,6 +8,8 @@ from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up, drum
 from src.hardware.defs import Defs
 
 class M000SetupMission(SetupMission):
+    setup_time = 120
+
     def sequence(self) -> Sequential:
         return seq([
             fully_disable_servos(),
