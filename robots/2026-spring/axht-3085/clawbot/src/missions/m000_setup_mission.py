@@ -1,4 +1,4 @@
-from libstp import *
+from raccoon import *
 
 from src.hardware.defs import Defs
 from src.steps.et_scan_align import EtScanAlign
@@ -6,8 +6,12 @@ from src.steps.et_scan_align import EtScanAlign
 
 class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
+        setup_time = 120
         return seq([
+            pause_setup_timer(),
+            fully_disable_servos(),
             wait_for_button("move servos into starting position"),
+            start_setup_timer(),  # countdown begins here, full duration
             parallel(
                 Defs.shild.down(),
                 Defs.shild_graber.closed(),
@@ -30,4 +34,5 @@ class M000SetupMission(SetupMission):
                       calibration_sets=["default", "upper"],
                       ),
 
+            fully_disable_servos(),
         ])
