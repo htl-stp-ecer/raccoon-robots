@@ -82,3 +82,14 @@ def drum_lifting_remove_M(slow_mode=True) -> Defer:
         servo_speed=999,
         slow_mode=slow_mode,
     )
+
+def drum_lifting_up_over_limit():
+    return seq([
+        drum_lifting_up(),
+
+        #motor pushes the rum further back
+        fully_disable_servos(),
+        set_motor_power(Defs.drum_motor, -100),
+        wait_for_seconds(0.5),
+        motor_passive_brake(Defs.drum_motor),
+    ])

@@ -10,7 +10,7 @@ pom_remover_servo:
   port: 3
   positions:
     start: 50
-    right: 15
+    right: 10
     left: 170
     center: 70
 
