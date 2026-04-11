@@ -17,7 +17,6 @@ STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 400  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 COAST_SETTLE_SECONDS = 0.20  # post-stop pause so the tracker can absorb any coast-through
-SKIP_DELTA_FACTOR = 1.5      # delta > this × ticks_per_pocket → assume skipped stripe (count 2)
 
 
 class MotorStalledError(Exception):
@@ -113,7 +112,6 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         """
         assert self._ticks_per_pocket is not None
         min_ticks = max(1, self._ticks_per_pocket // 2)
-        skip_ticks = int(self._ticks_per_pocket * SKIP_DELTA_FACTOR)
         try:
             while True:
                 await asyncio.sleep(SAMPLE_INTERVAL)
@@ -123,7 +121,6 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     self.warn(f"IR tracker sensor read failed: {e}")
                     continue
                 if reading and not self._tracker_on_black:
-                    # white → black: potential stripe crossing
                     pos = self.motor.get_position()
                     delta = pos - self._tracker_last_edge_pos
                     # Gate 1: must be >= half pocket from last counted edge
@@ -139,35 +136,14 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     if gate_last_edge and gate_move_start:
                         direction = 1 if delta > 0 else -1
                         old = self._current_pocket
-                        if abs(delta) >= skip_ticks:
-                            # Delta is suspiciously large: we likely moved through a stripe
-                            # without the sensor catching it (motor was parked on black and
-                            # the first white→black in this direction is one stripe too far).
-                            # Count as 2 pockets to compensate.
-                            self._current_pocket = (old + direction) % NUM_POCKETS
-                            self._current_pocket = (self._current_pocket + direction) % NUM_POCKETS
-                            self.warn(
-                                f"IR skip detected: pocket {old} → {self._current_pocket} "
-                                f"(delta={delta:+d} >= skip_threshold={skip_ticks}, "
-                                f"ticks_per_pocket={self._ticks_per_pocket}) — counted 2 pockets"
-                            )
-                        else:
-                            self._current_pocket = (old + direction) % NUM_POCKETS
-                            self.info(
-                                f"IR edge: pocket {old} → {self._current_pocket} "
-                                f"(pos={pos}, delta={delta:+d})"
-                            )
+                        self._current_pocket = (old + direction) % NUM_POCKETS
                         self._last_entry_pos = pos
                         self._tracker_last_edge_pos = pos
                         self._at_midpoint = False
-                elif not reading and self._tracker_on_black:
-                    # black → white: motor exiting a stripe
-                    pos = self.motor.get_position()
-                    delta = pos - self._tracker_last_edge_pos
-                    self.info(
-                        f"IR exit-black: pos={pos}, delta_from_last_edge={delta:+d}, "
-                        f"pocket={self._current_pocket}"
-                    )
+                        self.info(
+                            f"IR edge: pocket {old} → {self._current_pocket} "
+                            f"(pos={pos}, delta={delta:+d})"
+                        )
                 self._tracker_on_black = reading
         except asyncio.CancelledError:
             raise
@@ -287,13 +263,6 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         )
 
         self._move_start_pos = self.motor.get_position()
-        if self._tracker_on_black:
-            self.warn(
-                f"Move starting ON BLACK stripe (pos={self._move_start_pos}, "
-                f"pocket={start_pocket}) — first stripe may be skipped"
-            )
-        else:
-            self.info(f"Move start: pos={self._move_start_pos}, sensor=white, pocket={start_pocket}")
         self.motor.set_velocity(velocity * sign)
 
         while self._current_pocket != target_pocket:
@@ -316,15 +285,6 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                 f"Coast drift: target={target_pocket}, actual={self._current_pocket} "
                 f"({drift:+d} pockets) — tracker index is authoritative"
             )
-
-        settle_pos = self.motor.get_position()
-        if self._tracker_on_black:
-            self.warn(
-                f"Parked ON BLACK stripe (pocket={self._current_pocket}, pos={settle_pos}) — "
-                f"next move in same direction risks skipping a stripe"
-            )
-        else:
-            self.info(f"Parked on white (pocket={self._current_pocket}, pos={settle_pos})")
 
         if precise:
             await self._center_on_stripe(self._last_entry_pos)
