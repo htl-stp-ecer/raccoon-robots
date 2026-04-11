@@ -1,4 +1,4 @@
-from libstp import Mission, Sequential, seq
+from raccoon import Mission, Sequential, seq
 
 
 class M999ShutdownMission(Mission):

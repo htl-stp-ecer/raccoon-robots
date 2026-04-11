@@ -15,7 +15,7 @@ Authors:
 Note: This header credits the scaffold and tooling only - no copyright is
 claimed over the generated code itself.
 """
-from libstp import *
+from raccoon import *
 from src.hardware.defs import Defs
 
 def line_follow(speed = 1.0):
