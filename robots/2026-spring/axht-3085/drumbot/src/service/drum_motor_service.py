@@ -17,7 +17,7 @@ STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 400  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 COAST_SETTLE_SECONDS = 0.20  # post-stop pause so the tracker can absorb any coast-through
-SKIP_DELTA_FACTOR = 1.5      # delta > this × ticks_per_pocket → assume skipped stripe (count 2)
+SKIP_DELTA_FACTOR = 1.3      # delta > this × ticks_per_pocket → assume skipped stripe (count 2)
 
 
 class MotorStalledError(Exception):
@@ -321,7 +321,18 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         if self._tracker_on_black:
             self.warn(
                 f"Parked ON BLACK stripe (pocket={self._current_pocket}, pos={settle_pos}) — "
-                f"next move in same direction risks skipping a stripe"
+                f"creeping out"
+            )
+            # Creep opposite to the travel direction to exit the stripe into the
+            # destination pocket's white zone. black→white does not fire the
+            # tracker, so pocket count stays correct.
+            self.motor.set_velocity(CREEP_VELOCITY * (-sign))
+            while self._tracker_on_black:
+                await asyncio.sleep(SAMPLE_INTERVAL)
+            self.motor.set_velocity(0)
+            self.info(
+                f"Exited black stripe: pos={self.motor.get_position()}, "
+                f"pocket={self._current_pocket}"
             )
         else:
             self.info(f"Parked on white (pocket={self._current_pocket}, pos={settle_pos})")
