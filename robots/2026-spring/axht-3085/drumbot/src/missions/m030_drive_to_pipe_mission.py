@@ -46,7 +46,7 @@ class M030DriveToPipeMission(Mission):
                 ),
             ),
 
-            lineup_drum_with_pipe(),
+            lineup_drum_with_pipe(True),
 
             # eject drum mission will be executed next
         ])

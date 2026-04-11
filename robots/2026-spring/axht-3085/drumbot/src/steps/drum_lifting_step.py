@@ -11,6 +11,7 @@ def _lift_drum_servo(
         servo_ref=Defs.lift_drums_servo.device,
         motor_ref=Defs.servo_help_motor,
         slow_mode=True,
+        always_motor_support=False,
 ) -> Defer:
     def _build(_):
         delta_angle = target_position.value - servo_ref.get_position()
@@ -20,6 +21,9 @@ def _lift_drum_servo(
         info(f"Current servo position: {servo_ref.get_position()} degrees, target: {target_position} degrees, delta: {delta_angle} degrees")
         if delta_angle > 0:
             sequence.append(set_motor_power(motor_ref, -base_motor_speed))
+            move_with_slow_servo = False
+        elif always_motor_support and delta_angle < 0:
+            sequence.append(set_motor_power(motor_ref, base_motor_speed))
             move_with_slow_servo = False
         sequence.extend([
             target_position(),
@@ -32,55 +36,62 @@ def _lift_drum_servo(
     return defer(_build)
 
 
-def drum_lifting_up(slow_mode=True) -> Defer:
+def drum_lifting_up(slow_mode=True, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.up,
         servo_speed=25,
         slow_mode=slow_mode,
+        always_motor_support=always_motor_support,
     )
 
-def drum_align_on_back(slow_mode=True) -> Defer:
+def drum_align_on_back(slow_mode=True, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.align_on_back,
         servo_speed=999,
         slow_mode=slow_mode,
+        always_motor_support=always_motor_support,
     )
 
-def drum_eject_position(slow_mode=True) -> Defer:
+def drum_eject_position(slow_mode=True, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.eject_position,
         servo_speed=120,
         slow_mode=slow_mode,
+        always_motor_support=always_motor_support,
     )
 
-def drum_seek(slow_mode=True) -> Defer:
+def drum_seek(slow_mode=True, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.seek_position,
         servo_speed=25,
         slow_mode=slow_mode,
+        always_motor_support=always_motor_support,
     )
 
 
-def drum_lifting_down(slow_mode=True) -> Defer:
+def drum_lifting_down(slow_mode=True, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.down,
         servo_speed=999,
         slow_mode=slow_mode,
+        always_motor_support=always_motor_support,
     )
 
 
-def drum_lifting_remove_D(slow_mode=True) -> Defer:
+def drum_lifting_remove_D(slow_mode=True, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.remove_D,
         servo_speed=999,
         slow_mode=slow_mode,
+        always_motor_support=always_motor_support,
     )
 
-def drum_lifting_remove_M(slow_mode=True) -> Defer:
+def drum_lifting_remove_M(slow_mode=True, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.remove_M,
         servo_speed=999,
         slow_mode=slow_mode,
+        always_motor_support=always_motor_support,
     )
 
 def drum_lifting_up_over_limit():
@@ -91,5 +102,21 @@ def drum_lifting_up_over_limit():
         fully_disable_servos(),
         set_motor_power(Defs.servo_help_motor, -100),
         wait_for_seconds(0.5),
-        motor_passive_brake(Defs.drum_motor),
+        motor_passive_brake(Defs.servo_help_motor),
     ])
+
+
+def drum_recover_from_over_limit(target_position: _PresetPosition, motor_speed=100) -> Defer:
+    """
+    After drum_lifting_up_over_limit the servo is disabled and the drum sits at
+    the hard stop.  This re-enables the servo to `target_position` while running
+    the helper motor at full power in the lifting direction so the drum is not
+    too heavy to move.
+    """
+    def _build(_):
+        return seq([
+            set_motor_power(Defs.servo_help_motor, motor_speed),  # positive = push down from hard stop
+            target_position(),
+            motor_passive_brake(Defs.servo_help_motor),
+        ])
+    return defer(_build)
