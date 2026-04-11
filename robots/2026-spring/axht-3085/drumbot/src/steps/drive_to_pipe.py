@@ -5,13 +5,19 @@ from src.hardware.defs import Defs
 
 @dsl
 def drive_to_second_pipe():
-    return seq([
-        follow_line_single(
+    def line_follower():
+        return follow_line_single(
             Defs.front_right_ir_sensor,
-            kp=0.5,
+            speed=1.0,
+            kp=0.7,
+            ki=0.2,
             kd=0.1,
             side=LineSide.LEFT,
-        ).until(
+        )
+
+    return seq([
+        line_follower().until(
+            after_cm(20) +
             on_black(Defs.front_left_ir_sensor)
         ),
 
@@ -19,12 +25,8 @@ def drive_to_second_pipe():
         turn_to_heading_right(90),
 
         # TODO: Try a drive straight and align on pipe
-        follow_line_single(
-            Defs.front_right_ir_sensor,
-            kp=0.5,
-            kd=0.1,
-            side=LineSide.LEFT,
-        ).until(
-            after_forward_cm(43)
-        ),
+        drive_forward(cm=43),
+        #line_follower().until(
+        #    after_forward_cm(43)
+        #),
     ])

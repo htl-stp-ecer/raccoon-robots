@@ -3,7 +3,7 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
-from src.steps.drum_lifting_step import drum_lifting_up
+from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_up_over_limit
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 
 
@@ -20,6 +20,12 @@ def print_debug_info(robot):
 class M030DriveToPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            # lift drum
+            Defs.drum_pusher_servo.close(),
+            drum_lifting_up_over_limit(),
+
+            wait_for_checkpoint(60),  # only continue if we all drums where dispenced (fail save)
+
             # drive to first black line and turn
             parallel(
                 drive_backward().until(
