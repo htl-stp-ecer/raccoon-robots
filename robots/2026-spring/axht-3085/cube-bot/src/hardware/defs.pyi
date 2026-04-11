@@ -1,12 +1,12 @@
 """Auto-generated type stub — Raccoon Toolchain (Tobias Madlberger / RaccoonOS Team)"""
 
-from libstp import AnalogSensor
-from libstp import DigitalSensor
-from libstp import IMU as Imu
-from libstp import IRSensor
-from libstp import Motor
-from libstp.step.motion.sensor_group import SensorGroup
-from libstp.step.servo.preset import ServoPreset, _PresetPosition
+from raccoon import AnalogSensor
+from raccoon import DigitalSensor
+from raccoon import IMU as Imu
+from raccoon import IRSensor
+from raccoon import Motor
+from raccoon.step.motion.sensor_group import SensorGroup
+from raccoon.step.servo.preset import ServoPreset, _PresetPosition
 from typing import List
 
 

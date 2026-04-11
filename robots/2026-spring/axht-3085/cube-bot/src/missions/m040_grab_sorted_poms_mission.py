@@ -1,4 +1,4 @@
-from libstp import *
+from raccoon import *
 
 from src.hardware.defs import Defs
 from src.steps.line_cross_detecting_turn import LineCrossDetectingTurn
@@ -43,7 +43,12 @@ class M040GrabSortedPomsMission(Mission):
             ),
             turn_to_heading_right(90, 1.0),
 
-            drive_backward(30, 1.0),
+            #drive
+            drive_backward(25, 1.0),
+
+            turn_right(10, 1.0),
+            drive_backward(8, 1.0),
+            turn_to_heading_right(90, 1.0),
 
             wall_align_backward(1.0, 0.6, 0.0, 3.0),
             # mark heading for collecting the poms (0 heading is now in the direction of the black line)
