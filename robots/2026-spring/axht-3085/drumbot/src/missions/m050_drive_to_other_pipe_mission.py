@@ -32,7 +32,7 @@ class M050DriveToOtherPipeMission(Mission):
             ),
 
             # wait for the other bot to finish
-            wait_for_checkpoint(60 + 33),
+            wait_for_checkpoint(60 + 35),
 
             follow_line_single(Defs.front_right_ir_sensor,
                                kp=1,
