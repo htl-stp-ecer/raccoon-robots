@@ -33,7 +33,7 @@ class M030DriveToPipeMission(Mission):
                 ),
                 #seq([
                 #    wait_until_distance(6),
-                #    Defs.pom_remover_servo.center(),
+                #
                 #]),
             ),
             turn_to_heading_left(180),
@@ -46,6 +46,7 @@ class M030DriveToPipeMission(Mission):
                 ),
             ),
 
+            background(Defs.pom_remover_servo.center()),
             lineup_drum_with_pipe(True),
 
             # eject drum mission will be executed next
