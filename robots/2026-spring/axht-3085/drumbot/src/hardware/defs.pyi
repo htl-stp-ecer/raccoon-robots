@@ -6,7 +6,6 @@ from raccoon import ETSensor
 from raccoon import IMU as Imu
 from raccoon import IRSensor
 from raccoon import Motor
-from raccoon import Servo
 from raccoon.step.servo.preset import ServoPreset, _PresetPosition
 from typing import List
 
@@ -14,6 +13,7 @@ from typing import List
 class _DrumPusherServoPreset(ServoPreset):
     close: _PresetPosition
     open: _PresetPosition
+    block_angle: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...
@@ -24,6 +24,19 @@ class _PomRemoverServoPreset(ServoPreset):
     right: _PresetPosition
     left: _PresetPosition
     center: _PresetPosition
+
+    @property
+    def device(self) -> "Servo": ...
+
+
+class _LiftDrumsServoPreset(ServoPreset):
+    up: _PresetPosition
+    align_on_back: _PresetPosition
+    eject_position: _PresetPosition
+    seek_position: _PresetPosition
+    down: _PresetPosition
+    remove_D: _PresetPosition
+    remove_M: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...
@@ -44,6 +57,6 @@ class Defs:
     servo_help_motor: Motor
     drum_pusher_servo: _DrumPusherServoPreset
     pom_remover_servo: _PomRemoverServoPreset
-    lift_drums_servo: Servo
+    lift_drums_servo: _LiftDrumsServoPreset
     analog_sensors: List[AnalogSensor]
     wait_for_light_mode: str
