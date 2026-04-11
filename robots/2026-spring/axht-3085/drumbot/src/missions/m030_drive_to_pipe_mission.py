@@ -31,10 +31,10 @@ class M030DriveToPipeMission(Mission):
                 drive_backward().until(
                     over_line(Defs.front_right_ir_sensor)
                 ),
-                seq([
-                    wait_until_distance(6),
-                    Defs.pom_remover_servo.center(),
-                ]),
+                #seq([
+                #    wait_until_distance(6),
+                #    Defs.pom_remover_servo.center(),
+                #]),
             ),
             turn_to_heading_left(180),
 

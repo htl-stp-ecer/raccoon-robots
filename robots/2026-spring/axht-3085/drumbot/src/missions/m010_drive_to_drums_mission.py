@@ -22,7 +22,7 @@ class M010DriveToDrumsMission(Mission):
                     wait_for_seconds(0.7),
                     Defs.pom_remover_servo.right(),
                     wait_until_degrees(
-                        degrees=70,
+                        degrees=80,
                         origin=HeadingOrigin.TURN_START,
                         ),
                     Defs.pom_remover_servo.left(),

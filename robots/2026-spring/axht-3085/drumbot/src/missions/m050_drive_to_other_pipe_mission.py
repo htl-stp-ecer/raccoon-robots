@@ -10,6 +10,7 @@ class M050DriveToOtherPipeMission(Mission):
             # drive backward a bit so we can lift the drum
             parallel(
                 drive_backward(cm=5),
+                Defs.pom_remover_servo.center(),
                 drum_lifting_up(),
             ),
 

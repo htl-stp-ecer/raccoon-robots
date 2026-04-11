@@ -9,10 +9,10 @@ pom_remover_servo:
   type: Servo
   port: 3
   positions:
-    start: 50
-    right: 10
-    left: 170
-    center: 70
+    start: 60
+    right: 20
+    left: 180
+    center: 100
 
 lift_drums_servo:
   type: Servo
