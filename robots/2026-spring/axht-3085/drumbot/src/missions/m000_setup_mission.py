@@ -12,12 +12,14 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
+            pause_setup_timer(),
             fully_disable_servos(),
             # Camera opens once here and stays open until the shutdown mission.
             # All downstream steps (color calibration, color detection) share
             # this single USBCamera instance.
             start_camera(),
             wait_for_button("Move Servos"),
+            start_setup_timer(),  # countdown begins here, full duration
 
             drum_lifting_up(slow_mode=False),
             Defs.pom_remover_servo.start(),

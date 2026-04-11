@@ -111,7 +111,15 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         the same as deliberate motion.
         """
         assert self._ticks_per_pocket is not None
-        min_ticks = max(1, self._ticks_per_pocket // 2)
+        # Gate 1 (idle only): prevents a false count from tiny motor drift back into
+        # a stripe it just coasted past. Set to 15% — enough to swallow sub-1%
+        # drift (observed: 227 ticks = 0.17%) while still allowing genuine
+        # coast-through counts when the motor drifts 15%+ past a stripe.
+        # Only applied when _move_start_pos is None (motor idle or in coast settle).
+        # Gate 2 (active move): removed entirely — _tracker_on_black already handles
+        # the "motor starts on a stripe" case (no rising edge fires if already black),
+        # and the 35-50% thresholds we tried were the direct cause of pocket skips.
+        min_ticks_idle = max(1, self._ticks_per_pocket * 15 // 100)
         # ── diagnostic state ──────────────────────────────────────
         _sample_count: int = 0
         _black_entry_pos: int | None = None   # encoder pos when stripe started
@@ -147,25 +155,22 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                 # ── rising edge: white → black ─────────────────────
                 if reading and not self._tracker_on_black:
                     delta = pos - self._tracker_last_edge_pos
-                    gate_last_edge = abs(delta) >= min_ticks
-                    if self._move_start_pos is not None:
-                        gate_move_start = abs(pos - self._move_start_pos) >= min_ticks
-                        move_start_delta = pos - self._move_start_pos
-                    else:
-                        gate_move_start = True
-                        move_start_delta = None
+                    move_start_delta = (pos - self._move_start_pos) if self._move_start_pos is not None else None
+                    in_active_move = self._move_start_pos is not None
 
                     _black_entry_pos = pos
                     _black_entry_time = now
 
-                    # During an active move, Gate 2 (distance from move start) is the
-                    # authoritative guard — it prevents false triggers when starting
-                    # near a stripe. Gate 1 (distance from last edge) must NOT apply
-                    # during a move because _tracker_last_edge_pos still points at the
-                    # same stripe we may have just crossed from the other direction on
-                    # the previous move, making Gate 1 reject the very first real stripe.
-                    in_active_move = self._move_start_pos is not None
-                    gate_ok = gate_move_start if in_active_move else gate_last_edge
+                    # During an active move: no gate. _tracker_on_black already
+                    # handles "motor was ON a stripe at move start" (no rising edge
+                    # fires if already black), so there are no false positives to block.
+                    # Any gate here risks rejecting the first real stripe when the motor
+                    # coasted close to it on the previous move.
+                    #
+                    # While idle (coast settle or parked): Gate 1 blocks tiny drift
+                    # back into a stripe the motor just coasted past (observed: ~227
+                    # ticks = 0.17% of pocket). Threshold = 15% of pocket.
+                    gate_ok = True if in_active_move else abs(delta) >= min_ticks_idle
 
                     if gate_ok:
                         direction = 1 if delta > 0 else -1
@@ -178,29 +183,17 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                             f"[IR-EDGE] COUNTED pocket {old} → {self._current_pocket} "
                             f"pos={pos} delta_last_edge={delta:+d} "
                             f"delta_move_start={move_start_delta} "
-                            f"min_ticks={min_ticks} raw={raw:.0f} "
-                            f"gate={'move_start' if in_active_move else 'last_edge'}"
+                            f"min_idle={min_ticks_idle} raw={raw:.0f} "
+                            f"gate={'none(active)' if in_active_move else 'idle'}"
                         )
                     else:
-                        # ── REJECTED edge — key diagnostic ──────────
-                        reason = []
-                        if not gate_last_edge:
-                            reason.append(
-                                f"gate_last_edge FAILED "
-                                f"(|delta|={abs(delta)} < min={min_ticks})"
-                            )
-                        if not gate_move_start:
-                            reason.append(
-                                f"gate_move_start FAILED "
-                                f"(|move_delta|={abs(move_start_delta)} < min={min_ticks})"
-                            )
                         self.warn(
                             f"[IR-EDGE] REJECTED edge at pos={pos} "
                             f"pocket={self._current_pocket} raw={raw:.0f} "
                             f"delta_last_edge={delta:+d} "
                             f"delta_move_start={move_start_delta} "
                             f"move_start_pos={self._move_start_pos} "
-                            f"reason=[{'; '.join(reason)}]"
+                            f"reason=[gate_idle FAILED (|delta|={abs(delta)} < min_idle={min_ticks_idle})]"
                         )
 
                 # ── falling edge: black → white ────────────────────
@@ -347,7 +340,6 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         )
         self.motor.set_velocity(velocity * sign)
 
-        pockets_at_start = self._current_pocket
         while self._current_pocket != target_pocket:
             stall_check()
             await asyncio.sleep(SAMPLE_INTERVAL)
