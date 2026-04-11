@@ -17,7 +17,6 @@ STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 400  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 COAST_SETTLE_SECONDS = 0.20  # post-stop pause so the tracker can absorb any coast-through
-SKIP_DELTA_FACTOR = 1.5      # delta > this × ticks_per_pocket → assume skipped stripe (count 2)
 
 
 class MotorStalledError(Exception):
@@ -113,61 +112,111 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         """
         assert self._ticks_per_pocket is not None
         min_ticks = max(1, self._ticks_per_pocket // 2)
-        skip_ticks = int(self._ticks_per_pocket * SKIP_DELTA_FACTOR)
+        # ── diagnostic state ──────────────────────────────────────
+        _sample_count: int = 0
+        _black_entry_pos: int | None = None   # encoder pos when stripe started
+        _black_entry_time: float | None = None
+        _last_raw_log_time: float = time.monotonic()
+        RAW_LOG_INTERVAL = 0.25  # log raw IR reading every 250ms while moving
         try:
             while True:
                 await asyncio.sleep(SAMPLE_INTERVAL)
+                _sample_count += 1
                 try:
-                    reading = self._is_black()
+                    raw = float(self.light_sensor.read())
+                    reading = self._is_black_from_raw(raw)
                 except Exception as e:
                     self.warn(f"IR tracker sensor read failed: {e}")
                     continue
+
+                pos = self.motor.get_position()
+                now = time.monotonic()
+
+                # ── periodic raw signal heartbeat ─────────────────
+                if now - _last_raw_log_time >= RAW_LOG_INTERVAL:
+                    low, high = self.hysteresis_thresholds
+                    self.info(
+                        f"[IR-RAW] raw={raw:.0f} pocket={self._current_pocket} "
+                        f"pos={pos} on_black={self._tracker_on_black} "
+                        f"thresholds=[{low:.0f},{high:.0f}] "
+                        f"move_start={self._move_start_pos} "
+                        f"last_edge_pos={self._tracker_last_edge_pos}"
+                    )
+                    _last_raw_log_time = now
+
+                # ── rising edge: white → black ─────────────────────
                 if reading and not self._tracker_on_black:
-                    # white → black: potential stripe crossing
-                    pos = self.motor.get_position()
                     delta = pos - self._tracker_last_edge_pos
-                    # Gate 1: must be >= half pocket from last counted edge
                     gate_last_edge = abs(delta) >= min_ticks
-                    # Gate 2 (failsafe): when a pocket move is active, must also be
-                    # >= half pocket from where the move started. This prevents false
-                    # triggers early in a move when starting near the next stripe
-                    # (e.g. from midpoint), even if the last-edge delta looks large enough.
                     if self._move_start_pos is not None:
                         gate_move_start = abs(pos - self._move_start_pos) >= min_ticks
+                        move_start_delta = pos - self._move_start_pos
                     else:
                         gate_move_start = True
-                    if gate_last_edge and gate_move_start:
+                        move_start_delta = None
+
+                    _black_entry_pos = pos
+                    _black_entry_time = now
+
+                    # During an active move, Gate 2 (distance from move start) is the
+                    # authoritative guard — it prevents false triggers when starting
+                    # near a stripe. Gate 1 (distance from last edge) must NOT apply
+                    # during a move because _tracker_last_edge_pos still points at the
+                    # same stripe we may have just crossed from the other direction on
+                    # the previous move, making Gate 1 reject the very first real stripe.
+                    in_active_move = self._move_start_pos is not None
+                    gate_ok = gate_move_start if in_active_move else gate_last_edge
+
+                    if gate_ok:
                         direction = 1 if delta > 0 else -1
                         old = self._current_pocket
-                        if abs(delta) >= skip_ticks:
-                            # Delta is suspiciously large: we likely moved through a stripe
-                            # without the sensor catching it (motor was parked on black and
-                            # the first white→black in this direction is one stripe too far).
-                            # Count as 2 pockets to compensate.
-                            self._current_pocket = (old + direction) % NUM_POCKETS
-                            self._current_pocket = (self._current_pocket + direction) % NUM_POCKETS
-                            self.warn(
-                                f"IR skip detected: pocket {old} → {self._current_pocket} "
-                                f"(delta={delta:+d} >= skip_threshold={skip_ticks}, "
-                                f"ticks_per_pocket={self._ticks_per_pocket}) — counted 2 pockets"
-                            )
-                        else:
-                            self._current_pocket = (old + direction) % NUM_POCKETS
-                            self.info(
-                                f"IR edge: pocket {old} → {self._current_pocket} "
-                                f"(pos={pos}, delta={delta:+d})"
-                            )
+                        self._current_pocket = (old + direction) % NUM_POCKETS
                         self._last_entry_pos = pos
                         self._tracker_last_edge_pos = pos
                         self._at_midpoint = False
+                        self.info(
+                            f"[IR-EDGE] COUNTED pocket {old} → {self._current_pocket} "
+                            f"pos={pos} delta_last_edge={delta:+d} "
+                            f"delta_move_start={move_start_delta} "
+                            f"min_ticks={min_ticks} raw={raw:.0f} "
+                            f"gate={'move_start' if in_active_move else 'last_edge'}"
+                        )
+                    else:
+                        # ── REJECTED edge — key diagnostic ──────────
+                        reason = []
+                        if not gate_last_edge:
+                            reason.append(
+                                f"gate_last_edge FAILED "
+                                f"(|delta|={abs(delta)} < min={min_ticks})"
+                            )
+                        if not gate_move_start:
+                            reason.append(
+                                f"gate_move_start FAILED "
+                                f"(|move_delta|={abs(move_start_delta)} < min={min_ticks})"
+                            )
+                        self.warn(
+                            f"[IR-EDGE] REJECTED edge at pos={pos} "
+                            f"pocket={self._current_pocket} raw={raw:.0f} "
+                            f"delta_last_edge={delta:+d} "
+                            f"delta_move_start={move_start_delta} "
+                            f"move_start_pos={self._move_start_pos} "
+                            f"reason=[{'; '.join(reason)}]"
+                        )
+
+                # ── falling edge: black → white ────────────────────
                 elif not reading and self._tracker_on_black:
-                    # black → white: motor exiting a stripe
-                    pos = self.motor.get_position()
-                    delta = pos - self._tracker_last_edge_pos
-                    self.info(
-                        f"IR exit-black: pos={pos}, delta_from_last_edge={delta:+d}, "
-                        f"pocket={self._current_pocket}"
-                    )
+                    if _black_entry_pos is not None and _black_entry_time is not None:
+                        stripe_ticks = abs(pos - _black_entry_pos)
+                        stripe_ms = (now - _black_entry_time) * 1000
+                        self.info(
+                            f"[IR-FALL] stripe exit pos={pos} "
+                            f"stripe_width={stripe_ticks} ticks "
+                            f"stripe_duration={stripe_ms:.1f}ms "
+                            f"pocket={self._current_pocket} raw={raw:.0f}"
+                        )
+                    _black_entry_pos = None
+                    _black_entry_time = None
+
                 self._tracker_on_black = reading
         except asyncio.CancelledError:
             raise
@@ -287,50 +336,63 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         )
 
         self._move_start_pos = self.motor.get_position()
-        if self._tracker_on_black:
-            self.warn(
-                f"Move starting ON BLACK stripe (pos={self._move_start_pos}, "
-                f"pocket={start_pocket}) — first stripe may be skipped"
-            )
-        else:
-            self.info(f"Move start: pos={self._move_start_pos}, sensor=white, pocket={start_pocket}")
+        expected_ticks = pockets * self._ticks_per_pocket
+        low, high = self.hysteresis_thresholds
+        raw_at_start = float(self.light_sensor.read())
+        self.info(
+            f"[MOVE-START] pos={self._move_start_pos} pocket={start_pocket} "
+            f"target={target_pocket} expected_ticks={expected_ticks} "
+            f"IR_raw={raw_at_start:.0f} thresholds=[{low:.0f},{high:.0f}] "
+            f"velocity={velocity * sign}"
+        )
         self.motor.set_velocity(velocity * sign)
 
+        pockets_at_start = self._current_pocket
         while self._current_pocket != target_pocket:
             stall_check()
             await asyncio.sleep(SAMPLE_INTERVAL)
 
+        pos_at_stop = self.motor.get_position()
+        actual_ticks = abs(pos_at_stop - self._move_start_pos)
+        raw_at_stop = float(self.light_sensor.read())
         self.motor.set_velocity(0)
+        self.info(
+            f"[MOVE-STOP] pos={pos_at_stop} pocket={self._current_pocket} "
+            f"actual_ticks={actual_ticks} expected_ticks={expected_ticks} "
+            f"tick_error={actual_ticks - expected_ticks:+d} "
+            f"IR_raw={raw_at_stop:.0f}"
+        )
         self._move_start_pos = None  # lift the move-start gate
 
         # Let the tracker absorb any coast through the next stripe.
+        pocket_before_coast = self._current_pocket
         settle_deadline = time.monotonic() + COAST_SETTLE_SECONDS
         while time.monotonic() < settle_deadline:
             await asyncio.sleep(SAMPLE_INTERVAL)
+
+        pos_after_coast = self.motor.get_position()
+        coast_ticks = abs(pos_after_coast - pos_at_stop)
+        raw_after_coast = float(self.light_sensor.read())
+        self.info(
+            f"[COAST] coast_ticks={coast_ticks} "
+            f"pocket_before={pocket_before_coast} pocket_after={self._current_pocket} "
+            f"IR_raw={raw_after_coast:.0f} pos={pos_after_coast}"
+        )
 
         if self._current_pocket != target_pocket:
             drift = (self._current_pocket - target_pocket) % NUM_POCKETS
             if drift > NUM_POCKETS // 2:
                 drift -= NUM_POCKETS
             self.warn(
-                f"Coast drift: target={target_pocket}, actual={self._current_pocket} "
+                f"[COAST-DRIFT] target={target_pocket}, actual={self._current_pocket} "
                 f"({drift:+d} pockets) — tracker index is authoritative"
             )
-
-        settle_pos = self.motor.get_position()
-        if self._tracker_on_black:
-            self.warn(
-                f"Parked ON BLACK stripe (pocket={self._current_pocket}, pos={settle_pos}) — "
-                f"next move in same direction risks skipping a stripe"
-            )
-        else:
-            self.info(f"Parked on white (pocket={self._current_pocket}, pos={settle_pos})")
 
         if precise:
             await self._center_on_stripe(self._last_entry_pos)
 
         self._at_midpoint = False
-        self.info(f"Move done: pocket={self._current_pocket}")
+        self.info(f"[MOVE-DONE] pocket={self._current_pocket} target={target_pocket}")
 
     async def _center_on_stripe(self, entry_pos: int) -> None:
         """Creep back and forth to find the center of the current stripe."""

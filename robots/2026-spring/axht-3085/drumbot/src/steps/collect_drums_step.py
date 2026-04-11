@@ -55,6 +55,16 @@ class CollectDrumsStep(UIStep):
                 screen.status = "Waiting for drum..."
 
                 try:
+                    elapsed_pre = robot.synchronizer.get_time()
+                except (TypeError, AttributeError):
+                    elapsed_pre = -1.0
+                drum_service.info(
+                    f"[DRUM-{drum_number}] START checkpoint={checkpoint:.2f}s "
+                    f"elapsed={elapsed_pre:.2f}s "
+                    f"pocket={drum_service.current_pocket}"
+                )
+
+                try:
                     phase1 = seq([
                         Defs.drum_pusher_servo.open(),
                         wait_for_drum(checkpoint=checkpoint),
@@ -93,6 +103,15 @@ class CollectDrumsStep(UIStep):
                         continue
 
                 try:
+                    elapsed_post = robot.synchronizer.get_time()
+                except (TypeError, AttributeError):
+                    elapsed_post = -1.0
+                drum_service.info(
+                    f"[DRUM-{drum_number}] SORTED pocket={drum_service.current_pocket} "
+                    f"elapsed={elapsed_post:.2f}s"
+                )
+
+                try:
                     phase3 = seq([
                         Defs.drum_pusher_servo.close(),
                         wait_for_seconds(0.5),
@@ -107,6 +126,14 @@ class CollectDrumsStep(UIStep):
                     drum_service.collection_failed = True
                     continue
 
+                try:
+                    elapsed_done = robot.synchronizer.get_time()
+                except (TypeError, AttributeError):
+                    elapsed_done = -1.0
+                drum_service.info(
+                    f"[DRUM-{drum_number}] DONE pocket={drum_service.current_pocket} "
+                    f"elapsed={elapsed_done:.2f}s"
+                )
                 screen.status = "Done"
         finally:
             for task in (ui_task, stuck_task):
