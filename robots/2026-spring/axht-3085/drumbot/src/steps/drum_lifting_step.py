@@ -89,7 +89,7 @@ def drum_lifting_up_over_limit():
 
         #motor pushes the rum further back
         fully_disable_servos(),
-        set_motor_power(Defs.drum_motor, -100),
+        set_motor_power(Defs.servo_help_motor, -100),
         wait_for_seconds(0.5),
         motor_passive_brake(Defs.drum_motor),
     ])
