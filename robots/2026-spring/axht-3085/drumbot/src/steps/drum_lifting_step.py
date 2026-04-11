@@ -7,7 +7,7 @@ from src.hardware.defs import Defs
 def _lift_drum_servo(
         target_position: _PresetPosition,
         servo_speed: int,
-        base_motor_speed=60,
+        base_motor_speed=100,
         servo_ref=Defs.lift_drums_servo.device,
         motor_ref=Defs.servo_help_motor,
         slow_mode=True,

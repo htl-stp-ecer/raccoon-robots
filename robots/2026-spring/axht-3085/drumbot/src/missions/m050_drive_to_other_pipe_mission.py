@@ -11,8 +11,9 @@ class M050DriveToOtherPipeMission(Mission):
             parallel(
                 drive_backward(cm=5),
                 Defs.pom_remover_servo.center(),
-                drum_lifting_up(),
             ),
+            drum_lifting_up_over_limit(),
+
 
             # turn straight
             turn_to_heading_right(180),
@@ -48,7 +49,7 @@ class M050DriveToOtherPipeMission(Mission):
             turn_to_heading_right(90 - 20),  # turn 20deg to the right
 
             drive_to_second_pipe(),
-            lineup_drum_with_pipe(),
+            lineup_drum_with_pipe(True),
 
             # eject drum mission will be executed next
         ])

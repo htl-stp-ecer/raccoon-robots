@@ -1,6 +1,7 @@
 drum_pusher_servo:
   type: Servo
   port: 0
+  offset: 8
   positions:
     close: 35
     open: 170

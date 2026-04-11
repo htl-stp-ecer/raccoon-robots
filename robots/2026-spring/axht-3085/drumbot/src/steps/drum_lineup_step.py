@@ -10,6 +10,7 @@ def lineup_drum_with_pipe(recover_from_limit: bool = False):
     drum_servo_step = drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position) if recover_from_limit else drum_seek()
     return seq([
         drum_servo_step,
+        wait_for_seconds(1.0), #wait so our drum is defently up
         timeout(
             step=seq([
                 turn_to_peak(
