@@ -1,16 +1,15 @@
-from libstp import *
+from raccoon import *
 
 from src.hardware.defs import Defs
 
 
 class M010GrabFirstPomsMission(Mission):
-    time_budged = 30.0 #kills the bot after 30s
+    time_budget = 30.0 #kills the bot after 30s
 
     def sequence(self) -> Sequential:
         return seq([
             Defs.shild.normal_drive(),
             switch_calibration_set("upper"),
-            wait_for_seconds(20),
             mark_heading_reference(origin_offset_deg=-180),  # mark heading for use in drive down acess ramp
             # drive infront of poms
             parallel(
