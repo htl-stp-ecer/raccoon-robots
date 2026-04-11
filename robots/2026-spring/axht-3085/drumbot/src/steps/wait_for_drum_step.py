@@ -10,7 +10,6 @@ from src.hardware.defs import Defs
 from src.service.color_detection_service import ColorDetectionService
 from src.service.sorting_service import SortingService
 
-BLOCK_ANGLE = 82       # servo angle to block the drum
 CLOSE_DELAY = 0.0     # seconds to wait after detection before closing servo
 
 
@@ -92,7 +91,7 @@ class WaitForDrumStep(Step):
             )
             color_service.lock_color()
 
-        Defs.drum_pusher_servo.set_position(BLOCK_ANGLE)
+        Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.block_angle.value)
 
 
 @dsl()
