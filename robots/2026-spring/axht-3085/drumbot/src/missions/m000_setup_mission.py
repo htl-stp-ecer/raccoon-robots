@@ -3,9 +3,9 @@ from raccoon.step.sequential import *
 
 from src.steps.camera_lifecycle_step import start_camera
 from src.steps.color_calibration import calibrate_colors
-from src.steps.debug_wait_step import debug_wait
 from src.steps.drum_collector import align_edge, calibrate_drum_collector
 from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up, drum_seek
+from src.hardware.defs import Defs
 
 class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:

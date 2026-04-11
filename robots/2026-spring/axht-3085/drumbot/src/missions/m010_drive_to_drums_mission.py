@@ -8,8 +8,7 @@ class M010DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             mark_heading_reference(
-                origin_offset_deg=90,
-                positive_direction="right"
+                origin_offset_deg=-90,
             ),
 
             parallel(

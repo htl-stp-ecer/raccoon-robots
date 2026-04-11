@@ -3,7 +3,6 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
-from src.steps.drive_to_pipe import drive_to_first_pipe
 from src.steps.drum_lifting_step import drum_lifting_up
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 
@@ -21,10 +20,6 @@ def print_debug_info(robot):
 class M030DriveToPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # lift drum
-            Defs.drum_pusher_servo.close(),
-            drum_lifting_up(),
-
             # drive to first black line and turn
             parallel(
                 drive_backward().until(
@@ -35,7 +30,7 @@ class M030DriveToPipeMission(Mission):
                     Defs.pom_remover_servo.center(),
                 ]),
             ),
-            turn_to_heading_left(180),  # simons magic value don't touch TODO: try 90 (88)
+            turn_to_heading_left(180),
 
             # drive to pipe
             parallel(
