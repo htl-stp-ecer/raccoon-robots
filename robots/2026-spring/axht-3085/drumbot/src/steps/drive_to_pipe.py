@@ -15,7 +15,11 @@ def drive_to_second_pipe():
             ).until(
                 on_black(Defs.front_left_ir_sensor)
             ),
+
+            #make sure we are straight (to drive accurace distance
             turn_to_heading_right(180),
+
+            #TODO: Try a drive straight and align on pipe
             follow_line_single(
                 Defs.front_right_ir_sensor,
                 kp=0.5,
@@ -24,10 +28,5 @@ def drive_to_second_pipe():
             ).until(
                 after_forward_cm(43)
             ),
-            seq([
-                wait_until_distance(37),
-                # Defs.pom_remover_servo.push_blue_pom_away(),
-                # Defs.pom_remover_servo.start(),
-            ])
         )
     ])

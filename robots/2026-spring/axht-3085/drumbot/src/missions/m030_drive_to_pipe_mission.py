@@ -35,7 +35,7 @@ class M030DriveToPipeMission(Mission):
                     Defs.pom_remover_servo.center(),
                 ]),
             ),
-            turn_to_heading_left(88),  # simons magic value don't touch TODO: try 90
+            turn_to_heading_left(180),  # simons magic value don't touch TODO: try 90 (88)
 
             # drive to pipe
             parallel(
@@ -46,4 +46,6 @@ class M030DriveToPipeMission(Mission):
             ),
 
             lineup_drum_with_pipe(),
+
+            # eject drum mission will be executed next
         ])

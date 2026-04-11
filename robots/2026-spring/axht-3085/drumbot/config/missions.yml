@@ -2,7 +2,7 @@
 - M010DriveToDrumsMission
 - M020CollectDrumsMission
 - M030DriveToPipeMission
-- M040EjectDrumsMission
+- MEjectDrumsMission
 - M050DriveToOtherPipeMission
-- M040EjectDrumsMission
+- MEjectDrumsMission
 - M999ShutdownMission: shutdown
