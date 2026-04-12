@@ -71,7 +71,7 @@ class DrumCollectorSampleStep(Step):
     Result is stashed for a downstream ``review_drum_collector()`` step.
     """
 
-    def __init__(self, calibration_time: float = 5.0, motor_speed: float = 0.2):
+    def __init__(self, calibration_time: float = 5.0, motor_speed: float = 1.0):
         super().__init__()
         self.calibration_time = calibration_time
         self.motor_speed = motor_speed
@@ -115,7 +115,7 @@ class DrumCollectorReviewStep(CalibrateStep[DrumCalibration]):
         self,
         review_delta: float = DEFAULT_REVIEW_DELTA,
         calibration_time: float = 5.0,
-        motor_speed: float = 0.2,
+        motor_speed: float = 1.0,
     ):
         super().__init__(
             store_section="drum-collector",
@@ -209,7 +209,7 @@ class DrumCollectorReviewStep(CalibrateStep[DrumCalibration]):
 @dsl()
 def sample_drum_collector(
     calibration_time: float = 5.0,
-    motor_speed: float = 0.2,
+    motor_speed: float = 1.0,
 ) -> DrumCollectorSampleStep:
     """Headless drum collector sampling — no UI. Run in ``parallel()`` with
     ``calibrate_colors()`` so the motor spins while the human clicks through
@@ -225,7 +225,7 @@ def sample_drum_collector(
 def review_drum_collector(
     review_delta: float = DEFAULT_REVIEW_DELTA,
     calibration_time: float = 5.0,
-    motor_speed: float = 0.2,
+    motor_speed: float = 1.0,
 ) -> DrumCollectorReviewStep:
     """Apply the pending drum calibration from ``sample_drum_collector()``.
 
@@ -243,7 +243,7 @@ def review_drum_collector(
 @dsl()
 def calibrate_drum_collector(
     calibration_time: float = 5.0,
-    motor_speed: float = 0.2,
+    motor_speed: float = 1.0,
     review_delta: float = DEFAULT_REVIEW_DELTA,
 ) -> DrumCollectorReviewStep:
     """Single-step drum collector calibration (legacy). Samples and reviews
