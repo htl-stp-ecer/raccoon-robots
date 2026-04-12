@@ -46,5 +46,5 @@ class M000SetupMission(SetupMission):
                 sample_drum_collector(calibration_time=5.0),
             ),
             review_drum_collector(review_delta=750),
-            #align_edge(),
+            align_edge(),
         ])
