@@ -133,16 +133,81 @@ class SortingService(RobotService):
         empties = [i for i, s in enumerate(self.slots) if s is None]
         return empties[0] if len(empties) == 1 else None
 
+    @staticmethod
+    def _ring_distance(a: int, b: int) -> int:
+        d = abs(a - b)
+        return min(d, NUM_SLOTS - d)
+
     def nearest_empty_slot(self, current_index: int) -> int:
         """Return the empty slot nearest to current_index (shortest path on ring)."""
         empties = [i for i, s in enumerate(self.slots) if s is None]
         if not empties:
             raise RuntimeError("No empty slots available")
 
-        def ring_distance(a: int, b: int) -> int:
-            d = abs(a - b)
-            return min(d, NUM_SLOTS - d)
-
-        best = min(empties, key=lambda e: ring_distance(current_index, e))
+        best = min(empties, key=lambda e: self._ring_distance(current_index, e))
         self.info(f"Nearest empty slot to {current_index}: slot {best} (empties={empties})")
+        return best
+
+    def strategic_empty_slot(self, current_index: int) -> int:
+        """Pick the staging slot that minimises worst-case travel to the next drum target.
+
+        Core idea: stage in the **center of the gap** between the two colour
+        fronts so that both ``blue_next`` and ``pink_next`` are reachable via
+        short, clear paths through the unfilled zone.
+
+        Special cases:
+        * One colour fully placed → stage near the remaining colour's next target.
+        * Both colours done → fall back to nearest empty.
+        """
+        empties = [i for i, s in enumerate(self.slots) if s is None]
+        if not empties:
+            raise RuntimeError("No empty slots available")
+
+        blue_remaining = TOTAL_BLUE - self._blue_detected
+        pink_remaining = TOTAL_PINK - self._pink_detected
+
+        # ── all drums placed ──────────────────────────────────────
+        if blue_remaining == 0 and pink_remaining == 0:
+            best = min(empties, key=lambda e: self._ring_distance(current_index, e))
+            self.info(f"Strategic empty (all done): slot {best}")
+            return best
+
+        # ── only one colour remaining ─────────────────────────────
+        if blue_remaining == 0:
+            best = min(empties, key=lambda e: (
+                self._ring_distance(e, self.pink_next),
+                self._ring_distance(current_index, e),
+            ))
+            self.info(
+                f"Strategic empty (only pink left, next={self.pink_next}): slot {best}"
+            )
+            return best
+
+        if pink_remaining == 0:
+            best = min(empties, key=lambda e: (
+                self._ring_distance(e, self.blue_next),
+                self._ring_distance(current_index, e),
+            ))
+            self.info(
+                f"Strategic empty (only blue left, next={self.blue_next}): slot {best}"
+            )
+            return best
+
+        # ── both colours expected: centre of gap ──────────────────
+        # The gap runs from blue_next to pink_next (the unfilled zone
+        # between the two growing fronts).  Its centre is the point
+        # that equalises the distance to both next targets.
+        ideal = (self.blue_next + self.pink_next) // 2
+
+        # Pick the empty slot closest to the ideal, with a tie-break
+        # on distance from our current position (less travel to stage).
+        best = min(empties, key=lambda e: (
+            self._ring_distance(e, ideal),
+            self._ring_distance(current_index, e),
+        ))
+
+        self.info(
+            f"Strategic empty (blue_next={self.blue_next}, pink_next={self.pink_next}, "
+            f"ideal={ideal}): slot {best} (empties={empties})"
+        )
         return best

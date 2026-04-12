@@ -57,7 +57,6 @@ class CollectDrumsStep(UIStep):
                     self.warn(f"Skipping drum #{drum_number} — safe mode active")
                     continue
 
-                color_service.reset()
                 screen.drum_number = drum_number
                 screen.status = "Waiting for drum..."
 
@@ -72,18 +71,23 @@ class CollectDrumsStep(UIStep):
                 )
 
                 try:
-                    phase1 = seq([
+                    # Wait for the drum to arrive and get captured
+                    phase1a = seq([
                         Defs.drum_pusher_servo.open(),
                         wait_for_drum(checkpoint=checkpoint),
                         block_timer_start(),
-                        wait_for_seconds(0.5),
-                        #drum_align_on_back(),
-                        #parallel(
-                        #    drum_lifting_down(),
-                            sort_into_slot(),
-                        #),
                     ])
-                    await phase1.run_step(robot)
+                    await phase1a.run_step(robot)
+
+                    # Reset detection now so the camera gets a fresh read
+                    # of the stationary drum during the settling wait
+                    color_service.reset()
+
+                    phase1b = seq([
+                        wait_for_seconds(0.5),
+                        sort_into_slot(),
+                    ])
+                    await phase1b.run_step(robot)
                 except MotorStalledError:
                     await self._emergency_shutdown(
                         drum_service,

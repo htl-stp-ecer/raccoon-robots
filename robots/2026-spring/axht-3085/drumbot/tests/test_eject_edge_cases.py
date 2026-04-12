@@ -63,6 +63,18 @@ class FakeDrumMotor:
     visited: list[int] = field(default_factory=list)
     calls: list[tuple] = field(default_factory=list)
 
+    @property
+    def motor(self):
+        """Expose a fake motor object with set_speed / brake for ejection."""
+        return self._FakeMotorHandle()
+
+    class _FakeMotorHandle:
+        def set_speed(self, speed: int) -> None:
+            pass
+
+        def brake(self) -> None:
+            pass
+
     # ── helpers ──────────────────────────────────────────────────
 
     def _step(self, delta: int) -> None:
@@ -86,6 +98,46 @@ class FakeDrumMotor:
             self._step(-1)
         self.at_midpoint = False
         return "backward"
+
+    async def go_to_pocket_via_gap(
+        self, pocket: int, filled_slots: set[int], *, precise: bool = False
+    ) -> str:
+        """Simplified gap-aware navigation matching DrumMotorService API."""
+        pocket = pocket % NUM_POCKETS
+        self.calls.append(("go_to_pocket_via_gap", pocket, filled_slots))
+        if self.current_pocket == pocket:
+            return "none"
+
+        fwd_steps = (pocket - self.current_pocket) % NUM_POCKETS
+        bwd_steps = NUM_POCKETS - fwd_steps
+
+        def path_blocked(steps: int, sign: int) -> bool:
+            p = self.current_pocket
+            for _ in range(steps - 1):
+                p = (p + sign) % NUM_POCKETS
+                if p in filled_slots:
+                    return True
+            return False
+
+        fwd_blocked = path_blocked(fwd_steps, +1)
+        bwd_blocked = path_blocked(bwd_steps, -1)
+
+        if not fwd_blocked and bwd_blocked:
+            for _ in range(fwd_steps):
+                self._step(+1)
+            return "forward"
+        elif fwd_blocked and not bwd_blocked:
+            for _ in range(bwd_steps):
+                self._step(-1)
+            return "backward"
+        elif fwd_steps <= bwd_steps:
+            for _ in range(fwd_steps):
+                self._step(+1)
+            return "forward"
+        else:
+            for _ in range(bwd_steps):
+                self._step(-1)
+            return "backward"
 
     async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
         self.calls.append(("advance", pockets))
@@ -466,8 +518,8 @@ class TestNearestEmptySlot:
             sorting.nearest_empty_slot(4)
 
     def test_go_to_empty_step_moves_to_correct_slot(self):
-        """The step must move the motor to whichever slot is reported
-        empty, not some pre-baked constant."""
+        """The step must move the motor to whichever slot the strategic
+        selector chooses, not some pre-baked constant."""
         sorting = fill("blue", "pink", "blue")  # empties 3..7
         motor = FakeDrumMotor(current_pocket=5)
         robot = make_robot(sorting, motor)
@@ -475,7 +527,7 @@ class TestNearestEmptySlot:
         step.info = lambda msg: None
         step.warn = lambda msg: None
         run(step._execute_step(robot))
-        assert motor.current_pocket == sorting.nearest_empty_slot(5)
+        assert motor.current_pocket == sorting.strategic_empty_slot(5)
 
 
 # ── SortIntoSlotStep: wrong / missing detection ─────────────────

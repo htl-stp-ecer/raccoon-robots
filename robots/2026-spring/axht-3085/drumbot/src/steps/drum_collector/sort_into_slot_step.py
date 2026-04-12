@@ -66,15 +66,21 @@ class BlockTimerCheckStep(Step):
 
 @dsl(hidden=True)
 class GoToEmptySlotStep(Step):
-    """Move revolver to the nearest empty slot so opening the pusher is safe."""
+    """Move revolver to a strategically chosen empty slot so opening the pusher is safe.
+
+    Instead of the *nearest* empty slot, pick the centre of the gap between
+    the two colour fronts so the next drum — regardless of colour — is
+    reachable via a short, unblocked path.
+    """
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         sorting_service = robot.get_service(SortingService)
         drum_service = robot.get_service(DrumMotorService)
 
-        empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
-        drum_service.info(f"Moving to empty slot {empty} before opening pusher")
-        await drum_service.go_to_pocket(empty, precise=False)
+        empty = sorting_service.strategic_empty_slot(drum_service.current_pocket)
+        filled = {i for i, s in enumerate(sorting_service.slots) if s is not None}
+        drum_service.info(f"Moving to strategic empty slot {empty} before opening pusher")
+        await drum_service.go_to_pocket_via_gap(empty, filled, precise=False)
 
 
 @dsl(hidden=True)
