@@ -14,7 +14,6 @@ class M050DriveToOtherPipeMission(Mission):
             ),
             drum_lifting_up_over_limit(),
 
-
             # turn straight
             turn_to_heading_right(180),
 
@@ -29,9 +28,9 @@ class M050DriveToOtherPipeMission(Mission):
             turn_to_heading_right(90),
 
             # turn to black line so we can start linefollowing
-            turn_right().until(
-                on_black(Defs.front_right_ir_sensor)
-            ),
+            # turn_right().until(
+            #    on_black(Defs.front_right_ir_sensor)
+            # ),
 
             # wait for the other bot to finish
             wait_for_checkpoint(60 + 35),
@@ -40,13 +39,19 @@ class M050DriveToOtherPipeMission(Mission):
                                kp=1,
                                ki=0.1,
                                kd=0.1,
-                               side=LineSide.RIGHT,
+                               side=LineSide.LEFT,
                                speed=1.0
                                ).until(
-                on_black(Defs.front_left_ir_sensor) +
-                after_forward_cm(16)
+                on_black(Defs.front_left_ir_sensor)
+                # + after_forward_cm(16)
             ),
-            turn_to_heading_right(90 - 20),  # turn 20deg to the right
+            turn_to_heading_right(90 + 30),  # turn 20deg to the right
+            drive_arc(
+                radius_cm=20,
+                degrees=30,
+                speed=1.0
+            ),
+            turn_to_heading_right(90),
 
             drive_to_second_pipe(),
             lineup_drum_with_pipe(True),
