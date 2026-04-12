@@ -1,11 +1,11 @@
 drum_pusher_servo:
   type: Servo
   port: 0
-  offset: -25
+  offset: 0
   positions:
-    close: 35
-    open: 170
-    block_angle: 82
+    close: 10
+    open: 180
+    block_angle: 55
 pom_remover_servo:
   type: Servo
   port: 3
