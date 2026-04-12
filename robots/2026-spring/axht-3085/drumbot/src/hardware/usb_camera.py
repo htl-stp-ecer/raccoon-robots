@@ -275,6 +275,93 @@ class USBCamera:
         with self._lock:
             return self._buffer[-1].copy() if self._buffer else None
 
+    def get_annotated_debug_frame(self, frame: np.ndarray) -> np.ndarray:
+        """Return an annotated copy of frame showing full detection debug info.
+
+        Overlays:
+        - Green tint on saturated pixels (the sat_mask)
+        - Detected contour drawn in its detected color (blue/pink)
+        - Bounding box with label: color, area, mean LAB a*
+        - Text panel with sat_threshold and per-color presence
+        """
+        annotated = frame.copy()
+        h, w = frame.shape[:2]
+
+        # Stage 1: saturation gate
+        hsv_raw = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        max_sat = int(hsv_raw[:, :, 1].max())
+        gate_passed = max_sat >= self._sat_threshold
+
+        # Always show sat_threshold info
+        cv2.putText(annotated, f"sat_max={max_sat} thresh={self._sat_threshold}",
+                    (4, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+
+        if not gate_passed:
+            cv2.putText(annotated, "SAT GATE FAILED", (4, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 1, cv2.LINE_AA)
+            return annotated
+
+        pp = self._preprocess(frame)
+        hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
+        lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
+
+        # Build sat_mask
+        sat_mask = (hsv[:, :, 1] >= self._sat_threshold).astype(np.uint8) * 255
+        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_OPEN, self._morph_kernel)
+        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_CLOSE, self._morph_kernel)
+
+        # Overlay sat_mask as a green tint (50% opacity)
+        overlay = annotated.copy()
+        overlay[sat_mask == 255] = (0, 200, 0)
+        cv2.addWeighted(overlay, 0.35, annotated, 0.65, 0, annotated)
+
+        contours, _ = cv2.findContours(sat_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            cv2.putText(annotated, "NO CONTOURS", (4, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 1, cv2.LINE_AA)
+            return annotated
+
+        largest = max(contours, key=cv2.contourArea)
+        area = int(cv2.contourArea(largest))
+        x, y, bw, bh = cv2.boundingRect(largest)
+
+        first_profile = next(iter(self._colors.values())) if self._colors else None
+        min_area = first_profile.min_area if first_profile else 500
+        min_dim = first_profile.min_dimension if first_profile else 5
+
+        size_ok = area >= min_area and bw >= min_dim and bh >= min_dim
+
+        # Compute mean LAB a* inside contour
+        contour_mask = np.zeros(lab.shape[:2], dtype=np.uint8)
+        cv2.drawContours(contour_mask, [largest], -1, 255, cv2.FILLED)
+        pixels_in = contour_mask == 255
+        mean_a = float(lab[:, :, 1][pixels_in].mean()) if pixels_in.any() else 128.0
+        detected_color = "pink" if mean_a > 128 else "blue"
+
+        # Draw contour and bounding box in the detected color
+        draw_bgr = (255, 100, 180) if detected_color == "pink" else (255, 80, 0)
+        cv2.drawContours(annotated, [largest], -1, draw_bgr, 2)
+        rect_color = (0, 0, 200) if not size_ok else draw_bgr
+        cv2.rectangle(annotated, (x, y), (x + bw, y + bh), rect_color, 2)
+
+        # Label at the bounding box
+        label = f"{detected_color} a*={mean_a:.0f} area={area}"
+        label_y = max(y - 4, 12)
+        cv2.putText(annotated, label, (x, label_y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.38, draw_bgr, 1, cv2.LINE_AA)
+
+        if not size_ok:
+            cv2.putText(annotated, f"TOO SMALL ({bw}x{bh})", (x, y + bh + 12),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 0, 255), 1, cv2.LINE_AA)
+
+        # Also annotate all other (smaller) contours faintly
+        for c in contours:
+            if c is largest:
+                continue
+            cv2.drawContours(annotated, [c], -1, (180, 180, 0), 1)
+
+        return annotated
+
     @staticmethod
     def _preprocess(frame: np.ndarray) -> np.ndarray:
         """Gray-world white balance plus Gaussian blur."""

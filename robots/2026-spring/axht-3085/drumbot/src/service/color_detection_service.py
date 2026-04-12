@@ -209,7 +209,13 @@ class ColorDetectionService(RobotService):
                 log_window_start = time.monotonic()
 
     def _save_detection_frame(self, color: str) -> None:
-        """Save a PNG of the current frame when a new drum detection streak starts."""
+        """Save an annotated PNG when a new drum detection streak starts.
+
+        The saved image shows:
+        - Green tint over saturated pixels (what the camera treats as 'colored')
+        - Detected contour and bounding box drawn in the detected color
+        - Labels with detected color, LAB a* mean, area, and sat threshold
+        """
         import cv2
 
         frame = self._camera.grab_frame()
@@ -220,7 +226,8 @@ class ColorDetectionService(RobotService):
         os.makedirs(out_dir, exist_ok=True)
         filename = f"{t:.3f}s_{color}.png"
         path = os.path.join(out_dir, filename)
-        cv2.imwrite(path, frame)
+        annotated = self._camera.get_annotated_debug_frame(frame)
+        cv2.imwrite(path, annotated)
 
     def pause_detection(self) -> None:
         """Pause the background detection loop to free CPU."""
