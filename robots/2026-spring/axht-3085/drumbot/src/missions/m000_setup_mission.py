@@ -3,7 +3,11 @@ from raccoon.step.sequential import *
 
 from src.steps.camera_lifecycle_step import start_camera
 from src.steps.color_calibration import calibrate_colors
-from src.steps.drum_collector import align_edge, calibrate_drum_collector
+from src.steps.drum_collector import (
+    align_edge,
+    review_drum_collector,
+    sample_drum_collector,
+)
 from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up, drum_seek
 from src.hardware.defs import Defs
 
@@ -37,9 +41,10 @@ class M000SetupMission(SetupMission):
             drum_lifting_down(),
             Defs.drum_pusher_servo.open(),
 
-            calibrate_colors(),
-
-            wait_for_button("calibrate drum collector"),
-            calibrate_drum_collector(calibration_time=5.0),
+            parallel(
+                calibrate_colors(),
+                sample_drum_collector(calibration_time=5.0),
+            ),
+            review_drum_collector(review_delta=750),
             #align_edge(),
         ])
