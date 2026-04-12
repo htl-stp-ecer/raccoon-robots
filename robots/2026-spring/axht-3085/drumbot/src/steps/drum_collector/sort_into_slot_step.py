@@ -163,7 +163,7 @@ class EjectNearestColorStep(Step):
                 forward = False
 
 
-            pockets_to_eject = len(slots) - 1
+            pockets_to_eject = len(slots)
             drum_service.info(
                 f"Ejecting {color}: go to slot {start_slot}, "
                 f"then sweep {'forward' if forward else 'backward'} "

@@ -17,40 +17,68 @@ MIN_SAMPLES_TO_LEARN = 3
 
 
 class SortingService(RobotService):
-    """Bidirectional revolver sorting: blue grows CW (0→1→2→...),
-    pink grows CCW (8→7→6→...). Empty slot ends up in the middle."""
+    """Bidirectional revolver sorting: one color grows CW, the other CCW.
+
+    The first drum detected decides which color gets the *near* side
+    (slot 1, growing CW: 1→2→3→4) and which gets the *far* side
+    (slot 8, growing CCW: 8→7→6→5).  Assigning the first-seen color
+    to slot 1 instead of slot 0 reduces the worst-case via-gap
+    rotation from 7 to 6 pockets.
+    """
 
     def __init__(self, robot: "GenericRobot") -> None:
         super().__init__(robot)
-        self.blue_next: int = 0
-        self.pink_next: int = 8
+        # CW pointer (near side) and CCW pointer (far side).
+        # Initialised to None until the first drum locks in the mapping.
+        self._cw_next: int = 1   # grows 1→2→3→4
+        self._ccw_next: int = 8  # grows 8→7→6→5
+        self._cw_color: str | None = None   # color assigned to the CW (near) side
+        self._ccw_color: str | None = None  # color assigned to the CCW (far) side
         self.slots: list[str | None] = [None] * NUM_SLOTS
         self._blue_detected: int = 0
         self._pink_detected: int = 0
         self._detection_deltas: list[float] = []
 
+    def _lock_sides(self, first_color: str) -> None:
+        """Assign near/far sides based on the first drum seen."""
+        self._cw_color = first_color
+        self._ccw_color = "pink" if first_color == "blue" else "blue"
+        self.info(
+            f"Sides locked: {self._cw_color} → CW (1→), "
+            f"{self._ccw_color} → CCW (←8)"
+        )
+
     def assign_slot(self, color: str) -> int:
         """Return the target slot for *color* and advance the pointer."""
-        if self.blue_next > self.pink_next:
+        if color not in ("blue", "pink"):
+            raise ValueError(f"Unknown color: {color!r}")
+
+        # First drum locks in which color goes to which side.
+        if self._cw_color is None:
+            self._lock_sides(color)
+
+        if self._cw_next > self._ccw_next:
             raise RuntimeError(
-                f"Revolver full: blue_next={self.blue_next}, pink_next={self.pink_next}",
+                f"Revolver full: cw_next={self._cw_next}, ccw_next={self._ccw_next}",
             )
 
-        if color == "blue":
-            target = self.blue_next
-            self.blue_next += 1
-            self._blue_detected += 1
-        elif color == "pink":
-            target = self.pink_next
-            self.pink_next -= 1
-            self._pink_detected += 1
+        if color == self._cw_color:
+            target = self._cw_next
+            self._cw_next += 1
         else:
-            raise ValueError(f"Unknown color: {color!r}")
+            target = self._ccw_next
+            self._ccw_next -= 1
+
+        if color == "blue":
+            self._blue_detected += 1
+        else:
+            self._pink_detected += 1
 
         self.slots[target] = color
         self.info(
             f"Assigned {color} → slot {target}  "
-            f"(blue_next={self.blue_next}, pink_next={self.pink_next})",
+            f"(cw_next={self._cw_next}, ccw_next={self._ccw_next}, "
+            f"cw_color={self._cw_color})",
         )
         return target
 
