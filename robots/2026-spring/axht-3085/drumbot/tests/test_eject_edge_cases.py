@@ -63,18 +63,6 @@ class FakeDrumMotor:
     visited: list[int] = field(default_factory=list)
     calls: list[tuple] = field(default_factory=list)
 
-    @property
-    def motor(self):
-        """Expose a fake motor object with set_speed / brake for ejection."""
-        return self._FakeMotorHandle()
-
-    class _FakeMotorHandle:
-        def set_speed(self, speed: int) -> None:
-            pass
-
-        def brake(self) -> None:
-            pass
-
     # ── helpers ──────────────────────────────────────────────────
 
     def _step(self, delta: int) -> None:
@@ -98,46 +86,6 @@ class FakeDrumMotor:
             self._step(-1)
         self.at_midpoint = False
         return "backward"
-
-    async def go_to_pocket_via_gap(
-        self, pocket: int, filled_slots: set[int], *, precise: bool = False
-    ) -> str:
-        """Simplified gap-aware navigation matching DrumMotorService API."""
-        pocket = pocket % NUM_POCKETS
-        self.calls.append(("go_to_pocket_via_gap", pocket, filled_slots))
-        if self.current_pocket == pocket:
-            return "none"
-
-        fwd_steps = (pocket - self.current_pocket) % NUM_POCKETS
-        bwd_steps = NUM_POCKETS - fwd_steps
-
-        def path_blocked(steps: int, sign: int) -> bool:
-            p = self.current_pocket
-            for _ in range(steps - 1):
-                p = (p + sign) % NUM_POCKETS
-                if p in filled_slots:
-                    return True
-            return False
-
-        fwd_blocked = path_blocked(fwd_steps, +1)
-        bwd_blocked = path_blocked(bwd_steps, -1)
-
-        if not fwd_blocked and bwd_blocked:
-            for _ in range(fwd_steps):
-                self._step(+1)
-            return "forward"
-        elif fwd_blocked and not bwd_blocked:
-            for _ in range(bwd_steps):
-                self._step(-1)
-            return "backward"
-        elif fwd_steps <= bwd_steps:
-            for _ in range(fwd_steps):
-                self._step(+1)
-            return "forward"
-        else:
-            for _ in range(bwd_steps):
-                self._step(-1)
-            return "backward"
 
     async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
         self.calls.append(("advance", pockets))
@@ -332,7 +280,7 @@ class TestEjectAllFourDrums:
         sorting = fill("pink", "pink", "pink", "pink")
         motor = FakeDrumMotor(current_pocket=start_pocket)
         claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {1, 2, 3, 4}
+        assert claimed == {5, 6, 7, 8}
         assert_all_ejected(motor, claimed, since=since)
 
     @pytest.mark.parametrize("start_pocket", list(range(NUM_POCKETS)))
@@ -341,7 +289,7 @@ class TestEjectAllFourDrums:
         sorting = fill("blue", "blue", "blue", "blue")
         motor = FakeDrumMotor(current_pocket=start_pocket)
         claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {0, 6, 7, 8}
+        assert claimed == {0, 1, 2, 3}
         assert_all_ejected(motor, claimed, since=since)
 
     def test_revolver_full_blue_then_pink(self):
@@ -386,29 +334,29 @@ class TestImperfectSortingState:
         shifts every distance calculation."""
         sorting = fill("blue", "blue", "blue",
                        "pink", "pink", "pink", "pink", "pink")
-        assert sorted(sorting.blue_slots) == [0, 7, 8]
-        assert sorted(sorting.pink_slots) == [1, 2, 3, 4, 5]
+        assert sorting.blue_slots == [0, 1, 2]
+        assert sorted(sorting.pink_slots) == [4, 5, 6, 7, 8]
 
-        motor = FakeDrumMotor(current_pocket=6)  # empty slot
+        motor = FakeDrumMotor(current_pocket=3)  # empty slot
         self._drain_and_verify(sorting, motor)
 
     def test_uneven_5_blue_3_pink(self):
         sorting = fill("blue", "blue", "blue", "blue", "blue",
                        "pink", "pink", "pink")
-        assert sorted(sorting.blue_slots) == [0, 5, 6, 7, 8]
-        assert sorted(sorting.pink_slots) == [1, 2, 3]
+        assert sorted(sorting.blue_slots) == [0, 1, 2, 3, 4]
+        assert sorted(sorting.pink_slots) == [6, 7, 8]
 
-        motor = FakeDrumMotor(current_pocket=4)  # empty slot
+        motor = FakeDrumMotor(current_pocket=5)  # empty slot
         self._drain_and_verify(sorting, motor)
 
     def test_uneven_1_blue_7_pink(self):
         sorting = fill("blue", *(["pink"] * 7))
-        motor = FakeDrumMotor(current_pocket=8)  # empty slot
+        motor = FakeDrumMotor(current_pocket=1)
         self._drain_and_verify(sorting, motor)
 
     def test_uneven_7_blue_1_pink(self):
         sorting = fill(*(["blue"] * 7), "pink")
-        motor = FakeDrumMotor(current_pocket=2)  # empty slot
+        motor = FakeDrumMotor(current_pocket=7)
         self._drain_and_verify(sorting, motor)
 
     def test_single_blue_only(self):
@@ -423,7 +371,7 @@ class TestImperfectSortingState:
         sorting = fill("pink")
         motor = FakeDrumMotor(current_pocket=0)
         claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {1}
+        assert claimed == {8}
         assert_all_ejected(motor, claimed, since=since)
 
     def test_two_blue_two_pink(self):
@@ -434,16 +382,16 @@ class TestImperfectSortingState:
     def test_all_eight_blue(self):
         """Worst case: every drum read as blue (total detection bias)."""
         sorting = fill(*(["blue"] * 8))
-        assert sorted(sorting.blue_slots) == [0, 2, 3, 4, 5, 6, 7, 8]
-        motor = FakeDrumMotor(current_pocket=1)  # empty slot
+        assert sorted(sorting.blue_slots) == [0, 1, 2, 3, 4, 5, 6, 7]
+        motor = FakeDrumMotor(current_pocket=8)
         claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {0, 2, 3, 4, 5, 6, 7, 8}
+        assert claimed == {0, 1, 2, 3, 4, 5, 6, 7}
         assert_all_ejected(motor, claimed, since=since)
 
     def test_all_eight_pink(self):
         sorting = fill(*(["pink"] * 8))
         assert sorted(sorting.pink_slots) == [1, 2, 3, 4, 5, 6, 7, 8]
-        motor = FakeDrumMotor(current_pocket=0)  # empty slot
+        motor = FakeDrumMotor(current_pocket=0)
         claimed, _, since = run_eject(sorting, motor)
         assert claimed == {1, 2, 3, 4, 5, 6, 7, 8}
         assert_all_ejected(motor, claimed, since=since)
@@ -455,13 +403,10 @@ class TestImperfectSortingState:
 class TestEjectFromMidpoint:
     def test_midpoint_retreats_first(self):
         sorting = perfect()
-        motor = FakeDrumMotor(current_pocket=5, at_midpoint=True)
+        motor = FakeDrumMotor(current_pocket=4, at_midpoint=True)
         claimed, _, since = run_eject(sorting, motor)
-        # move_from_midpoint must be the FIRST call (before the sweep).
-        # The final move_to_midpoint nudge legitimately re-enters midpoint.
-        assert motor.calls[0] == ("move_from_midpoint",), (
-            "Step must leave midpoint before ejecting"
-        )
+        assert not motor.at_midpoint, "Step must leave midpoint before ejecting"
+        assert ("move_from_midpoint",) in motor.calls
         assert len(claimed) == 4
         assert_all_ejected(motor, claimed, since=since)
 
@@ -480,7 +425,7 @@ class TestNothingToEject:
 
     def test_after_both_colors_ejected_is_noop(self):
         sorting = perfect()
-        motor = FakeDrumMotor(current_pocket=5)
+        motor = FakeDrumMotor(current_pocket=4)
         run_eject(sorting, motor)
         run_eject(sorting, motor)
         pre = len(motor.visited)
@@ -498,21 +443,21 @@ class TestNearestEmptySlot:
 
     def test_picks_nearest_on_ring(self):
         sorting = fill("blue", "pink", "blue", "pink")
-        # New layout: blue CCW from 0 (0, 8), pink CW from 1 (1, 2)
-        # slots: [b, p, p, None, None, None, None, None, b]
-        assert sorting.slots == ["blue", "pink", "pink", None, None,
-                                 None, None, None, "blue"]
-        # current_pocket = 8 → empties: [3,4,5,6,7].
-        # ring_dist(8,3)=4, (8,4)=4, (8,5)=3, (8,6)=2, (8,7)=1. Best = 7.
-        assert sorting.nearest_empty_slot(8) == 7
+        # slots: [b, b, None, None, None, None, None, p, p]
+        assert sorting.slots == ["blue", "blue", None, None, None,
+                                 None, None, "pink", "pink"]
+        # current_pocket = 8 → nearest empty is slot 2? no, distance 6/3.
+        # empties: [2,3,4,5,6]. ring_dist(8,2)=3, (8,3)=4, (8,4)=4,
+        # (8,5)=3, (8,6)=2. Best = 6.
+        assert sorting.nearest_empty_slot(8) == 6
 
     def test_nearest_empty_wraps_short(self):
         sorting = fill("blue", "blue", "blue", "blue", "pink", "pink",
                        "pink", "pink")
-        # New layout: perfect sort → empties: [5]. Only one choice.
-        assert sorting.nearest_empty_slot(0) == 5
-        assert sorting.nearest_empty_slot(5) == 5
-        assert sorting.nearest_empty_slot(8) == 5
+        # empties: [4]. Only one choice regardless of cursor.
+        assert sorting.nearest_empty_slot(0) == 4
+        assert sorting.nearest_empty_slot(4) == 4
+        assert sorting.nearest_empty_slot(8) == 4
 
     def test_nearest_empty_raises_when_full(self):
         sorting = fill(*(["blue", "pink"] * 4), "blue")
@@ -521,8 +466,8 @@ class TestNearestEmptySlot:
             sorting.nearest_empty_slot(4)
 
     def test_go_to_empty_step_moves_to_correct_slot(self):
-        """The step must move the motor to whichever slot the strategic
-        selector chooses, not some pre-baked constant."""
+        """The step must move the motor to whichever slot is reported
+        empty, not some pre-baked constant."""
         sorting = fill("blue", "pink", "blue")  # empties 3..7
         motor = FakeDrumMotor(current_pocket=5)
         robot = make_robot(sorting, motor)
@@ -530,7 +475,7 @@ class TestNearestEmptySlot:
         step.info = lambda msg: None
         step.warn = lambda msg: None
         run(step._execute_step(robot))
-        assert motor.current_pocket == sorting.strategic_empty_slot(5)
+        assert motor.current_pocket == sorting.nearest_empty_slot(5)
 
 
 # ── SortIntoSlotStep: wrong / missing detection ─────────────────
@@ -638,7 +583,7 @@ class TestNoCrossContamination:
         sorting = perfect()
         blue_slots = set(sorting.blue_slots)
         pink_slots = set(sorting.pink_slots)
-        motor = FakeDrumMotor(current_pocket=5)
+        motor = FakeDrumMotor(current_pocket=4)
 
         claimed, color, since = run_eject(sorting, motor)
         visited = motor.visited[since:]
@@ -660,8 +605,7 @@ class TestNoCrossContamination:
         claimed, color, since = run_eject(sorting, motor)
         assert color == "pink"
         visited = motor.visited[since:]
-        # Blue region in new layout is {0, 6, 7, 8}; pink sweep must stay in {1..4}.
-        assert not (set(visited) & {0, 6, 7, 8}), (
+        assert not (set(visited) & {0, 1, 2, 3}), (
             f"Pink sweep entered the (empty) blue region: {visited}"
         )
 
@@ -670,18 +614,16 @@ class TestNoCrossContamination:
 
 
 class TestSortingServiceEdge:
-    def test_blue_pointer_advances_ccw(self):
+    def test_blue_pointer_never_regresses(self):
         s = fill("blue", "blue", "pink", "blue")
-        # 3 blue used: 0, 8, 7 → blue_next = 6
-        assert s.blue_next == 6
+        assert s.blue_next == 3  # 0,1,2 used
 
-    def test_pink_pointer_advances_cw(self):
+    def test_pink_pointer_never_regresses(self):
         s = fill("pink", "pink", "blue", "pink")
-        # 3 pink used: 1, 2, 3 → pink_next = 4
-        assert s.pink_next == 4
+        assert s.pink_next == 5  # 8,7,6 used
 
     def test_assign_after_full_raises_immediately(self):
-        s = fill(*(["blue", "pink"] * 4), "blue")  # 5 blue + 4 pink = 9 = full
+        s = fill(*(["blue", "pink"] * 4), "blue")
         with pytest.raises(RuntimeError, match="Revolver full"):
             s.assign_slot("pink")
         with pytest.raises(RuntimeError, match="Revolver full"):

@@ -66,21 +66,15 @@ class BlockTimerCheckStep(Step):
 
 @dsl(hidden=True)
 class GoToEmptySlotStep(Step):
-    """Move revolver to a strategically chosen empty slot so opening the pusher is safe.
-
-    Instead of the *nearest* empty slot, pick the centre of the gap between
-    the two colour fronts so the next drum — regardless of colour — is
-    reachable via a short, unblocked path.
-    """
+    """Move revolver to the nearest empty slot so opening the pusher is safe."""
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         sorting_service = robot.get_service(SortingService)
         drum_service = robot.get_service(DrumMotorService)
 
-        empty = sorting_service.strategic_empty_slot(drum_service.current_pocket)
-        filled = {i for i, s in enumerate(sorting_service.slots) if s is not None}
-        drum_service.info(f"Moving to strategic empty slot {empty} before opening pusher")
-        await drum_service.go_to_pocket_via_gap(empty, filled, precise=False)
+        empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
+        drum_service.info(f"Moving to empty slot {empty} before opening pusher")
+        await drum_service.go_to_pocket(empty, precise=False)
 
 
 @dsl(hidden=True)
@@ -154,24 +148,22 @@ class EjectNearestColorStep(Step):
 
             # Choose the closer end of the group as the starting point, then sweep
             # toward the other end — minimises total travel before ejection begins.
-            # Uses ring_contiguous_endpoints so wrapping groups (e.g. blue at
-            # {0, 6, 7, 8}) are handled correctly.
             def ring_dist(a: int, b: int) -> int:
                 d = abs(a - b)
                 return min(d, NUM_POCKETS - d)
 
             cur = drum_service.current_pocket
-            start, end = sorting_service.ring_contiguous_endpoints(slots)
+            lo, hi = min(slots), max(slots)
 
-            if ring_dist(cur, start) <= ring_dist(cur, end):
-                start_slot = (start - 1) % NUM_POCKETS  # one before start; advance through start..end
+            if ring_dist(cur, lo) <= ring_dist(cur, hi):
+                start_slot = lo - 1  # one before lo; advance through lo..hi
                 forward = True
             else:
-                start_slot = (end + 1) % NUM_POCKETS  # one after end; retreat through end..start
+                start_slot = hi + 1  # one after hi; retreat through hi..lo
                 forward = False
 
 
-            pockets_to_eject = len(slots)
+            pockets_to_eject = len(slots) - 1
             drum_service.info(
                 f"Ejecting {color}: go to slot {start_slot}, "
                 f"then sweep {'forward' if forward else 'backward'} "
@@ -184,16 +176,6 @@ class EjectNearestColorStep(Step):
                 else:
                     await drum_service.retreat(1)
 
-            # Final nudge: the last drum has no "next advance" to dislodge it if it
-            # sits at the eject hole without falling. move_to_midpoint() pushes 1/3
-            # pocket forward — enough to clear a stuck drum, too short to reach the
-            # adjacent slot. It includes stall detection + retry internally.
-            drum_service.info("Final nudge: pushing last drum through eject hole")
-            try:
-                await drum_service.move_to_midpoint()
-            except MotorStalledError:
-                drum_service.warn("Final nudge stalled — last drum may still be at eject hole")
-
             # Mark ejected slots as empty so the next eject call picks the other color.
             for s in slots:
                 sorting_service.slots[s] = None
@@ -202,13 +184,10 @@ class EjectNearestColorStep(Step):
             # Eject must never kill the program — mark this attempt as flawed and
             # let the mission sequence continue. Retries (self.stall_retries) are
             # exhausted by the time we get here.
+            drum_service.motor.brake()
             drum_service.warn(
                 f"Eject ({color}) FAILED after retries — marking attempt as flawed and continuing: {e}"
             )
-        finally:
-            # Passive brake: H-bridge shorts the leads for electrical braking.
-            # No active hold needed while the robot drives to the next pipe.
-            drum_service.motor.set_speed(0)
 
 
 @dsl()
