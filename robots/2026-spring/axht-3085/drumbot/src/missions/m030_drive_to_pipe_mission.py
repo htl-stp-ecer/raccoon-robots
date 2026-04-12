@@ -48,7 +48,7 @@ class M030DriveToPipeMission(Mission):
             ),
 
             background(Defs.pom_remover_servo.center()),
-            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position)
+            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
             drive_forward(cm=5),
             lineup_drum_with_pipe(False),
 
