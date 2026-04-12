@@ -10,6 +10,10 @@ TOTAL_DRUMS = TOTAL_BLUE + TOTAL_PINK
 DEFAULT_DETECTION_TIMEOUT = 0.8
 # Safety margin added on top of the learned average.
 TIMING_MARGIN = 1.05  # +5 %
+# Minimum absolute margin on top of max observed delta.
+TIMING_ADDITIVE_MARGIN = 0.300  # 300 ms — prevents a single near-zero delta from collapsing the timeout
+# Minimum number of successful detections before we trust the learned value.
+MIN_SAMPLES_TO_LEARN = 3
 
 
 class SortingService(RobotService):
@@ -100,13 +104,18 @@ class SortingService(RobotService):
 
         Uses the *maximum* observed delta (not average) plus margin,
         so we don't close too early on a slightly slower drum.
-        Falls back to a generous default if no data yet.
+        Falls back to a generous default if no data yet or too few samples.
+
+        Requires MIN_SAMPLES_TO_LEARN successful detections before trusting
+        the learned value — a single early detection (e.g. drum already
+        present when the step starts) would otherwise collapse the timeout
+        to near-zero and cause all subsequent drums to be missed.
         """
-        if not self._detection_deltas:
+        if len(self._detection_deltas) < MIN_SAMPLES_TO_LEARN:
             return DEFAULT_DETECTION_TIMEOUT
         max_delta = max(self._detection_deltas)
-        timeout = max(max_delta * TIMING_MARGIN, max_delta + 0.050)
-        return max(timeout, 0.05)  # floor at 50 ms
+        timeout = max(max_delta * TIMING_MARGIN, max_delta + TIMING_ADDITIVE_MARGIN)
+        return max(timeout, DEFAULT_DETECTION_TIMEOUT)  # never go below the default
 
     @property
     def blue_slots(self) -> list[int]:
