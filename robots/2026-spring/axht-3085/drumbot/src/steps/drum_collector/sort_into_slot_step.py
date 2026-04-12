@@ -176,6 +176,16 @@ class EjectNearestColorStep(Step):
                 else:
                     await drum_service.retreat(1)
 
+            # Final nudge: the last drum has no "next advance" to dislodge it if it
+            # sits at the eject hole without falling. move_to_midpoint() pushes 1/3
+            # pocket forward — enough to clear a stuck drum, too short to reach the
+            # adjacent slot. It includes stall detection + retry internally.
+            drum_service.info("Final nudge: pushing last drum through eject hole")
+            try:
+                await drum_service.move_to_midpoint()
+            except MotorStalledError:
+                drum_service.warn("Final nudge stalled — last drum may still be at eject hole")
+
             # Mark ejected slots as empty so the next eject call picks the other color.
             for s in slots:
                 sorting_service.slots[s] = None
