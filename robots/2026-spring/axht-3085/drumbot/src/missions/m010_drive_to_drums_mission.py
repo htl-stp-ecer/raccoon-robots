@@ -15,18 +15,20 @@ class M010DriveToDrumsMission(Mission):
                 drum_lifting_up(),
                 seq([
                     wait_for_seconds(0.4),
-                    turn_right(90),
+                    turn_right(89),  # magic value, bot should stand a bit closer to the pipe
                 ]),
-                seq([
-                    # push orange pom away
-                    wait_for_seconds(0.7),
-                    Defs.pom_remover_servo.right(),
-                    wait_until_degrees(
-                        degrees=80,
-                        origin=HeadingOrigin.TURN_START,
+                background(
+                    step=seq([
+                        # push orange pom away
+                        wait_for_seconds(0.7),
+                        Defs.pom_remover_servo.right(),
+                        wait_until_degrees(
+                            degrees=75,
+                            origin=HeadingOrigin.TURN_START,
                         ),
-                    Defs.pom_remover_servo.left(),
-                ]),
+                        Defs.pom_remover_servo.left(),
+                    ])
+                ),
             ),
 
             parallel(

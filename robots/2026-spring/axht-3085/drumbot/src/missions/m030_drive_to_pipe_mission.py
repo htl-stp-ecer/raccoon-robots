@@ -5,6 +5,7 @@ from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
 from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_up_over_limit
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
+from src.steps.drum_lifting_step import drum_recover_from_over_limit
 
 
 def print_debug_info(robot):
@@ -42,12 +43,16 @@ class M030DriveToPipeMission(Mission):
             parallel(
                 drive_forward().until(
                     over_line(Defs.front_right_ir_sensor) +
-                    after_cm(24)
+                    after_cm(19)
                 ),
             ),
 
             background(Defs.pom_remover_servo.center()),
-            lineup_drum_with_pipe(True),
+            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position)
+            drive_forward(cm=5),
+            lineup_drum_with_pipe(False),
+
+
 
             # eject drum mission will be executed next
         ])

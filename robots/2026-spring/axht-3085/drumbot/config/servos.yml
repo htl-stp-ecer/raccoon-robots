@@ -1,7 +1,7 @@
 drum_pusher_servo:
   type: Servo
   port: 0
-  offset: 8
+  offset: -25
   positions:
     close: 35
     open: 170
@@ -10,7 +10,7 @@ pom_remover_servo:
   type: Servo
   port: 3
   positions:
-    start: 60
+    start: 65
     right: 20
     left: 180
     center: 100
