@@ -10,22 +10,20 @@ class M010DriveToDrumsMission(Mission):
             mark_heading_reference(
                 origin_offset_deg=90,
             ),
-            background(
-                drum_lifting_up(),
-            ),
 
             background(
                 step=seq([
                     # push orange pom away
                     wait_for_seconds(0.1),
                     Defs.pom_remover_servo.orange_pom_removel(),
+                    fully_disable_servos(),
                 ])
             ),
 
             wait_for_seconds(0.3),
 
             smooth_path(
-                turn_to_heading_right(15),  # magic value, so we don't hit the extenal loading dock
+                turn_to_heading_right(16),  # magic value, so we don't hit the extenal loading dock
                 parallel(
                     seq([
                         drive_forward().until(
@@ -37,8 +35,10 @@ class M010DriveToDrumsMission(Mission):
                         step=seq([
                             wait_until_distance(5),
                             Defs.pom_remover_servo.right(),
+                            fully_disable_servos(),
                             wait_for(on_black(Defs.front_right_ir_sensor)),
                             Defs.pom_remover_servo.left(),
+                            fully_disable_servos(),
                         ]),
                     ),
                 ),
@@ -49,8 +49,9 @@ class M010DriveToDrumsMission(Mission):
                 parallel(
                     drive_forward(cm=27, heading=0),
                     seq([
-                        wait_until_distance(8),
+                        #wait_until_distance(8),
                         Defs.drum_pusher_servo.open(),
+                        drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
                         drum_lifting_down(slow_mode=False),
                     ])
                 ),
