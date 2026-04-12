@@ -297,6 +297,57 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             await self.retreat(NUM_POCKETS - delta, precise=precise)
             return "backward"
 
+    async def go_to_pocket_via_gap(
+        self, pocket: int, filled_slots: set[int], *, precise: bool = False
+    ) -> str:
+        """Go to *pocket* by the path that avoids traversing any filled slot.
+
+        On a ring there are exactly two routes between any two positions.
+        We probe each route for filled intermediate slots (excluding the
+        target itself, which is about to be filled) and take the clear one.
+        Falls back to shortest-path if both routes are equally clear/blocked.
+        """
+        if self._current_pocket == pocket:
+            self.info(f"Already at pocket {pocket}")
+            return "none"
+
+        fwd_steps = (pocket - self._current_pocket) % NUM_POCKETS
+        bwd_steps = NUM_POCKETS - fwd_steps
+
+        def path_blocked(steps: int, sign: int) -> bool:
+            """Return True if any *intermediate* pocket on this path is filled."""
+            p = self._current_pocket
+            for _ in range(steps - 1):
+                p = (p + sign) % NUM_POCKETS
+                if p in filled_slots:
+                    return True
+            return False
+
+        fwd_blocked = path_blocked(fwd_steps, +1)
+        bwd_blocked = path_blocked(bwd_steps, -1)
+
+        self.info(
+            f"go_to_pocket_via_gap {self._current_pocket}→{pocket} "
+            f"fwd({fwd_steps}={'BLOCKED' if fwd_blocked else 'ok'}) "
+            f"bwd({bwd_steps}={'BLOCKED' if bwd_blocked else 'ok'}) "
+            f"filled={sorted(filled_slots)}"
+        )
+
+        if not fwd_blocked and bwd_blocked:
+            await self.advance(fwd_steps, precise=precise)
+            return "forward"
+        elif fwd_blocked and not bwd_blocked:
+            await self.retreat(bwd_steps, precise=precise)
+            return "backward"
+        else:
+            # Both clear (or both blocked — shouldn't happen): shortest path
+            if fwd_steps <= bwd_steps:
+                await self.advance(fwd_steps, precise=precise)
+                return "forward"
+            else:
+                await self.retreat(bwd_steps, precise=precise)
+                return "backward"
+
     async def go_to_edge(self, target_edge: int) -> str:
         """Compat: convert edge to pocket and go there."""
         return await self.go_to_pocket(target_edge // 2)
