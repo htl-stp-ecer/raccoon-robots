@@ -24,7 +24,7 @@ class _PomRemoverServoPreset(ServoPreset):
     right: _PresetPosition
     left: _PresetPosition
     center: _PresetPosition
-    orange_pom_sweep: _PresetPosition
+    orange_pom_removel: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...

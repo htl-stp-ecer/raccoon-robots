@@ -54,11 +54,11 @@ class Defs:
     pom_remover_servo = ServoPreset(
         Servo(port=3),
         positions={
-            "start": 65,
+            "start": 95,
             "right": 20,
             "left": 180,
             "center": 100,
-            "orange_pom_sweep": 130,
+            "orange_pom_removel": 145,
         },
     )
     lift_drums_servo = ServoPreset(
