@@ -6,6 +6,7 @@ from raccoon.ui.step import UIStep
 from src.hardware.defs import Defs
 from src.service.color_detection_service import ColorDetectionService
 from src.service.drum_motor_service import DrumMotorService, MotorStalledError
+from src.service.sorting_service import SortingService
 from src.steps.drum_collector.screens.drum_collection_screen import DrumCollectionScreen
 from src.steps.drum_collector.sort_into_slot_step import (
     advance_to_midpoint,
@@ -30,6 +31,12 @@ class CollectDrumsStep(UIStep):
     async def _execute_step(self, robot: "GenericRobot") -> None:
         color_service = robot.get_service(ColorDetectionService)
         drum_service = robot.get_service(DrumMotorService)
+        sorting_service = robot.get_service(SortingService)
+
+        # Anchor colour-group seeds to the robot's current pocket so both
+        # first targets are adjacent — minimises travel for the first drum.
+        sorting_service.set_start_pocket(drum_service.current_pocket)
+
         screen = DrumCollectionScreen()
         screen.total_drums = DRUMS
         await self.display(screen)
