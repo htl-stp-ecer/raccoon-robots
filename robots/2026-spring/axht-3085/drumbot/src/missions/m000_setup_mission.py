@@ -28,6 +28,7 @@ class M000SetupMission(SetupMission):
             wait_for_button("Move Servos"),
             start_setup_timer(),  # countdown begins here, full duration
 
+            drum_lifting_up(),
             Defs.pom_remover_servo.start(),
 
             #color calibration
@@ -42,6 +43,7 @@ class M000SetupMission(SetupMission):
 
             #distance sensor calibration
             drum_seek(),
+            Defs.pom_remover_servo.left(),
             calibrate_analog_sensor(Defs.et_range_finder),
 
             wait_for_button("Move Drum over limit"),
