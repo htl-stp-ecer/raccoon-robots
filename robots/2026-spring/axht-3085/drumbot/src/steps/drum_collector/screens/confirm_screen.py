@@ -1,7 +1,7 @@
 
 from raccoon.ui import *
 
-from ..dataclasses import DrumCalibrationResult
+from ..dataclasses import DrumCalibrationResult, MIN_DELTA
 
 
 class DrumConfirmScreen(UIScreen[DrumCalibrationResult]):
@@ -23,7 +23,7 @@ class DrumConfirmScreen(UIScreen[DrumCalibrationResult]):
 
     @property
     def is_good(self) -> bool:
-        return abs(self.blocked_threshold - self.pocket_threshold) > 100
+        return abs(self.blocked_threshold - self.pocket_threshold) >= MIN_DELTA
 
     def build(self) -> Widget:
         return Split(

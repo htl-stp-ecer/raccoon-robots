@@ -7,6 +7,7 @@ from raccoon.step.calibration import CalibrateStep
 
 from src.service.drum_motor_service import DrumMotorService, NUM_POCKETS
 
+from .dataclasses import MIN_DELTA
 from .screens import DrumConfirmScreen
 
 DEFAULT_REVIEW_DELTA = 750.0
@@ -131,6 +132,7 @@ class DrumCollectorReviewStep(CalibrateStep[DrumCalibration]):
         global _PENDING
         service = robot.get_service(DrumMotorService)
 
+        # Get initial calibration from pending headless sample or fresh sample
         if _PENDING is not None:
             pending = _PENDING
             _PENDING = None  # consume once
@@ -138,10 +140,61 @@ class DrumCollectorReviewStep(CalibrateStep[DrumCalibration]):
             self._pending_error = pending.error
             if pending.calibration is None:
                 self.warn(f"Sample step failed ({pending.error}) — resampling")
-                return await self._fresh_sample(service)
-            return pending.calibration
+                calibration = await self._fresh_sample(service)
+            else:
+                calibration = pending.calibration
+        else:
+            calibration = await self._fresh_sample(service)
 
-        return await self._fresh_sample(service)
+        if calibration is None:
+            return None
+
+        # Confirm loop — kept here (not in _confirm) so Retry respins the motor
+        # immediately and stays inside _collect, giving the user visual continuity.
+        while True:
+            delta = abs(calibration.blocked - calibration.pocket)
+
+            if self._pending_error is None and delta >= self.review_delta:
+                self.info(
+                    f"Auto-confirmed drum calibration: blocked={calibration.blocked:.0f} "
+                    f"pocket={calibration.pocket:.0f} delta={delta:.0f} "
+                    f">= review_delta={self.review_delta:.0f}"
+                )
+                return calibration
+
+            reason = self._pending_error or (
+                f"delta {delta:.0f} < review_delta {self.review_delta:.0f}"
+            )
+            self.warn(f"Drum calibration needs review: {reason}")
+
+            result = await self.show(DrumConfirmScreen(
+                blocked_threshold=calibration.blocked,
+                pocket_threshold=calibration.pocket,
+                collected_values=self._last_samples,
+            ))
+
+            if not result.confirmed:
+                # Retry — respin motor and loop back
+                calibration = await self._fresh_sample(service)
+                if calibration is None:
+                    return None
+                continue
+
+            confirmed_calibration = DrumCalibration(
+                blocked=result.blocked_threshold,
+                pocket=result.pocket_threshold,
+            )
+            confirmed_delta = abs(result.blocked_threshold - result.pocket_threshold)
+            if confirmed_delta < MIN_DELTA:
+                self.warn(
+                    f"Drum calibration REJECTED: delta={confirmed_delta:.0f} < "
+                    f"minimum={MIN_DELTA:.0f} — recalibrate"
+                )
+                calibration = confirmed_calibration
+                self._pending_error = f"delta {confirmed_delta:.0f} < minimum {MIN_DELTA:.0f}"
+                continue
+
+            return confirmed_calibration
 
     async def _fresh_sample(self, service: DrumMotorService) -> DrumCalibration | None:
         samples = await service.sample(self.calibration_time, self.motor_speed)
@@ -156,29 +209,8 @@ class DrumCollectorReviewStep(CalibrateStep[DrumCalibration]):
     async def _confirm(
         self, robot: GenericRobot, calibration: DrumCalibration,
     ) -> tuple[bool, DrumCalibration]:
-        delta = abs(calibration.blocked - calibration.pocket)
-        if self._pending_error is None and delta >= self.review_delta:
-            self.info(
-                f"Auto-confirmed drum calibration: blocked={calibration.blocked:.0f} "
-                f"pocket={calibration.pocket:.0f} delta={delta:.0f} "
-                f">= review_delta={self.review_delta:.0f}"
-            )
-            return True, calibration
-
-        reason = self._pending_error or (
-            f"delta {delta:.0f} < review_delta {self.review_delta:.0f}"
-        )
-        self.warn(f"Drum calibration needs review: {reason}")
-
-        result = await self.show(DrumConfirmScreen(
-            blocked_threshold=calibration.blocked,
-            pocket_threshold=calibration.pocket,
-            collected_values=self._last_samples,
-        ))
-        return result.confirmed, DrumCalibration(
-            blocked=result.blocked_threshold,
-            pocket=result.pocket_threshold,
-        )
+        # Confirmation is handled inside _collect — nothing to do here.
+        return True, calibration
 
     def _apply(self, robot: GenericRobot, calibration: DrumCalibration) -> None:
         service = robot.get_service(DrumMotorService)
