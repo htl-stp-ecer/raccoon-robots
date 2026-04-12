@@ -34,7 +34,7 @@ def lineup_drum_with_pipe(recover_from_limit: bool = False):
                 turn_left(2),  # hardcoded magic value so we are aligned on pipe
                 drive_to_analog_target(Defs.et_range_finder, 0.2),
             ]),
-            seconds=2,
+            seconds=4,
         ),
 
     drum_eject_position(),
