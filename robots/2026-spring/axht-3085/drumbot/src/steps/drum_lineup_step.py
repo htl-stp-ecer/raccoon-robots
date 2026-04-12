@@ -7,22 +7,36 @@ from src.steps.range_finder import turn_to_peak
 
 @dsl
 def lineup_drum_with_pipe(recover_from_limit: bool = False):
-    drum_servo_step = drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position) if recover_from_limit else drum_seek()
+    drum_servo_step = drum_recover_from_over_limit(
+        Defs.lift_drums_servo.seek_position) if recover_from_limit else drum_seek()
     return seq([
         drum_servo_step,
-        wait_for_seconds(1.0), #wait so our drum is defently up
-        timeout(
+        wait_for_seconds(1.0),  # wait so our drum is defently up
+        timeout_or(
             step=seq([
                 turn_to_peak(
                     turn_speed=0.6,
                     sweep_deg=40,
-                    ),
-                turn_left(2), #hardcoded magic value so we are aligned on pipe
+                ),
+            ]),
+            seconds=4,
+            fallback=seq([
+                drive_backward(cm=7),
+                turn_left(degrees=10),
+                turn_to_peak(
+                    turn_speed=0.6,
+                    sweep_deg=40,
+                ),
+            ]),
+        ),
+        timeout(
+            step=seq([
+                turn_left(2),  # hardcoded magic value so we are aligned on pipe
                 drive_to_analog_target(Defs.et_range_finder, 0.2),
             ]),
-            seconds=6,
+            seconds=2,
         ),
 
-        drum_eject_position()
+    drum_eject_position(),
     ])
-# ),
+    # ),

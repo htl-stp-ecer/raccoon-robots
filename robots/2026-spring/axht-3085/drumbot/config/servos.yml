@@ -14,7 +14,7 @@ pom_remover_servo:
     right: 20
     left: 180
     center: 100
-    orange_pom_removel: 125
+    orange_pom_removel: 130
 
 lift_drums_servo:
   type: Servo

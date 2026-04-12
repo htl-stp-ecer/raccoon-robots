@@ -45,7 +45,7 @@ class M050DriveToOtherPipeMission(Mission):
                 on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)
                 # + after_forward_cm(16)
             ),
-            turn_to_heading_right(90 + 30),  # turn 20deg to the right
+            turn_to_heading_right(90 + 20),  # turn 20deg to the right
             #drive_arc(
             #    radius_cm=20,
             #    degrees=30,
@@ -62,9 +62,7 @@ class M050DriveToOtherPipeMission(Mission):
                 kd=0.1,
                 side=LineSide.RIGHT,
             ).until(after_cm(26)),   # fahre 15 cm auf der rechten Seite des Cubes vorbei
-            turn_to_heading_right(90 - 30),
-            drive_forward(12, 1),   # fahre zurück auf die linke Seite der Linie
-            turn_to_heading_right(90),
+            turn_to_heading_right(90 - 20),
 
             drive_to_second_pipe(),
             lineup_drum_with_pipe(True),

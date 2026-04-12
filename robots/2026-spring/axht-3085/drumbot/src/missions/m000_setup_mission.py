@@ -16,6 +16,8 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
+
+
             pause_setup_timer(),
             fully_disable_servos(),
             # Camera opens once here and stays open until the shutdown mission.
@@ -46,5 +48,6 @@ class M000SetupMission(SetupMission):
                 sample_drum_collector(calibration_time=5.0),
             ),
             review_drum_collector(review_delta=750),
+            Defs.drum_pusher_servo.block_angle(),
             align_edge(),
         ])
