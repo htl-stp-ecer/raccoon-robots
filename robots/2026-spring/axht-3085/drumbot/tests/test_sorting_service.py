@@ -13,43 +13,33 @@ def make_service():
 
 
 class TestAssignSlot:
-    def test_first_blue_goes_to_slot_1(self):
+    def test_first_blue_goes_to_slot_0(self):
         s = make_service()
-        assert s.assign_slot("blue") == 1
+        assert s.assign_slot("blue") == 0
 
-    def test_first_pink_goes_to_slot_1(self):
-        """First drum always gets the near side (slot 1, CW)."""
+    def test_first_pink_goes_to_slot_8(self):
         s = make_service()
-        assert s.assign_slot("pink") == 1
+        assert s.assign_slot("pink") == 8
 
-    def test_alternating_blue_first(self):
-        """B-P-B-P-B-P-B-P → blue CW (1-4), pink CCW (8-5)."""
+    def test_alternating_worst_case(self):
+        """B-P-B-P-B-P-B-P → blue in 0-3, pink in 8-5."""
         s = make_service()
         colors = ["blue", "pink", "blue", "pink", "blue", "pink", "blue", "pink"]
-        expected = [1, 8, 2, 7, 3, 6, 4, 5]
+        expected = [0, 8, 1, 7, 2, 6, 3, 5]
         for color, exp in zip(colors, expected):
             assert s.assign_slot(color) == exp
-        assert s.slots == [None, "blue", "blue", "blue", "blue", "pink", "pink", "pink", "pink"]
-
-    def test_alternating_pink_first(self):
-        """P-B-P-B-P-B-P-B → pink CW (1-4), blue CCW (8-5)."""
-        s = make_service()
-        colors = ["pink", "blue", "pink", "blue", "pink", "blue", "pink", "blue"]
-        expected = [1, 8, 2, 7, 3, 6, 4, 5]
-        for color, exp in zip(colors, expected):
-            assert s.assign_slot(color) == exp
-        assert s.slots == [None, "pink", "pink", "pink", "pink", "blue", "blue", "blue", "blue"]
+        assert s.slots == ["blue", "blue", "blue", "blue", None, "pink", "pink", "pink", "pink"]
 
     def test_all_blue(self):
         s = make_service()
         for i in range(8):
-            assert s.assign_slot("blue") == i + 1
-        assert s.slots == [None] + ["blue"] * 8
+            assert s.assign_slot("blue") == i
+        assert s.slots == ["blue"] * 8 + [None]
 
     def test_all_pink(self):
         s = make_service()
         for i in range(8):
-            assert s.assign_slot("pink") == i + 1
+            assert s.assign_slot("pink") == 8 - i
         assert s.slots == [None] + ["pink"] * 8
 
     def test_uneven_5_blue_3_pink(self):
@@ -58,20 +48,20 @@ class TestAssignSlot:
             s.assign_slot("blue")
         for _ in range(3):
             s.assign_slot("pink")
-        assert s.slots == [None, "blue", "blue", "blue", "blue", "blue", "pink", "pink", "pink"]
+        assert s.slots == ["blue", "blue", "blue", "blue", "blue", None, "pink", "pink", "pink"]
 
     def test_overflow_raises(self):
-        """8 drums fill all usable slots (1-8); the 9th must raise."""
+        """9 drums fill all slots; the 10th must raise."""
         s = make_service()
         for _ in range(4):
             s.assign_slot("blue")
             s.assign_slot("pink")
-        # 8 drums fill slots 1-8; slot 0 stays empty
-        assert s.slots.count(None) == 1
-        assert s.slots[0] is None
-        # 9th drum has no room
+        # 9th drum fills the last slot (slot 4)
+        s.assign_slot("blue")
+        assert s.slots.count(None) == 0
+        # 10th drum has no room
         with pytest.raises(RuntimeError, match="Revolver full"):
-            s.assign_slot("blue")
+            s.assign_slot("pink")
 
     def test_unknown_color_raises(self):
         s = make_service()
@@ -85,22 +75,21 @@ class TestSlotQueries:
         s.assign_slot("blue")
         s.assign_slot("pink")
         s.assign_slot("blue")
-        assert s.blue_slots == [1, 2]
+        assert s.blue_slots == [0, 1]
 
     def test_pink_slots_descending(self):
-        """Pink first → CW side. P→1, B→8, P→2. Pink slots: [2, 1] (descending iter)."""
         s = make_service()
         s.assign_slot("pink")
         s.assign_slot("blue")
         s.assign_slot("pink")
-        assert s.pink_slots == [2, 1]
+        assert s.pink_slots == [8, 7]
 
     def test_empty_slot_after_full(self):
         s = make_service()
         colors = ["blue", "pink", "blue", "pink", "blue", "pink", "blue", "pink"]
         for c in colors:
             s.assign_slot(c)
-        assert s.empty_slot == 0
+        assert s.empty_slot == 4
 
     def test_empty_slot_not_full_returns_none(self):
         s = make_service()
@@ -111,8 +100,8 @@ class TestSlotQueries:
 class TestRotationWorstCase:
     """Verify the worst-case rotation analysis from the spec."""
 
-    def test_max_shortest_path_is_4(self):
-        """Alternating B-P-B-P-B-P-B-P: max single shortest-path rotation should be 4 slots."""
+    def test_max_rotation_is_4(self):
+        """Alternating B-P-B-P-B-P-B-P: max single rotation should be 4 slots."""
         s = make_service()
         colors = ["blue", "pink", "blue", "pink", "blue", "pink", "blue", "pink"]
         current = 0
