@@ -24,7 +24,7 @@ class M000SetupMission(SetupMission):
             drum_lifting_up(slow_mode=False),
             Defs.pom_remover_servo.start(),
 
-            calibrate(distance_cm=50, exclude_ir_sensors=[
+            calibrate(distance_cm=50, speed=0.5, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
                 Defs.drum_light_sensor,
             ]),
@@ -41,5 +41,5 @@ class M000SetupMission(SetupMission):
 
             wait_for_button("calibrate drum collector"),
             calibrate_drum_collector(calibration_time=5.0),
-            align_edge(),
+            #align_edge(),
         ])

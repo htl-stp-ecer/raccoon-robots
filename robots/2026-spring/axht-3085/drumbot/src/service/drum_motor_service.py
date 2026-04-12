@@ -12,7 +12,7 @@ from .drum_motor_calibration_mixin import (
 
 NUM_POCKETS = 9
 CREEP_VELOCITY = 500   # creep speed for precise edge measurement
-STALL_RETRIES = 3      # back-up-and-retry attempts before giving up
+STALL_RETRIES = 3      # default total attempts before giving up (per-instance overridable via .stall_retries)
 STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 400  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
@@ -33,6 +33,9 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         self._current_pocket: int = 0
         self._at_midpoint: bool = False  # True when offset +half pocket from stripe
         self.collection_failed: bool = False
+        # Overridable per-call-site: collection runs with stricter retry budget;
+        # ejection keeps the default to tolerate transient jams without killing.
+        self.stall_retries: int = STALL_RETRIES
         # ── continuous IR stripe tracker ──
         # Background asyncio task that polls the drum light sensor and
         # updates _current_pocket on every real stripe crossing. The tracker
@@ -246,19 +249,21 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         return check
 
     async def _retry_on_stall(self, coro_fn, backup_sign: int) -> None:
-        """Run coro_fn() with stall-retry: backs up and retries up to STALL_RETRIES times."""
-        for attempt in range(1, STALL_RETRIES + 1):
+        """Run coro_fn() with stall-retry: backs up and retries up to self.stall_retries times."""
+        retries = self.stall_retries
+        for attempt in range(1, retries + 1):
             try:
                 await coro_fn()
                 return
             except MotorStalledError:
                 self.motor.set_velocity(0)
-                if attempt >= STALL_RETRIES:
-                    self.warn(f"Motor stalled after {STALL_RETRIES} retries — giving up")
+                if attempt >= retries:
+                    self.warn(f"Motor stalled after {retries} attempts — giving up")
                     raise
-                self.warn(f"Motor stalled (attempt {attempt}/{STALL_RETRIES}) — backing up to retry")
+                self.warn(f"Motor stalled (attempt {attempt}/{retries}) — backing up to retry")
                 self.motor.set_velocity(int(FULL_VELOCITY * 0.7) * backup_sign)
-                await asyncio.sleep(0.7),           await asyncio.sleep(0.05)
+                await asyncio.sleep(0.7)
+                await asyncio.sleep(0.05)
 
     # ── navigation ───────────────────────────────────────────────
 

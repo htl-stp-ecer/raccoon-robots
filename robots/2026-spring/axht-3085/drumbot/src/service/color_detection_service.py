@@ -1,4 +1,5 @@
 import atexit
+import os
 import signal
 import threading
 import time
@@ -155,6 +156,7 @@ class ColorDetectionService(RobotService):
             # Track continuous-detection streak for stuck-drum detection
             if color is not None and _prev_color is None:
                 self._color_first_seen = time.monotonic()
+                self._save_detection_frame(color)
             elif color is None:
                 self._color_first_seen = None
             _prev_color = color
@@ -205,6 +207,20 @@ class ColorDetectionService(RobotService):
                 max_wait_ms = 0.0
                 color_counts.clear()
                 log_window_start = time.monotonic()
+
+    def _save_detection_frame(self, color: str) -> None:
+        """Save a PNG of the current frame when a new drum detection streak starts."""
+        import cv2
+
+        frame = self._camera.grab_frame()
+        if frame is None:
+            return
+        t = time.monotonic() - self._camera_start_time
+        out_dir = "drum_detections"
+        os.makedirs(out_dir, exist_ok=True)
+        filename = f"{t:.3f}s_{color}.png"
+        path = os.path.join(out_dir, filename)
+        cv2.imwrite(path, frame)
 
     def pause_detection(self) -> None:
         """Pause the background detection loop to free CPU."""
