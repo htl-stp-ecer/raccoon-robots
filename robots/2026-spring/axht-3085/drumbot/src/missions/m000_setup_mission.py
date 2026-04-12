@@ -10,6 +10,8 @@ from src.steps.drum_collector import (
 )
 from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up, drum_seek
 from src.hardware.defs import Defs
+from steps.drum_lifting_step import drum_lifting_up_over_limit
+
 
 class M000SetupMission(SetupMission):
     setup_time = 120
@@ -27,21 +29,19 @@ class M000SetupMission(SetupMission):
             wait_for_button("Move Servos"),
             start_setup_timer(),  # countdown begins here, full duration
 
-            drum_lifting_up(slow_mode=False),
             Defs.pom_remover_servo.start(),
+
+            drum_seek(),
+            calibrate_analog_sensor(Defs.et_range_finder),
+
+            wait_for_button("Move Drum over limit"),
+            drum_lifting_up_over_limit(),
+            Defs.drum_pusher_servo.open(),
 
             calibrate(distance_cm=50, speed=0.5, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
                 Defs.drum_light_sensor,
             ]),
-
-
-            drum_seek(),
-            calibrate_analog_sensor(Defs.et_range_finder),
-
-            wait_for_button("Move Drum Down"),
-            drum_lifting_down(),
-            Defs.drum_pusher_servo.open(),
 
             parallel(
                 calibrate_colors(),

@@ -17,7 +17,7 @@ def drive_to_second_pipe():
 
     return seq([
         line_follower().until(
-            after_cm(20) +
+            #after_cm(20) +
             over_line(Defs.front_left_ir_sensor),
         ),
 
