@@ -66,15 +66,21 @@ class BlockTimerCheckStep(Step):
 
 @dsl(hidden=True)
 class GoToEmptySlotStep(Step):
-    """Move revolver to the nearest empty slot so opening the pusher is safe."""
+    """Move revolver to a strategically chosen empty slot so opening the pusher is safe.
+
+    Instead of the *nearest* empty slot, pick the centre of the gap between
+    the two colour fronts so the next drum — regardless of colour — is
+    reachable via a short, unblocked path.
+    """
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         sorting_service = robot.get_service(SortingService)
         drum_service = robot.get_service(DrumMotorService)
 
-        empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
-        drum_service.info(f"Moving to empty slot {empty} before opening pusher")
-        await drum_service.go_to_pocket(empty, precise=False)
+        empty = sorting_service.strategic_empty_slot(drum_service.current_pocket)
+        filled = {i for i, s in enumerate(sorting_service.slots) if s is not None}
+        drum_service.info(f"Moving to strategic empty slot {empty} before opening pusher")
+        await drum_service.go_to_pocket_via_gap(empty, filled, precise=False)
 
 
 @dsl(hidden=True)
@@ -148,22 +154,24 @@ class EjectNearestColorStep(Step):
 
             # Choose the closer end of the group as the starting point, then sweep
             # toward the other end — minimises total travel before ejection begins.
+            # Uses ring_contiguous_endpoints so wrapping groups (e.g. blue at
+            # {0, 6, 7, 8}) are handled correctly.
             def ring_dist(a: int, b: int) -> int:
                 d = abs(a - b)
                 return min(d, NUM_POCKETS - d)
 
             cur = drum_service.current_pocket
-            lo, hi = min(slots), max(slots)
+            start, end = sorting_service.ring_contiguous_endpoints(slots)
 
-            if ring_dist(cur, lo) <= ring_dist(cur, hi):
-                start_slot = lo - 1  # one before lo; advance through lo..hi
+            if ring_dist(cur, start) <= ring_dist(cur, end):
+                start_slot = (start - 1) % NUM_POCKETS  # one before start; advance through start..end
                 forward = True
             else:
-                start_slot = hi + 1  # one after hi; retreat through hi..lo
+                start_slot = (end + 1) % NUM_POCKETS  # one after end; retreat through end..start
                 forward = False
 
 
-            pockets_to_eject = len(slots) - 1
+            pockets_to_eject = len(slots)
             drum_service.info(
                 f"Ejecting {color}: go to slot {start_slot}, "
                 f"then sweep {'forward' if forward else 'backward'} "
