@@ -8,8 +8,8 @@ from raccoon import GenericRobot, RobotService
 
 from src.hardware.usb_camera import USBCamera
 
-ANALYSIS_FRAMES = 2
-PRESENCE_THRESHOLD = 0.4  # 1 out of 3 frames is enough to catch a fast-moving drum
+ANALYSIS_FRAMES = 1
+PRESENCE_THRESHOLD = 0.9  # 1 out of 3 frames is enough to catch a fast-moving drum
 DEFAULT_MIN_AREA = 500
 
 
