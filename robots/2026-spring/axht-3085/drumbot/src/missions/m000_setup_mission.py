@@ -48,6 +48,7 @@ class M000SetupMission(SetupMission):
 
             wait_for_button("Move Drum over limit"),
             drum_lifting_up_over_limit(),
+            Defs.pom_remover_servo.start(),
 
             calibrate(distance_cm=50, speed=0.5, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
