@@ -1,5 +1,4 @@
 import asyncio
-import os
 
 from raccoon import GenericRobot, dsl, parallel, seq, wait_for_seconds
 from raccoon.ui.step import UIStep
@@ -206,7 +205,11 @@ class CollectDrumsStep(UIStep):
         except Exception as e:
             self.warn(f"Emergency drum lift failed: {e}")
         self.warn("Killing program — drum collection dead state, no further missions")
-        os._exit(1)
+        from raccoon.step.watchdog_manager import get_watchdog_manager
+        wdt = get_watchdog_manager(robot)
+        if wdt._main_task is not None and not wdt._main_task.done():
+            wdt._main_task.cancel()
+        raise asyncio.CancelledError()
 
     async def _ui_updater(
         self,

@@ -29,6 +29,8 @@ class StartCameraStep(UIStep):
         screen = CameraStartingScreen()
         service = robot.get_service(ColorDetectionService)
 
+        service.annotate_detections = True
+
         async def _start_and_close():
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, service.start_camera)
