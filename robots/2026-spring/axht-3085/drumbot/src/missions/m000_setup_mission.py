@@ -8,9 +8,8 @@ from src.steps.drum_collector import (
     review_drum_collector,
     sample_drum_collector,
 )
-from src.steps.drum_lifting_step import drum_lifting_down, drum_lifting_up, drum_seek
+from src.steps.drum_lifting_step import *
 from src.hardware.defs import Defs
-from steps.drum_lifting_step import drum_lifting_up_over_limit
 
 
 class M000SetupMission(SetupMission):
@@ -31,23 +30,26 @@ class M000SetupMission(SetupMission):
 
             Defs.pom_remover_servo.start(),
 
+            #color calibration
+            Defs.drum_pusher_servo.open(),
+            drum_lifting_down(),
+            parallel(
+                calibrate_colors(),
+                sample_drum_collector(calibration_time=5.0),
+            ),
+            review_drum_collector(review_delta=750),
+            align_edge(),
+
+            #distance sensor calibration
             drum_seek(),
             calibrate_analog_sensor(Defs.et_range_finder),
 
             wait_for_button("Move Drum over limit"),
             drum_lifting_up_over_limit(),
-            Defs.drum_pusher_servo.open(),
 
             calibrate(distance_cm=50, speed=0.5, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
                 Defs.drum_light_sensor,
             ]),
 
-            parallel(
-                calibrate_colors(),
-                sample_drum_collector(calibration_time=5.0),
-            ),
-            review_drum_collector(review_delta=750),
-            Defs.drum_pusher_servo.block_angle(),
-            align_edge(),
         ])
