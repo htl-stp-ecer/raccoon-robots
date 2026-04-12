@@ -16,7 +16,7 @@ class M010DriveToDrumsMission(Mission):
                 seq([
                     wait_for_seconds(0.3),
                     #turn_left(90),  # magic value, so we push the orange sorted poms correctly
-                    turn_to_heading_right(15),  # magic value, so we dont hit the extenal loading dock
+                    turn_to_heading_right(15),  # magic value, so we don't hit the extenal loading dock
                 ]),
                 background(
                     step=seq([
