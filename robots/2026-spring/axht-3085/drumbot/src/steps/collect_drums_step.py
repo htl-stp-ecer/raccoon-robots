@@ -165,7 +165,7 @@ class CollectDrumsStep(UIStep):
         Triggers emergency shutdown — this is a dead state that would only
         further harm the hardware if collection continued.
         """
-        STUCK_THRESHOLD = 1.0  # seconds — normal pass-through is ~400ms
+        STUCK_THRESHOLD = 1.5  # seconds — normal pass-through is ~400ms
         while True:
             await asyncio.sleep(0.1)
             duration = color_service.continuous_color_seconds
