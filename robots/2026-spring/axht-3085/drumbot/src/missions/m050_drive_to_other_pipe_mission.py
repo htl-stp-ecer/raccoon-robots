@@ -42,15 +42,16 @@ class M050DriveToOtherPipeMission(Mission):
                                side=LineSide.LEFT,
                                speed=1.0
                                ).until(
-                on_black(Defs.front_left_ir_sensor)
+                on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)
                 # + after_forward_cm(16)
             ),
             turn_to_heading_right(90 + 30),  # turn 20deg to the right
-            drive_arc(
-                radius_cm=20,
-                degrees=30,
-                speed=1.0
-            ),
+            #drive_arc(
+            #    radius_cm=20,
+            #    degrees=30,
+            #    speed=1.0
+            #),
+            drive_forward(6,1),
             turn_to_heading_right(90),
 
             drive_to_second_pipe(),

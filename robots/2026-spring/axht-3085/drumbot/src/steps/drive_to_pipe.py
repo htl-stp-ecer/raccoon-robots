@@ -18,14 +18,14 @@ def drive_to_second_pipe():
     return seq([
         line_follower().until(
             after_cm(20) +
-            on_black(Defs.front_left_ir_sensor)
+            on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor),
         ),
 
         # make sure we are straight (to drive accurace distance
         turn_to_heading_right(90),
 
         # TODO: Try a drive straight and align on pipe
-        drive_forward(cm=43),
+        drive_forward(cm=45),
         #line_follower().until(
         #    after_forward_cm(43)
         #),
