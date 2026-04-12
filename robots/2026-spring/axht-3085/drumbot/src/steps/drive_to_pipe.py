@@ -25,5 +25,5 @@ def drive_to_second_pipe():
         turn_to_heading_right(90),
 
         # TODO: Try a drive straight and align on pipe
-        drive_forward(cm=34),
+        drive_forward(cm=33),
     ])
