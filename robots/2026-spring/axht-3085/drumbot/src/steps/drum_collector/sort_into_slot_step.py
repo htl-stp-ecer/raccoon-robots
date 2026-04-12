@@ -184,10 +184,13 @@ class EjectNearestColorStep(Step):
             # Eject must never kill the program — mark this attempt as flawed and
             # let the mission sequence continue. Retries (self.stall_retries) are
             # exhausted by the time we get here.
-            drum_service.motor.brake()
             drum_service.warn(
                 f"Eject ({color}) FAILED after retries — marking attempt as flawed and continuing: {e}"
             )
+        finally:
+            # Passive brake: H-bridge shorts the leads for electrical braking.
+            # No active hold needed while the robot drives to the next pipe.
+            drum_service.motor.set_speed(0)
 
 
 @dsl()

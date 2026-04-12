@@ -256,13 +256,14 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                 await coro_fn()
                 return
             except MotorStalledError:
-                self.motor.set_velocity(0)
+                self.motor.set_speed(0)  # passive brake
                 if attempt >= retries:
                     self.warn(f"Motor stalled after {retries} attempts — giving up")
                     raise
                 self.warn(f"Motor stalled (attempt {attempt}/{retries}) — backing up to retry")
                 self.motor.set_velocity(int(FULL_VELOCITY * 0.7) * backup_sign)
                 await asyncio.sleep(0.7)
+                self.motor.set_speed(0)  # stop before retry so stall checker starts clean
                 await asyncio.sleep(0.05)
 
     # ── navigation ───────────────────────────────────────────────
