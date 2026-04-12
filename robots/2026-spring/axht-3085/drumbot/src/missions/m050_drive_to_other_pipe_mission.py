@@ -61,7 +61,7 @@ class M050DriveToOtherPipeMission(Mission):
                 ki=0.2,
                 kd=0.1,
                 side=LineSide.RIGHT,
-            ).until(wait_until_distance(15)),   # fahre 15 cm auf der rechten Seite des Cubes vorbei
+            ).until(after_cm(20)),   # fahre 15 cm auf der rechten Seite des Cubes vorbei
             turn_to_heading_right(90 - 30),
             drive_forward(12, 1),   # fahre zurück auf die linke Seite der Linie
 

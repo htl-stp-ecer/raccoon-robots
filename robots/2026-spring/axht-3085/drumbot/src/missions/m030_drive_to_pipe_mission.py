@@ -43,7 +43,7 @@ class M030DriveToPipeMission(Mission):
             parallel(
                 drive_forward().until(
                     over_line(Defs.front_right_ir_sensor) +
-                    after_cm(17)
+                    after_cm(16)
                 ),
             ),
 

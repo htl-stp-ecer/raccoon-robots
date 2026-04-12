@@ -30,7 +30,7 @@ from .color_frame_analysis import (
 )
 from .screens import BaselineScreen, ColorConfirmScreen, ColorTestScreen
 
-CONFIDENCE_THRESHOLD = 0.7  # must match PRESENCE_THRESHOLD in ColorDetectionService
+CONFIDENCE_THRESHOLD = 0.9  # must match PRESENCE_THRESHOLD in ColorDetectionService
 
 
 class ColorCalibrationStep(CalibrateStep[ColorCalibration]):

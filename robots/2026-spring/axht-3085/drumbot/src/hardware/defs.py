@@ -26,14 +26,14 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.9527294517823562e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.9548000224925465e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.556772726916546e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.5735254625979692e-05, vel_lpf_alpha=1.0
         ),
     )
     drum_motor = Motor(
@@ -56,7 +56,7 @@ class Defs:
             "right": 20,
             "left": 180,
             "center": 100,
-            "orange_pom_removel": 150,
+            "orange_pom_removel": 125,
         },
     )
     lift_drums_servo = ServoPreset(
