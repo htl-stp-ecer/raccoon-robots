@@ -26,7 +26,7 @@ class M010DriveToDrumsMission(Mission):
                             degrees=75,
                             origin=HeadingOrigin.TURN_START,
                         ),
-                        Defs.pom_remover_servo.left(),
+                        Defs.pom_remover_servo.orange_pom_sweep(),
                     ])
                 ),
             ),
