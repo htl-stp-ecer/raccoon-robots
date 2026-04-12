@@ -15,7 +15,7 @@ class M050DriveToOtherPipeMission(Mission):
             drum_lifting_up_over_limit(),
 
             # turn straight
-            turn_to_heading_right(180),
+            turn_to_heading_right(183), #turning a bit more to not hit the raised loading dock
 
             # drive to the seconds black line
             parallel(
@@ -51,8 +51,20 @@ class M050DriveToOtherPipeMission(Mission):
             #    degrees=30,
             #    speed=1.0
             #),
-            drive_forward(6,1),
+            drive_forward(12,1),
+
             turn_to_heading_right(90),
+            follow_line_single(
+                Defs.front_right_ir_sensor,
+                speed=1.0,
+                kp=0.7,
+                ki=0.2,
+                kd=0.1,
+                side=LineSide.RIGHT,
+            ).until(wait_until_distance(15)),   # fahre 15 cm auf der rechten Seite des Cubes vorbei
+            turn_to_heading_right(90 - 30),
+            drive_forward(12, 1),   # fahre zurück auf die linke Seite der Linie
+
 
             drive_to_second_pipe(),
             lineup_drum_with_pipe(True),

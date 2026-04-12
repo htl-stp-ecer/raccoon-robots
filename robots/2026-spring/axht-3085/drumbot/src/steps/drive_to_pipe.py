@@ -23,9 +23,10 @@ def drive_to_second_pipe():
 
         # make sure we are straight (to drive accurace distance
         turn_to_heading_right(90),
+        #turn_right().until(on_black(Defs.front_right_ir_sensor)), #turn until right sensor is on black to start linefollowing
 
         # TODO: Try a drive straight and align on pipe
-        drive_forward(cm=45),
+        drive_forward(cm=41),
         #line_follower().until(
         #    after_forward_cm(43)
         #),
