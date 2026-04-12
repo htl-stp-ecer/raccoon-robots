@@ -21,12 +21,12 @@ def _lift_drum_servo(
         info(f"Current servo position: {servo_ref.get_position()} degrees, target: {target_position} degrees, delta: {delta_angle} degrees")
         if delta_angle > 0:
             sequence.append(set_motor_power(motor_ref, -base_motor_speed))
-            move_with_slow_servo = False
+            #move_with_slow_servo = False
         elif always_motor_support and delta_angle < 0:
             sequence.append(set_motor_power(motor_ref, base_motor_speed))
-            move_with_slow_servo = False
+            #move_with_slow_servo = False
         sequence.extend([
-            target_position(),
+            target_position(servo_speed) if move_with_slow_servo else target_position(),
             #servo(servo_ref, degrees) if move_with_slow_servo else servo(servo_ref, degrees),
             motor_passive_brake(motor_ref),
         ])
@@ -36,7 +36,7 @@ def _lift_drum_servo(
     return defer(_build)
 
 
-def drum_lifting_up(slow_mode=True, always_motor_support=False) -> Defer:
+def drum_lifting_up(slow_mode=False, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.up,
         servo_speed=25,
@@ -44,7 +44,7 @@ def drum_lifting_up(slow_mode=True, always_motor_support=False) -> Defer:
         always_motor_support=always_motor_support,
     )
 
-def drum_align_on_back(slow_mode=True, always_motor_support=False) -> Defer:
+def drum_align_on_back(slow_mode=False, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.align_on_back,
         servo_speed=999,
@@ -52,7 +52,7 @@ def drum_align_on_back(slow_mode=True, always_motor_support=False) -> Defer:
         always_motor_support=always_motor_support,
     )
 
-def drum_eject_position(slow_mode=True, always_motor_support=False) -> Defer:
+def drum_eject_position(slow_mode=False, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.eject_position,
         servo_speed=120,
@@ -60,7 +60,7 @@ def drum_eject_position(slow_mode=True, always_motor_support=False) -> Defer:
         always_motor_support=always_motor_support,
     )
 
-def drum_seek(slow_mode=True, always_motor_support=False) -> Defer:
+def drum_seek(slow_mode=False, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.seek_position,
         servo_speed=25,
@@ -69,7 +69,7 @@ def drum_seek(slow_mode=True, always_motor_support=False) -> Defer:
     )
 
 
-def drum_lifting_down(slow_mode=True, always_motor_support=False) -> Defer:
+def drum_lifting_down(slow_mode=False, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.down,
         servo_speed=999,
@@ -78,7 +78,7 @@ def drum_lifting_down(slow_mode=True, always_motor_support=False) -> Defer:
     )
 
 
-def drum_lifting_remove_D(slow_mode=True, always_motor_support=False) -> Defer:
+def drum_lifting_remove_D(slow_mode=False, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.remove_D,
         servo_speed=999,
@@ -86,7 +86,7 @@ def drum_lifting_remove_D(slow_mode=True, always_motor_support=False) -> Defer:
         always_motor_support=always_motor_support,
     )
 
-def drum_lifting_remove_M(slow_mode=True, always_motor_support=False) -> Defer:
+def drum_lifting_remove_M(slow_mode=False, always_motor_support=False) -> Defer:
     return _lift_drum_servo(
         target_position=Defs.lift_drums_servo.remove_M,
         servo_speed=999,
