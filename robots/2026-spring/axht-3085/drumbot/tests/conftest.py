@@ -19,6 +19,7 @@ class _RobotService:
         return self._robot
     def info(self, msg): pass
     def warn(self, msg): pass
+    def error(self, msg): pass
 
 class _GenericRobot: pass
 class _Motor: pass

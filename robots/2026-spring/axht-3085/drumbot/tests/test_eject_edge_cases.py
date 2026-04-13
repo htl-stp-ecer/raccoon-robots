@@ -87,6 +87,12 @@ class FakeDrumMotor:
         self.at_midpoint = False
         return "backward"
 
+    async def go_to_pocket_via_gap(
+        self, pocket: int, filled_slots: set[int], *, precise: bool = False
+    ) -> str:
+        """Simplified gap-aware navigation for tests — just delegates to go_to_pocket."""
+        return await self.go_to_pocket(pocket, precise=precise)
+
     async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
         self.calls.append(("advance", pockets))
         for _ in range(pockets):

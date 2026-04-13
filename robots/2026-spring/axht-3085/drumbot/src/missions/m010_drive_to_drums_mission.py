@@ -23,7 +23,7 @@ class M010DriveToDrumsMission(Mission):
             #wait_for_seconds(0.3),
 
             smooth_path(
-                turn_to_heading_right(14),  # over rotate so we push the sorted poms better
+                turn_to_heading_right(16),  # over rotate so we push the sorted poms better value before 14
                 turn_to_heading_right(17.8),  # magic value, so we don't hit the extenal loading dock
                 parallel(
                     seq([

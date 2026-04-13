@@ -163,7 +163,7 @@ class EjectNearestColorStep(Step):
                 forward = False
 
 
-            pockets_to_eject = len(slots)
+            pockets_to_eject = len(slots) - 1 # YOU SHALL DROP 4 - BUT BY THE TIME HITTING IT; THE FIRST ALREADY DROPPED; DONT CHANGE
             drum_service.info(
                 f"Ejecting {color}: go to slot {start_slot}, "
                 f"then sweep {'forward' if forward else 'backward'} "

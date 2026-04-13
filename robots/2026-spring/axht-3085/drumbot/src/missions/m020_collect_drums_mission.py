@@ -10,7 +10,6 @@ class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             drum_lifting_down(),
-            wait_for_seconds(3),
             collect_drums(),
             Defs.drum_pusher_servo.close(),
             go_to_empty_slot_plus_one(),
