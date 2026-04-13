@@ -7,6 +7,7 @@ from src.hardware.defs import Defs
 from src.service.color_detection_service import ColorDetectionService
 from src.service.drum_motor_service import DrumMotorService, MotorStalledError
 from src.steps.drum_collector.screens.drum_collection_screen import DrumCollectionScreen
+from src.steps.drum_collector.screens.emergency_screen import EmergencyScreen
 from src.steps.drum_collector.sort_into_slot_step import (
     advance_to_midpoint,
     block_timer_check,
@@ -89,10 +90,19 @@ class CollectDrumsStep(UIStep):
                     ])
                     await phase1b.run_step(robot)
                 except MotorStalledError:
+                    if drum_service.collection_failed:
+                        # Already in safe mode (e.g. camera stuck) — skip quietly
+                        continue
+                    drum_service.motor.brake()
+                    if await self._show_emergency_ui(
+                        f"Drum Motor is stuck (drum #{drum_number})",
+                    ):
+                        self._enter_safe_mode(drum_service)
+                        continue
                     await self._emergency_shutdown(
                         drum_service,
                         robot,
-                        f"Motor stalled during drum #{drum_number} after retry",
+                        f"Motor stalled during drum #{drum_number} — user did not continue",
                     )
                     return
 
@@ -123,6 +133,10 @@ class CollectDrumsStep(UIStep):
                     f"elapsed={elapsed_post:.2f}s"
                 )
 
+                if drum_service.collection_failed:
+                    # Safe mode — keep pusher open, skip close/move
+                    continue
+
                 try:
                     phase3 = seq([
                         Defs.drum_pusher_servo.close(),
@@ -132,10 +146,18 @@ class CollectDrumsStep(UIStep):
                     ])
                     await phase3.run_step(robot)
                 except MotorStalledError:
+                    if drum_service.collection_failed:
+                        continue
+                    drum_service.motor.brake()
+                    if await self._show_emergency_ui(
+                        f"Drum Motor is stuck (moving to empty slot after drum #{drum_number})",
+                    ):
+                        self._enter_safe_mode(drum_service)
+                        continue
                     await self._emergency_shutdown(
                         drum_service,
                         robot,
-                        f"Motor stalled moving to empty slot after drum #{drum_number} after retry",
+                        f"Motor stalled moving to empty slot after drum #{drum_number} — user did not continue",
                     )
                     return
 
@@ -149,7 +171,12 @@ class CollectDrumsStep(UIStep):
                 )
                 screen.status = "Done"
         finally:
-            drum_service.stall_retries = prior_stall_retries
+            if drum_service.collection_failed:
+                # Safe mode: keep retries at 1 (no retry) for rest of run
+                # so eject attempts don't risk hardware damage.
+                drum_service.stall_retries = 1
+            else:
+                drum_service.stall_retries = prior_stall_retries
             for task in (ui_task, stuck_task):
                 task.cancel()
                 try:
@@ -163,22 +190,60 @@ class CollectDrumsStep(UIStep):
         drum_service: DrumMotorService,
         robot: "GenericRobot",
     ) -> None:
-        """Watchdog: if a color is continuously visible for >1s, the drum is stuck.
+        """Watchdog: if a color is continuously visible for >1.5s, the drum is stuck.
 
-        Triggers emergency shutdown — this is a dead state that would only
-        further harm the hardware if collection continued.
+        Enters safe mode: stops collecting, keeps pusher open, disables retries,
+        but lets the run finish so drums can still be ejected.
         """
         STUCK_THRESHOLD = 1.5  # seconds — normal pass-through is ~400ms
         while True:
             await asyncio.sleep(0.1)
             duration = color_service.continuous_color_seconds
             if duration is not None and duration > STUCK_THRESHOLD:
-                await self._emergency_shutdown(
-                    drum_service,
-                    robot,
-                    f"Drum stuck — color visible for {duration:.2f}s (threshold {STUCK_THRESHOLD}s)",
+                self.warn(
+                    f"Drum stuck — color visible for {duration:.2f}s "
+                    f"(threshold {STUCK_THRESHOLD}s) — entering safe mode"
                 )
+                self._enter_safe_mode(drum_service)
                 return
+
+    def _enter_safe_mode(self, drum_service: DrumMotorService) -> None:
+        """Enter safe mode: end collection, keep pusher open, disable retries.
+
+        The run continues so drums can still be ejected.
+        """
+        drum_service.collection_failed = True
+        drum_service.stall_retries = 1  # one attempt, zero retries
+        try:
+            Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)
+        except Exception as e:
+            self.warn(f"Safe mode pusher-open failed: {e}")
+        self.warn("Safe mode active — skipping remaining collection, retries disabled")
+
+    async def _show_emergency_ui(self, reason: str) -> bool:
+        """Show emergency screen with 15s countdown. Returns True if user clicks continue."""
+        screen = EmergencyScreen()
+        screen.reason = reason
+
+        async def _countdown():
+            for remaining in range(14, -1, -1):
+                await asyncio.sleep(1.0)
+                screen.seconds_left = remaining
+                try:
+                    await screen.refresh()
+                except Exception:
+                    pass
+            screen.close(False)
+
+        countdown_task = asyncio.create_task(_countdown())
+        try:
+            return await self.show(screen)
+        finally:
+            countdown_task.cancel()
+            try:
+                await countdown_task
+            except asyncio.CancelledError:
+                pass
 
     async def _emergency_shutdown(
         self,
