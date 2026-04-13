@@ -9,7 +9,6 @@ from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_down
 class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            drum_lifting_down(),
             collect_drums(),
             Defs.drum_pusher_servo.close(),
             go_to_empty_slot_plus_one(),

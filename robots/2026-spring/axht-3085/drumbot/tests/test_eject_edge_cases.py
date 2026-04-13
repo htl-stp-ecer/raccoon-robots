@@ -669,3 +669,56 @@ class TestSortingServiceEdge:
         on this — pin it."""
         assert EJECT_HOLE_SLOT == 5
         assert NUM_POCKETS == 9
+
+
+# ── Sweep length: exactly len(slots) - 1 ─────────────────────────
+
+
+class TestSweepCountIsSlotsMinus1:
+    """Enforce that the ejection sweep advances exactly len(slots) - 1 times.
+
+    Physical model: the revolver starts one pocket *before* the first drum
+    in the group. As it advances into the group, the first drum drops
+    through the eject hole immediately. By the time the sweep has moved
+    len(slots) - 1 more pockets, the last drum is positioned over the hole
+    and drops — so all drums are ejected without an extra step.
+
+    If someone changes `pockets_to_eject` to `len(slots)`, the revolver
+    would overshoot into the other color group and eject a wrong drum.
+    """
+
+    def _count_sweep_steps(self, motor: FakeDrumMotor) -> int:
+        """Count only the advance/retreat calls (the actual sweep), not go_to_pocket."""
+        return sum(1 for name, *_ in motor.calls if name in ("advance", "retreat"))
+
+    def test_four_drums_sweep_three(self):
+        """4 drums in a group → exactly 3 advance/retreat steps."""
+        sorting = perfect()
+        motor = FakeDrumMotor(current_pocket=4)
+        run_eject(sorting, motor)
+        assert self._count_sweep_steps(motor) == 3
+
+    def test_five_drums_sweep_four(self):
+        """5 drums of one color → exactly 4 advance/retreat steps."""
+        sorting = fill(*(["blue"] * 5), *(["pink"] * 3))
+        motor = FakeDrumMotor(current_pocket=4)
+        run_eject(sorting, motor)
+        assert self._count_sweep_steps(motor) == 4
+
+    def test_single_drum_sweep_zero(self):
+        """1 drum → 0 sweep steps (go_to_pocket places it over the hole)."""
+        sorting = fill("blue")
+        motor = FakeDrumMotor(current_pocket=5)
+        run_eject(sorting, motor)
+        assert self._count_sweep_steps(motor) == 0
+
+    @pytest.mark.parametrize("n_drums", [2, 3, 4, 5, 6, 7, 8])
+    def test_n_drums_sweep_n_minus_1(self, n_drums):
+        """For any group of N drums, sweep must be exactly N-1 steps."""
+        sorting = fill(*(["blue"] * n_drums))
+        motor = FakeDrumMotor(current_pocket=EJECT_HOLE_SLOT)
+        run_eject(sorting, motor)
+        assert self._count_sweep_steps(motor) == n_drums - 1, (
+            f"{n_drums} drums should produce {n_drums - 1} sweep steps, "
+            f"got {self._count_sweep_steps(motor)}. calls={motor.calls}"
+        )
