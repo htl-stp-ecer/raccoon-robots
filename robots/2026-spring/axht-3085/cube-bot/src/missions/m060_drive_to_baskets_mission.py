@@ -48,7 +48,7 @@ class M060DriveToBasketsMission(Mission):
                 after_cm(16)
             ),
 
-            turn_left().until(after_degrees(50) | after_seconds(1.0)),
+            turn_left().until(after_degrees(50) | after_seconds(3.0)),
             #put the arm back up
             background(
                 seq([

@@ -27,7 +27,7 @@ class M080dropMachingPomsMission(Mission):
             wait_for_seconds(0.5),
 
             #shake servos out
-            Defs.pom_grab.shake_pos_a(100),
+            Defs.pom_grab.shake_pos_a(80),
             wait_for_seconds(0.2),
             Defs.pom_grab.closed(),
             loop_for(
