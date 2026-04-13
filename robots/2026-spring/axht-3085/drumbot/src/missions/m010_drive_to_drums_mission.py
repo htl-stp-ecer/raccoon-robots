@@ -23,8 +23,8 @@ class M010DriveToDrumsMission(Mission):
             #wait_for_seconds(0.3),
 
             smooth_path(
-                turn_to_heading_right(13),  # over rotate so we push the sorted poms better
-                turn_to_heading_right(17.5),  # magic value, so we don't hit the extenal loading dock
+                turn_to_heading_right(14),  # over rotate so we push the sorted poms better
+                turn_to_heading_right(17.8),  # magic value, so we don't hit the extenal loading dock
                 parallel(
                     seq([
                         drive_forward().until(
@@ -53,7 +53,7 @@ class M010DriveToDrumsMission(Mission):
                     drive_forward(cm=27, heading=0),
                     Defs.drum_pusher_servo.open(),
                     seq([
-                        wait_until_distance(17), #only a good guess of distance
+                        wait_until_distance(12), #only a good guess of distance
                         drum_lifting_down(slow_mode=False),
                     ]),
                 ),

@@ -1,6 +1,6 @@
 import asyncio
 
-from raccoon import GenericRobot, dsl, parallel, seq, wait_for_seconds
+from raccoon import GenericRobot, dsl, parallel, seq, wait_for_seconds, wait_for_button
 from raccoon.ui.step import UIStep
 
 from src.hardware.defs import Defs
@@ -79,10 +79,6 @@ class CollectDrumsStep(UIStep):
                         block_timer_start(),
                     ])
                     await phase1a.run_step(robot)
-
-                    # Reset detection now so the camera gets a fresh read
-                    # of the stationary drum during the settling wait
-                    color_service.reset()
 
                     phase1b = seq([
                         wait_for_seconds(0.5),

@@ -27,7 +27,7 @@ def drive_to_second_pipe():
 
         # TODO: Try a drive straight and align on pipe
         parallel(
-        drive_forward(cm=33),
+        drive_forward(cm=36),
             drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
         ),
     ])

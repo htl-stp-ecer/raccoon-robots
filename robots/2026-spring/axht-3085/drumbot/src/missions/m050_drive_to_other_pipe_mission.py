@@ -45,14 +45,14 @@ class M050DriveToOtherPipeMission(Mission):
                                    ).until(
                     on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor),
                     ),
-                    Defs.pom_remover_servo.r_cube(),
+                    #Defs.pom_remover_servo.r_cube(),
                 ),
                 smooth_path(
                     turn_to_heading_right(90 + 25),  # turn 25deg to the right
                     drive_forward(10, 1),
                     turn_to_heading_right(90),
                 ),
-                background(Defs.pom_remover_servo.left()),
+                #background(Defs.pom_remover_servo.left()),
                 follow_line_single(
                     Defs.front_right_ir_sensor,
                     speed=1.0,

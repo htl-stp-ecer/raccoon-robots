@@ -46,14 +46,14 @@ class M030DriveToPipeMission(Mission):
                     after_cm(14.5)
                 ),
                 seq([
-                    wait_for_checkpoint(10),
+                    wait_for_checkpoint(15),
                     drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
                 ])
             ),
 
             #background(Defs.pom_remover_servo.center()),
 
-            drive_forward(cm=5),
+            drive_forward(cm=7),
             lineup_drum_with_pipe(False),
 
 

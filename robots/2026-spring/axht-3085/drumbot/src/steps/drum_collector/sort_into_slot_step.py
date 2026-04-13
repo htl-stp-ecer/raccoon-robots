@@ -27,10 +27,12 @@ class SortIntoSlotStep(Step):
 
         color = await color_service.detect_color()
         if color is None:
-            color = sorting_service.guess_color()
+            color = sorting_service.guess_color(current_pocket=drum_service.current_pocket)
             self.warn(f"Camera failed — guessed color: {color}")
-        filled = {i for i, s in enumerate(sorting_service.slots) if s is not None}
-        target = sorting_service.assign_slot(color)
+        target = sorting_service.assign_slot(color, current_pocket=drum_service.current_pocket)
+        # Collect filled slots *before* this assignment (target not yet occupied,
+        # so it is safe to pass through it if needed — but it won't be intermediate).
+        filled = {i for i, s in enumerate(sorting_service.slots) if s is not None and i != target}
         await drum_service.go_to_pocket_via_gap(target, filled, precise=False)
 
 

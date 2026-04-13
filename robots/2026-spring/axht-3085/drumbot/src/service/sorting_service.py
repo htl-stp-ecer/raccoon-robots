@@ -17,28 +17,48 @@ MIN_SAMPLES_TO_LEARN = 3
 
 
 class SortingService(RobotService):
-    """Bidirectional revolver sorting: first-seen color grows CW (0→1→2→3),
-    other color grows CCW (8→7→6→5). Empty slot ends up at 4."""
+    """Proximity-aware bidirectional revolver sorting.
+
+    Two color groups grow inward from opposite ends:
+        lo_color:  0 → 1 → 2 → 3
+        hi_color:  8 → 7 → 6 → 5
+        (gap at slot 4)
+
+    Which color gets which side is decided by the first drum: it goes to
+    whichever end is nearest to the current pocket.  This ensures consecutive
+    same-color drums are always 1 slot apart, and switching colors routes
+    through the empty gap — never over filled slots.
+    """
 
     def __init__(self, robot: "GenericRobot") -> None:
         super().__init__(robot)
-        # Two pointers approaching slot 4 from opposite ends.
         self._lo_next: int = 0   # always increments
         self._hi_next: int = 8   # always decrements
-        self._lo_color: str | None = None  # decided by first drum
+        self._lo_color: str | None = None
         self._hi_color: str | None = None
         self.slots: list[str | None] = [None] * NUM_SLOTS
         self._blue_detected: int = 0
         self._pink_detected: int = 0
         self._detection_deltas: list[float] = []
 
-    def _lock_sides(self, first_color: str) -> None:
-        """First drum seen gets the near side (0→), other gets far side (←8)."""
-        self._lo_color = first_color
-        self._hi_color = "pink" if first_color == "blue" else "blue"
+    def _lock_sides(self, first_color: str, current_pocket: int) -> None:
+        """Assign first color to whichever end is nearest to current pocket."""
+        def ring_dist(a: int, b: int) -> int:
+            d = abs(a - b)
+            return min(d, NUM_SLOTS - d)
+
+        dist_lo = ring_dist(current_pocket, 0)
+        dist_hi = ring_dist(current_pocket, NUM_SLOTS - 1)
+
+        if dist_lo <= dist_hi:
+            self._lo_color = first_color
+        else:
+            self._lo_color = "pink" if first_color == "blue" else "blue"
+        self._hi_color = "pink" if self._lo_color == "blue" else "blue"
         self.info(
-            f"Sides locked (first={first_color}): "
-            f"{self._lo_color} → 0→, {self._hi_color} → ←8"
+            f"Sides locked (first={first_color}, pocket={current_pocket}, "
+            f"dist_lo={dist_lo}, dist_hi={dist_hi}): "
+            f"{self._lo_color} → 0→3, {self._hi_color} → 8→5"
         )
 
     @property
@@ -53,13 +73,16 @@ class SortingService(RobotService):
             return self._lo_next
         return self._hi_next
 
-    def assign_slot(self, color: str) -> int:
-        """Return the target slot for *color* and advance the pointer."""
+    def assign_slot(self, color: str, current_pocket: int = 0) -> int:
+        """Return the target slot for *color* and advance the pointer.
+
+        *current_pocket* is used to decide side assignment for the first drum.
+        """
         if color not in ("blue", "pink"):
             raise ValueError(f"Unknown color: {color!r}")
 
         if self._lo_color is None:
-            self._lock_sides(color)
+            self._lock_sides(color, current_pocket)
 
         if self._lo_next > self._hi_next:
             raise RuntimeError(
@@ -81,17 +104,18 @@ class SortingService(RobotService):
         self.slots[target] = color
         self.info(
             f"Assigned {color} → slot {target}  "
-            f"(blue_next={self.blue_next}, pink_next={self.pink_next})",
+            f"(lo[{self._lo_color}]={self._lo_next}, "
+            f"hi[{self._hi_color}]={self._hi_next})",
         )
         return target
 
-    def guess_color(self) -> str:
-        """Guess the most likely remaining color. Deterministic argmax.
+    def guess_color(self, current_pocket: int = 0) -> str:
+        """Guess the most likely remaining color.
 
-        Example: 3 blue already detected, 1 pink already detected, totals
-        4/4 → remaining = 1 blue, 3 pink → pick pink (75 %).
-        Ties go to whichever side still has a slot free; if both sides
-        are tied and non-empty, prefer blue arbitrarily.
+        If one color has more drums remaining, pick that one.
+        On a tie, pick whichever color's next slot is **nearest** to the
+        current pocket — this prevents ping-ponging across the revolver
+        when the camera fails repeatedly.
         """
         blue_remaining = max(0, TOTAL_BLUE - self._blue_detected)
         pink_remaining = max(0, TOTAL_PINK - self._pink_detected)
@@ -101,13 +125,19 @@ class SortingService(RobotService):
             self.warn("All drums accounted for — defaulting to blue")
             return "blue"
 
-        blue_probability = blue_remaining / total_remaining
-        pink_probability = pink_remaining / total_remaining
-
         if pink_remaining > blue_remaining:
             guess = "pink"
         elif blue_remaining > pink_remaining:
             guess = "blue"
+        elif self._lo_color is not None:
+            # Tie — pick whichever color's next slot is closer.
+            def ring_dist(a: int, b: int) -> int:
+                d = abs(a - b)
+                return min(d, NUM_SLOTS - d)
+
+            lo_dist = ring_dist(current_pocket, self._lo_next)
+            hi_dist = ring_dist(current_pocket, self._hi_next)
+            guess = self._lo_color if lo_dist <= hi_dist else self._hi_color
         else:
             guess = "blue"
 
@@ -115,7 +145,7 @@ class SortingService(RobotService):
             f"Color guess: {guess} "
             f"(blue remaining: {blue_remaining}/{TOTAL_BLUE}, "
             f"pink remaining: {pink_remaining}/{TOTAL_PINK}, "
-            f"P(blue)={blue_probability:.0%}, P(pink)={pink_probability:.0%})"
+            f"pocket={current_pocket})"
         )
         return guess
 
@@ -177,3 +207,16 @@ class SortingService(RobotService):
         best = min(empties, key=lambda e: ring_distance(current_index, e))
         self.info(f"Nearest empty slot to {current_index}: slot {best} (empties={empties})")
         return best
+
+    @property
+    def optimal_wait_slot(self) -> int:
+        """Slot between the two fill fronts — minimises worst-case travel.
+
+        Both groups grow in the same direction with the gap at slot 4.
+        The optimal wait position is always the gap (slot 4) or whichever
+        front is about to be filled next, since both are reachable through
+        empty space.
+        """
+        if self._lo_color is None:
+            return (NUM_SLOTS - 1) // 2  # sides not locked yet; centre is safe
+        return (self._lo_next + self._hi_next) // 2
