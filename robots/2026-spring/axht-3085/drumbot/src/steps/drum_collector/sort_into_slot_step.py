@@ -30,10 +30,7 @@ class SortIntoSlotStep(Step):
             color = sorting_service.guess_color()
             self.warn(f"Camera failed — guessed color: {color}")
         target = sorting_service.assign_slot(color)
-        # Collect filled slots *before* this assignment (target not yet occupied,
-        # so it is safe to pass through it if needed — but it won't be intermediate).
-        filled = {i for i, s in enumerate(sorting_service.slots) if s is not None and i != target}
-        await drum_service.go_to_pocket_via_gap(target, filled, precise=False)
+        await drum_service.go_to_pocket(target, precise=False)
 
 
 @dsl(hidden=True)
@@ -163,7 +160,7 @@ class EjectNearestColorStep(Step):
                 forward = False
 
 
-            pockets_to_eject = len(slots) - 1
+            pockets_to_eject = len(slots)
             drum_service.info(
                 f"Ejecting {color}: go to slot {start_slot}, "
                 f"then sweep {'forward' if forward else 'backward'} "

@@ -280,7 +280,7 @@ class TestEjectAllFourDrums:
         sorting = fill("pink", "pink", "pink", "pink")
         motor = FakeDrumMotor(current_pocket=start_pocket)
         claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {5, 6, 7, 8}
+        assert claimed == {0, 1, 2, 3}  # pink first → near side
         assert_all_ejected(motor, claimed, since=since)
 
     @pytest.mark.parametrize("start_pocket", list(range(NUM_POCKETS)))
@@ -369,9 +369,9 @@ class TestImperfectSortingState:
 
     def test_single_pink_only(self):
         sorting = fill("pink")
-        motor = FakeDrumMotor(current_pocket=0)
+        motor = FakeDrumMotor(current_pocket=5)
         claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {8}
+        assert claimed == {0}  # pink first → near side (slot 0)
         assert_all_ejected(motor, claimed, since=since)
 
     def test_two_blue_two_pink(self):
@@ -390,10 +390,10 @@ class TestImperfectSortingState:
 
     def test_all_eight_pink(self):
         sorting = fill(*(["pink"] * 8))
-        assert sorted(sorting.pink_slots) == [1, 2, 3, 4, 5, 6, 7, 8]
-        motor = FakeDrumMotor(current_pocket=0)
+        assert sorted(sorting.pink_slots) == [0, 1, 2, 3, 4, 5, 6, 7]
+        motor = FakeDrumMotor(current_pocket=8)
         claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {1, 2, 3, 4, 5, 6, 7, 8}
+        assert claimed == {0, 1, 2, 3, 4, 5, 6, 7}
         assert_all_ejected(motor, claimed, since=since)
 
 
@@ -601,12 +601,13 @@ class TestNoCrossContamination:
         is fine for correctness, but a good implementation should not
         rotate through more than it needs to)."""
         sorting = fill("pink", "pink", "pink", "pink")
-        motor = FakeDrumMotor(current_pocket=0)
+        motor = FakeDrumMotor(current_pocket=5)
         claimed, color, since = run_eject(sorting, motor)
         assert color == "pink"
         visited = motor.visited[since:]
-        assert not (set(visited) & {0, 1, 2, 3}), (
-            f"Pink sweep entered the (empty) blue region: {visited}"
+        # Pink first → slots 0-3. Sweep should not enter the empty far region.
+        assert not (set(visited) & {5, 6, 7, 8}), (
+            f"Pink sweep entered the empty far region: {visited}"
         )
 
 
@@ -620,7 +621,7 @@ class TestSortingServiceEdge:
 
     def test_pink_pointer_never_regresses(self):
         s = fill("pink", "pink", "blue", "pink")
-        assert s.pink_next == 5  # 8,7,6 used
+        assert s.pink_next == 3  # 0,1,2 used (pink first → near side)
 
     def test_assign_after_full_raises_immediately(self):
         s = fill(*(["blue", "pink"] * 4), "blue")

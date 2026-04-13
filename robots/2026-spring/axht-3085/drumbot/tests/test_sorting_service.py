@@ -17,9 +17,10 @@ class TestAssignSlot:
         s = make_service()
         assert s.assign_slot("blue") == 0
 
-    def test_first_pink_goes_to_slot_8(self):
+    def test_first_pink_goes_to_slot_0(self):
+        """First-seen color always gets the near side (slot 0)."""
         s = make_service()
-        assert s.assign_slot("pink") == 8
+        assert s.assign_slot("pink") == 0
 
     def test_alternating_worst_case(self):
         """B-P-B-P-B-P-B-P → blue in 0-3, pink in 8-5."""
@@ -30,6 +31,15 @@ class TestAssignSlot:
             assert s.assign_slot(color) == exp
         assert s.slots == ["blue", "blue", "blue", "blue", None, "pink", "pink", "pink", "pink"]
 
+    def test_alternating_pink_first(self):
+        """P-B-P-B-P-B-P-B → pink in 0-3, blue in 8-5, empty at 4."""
+        s = make_service()
+        colors = ["pink", "blue", "pink", "blue", "pink", "blue", "pink", "blue"]
+        expected = [0, 8, 1, 7, 2, 6, 3, 5]
+        for color, exp in zip(colors, expected):
+            assert s.assign_slot(color) == exp
+        assert s.slots == ["pink", "pink", "pink", "pink", None, "blue", "blue", "blue", "blue"]
+
     def test_all_blue(self):
         s = make_service()
         for i in range(8):
@@ -37,10 +47,11 @@ class TestAssignSlot:
         assert s.slots == ["blue"] * 8 + [None]
 
     def test_all_pink(self):
+        """Pink first → pink gets near side (0→7)."""
         s = make_service()
         for i in range(8):
-            assert s.assign_slot("pink") == 8 - i
-        assert s.slots == [None] + ["pink"] * 8
+            assert s.assign_slot("pink") == i
+        assert s.slots == ["pink"] * 8 + [None]
 
     def test_uneven_5_blue_3_pink(self):
         s = make_service()
@@ -78,11 +89,12 @@ class TestSlotQueries:
         assert s.blue_slots == [0, 1]
 
     def test_pink_slots_descending(self):
+        """Pink first → near side. P→0, B→8, P→1."""
         s = make_service()
         s.assign_slot("pink")
         s.assign_slot("blue")
         s.assign_slot("pink")
-        assert s.pink_slots == [8, 7]
+        assert s.pink_slots == [1, 0]
 
     def test_empty_slot_after_full(self):
         s = make_service()

@@ -17,35 +17,66 @@ MIN_SAMPLES_TO_LEARN = 3
 
 
 class SortingService(RobotService):
-    """Bidirectional revolver sorting: blue grows CW (0→1→2→...),
-    pink grows CCW (8→7→6→...). Empty slot ends up in the middle."""
+    """Bidirectional revolver sorting: first-seen color grows CW (0→1→2→3),
+    other color grows CCW (8→7→6→5). Empty slot ends up at 4."""
 
     def __init__(self, robot: "GenericRobot") -> None:
         super().__init__(robot)
-        self.blue_next: int = 0
-        self.pink_next: int = 8
+        # Two pointers approaching slot 4 from opposite ends.
+        self._lo_next: int = 0   # always increments
+        self._hi_next: int = 8   # always decrements
+        self._lo_color: str | None = None  # decided by first drum
+        self._hi_color: str | None = None
         self.slots: list[str | None] = [None] * NUM_SLOTS
         self._blue_detected: int = 0
         self._pink_detected: int = 0
         self._detection_deltas: list[float] = []
 
+    def _lock_sides(self, first_color: str) -> None:
+        """First drum seen gets the near side (0→), other gets far side (←8)."""
+        self._lo_color = first_color
+        self._hi_color = "pink" if first_color == "blue" else "blue"
+        self.info(
+            f"Sides locked (first={first_color}): "
+            f"{self._lo_color} → 0→, {self._hi_color} → ←8"
+        )
+
+    @property
+    def blue_next(self) -> int:
+        if self._lo_color == "blue":
+            return self._lo_next
+        return self._hi_next
+
+    @property
+    def pink_next(self) -> int:
+        if self._lo_color == "pink":
+            return self._lo_next
+        return self._hi_next
+
     def assign_slot(self, color: str) -> int:
         """Return the target slot for *color* and advance the pointer."""
-        if self.blue_next > self.pink_next:
+        if color not in ("blue", "pink"):
+            raise ValueError(f"Unknown color: {color!r}")
+
+        if self._lo_color is None:
+            self._lock_sides(color)
+
+        if self._lo_next > self._hi_next:
             raise RuntimeError(
-                f"Revolver full: blue_next={self.blue_next}, pink_next={self.pink_next}",
+                f"Revolver full: lo_next={self._lo_next}, hi_next={self._hi_next}",
             )
 
-        if color == "blue":
-            target = self.blue_next
-            self.blue_next += 1
-            self._blue_detected += 1
-        elif color == "pink":
-            target = self.pink_next
-            self.pink_next -= 1
-            self._pink_detected += 1
+        if color == self._lo_color:
+            target = self._lo_next
+            self._lo_next += 1
         else:
-            raise ValueError(f"Unknown color: {color!r}")
+            target = self._hi_next
+            self._hi_next -= 1
+
+        if color == "blue":
+            self._blue_detected += 1
+        else:
+            self._pink_detected += 1
 
         self.slots[target] = color
         self.info(
