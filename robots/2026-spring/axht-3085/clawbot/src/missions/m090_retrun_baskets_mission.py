@@ -26,7 +26,7 @@ class M090RetrunBasketsMission(Mission):
                         degrees=70,
                         speed=1.0
                     ),
-                    seconds=6
+                    seconds=5.5
                 ),
 
                 seq([
@@ -43,9 +43,15 @@ class M090RetrunBasketsMission(Mission):
             #position mached basket to return
             drive_backward().until(
                 after_cm(30) +
-                on_black(Defs.front.right)
+                on_black(Defs.front.right) +
+                after_cm(60) #drives way to much backwards so the other bot can drive next to him
+
             ),
-            drive_forward(cm=7),
+            wait_for_checkpoint(60+ 38),
+            drive_forward().until(
+                over_line(Defs.front.right) +
+                after_cm(7),
+            ),
 
             #return mached basket
             turn_right(20),
@@ -54,7 +60,7 @@ class M090RetrunBasketsMission(Mission):
                 Defs.pom_grab.open(),
             ),
             parallel(
-                turn_left(50),
+                turn_left(42.5), #Tanjas magic value
                 Defs.pom_grab.closed(),
             ),
 

@@ -22,20 +22,19 @@ class M040GrabSortedPomsMission(Mission):
                 name="put claw up"
             ),
 
-            line_turn,
-            wait_for_background("put claw up"),
+            turn_to_heading_right(90, 1.0),
 
             parallel(
                 seq([
-                    # If we crossed the line during the turn, we're on the right
-                    # side — strafe right to re-find it. Otherwise strafe left.
-                    defer(lambda robot: (
-                        strafe_right().until(on_black(Defs.rear.right))
-                        if line_turn.crossed_line
-                        else strafe_left().until(on_black(Defs.rear.right))
-                    )),
-                    strafe_left(cm=13), #magic hardcoded value :)
+                    strafe_right().until(
+                        after_cm(10) +
+                        on_white(Defs.rear.right),
+                        ),
+                    strafe_left().until(
+                        over_line(Defs.rear.right)
+                    ),
                 ]),
+
 
                 #prepare the shield to grab the sorted poms
                 Defs.shild.normal_drive(),
@@ -44,9 +43,9 @@ class M040GrabSortedPomsMission(Mission):
             turn_to_heading_right(90, 1.0),
 
             #drive
-            drive_backward(25, 1.0),
+            drive_backward(22, 1.0),
 
-            turn_right(10, 1.0),
+            turn_right(15, 1.0),
             drive_backward(8, 1.0),
             turn_to_heading_right(90, 1.0),
 
