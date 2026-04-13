@@ -8,3 +8,4 @@ __pycache__
 defs.py
 robot.py
 racoon.calibration.yml
+/drum_detections/
