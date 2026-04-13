@@ -43,12 +43,16 @@ class M030DriveToPipeMission(Mission):
             parallel(
                 drive_forward().until(
                     over_line(Defs.front_right_ir_sensor) +
-                    after_cm(15)
+                    after_cm(14.5)
                 ),
+                seq([
+                    wait_for_checkpoint(10),
+                    drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
+                ])
             ),
 
             #background(Defs.pom_remover_servo.center()),
-            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
+
             drive_forward(cm=5),
             lineup_drum_with_pipe(False),
 

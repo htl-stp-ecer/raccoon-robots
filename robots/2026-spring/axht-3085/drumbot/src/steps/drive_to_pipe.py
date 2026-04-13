@@ -1,6 +1,7 @@
 from raccoon import *
 
 from src.hardware.defs import Defs
+from src.steps.drum_lifting_step import drum_recover_from_over_limit
 
 
 @dsl
@@ -25,5 +26,8 @@ def drive_to_second_pipe():
         turn_to_heading_right(90),
 
         # TODO: Try a drive straight and align on pipe
+        parallel(
         drive_forward(cm=33),
+            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
+        ),
     ])

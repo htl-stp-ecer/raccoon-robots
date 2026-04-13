@@ -12,6 +12,7 @@ pom_remover_servo:
   positions:
     start: 95
     right: 20
+    r_cube: 50  #position to not touch the cube
     left: 180
     center: 100
     orange_pom_removel: 130
@@ -20,7 +21,7 @@ lift_drums_servo:
   type: Servo
   port: 1
   positions:
-    up: 170
+    up: 175       #a bit more thane 170° for better driving
     align_on_back: 70
     eject_position: 152
     seek_position: 162

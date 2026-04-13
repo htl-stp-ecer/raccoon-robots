@@ -35,21 +35,24 @@ class M050DriveToOtherPipeMission(Mission):
                 # wait for the other bot to finish
                 wait_for_checkpoint(60 + 25),
 
-
-                follow_line_single(Defs.front_right_ir_sensor,
-                                   kp=1,
+                parallel(
+                    follow_line_single(Defs.front_right_ir_sensor,
+                                kp=1,
                                    ki=0.1,
                                    kd=0.1,
                                    side=LineSide.LEFT,
                                    speed=1.0
                                    ).until(
-                    on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor)
+                    on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor),
+                    ),
+                    Defs.pom_remover_servo.r_cube(),
                 ),
                 smooth_path(
                     turn_to_heading_right(90 + 25),  # turn 25deg to the right
                     drive_forward(10, 1),
                     turn_to_heading_right(90),
                 ),
+                background(Defs.pom_remover_servo.left()),
                 follow_line_single(
                     Defs.front_right_ir_sensor,
                     speed=1.0,
@@ -65,8 +68,7 @@ class M050DriveToOtherPipeMission(Mission):
                 ),
                 drive_to_second_pipe(),
 
-            background(Defs.pom_remover_servo.left()),
-            lineup_drum_with_pipe(True),
+                lineup_drum_with_pipe(True),
 
             # eject drum mission will be executed next
         ])
