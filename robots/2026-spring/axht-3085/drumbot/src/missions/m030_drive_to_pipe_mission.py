@@ -13,8 +13,8 @@ def print_debug_info(robot):
     sorting = robot.get_service(SortingService)
     info(f"[DEBUG] Current pocket: {drum.current_pocket}")
     info(f"[DEBUG] Slots: {sorting.slots}")
-    info(f"[DEBUG] Blue slots: {sorting.blue_slots}  (cw={sorting._cw_color}→{sorting._cw_next}, ccw={sorting._ccw_color}→{sorting._ccw_next})")
-    info(f"[DEBUG] Pink slots: {sorting.pink_slots}")
+    info(f"[DEBUG] Blue slots: {sorting.blue_slots}  (next: {sorting.blue_next})")
+    info(f"[DEBUG] Pink slots: {sorting.pink_slots}  (next: {sorting.pink_next})")
     info(f"[DEBUG] Empty slot: {sorting.empty_slot}")
 
 
