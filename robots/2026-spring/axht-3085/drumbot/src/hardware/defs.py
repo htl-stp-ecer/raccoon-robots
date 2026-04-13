@@ -26,14 +26,14 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.9645648640075048e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.968748383891856e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.6987935887117158e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.707671239866191e-05, vel_lpf_alpha=1.0
         ),
     )
     drum_motor = Motor(

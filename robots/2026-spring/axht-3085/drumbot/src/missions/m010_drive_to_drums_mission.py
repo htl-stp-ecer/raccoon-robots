@@ -51,9 +51,10 @@ class M010DriveToDrumsMission(Mission):
                     drive_forward(cm=27, heading=0),
                     Defs.drum_pusher_servo.open(),
                     seq([
-                        drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
-                        drum_lifting_down(slow_mode=False),
+                        wait_until_distance(8), #only a good guess of distance
+                        drum_recover_from_over_limit(Defs.lift_drums_servo.up),
                     ]),
                 ),
+                drum_lifting_down(slow_mode=False),
             ),
         ])
