@@ -47,26 +47,23 @@ class M090RetrunBasketsMission(Mission):
                 after_cm(60) #drives way to much backwards so the other bot can drive next to him
 
             ),
-            wait_for_checkpoint(60+ 38),
+            wait_for_checkpoint(60+ 42.25),
             drive_forward().until(
                 over_line(Defs.front.right) +
                 after_cm(7),
             ),
 
             #return mached basket
-            turn_right(20),
+            turn_right(20, speed=0.4),
             parallel(
                 Defs.pom_arm.high_above_basket(),
                 Defs.pom_grab.open(),
             ),
             parallel(
-                turn_left(42.5), #Tanjas magic value
+                turn_left(degrees=50, speed=0.4), #Tanjas magic value (angle was sadly changed :( )
                 Defs.pom_grab.closed(),
             ),
 
             Defs.pom_arm.down(),
-            turn_to_heading_right(30), #push basket in
-
-
-
+            turn_to_heading_right(25, speed=0.4), #push basket in
         ])

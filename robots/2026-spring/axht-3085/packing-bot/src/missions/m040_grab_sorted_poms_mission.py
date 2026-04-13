@@ -24,21 +24,19 @@ class M040GrabSortedPomsMission(Mission):
 
             turn_to_heading_right(90, 1.0),
 
-            parallel(
-                seq([
-                    strafe_right().until(
-                        after_cm(10) +
-                        on_white(Defs.rear.right),
-                        ),
-                    strafe_left().until(
-                        over_line(Defs.rear.right)
-                    ),
-                ]),
-
-
-                #prepare the shield to grab the sorted poms
-                Defs.shild.normal_drive(),
-                Defs.shild_graber.wide_open(),
+            strafe_right().until(
+                after_cm(10) +
+                on_white(Defs.rear.right),
+            ),
+            strafe_left().until(
+                over_line(Defs.rear.right)
+            ),
+            background(
+                parallel(
+                    #prepare the shield to grab the sorted poms
+                    Defs.shild.normal_drive(),
+                    Defs.shild_graber.wide_open(),
+                ),
             ),
             turn_to_heading_right(90, 1.0),
 
