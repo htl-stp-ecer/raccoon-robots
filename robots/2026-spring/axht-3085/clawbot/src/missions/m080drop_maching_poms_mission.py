@@ -15,7 +15,7 @@ class M080dropMachingPomsMission(Mission):
             ),
 
             #position over basket
-            turn_right(20),
+            turn_right(20, speed=0.3),
             drive_angle(120, 19),
 
             #move the basket a bit forward
@@ -27,7 +27,7 @@ class M080dropMachingPomsMission(Mission):
             wait_for_seconds(0.5),
 
             #shake servos out
-            Defs.pom_grab.shake_pos_a(80),
+            Defs.pom_grab.shake_pos_a(60),
             wait_for_seconds(0.2),
             Defs.pom_grab.closed(),
             loop_for(

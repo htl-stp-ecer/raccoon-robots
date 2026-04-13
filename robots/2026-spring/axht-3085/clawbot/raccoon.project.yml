@@ -157,28 +157,28 @@ definitions:
     port: 1
     inverted: false
     calibration:
-      ticks_to_rad: 1.7474074940092457e-05
+      ticks_to_rad: 1.744985723679869e-05
       vel_lpf_alpha: 1.0
   front_right_motor:
     type: Motor
     port: 0
     inverted: true
     calibration:
-      ticks_to_rad: 1.7047828418517576e-05
+      ticks_to_rad: 1.7028373209349794e-05
       vel_lpf_alpha: 1.0
   rear_left_motor:
     type: Motor
     port: 2
     inverted: false
     calibration:
-      ticks_to_rad: 1.7353960871144052e-05
+      ticks_to_rad: 1.7404004328400886e-05
       vel_lpf_alpha: 1.0
   rear_right_motor:
     type: Motor
     port: 3
     inverted: true
     calibration:
-      ticks_to_rad: 1.76548946624496e-05
+      ticks_to_rad: 1.763157194301176e-05
       vel_lpf_alpha: 1.0
   shild:
     type: Servo
@@ -216,7 +216,7 @@ definitions:
   pom_grab:
     type: Servo
     port: 3
-    offset: 15
+    offset: 10
     positions:
       closed: 10
       start: 30
@@ -232,5 +232,5 @@ connection:
   pi_address: 192.168.100.159
   pi_port: 8421
   pi_user: pi
-  remote_path:
+  remote_path: null
   auto_connect: true

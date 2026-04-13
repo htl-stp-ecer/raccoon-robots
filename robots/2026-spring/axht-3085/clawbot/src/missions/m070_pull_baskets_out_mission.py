@@ -18,7 +18,7 @@ class M070PullBasketsOutMission(Mission):
                 Defs.shild.above_pasked(),
                 seq([ #wait shortly so the poms don't drop out
                     wait_for_seconds(0.1),
-                    Defs.shild_graber.open(100),
+                    Defs.shild_graber.wide_open(100),
                 ])
             ),
         ])
