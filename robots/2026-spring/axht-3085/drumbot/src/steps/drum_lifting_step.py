@@ -117,6 +117,7 @@ def drum_recover_from_over_limit(target_position: _PresetPosition, motor_speed=1
         return seq([
             set_motor_power(Defs.servo_help_motor, motor_speed),  # positive = push down from hard stop
             target_position(),
+            wait_for_seconds(0.3),
             motor_passive_brake(Defs.servo_help_motor),
         ])
     return defer(_build)
