@@ -18,7 +18,7 @@ def drive_to_second_pipe():
 
     return seq([
         line_follower().until(
-            #after_cm(20) +
+            # after_cm(20) +
             over_line(Defs.front_left_ir_sensor),
         ),
 
@@ -26,8 +26,10 @@ def drive_to_second_pipe():
         turn_to_heading_right(90),
 
         # TODO: Try a drive straight and align on pipe
+        #wall_align_forward(accel_threshold=0.4), # TODO: Test this
         parallel(
-        drive_forward(cm=35),
+            drive_forward(cm=35),
+            #drive_backward(cm=20), # TODO: Test this
             drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
         ),
     ])

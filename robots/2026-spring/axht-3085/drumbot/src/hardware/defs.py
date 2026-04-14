@@ -63,10 +63,10 @@ class Defs:
     lift_drums_servo = ServoPreset(
         Servo(port=1),
         positions={
-            "up": 175,
+            "up": 185,
             "align_on_back": 70,
             "eject_position": 152,
-            "seek_position": 162,
+            "seek_position": 185,
             "down": 5,
             "remove_D": 38,
             "remove_M": 70,
