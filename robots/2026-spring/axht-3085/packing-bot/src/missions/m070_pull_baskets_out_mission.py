@@ -10,9 +10,10 @@ class M070PullBasketsOutMission(Mission):
             Defs.shild._45deg(),
             strafe_right(cm=7),
             Defs.shild.grab_pasked(),
+            fully_disable_servos(),
 
             strafe_left().until(on_black(Defs.rear.right)),
-            turn_right(70, speed=0.5),
+            turn_right(70, speed=0.3),
             #drop sorted poms
             parallel(
                 Defs.shild.above_pasked(),

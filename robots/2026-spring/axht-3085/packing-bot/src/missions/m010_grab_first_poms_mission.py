@@ -4,7 +4,7 @@ from src.hardware.defs import Defs
 
 
 class M010GrabFirstPomsMission(Mission):
-    time_budget = 30.0 #kills the bot after 30s
+    time_budget = 30.0  # kills the bot after 30s
 
     def sequence(self) -> Sequential:
         return seq([
@@ -16,7 +16,7 @@ class M010GrabFirstPomsMission(Mission):
             smooth_path(
                 strafe_right(25, 1.0),
                 parallel(
-                    Defs.shild._45deg(), #put the shild only 45 deg up so the claw doesnt hit the shild
+                    Defs.shild._45deg(),  # put the shild only 45 deg up so the claw doesnt hit the shild
                     strafe_left(25, 1.0),
                 ),
                 parallel(
@@ -30,44 +30,41 @@ class M010GrabFirstPomsMission(Mission):
                     Defs.pom_arm.down(),
                 ),
             ),
-            smooth_path(
-                parallel(
-                    drive_forward().until(
-                        over_line(Defs.front.left) |
-                        over_line(Defs.front.right)
-                    ),
-                    Defs.shild.up(), #make usre we don't hit the cube
+            parallel(
+                drive_forward(heading=90).until(
+                    over_line(Defs.front.left) |
+                    over_line(Defs.front.right)
                 ),
-                #Defs.front.strafe_left_until_black(sensor=Defs.front.right),
-
-                parallel(
-                    # get poms and close claw
-                    strafe_follow_line_single(
-                        Defs.front.right,
-                        speed=1.0,
-                        side=LineSide.LEFT,
-                        kp=0.4,
-                        ki=0.05,
-                        kd=0.0,
-                    ).until(
-                        over_line(Defs.rear.right) + after_cm(100) + on_black(Defs.front.left)
-                    ),
-                    seq([
-                        # close the claw a bit, so fully closing it is faster
-                        Defs.pom_grab.slightly_open(),
-
-                        # wait until we have collected all poms
-                        wait_until_distance(35),
-                        Defs.pom_grab.closed(),
-                        Defs.pom_arm.up(),
-
-                        # wait until the claw is over the edge and put it back down
-                        wait_until_distance(45),
-                        Defs.pom_arm.high_up(100),
-                    ]),
-                ),
-
-                # dont do drive and arm movements at the sime time!
-                drive_forward(35),
+                Defs.shild.up(),  # make usre we don't hit the cube
             ),
+
+            parallel(
+                # get poms and close claw
+                strafe_follow_line_single(
+                    Defs.front.right,
+                    speed=1.0,
+                    side=LineSide.LEFT,
+                    kp=0.4,
+                    ki=0.08,
+                    kd=0.0,
+                ).until(
+                    over_line(Defs.rear.right) + after_cm(100) + on_black(Defs.front.left)
+                ),
+                seq([
+                    # close the claw a bit, so fully closing it is faster
+                    Defs.pom_grab.slightly_open(),
+
+                    # wait until we have collected all poms
+                    wait_until_distance(35),
+                    Defs.pom_grab.closed(),
+                    Defs.pom_arm.up(),
+
+                    # wait until the claw is over the edge and put it back down
+                    wait_until_distance(45),
+                    Defs.pom_arm.high_up(100),
+                ]),
+            ),
+
+            # dont do drive and arm movements at the same time!
+            drive_forward(35),
         ])
