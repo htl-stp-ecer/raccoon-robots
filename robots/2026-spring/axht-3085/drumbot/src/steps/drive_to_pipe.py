@@ -23,15 +23,20 @@ def drive_to_second_pipe():
         ),
 
         # make sure we are straight (to drive accurace distance
-        turn_to_heading_right(90),
-
-        # TODO: Try a drive straight and align on pipe
         parallel(
-        wall_align_forward(accel_threshold=10, grace_period=0.5, max_duration=3),
+            turn_to_heading_right(90),
+            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
             Defs.pom_remover_servo.left(),
         ),
-        parallel(
-            drive_backward(cm=16),
-            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
-        ),
+
+        drive_forward(33,1),
+        # TODO: Try a drive straight and align on pipe
+        #parallel(
+        #wall_align_forward(accel_threshold=10, grace_period=0.5, max_duration=3),
+        #    Defs.pom_remover_servo.left(),
+        #),
+        #parallel(
+        #    drive_backward(cm=16),
+        #    drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
+        #),
     ])
