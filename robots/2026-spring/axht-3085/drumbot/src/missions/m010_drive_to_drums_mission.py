@@ -37,7 +37,7 @@ class M010DriveToDrumsMission(Mission):
                             wait_until_distance(5),
                             Defs.pom_remover_servo.right(),
                             fully_disable_servos(),
-                            wait_for(on_black(Defs.front_right_ir_sensor)),
+                            wait_until_distance(29),
                             Defs.pom_remover_servo.left(),
                             fully_disable_servos(),
                             wait_until_distance(22),

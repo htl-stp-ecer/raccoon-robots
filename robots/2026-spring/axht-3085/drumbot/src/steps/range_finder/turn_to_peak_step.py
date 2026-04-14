@@ -1,9 +1,16 @@
 """Peak-tracking turn: full sweep then turn to absolute peak heading."""
 from __future__ import annotations
 
+import csv
 import math
+import os
+from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 from raccoon import dsl
 from raccoon.motion import TurnConfig, TurnMotion
@@ -13,6 +20,8 @@ from src.service.range_finder_service import RangeFinderService
 
 if TYPE_CHECKING:
     from raccoon.robot.api import GenericRobot
+
+LOG_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "logs", "turn_to_peak")
 
 
 class _Phase(Enum):
@@ -40,6 +49,7 @@ class TurnToPeakStep(MotionStep):
         self._stuck_ref_heading: float = 0.0
         self._stuck_ref_time: float = 0.0
         self._elapsed: float = 0.0
+        self._log_rows: list[tuple[float, float, float, float, float, str]] = []
 
     def _generate_signature(self) -> str:
         d = "right" if self._direction < 0 else "left"
@@ -88,11 +98,75 @@ class TurnToPeakStep(MotionStep):
         self._motion = self._make_turn(robot, error_rad)
         self._phase = _Phase.RETURN
 
+    def _save_log(self) -> None:
+        if not self._log_rows:
+            return
+        os.makedirs(LOG_DIR, exist_ok=True)
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_path = os.path.join(LOG_DIR, f"{stamp}.csv")
+        png_path = os.path.join(LOG_DIR, f"{stamp}.png")
+
+        with open(csv_path, "w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["elapsed_s", "heading_deg", "sensor_value", "peak_value", "peak_heading_deg", "phase"])
+            w.writerows(self._log_rows)
+
+        # Build plot
+        t = [r[0] for r in self._log_rows]
+        heading = [r[1] for r in self._log_rows]
+        sensor = [r[2] for r in self._log_rows]
+        peak_val = [r[3] for r in self._log_rows]
+        peak_hdg = [r[4] for r in self._log_rows]
+        phases = [r[5] for r in self._log_rows]
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(10, 6))
+
+        # Color by phase
+        sweep_t = [t[i] for i in range(len(t)) if phases[i] == "SWEEP"]
+        sweep_s = [sensor[i] for i in range(len(t)) if phases[i] == "SWEEP"]
+        ret_t = [t[i] for i in range(len(t)) if phases[i] == "RETURN"]
+        ret_s = [sensor[i] for i in range(len(t)) if phases[i] == "RETURN"]
+
+        ax1.plot(sweep_t, sweep_s, "b.", markersize=3, label="Sweep")
+        ax1.plot(ret_t, ret_s, "r.", markersize=3, label="Return")
+        ax1.plot(t, peak_val, "g--", linewidth=1, label="Peak value")
+        ax1.set_ylabel("Sensor value")
+        ax1.legend(loc="upper right", fontsize=8)
+        ax1.set_title("Turn-to-Peak Sensor Log")
+        ax1.grid(True, alpha=0.3)
+
+        sweep_t_h = [t[i] for i in range(len(t)) if phases[i] == "SWEEP"]
+        sweep_h = [heading[i] for i in range(len(t)) if phases[i] == "SWEEP"]
+        ret_t_h = [t[i] for i in range(len(t)) if phases[i] == "RETURN"]
+        ret_h = [heading[i] for i in range(len(t)) if phases[i] == "RETURN"]
+
+        ax2.plot(sweep_t_h, sweep_h, "b.", markersize=3, label="Sweep")
+        ax2.plot(ret_t_h, ret_h, "r.", markersize=3, label="Return")
+        ax2.plot(t, peak_hdg, "g--", linewidth=1, label="Peak heading")
+        ax2.set_ylabel("Heading (deg)")
+        ax2.set_xlabel("Elapsed (s)")
+        ax2.legend(loc="upper right", fontsize=8)
+        ax2.grid(True, alpha=0.3)
+
+        fig.tight_layout()
+        fig.savefig(png_path, dpi=150)
+        plt.close(fig)
+        self.info(f"Peak turn log saved: {csv_path}")
+
     def on_update(self, robot: GenericRobot, dt: float) -> bool:
         self._motion.update(dt)
         rf = self._service.range_finder
         value = rf.read_filtered()
         heading = robot.odometry.get_heading()
+
+        self._log_rows.append((
+            self._elapsed,
+            math.degrees(heading),
+            value,
+            self._peak_value,
+            math.degrees(self._peak_heading),
+            self._phase.name,
+        ))
 
         if self._phase == _Phase.SWEEP:
             if value > self._peak_value:
@@ -108,7 +182,10 @@ class TurnToPeakStep(MotionStep):
             return False
 
         # RETURN phase
-        return self._motion.is_finished()
+        done = self._motion.is_finished()
+        if done:
+            self._save_log()
+        return done
 
 
 @dsl(tags=["motion", "sensor"])

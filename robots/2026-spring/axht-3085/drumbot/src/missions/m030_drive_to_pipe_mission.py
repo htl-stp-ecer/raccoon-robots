@@ -18,11 +18,26 @@ def print_debug_info(robot):
     info(f"[DEBUG] Empty slot: {sorting.empty_slot}")
 
 
+@dsl
+def close_pusher_if_not_in_safe_mode():
+    def _build(robot: "Robot"):
+        drum_service = robot.get_service(DrumMotorService)
+
+        if drum_service.collection_failed:
+            drum_service.warn("Safe mode — lifting drum collector and skipping post-collection steps")
+            return seq([])
+
+        return seq([
+            Defs.drum_pusher_servo.close(),
+        ])
+
+    return defer(_build)
+
 class M030DriveToPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # lift drum
-            Defs.drum_pusher_servo.close(),
+            close_pusher_if_not_in_safe_mode(),
             drum_lifting_up_over_limit(),
 
             wait_for_checkpoint(60),  # only continue if we all drums where dispenced (fail save)
