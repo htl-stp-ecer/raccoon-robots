@@ -52,7 +52,6 @@ class _ShildGraberPreset(ServoPreset):
 class _PomGrabPreset(ServoPreset):
     closed: _PresetPosition
     start: _PresetPosition
-    pom_width: _PresetPosition
     slightly_open: _PresetPosition
     open: _PresetPosition
     wide_open: _PresetPosition

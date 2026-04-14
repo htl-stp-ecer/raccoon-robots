@@ -13,13 +13,13 @@ class M000SetupMission(SetupMission):
             wait_for_button("move servos into starting position"),
             start_setup_timer(),  # countdown begins here, full duration
             parallel(
+                Defs.pom_grab.start(),
                 Defs.shild.down(),
                 Defs.shild_graber.closed(),
             ),
 
             parallel(
                 Defs.pom_arm.start(100),
-                Defs.pom_grab.start(100),
             ),
 
             Defs.shild.up(),
