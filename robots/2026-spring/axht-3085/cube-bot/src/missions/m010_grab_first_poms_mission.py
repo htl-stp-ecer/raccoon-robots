@@ -2,6 +2,17 @@ from raccoon import *
 
 from src.hardware.defs import Defs
 
+def drive_if_sensor_tirggerd(sensor):
+    def _build(robot):
+        if sensor.isOnBlack():
+            return seq([
+                drive_forward(35),
+
+            ])
+        else:
+            return seq([])
+
+    return defer(_build) #defer = evaluate _build funciton at runtime and not compiletime
 
 class M010GrabFirstPomsMission(Mission):
     time_budget = 30.0  # kills the bot after 30s
@@ -66,5 +77,5 @@ class M010GrabFirstPomsMission(Mission):
             ),
 
             # dont do drive and arm movements at the same time!
-            drive_forward(35),
+                drive_forward(35),
         ])
