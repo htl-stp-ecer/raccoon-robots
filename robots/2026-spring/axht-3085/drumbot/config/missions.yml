@@ -3,7 +3,7 @@
 - M020CollectDrumsMission
 - M030DriveToPipeMission
 - MEjectDrumsMission
-#- M050DriveToOtherPipeMission
-#- MEjectDrumsMission
+- M050DriveToOtherPipeMission
+- MEjectDrumsMission
 - M999ShutdownMission: shutdown
 #- M1009TestMission
