@@ -93,6 +93,7 @@ class CollectDrumsStep(UIStep):
                     drum_service.motor.brake()
                     if await self._show_emergency_ui(
                         f"Drum Motor is stuck (drum #{drum_number})",
+                        robot=robot,
                     ):
                         self._enter_safe_mode(drum_service)
                         continue
@@ -148,6 +149,7 @@ class CollectDrumsStep(UIStep):
                     drum_service.motor.brake()
                     if await self._show_emergency_ui(
                         f"Drum Motor is stuck (moving to empty slot after drum #{drum_number})",
+                        robot=robot,
                     ):
                         self._enter_safe_mode(drum_service)
                         continue
@@ -217,8 +219,14 @@ class CollectDrumsStep(UIStep):
             self.warn(f"Safe mode pusher-open failed: {e}")
         self.warn("Safe mode active — skipping remaining collection, retries disabled")
 
-    async def _show_emergency_ui(self, reason: str) -> bool:
+    async def _show_emergency_ui(self, reason: str, robot: "GenericRobot" = None) -> bool:
         """Show emergency screen with 15s countdown. Returns True if user clicks continue."""
+        if robot is not None:
+            try:
+                await drum_lifting_up(always_motor_support=True).run_step(robot)
+            except Exception as e:
+                self.warn(f"Emergency drum lift before UI failed: {e}")
+
         screen = EmergencyScreen()
         screen.reason = reason
 
