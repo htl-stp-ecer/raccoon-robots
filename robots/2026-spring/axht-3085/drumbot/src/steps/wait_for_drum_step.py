@@ -91,7 +91,6 @@ class WaitForDrumStep(Step):
             )
             color_service.lock_color()
 
-        await asyncio.sleep(0.1)
         Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.block_angle.value)
 
 

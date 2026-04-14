@@ -56,9 +56,9 @@ class M030DriveToPipeMission(Mission):
 
             # drive to pipe
             parallel(
-                drive_forward().until(
+                drive_forward(speed=0.7).until(
                     over_line(Defs.front_right_ir_sensor) +
-                    after_cm(14.5)
+                    after_cm(24)
                 ),
                 seq([
                     wait_for_checkpoint(15),
@@ -68,7 +68,7 @@ class M030DriveToPipeMission(Mission):
 
             #background(Defs.pom_remover_servo.center()),
 
-            drive_forward(cm=7, speed=0.5),
+            #drive_forward(cm=8, speed=0.35),
             # TODO: Test this
             #wall_align_forward(accel_threshold=10.0, grace_period=0.5, max_duration=2.5),
             #drive_backward(cm=16),

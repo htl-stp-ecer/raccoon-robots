@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 
 from raccoon.sensor_et import ETSensor
 
-EMA_ALPHA = 0.3  # smoothing factor for sensor readings (lower = smoother)
+MEDIAN_WINDOW = 5  # odd window size for median filter (kills impulse noise)
 
 DEFAULT_PROFILE = "default"
 
@@ -33,7 +34,8 @@ class RangeFinder:
         self._sensor = sensor
         self._profiles: dict[str, CalibrationProfile] = {}
         self._active: str | None = None
-        self._filtered: float | None = None
+        self._buf: deque[float] = deque(maxlen=MEDIAN_WINDOW)
+        self._last_raw: float = 0.0
 
     @property
     def port(self) -> int:
@@ -60,16 +62,19 @@ class RangeFinder:
     def read_raw(self) -> float:
         return float(self._sensor.read())
 
+    @property
+    def last_raw(self) -> float:
+        """The raw reading from the most recent ``read_filtered`` call."""
+        return self._last_raw
+
     def read_filtered(self) -> float:
         raw = self.read_raw()
-        if self._filtered is None:
-            self._filtered = raw
-        else:
-            self._filtered += EMA_ALPHA * (raw - self._filtered)
-        return self._filtered
+        self._last_raw = raw
+        self._buf.append(raw)
+        return float(sorted(self._buf)[len(self._buf) // 2])
 
     def reset_filter(self) -> None:
-        self._filtered = None
+        self._buf.clear()
 
     def apply_calibration(
         self, t_enter: float, t_exit: float, profile: str = DEFAULT_PROFILE,
