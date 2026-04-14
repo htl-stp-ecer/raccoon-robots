@@ -91,12 +91,11 @@ class Defs:
             "slightly_open": 100,
             "open": 120,
             "wide_open": 140,
-            "m05_collect_poms": 102,
+            "m05_collect_poms": 100,
             "m05_slightly_open": 70,
             "shake_pos_a": 60,
             "shake_pos_b": 90,
         },
-        offset=10.0,
     )
     analog_sensors = [
         distance_sensor,
