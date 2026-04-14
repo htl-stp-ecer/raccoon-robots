@@ -27,28 +27,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.744985723679869e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7657182059198142e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7028373209349794e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7318654557275524e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7404004328400886e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7466206462555818e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.763157194301176e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7791130892521817e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -67,7 +67,7 @@ class Defs:
     pom_arm = ServoPreset(
         Servo(port=1),
         positions={
-            "down": 152,
+            "down": 147,
             "above_pom": 135,
             "high_above_basket": 105,
             "above_basket": 125,
@@ -85,16 +85,15 @@ class Defs:
     pom_grab = ServoPreset(
         Servo(port=3),
         positions={
-            "closed": 10,
-            "start": 30,
-            "pom_width": 47,
-            "slightly_open": 100,
-            "open": 120,
-            "wide_open": 140,
-            "m05_collect_poms": 100,
-            "m05_slightly_open": 70,
-            "shake_pos_a": 60,
-            "shake_pos_b": 90,
+            "closed": 75,
+            "start": 84,
+            "slightly_open": 130,
+            "open": 140,
+            "wide_open": 180,
+            "m05_collect_poms": 160,
+            "m05_slightly_open": 135,
+            "shake_pos_a": 115,
+            "shake_pos_b": 130,
         },
     )
     analog_sensors = [
