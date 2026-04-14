@@ -16,7 +16,7 @@ def lineup_drum_with_pipe(recover_from_limit: bool = False):
         timeout_or(
             step=seq([
                 turn_to_peak(
-                    turn_speed=0.6,
+                    turn_speed=0.3,
                     sweep_deg=40,
                 ),
             ]),
@@ -32,13 +32,12 @@ def lineup_drum_with_pipe(recover_from_limit: bool = False):
         ),
         timeout(
             step=seq([
-                # turn_left(2),  # hardcoded magic value so we are aligned on pipe
+                turn_left(1.5, speed=0.3),  # hardcoded magic value so we are aligned on pipe
                 drive_to_analog_target(Defs.et_range_finder, 0.2),
             ]),
             seconds=4,
         ),
-
         drum_eject_position(),
-        drive_forward(2, speed=0.5),
+        drive_forward(5, speed=0.5),
     ])
     # ),

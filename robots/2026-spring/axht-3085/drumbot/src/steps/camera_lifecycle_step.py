@@ -33,11 +33,19 @@ class StartCameraStep(UIStep):
 
         async def _start_and_close():
             loop = asyncio.get_event_loop()
-            await loop.run_in_executor(None, service.start_camera)
+            try:
+                await loop.run_in_executor(None, service.start_camera)
+            except Exception:
+                service.error("Camera failed to start — stopping program")
+                screen.close(None)
+                raise
             screen.close(None)
 
-        asyncio.create_task(_start_and_close())
+        task = asyncio.create_task(_start_and_close())
         await self.show(screen)
+        # If the task failed, re-raise so the program stops.
+        if task.done() and task.exception() is not None:
+            raise task.exception()
 
 
 @dsl(hidden=True)

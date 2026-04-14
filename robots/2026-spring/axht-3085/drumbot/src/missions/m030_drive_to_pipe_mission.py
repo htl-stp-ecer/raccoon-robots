@@ -53,10 +53,8 @@ class M030DriveToPipeMission(Mission):
 
             #background(Defs.pom_remover_servo.center()),
 
-            drive_forward(cm=5),
-            # TODO: Test this
-            #wall_align_forward(accel_threshold=0.4),
-            #drive_backward(cm=20),
+            wall_align_forward(accel_threshold=10.0, grace_period=0.5, max_duration=2.5),
+            drive_backward(cm=18),
             lineup_drum_with_pipe(False),
 
 

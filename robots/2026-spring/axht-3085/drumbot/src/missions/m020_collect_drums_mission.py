@@ -1,15 +1,32 @@
 from raccoon import *
 
+from src.hardware.defs import Defs
+from src.service.drum_motor_service import DrumMotorService
 from src.steps.collect_drums_step import collect_drums
 from src.steps.drum_collector import go_to_empty_slot_plus_one
-from src.hardware.defs import Defs
-from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_down
+
+
+@dsl
+def after_collect():
+    def _build(robot: "Robot"):
+        drum_service = robot.get_service(DrumMotorService)
+
+        if drum_service.collection_failed:
+            drum_service.warn("Safe mode — skipping post-collection steps")
+            return seq([
+            ])
+
+        return seq([
+            Defs.drum_pusher_servo.close(),
+            go_to_empty_slot_plus_one(),
+        ])
+
+    return defer(_build)
 
 
 class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             collect_drums(),
-            Defs.drum_pusher_servo.close(),
-            go_to_empty_slot_plus_one(),
+            after_collect(),
         ])

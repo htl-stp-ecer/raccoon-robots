@@ -26,10 +26,9 @@ def drive_to_second_pipe():
         turn_to_heading_right(90),
 
         # TODO: Try a drive straight and align on pipe
-        #wall_align_forward(accel_threshold=0.4), # TODO: Test this
+        wall_align_forward(accel_threshold=10, grace_period=0.5, max_duration=2.5),
         parallel(
-            drive_forward(cm=35),
-            #drive_backward(cm=20), # TODO: Test this
+            drive_backward(cm=18),
             drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
         ),
     ])
