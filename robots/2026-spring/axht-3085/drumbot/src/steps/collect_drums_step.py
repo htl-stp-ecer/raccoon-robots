@@ -21,6 +21,7 @@ from src.steps.wait_for_drum_step import wait_for_drum
 START_OFFSET = 9.5
 DRUMS = 8
 TIME_BETWEEN_DRUMS = 7
+EXTERNAL_DRIFT_PER_DRUM = 0.25  # external dropper overshoots ~0.25s per cycle
 TIMING_SAFETY_THRESHOLD = 0.5
 
 
@@ -52,7 +53,7 @@ class CollectDrumsStep(UIStep):
         try:
             for i in range(DRUMS):
                 drum_number = i + 1
-                checkpoint = START_OFFSET + i * TIME_BETWEEN_DRUMS
+                checkpoint = START_OFFSET + i * TIME_BETWEEN_DRUMS + i * EXTERNAL_DRIFT_PER_DRUM
 
                 if drum_service.collection_failed:
                     self.warn(f"Skipping drum #{drum_number} — safe mode active")

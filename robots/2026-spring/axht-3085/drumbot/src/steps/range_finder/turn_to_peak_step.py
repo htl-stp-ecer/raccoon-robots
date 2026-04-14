@@ -8,9 +8,9 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use("Agg")
+#import matplotlib.pyplot as plt
 
 from raccoon import dsl
 from raccoon.motion import TurnConfig, TurnMotion
@@ -112,45 +112,45 @@ class TurnToPeakStep(MotionStep):
             w.writerows(self._log_rows)
 
         # Build plot
-        t = [r[0] for r in self._log_rows]
-        heading = [r[1] for r in self._log_rows]
-        sensor = [r[2] for r in self._log_rows]
-        peak_val = [r[3] for r in self._log_rows]
-        peak_hdg = [r[4] for r in self._log_rows]
-        phases = [r[5] for r in self._log_rows]
-
-        fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(10, 6))
-
-        # Color by phase
-        sweep_t = [t[i] for i in range(len(t)) if phases[i] == "SWEEP"]
-        sweep_s = [sensor[i] for i in range(len(t)) if phases[i] == "SWEEP"]
-        ret_t = [t[i] for i in range(len(t)) if phases[i] == "RETURN"]
-        ret_s = [sensor[i] for i in range(len(t)) if phases[i] == "RETURN"]
-
-        ax1.plot(sweep_t, sweep_s, "b.", markersize=3, label="Sweep")
-        ax1.plot(ret_t, ret_s, "r.", markersize=3, label="Return")
-        ax1.plot(t, peak_val, "g--", linewidth=1, label="Peak value")
-        ax1.set_ylabel("Sensor value")
-        ax1.legend(loc="upper right", fontsize=8)
-        ax1.set_title("Turn-to-Peak Sensor Log")
-        ax1.grid(True, alpha=0.3)
-
-        sweep_t_h = [t[i] for i in range(len(t)) if phases[i] == "SWEEP"]
-        sweep_h = [heading[i] for i in range(len(t)) if phases[i] == "SWEEP"]
-        ret_t_h = [t[i] for i in range(len(t)) if phases[i] == "RETURN"]
-        ret_h = [heading[i] for i in range(len(t)) if phases[i] == "RETURN"]
-
-        ax2.plot(sweep_t_h, sweep_h, "b.", markersize=3, label="Sweep")
-        ax2.plot(ret_t_h, ret_h, "r.", markersize=3, label="Return")
-        ax2.plot(t, peak_hdg, "g--", linewidth=1, label="Peak heading")
-        ax2.set_ylabel("Heading (deg)")
-        ax2.set_xlabel("Elapsed (s)")
-        ax2.legend(loc="upper right", fontsize=8)
-        ax2.grid(True, alpha=0.3)
-
-        fig.tight_layout()
-        fig.savefig(png_path, dpi=150)
-        plt.close(fig)
+        # t = [r[0] for r in self._log_rows]
+        # heading = [r[1] for r in self._log_rows]
+        # sensor = [r[2] for r in self._log_rows]
+        # peak_val = [r[3] for r in self._log_rows]
+        # peak_hdg = [r[4] for r in self._log_rows]
+        # phases = [r[5] for r in self._log_rows]
+        #
+        # fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(10, 6))
+        #
+        # # Color by phase
+        # sweep_t = [t[i] for i in range(len(t)) if phases[i] == "SWEEP"]
+        # sweep_s = [sensor[i] for i in range(len(t)) if phases[i] == "SWEEP"]
+        # ret_t = [t[i] for i in range(len(t)) if phases[i] == "RETURN"]
+        # ret_s = [sensor[i] for i in range(len(t)) if phases[i] == "RETURN"]
+        #
+        # ax1.plot(sweep_t, sweep_s, "b.", markersize=3, label="Sweep")
+        # ax1.plot(ret_t, ret_s, "r.", markersize=3, label="Return")
+        # ax1.plot(t, peak_val, "g--", linewidth=1, label="Peak value")
+        # ax1.set_ylabel("Sensor value")
+        # ax1.legend(loc="upper right", fontsize=8)
+        # ax1.set_title("Turn-to-Peak Sensor Log")
+        # ax1.grid(True, alpha=0.3)
+        #
+        # sweep_t_h = [t[i] for i in range(len(t)) if phases[i] == "SWEEP"]
+        # sweep_h = [heading[i] for i in range(len(t)) if phases[i] == "SWEEP"]
+        # ret_t_h = [t[i] for i in range(len(t)) if phases[i] == "RETURN"]
+        # ret_h = [heading[i] for i in range(len(t)) if phases[i] == "RETURN"]
+        #
+        # ax2.plot(sweep_t_h, sweep_h, "b.", markersize=3, label="Sweep")
+        # ax2.plot(ret_t_h, ret_h, "r.", markersize=3, label="Return")
+        # ax2.plot(t, peak_hdg, "g--", linewidth=1, label="Peak heading")
+        # ax2.set_ylabel("Heading (deg)")
+        # ax2.set_xlabel("Elapsed (s)")
+        # ax2.legend(loc="upper right", fontsize=8)
+        # ax2.grid(True, alpha=0.3)
+        #
+        # fig.tight_layout()
+        # fig.savefig(png_path, dpi=150)
+        # plt.close(fig)
         self.info(f"Peak turn log saved: {csv_path}")
 
     def on_update(self, robot: GenericRobot, dt: float) -> bool:

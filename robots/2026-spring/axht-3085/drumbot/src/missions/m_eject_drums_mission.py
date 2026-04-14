@@ -7,4 +7,5 @@ class MEjectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             eject_nearest_color(),
+            drive_forward(10)
         ])

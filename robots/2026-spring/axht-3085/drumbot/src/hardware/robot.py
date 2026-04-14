@@ -25,8 +25,6 @@ from src.missions.m010_drive_to_drums_mission import M010DriveToDrumsMission
 from src.missions.m020_collect_drums_mission import M020CollectDrumsMission
 from src.missions.m030_drive_to_pipe_mission import M030DriveToPipeMission
 from src.missions.m_eject_drums_mission import MEjectDrumsMission
-from src.missions.m050_drive_to_other_pipe_mission import M050DriveToOtherPipeMission
-from src.missions.m_eject_drums_mission import MEjectDrumsMission
 from src.missions.m999_shutdown_mission import M999ShutdownMission
 
 
@@ -117,8 +115,6 @@ class Robot(GenericRobot):
         M010DriveToDrumsMission(),
         M020CollectDrumsMission(),
         M030DriveToPipeMission(),
-        MEjectDrumsMission(),
-        M050DriveToOtherPipeMission(),
         MEjectDrumsMission(),
     ]
     setup_mission = M000SetupMission()
