@@ -7,11 +7,11 @@ TOTAL_PINK = 4
 TOTAL_DRUMS = TOTAL_BLUE + TOTAL_PINK
 
 # First drum uses the empirically known timeout; learning refines from there.
-DEFAULT_DETECTION_TIMEOUT = 0.8
+DEFAULT_DETECTION_TIMEOUT = 1.2
 # Safety margin added on top of the learned average.
-TIMING_MARGIN = 1.05  # +5 %
+TIMING_MARGIN = 1.15  # +15 %
 # Minimum absolute margin on top of max observed delta.
-TIMING_ADDITIVE_MARGIN = 0.300  # 300 ms — prevents a single near-zero delta from collapsing the timeout
+TIMING_ADDITIVE_MARGIN = 0.500  # 500 ms — prevents a single near-zero delta from collapsing the timeout
 # Minimum number of successful detections before we trust the learned value.
 MIN_SAMPLES_TO_LEARN = 3
 

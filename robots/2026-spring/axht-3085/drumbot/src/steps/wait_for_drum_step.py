@@ -69,7 +69,7 @@ class WaitForDrumStep(Step):
 
         if not detected:
             # One brief extra window
-            detected = await color_service.wait_for_color(0.050)
+            detected = await color_service.wait_for_color(0.200)
 
         wall_delta = time.monotonic() - t0
 
