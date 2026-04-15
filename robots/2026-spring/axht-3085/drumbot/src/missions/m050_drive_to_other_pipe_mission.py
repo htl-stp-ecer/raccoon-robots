@@ -68,7 +68,7 @@ class M050DriveToOtherPipeMission(Mission):
                 ),
                 drive_to_second_pipe(),
 
-                lineup_drum_with_pipe(True),
+                lineup_drum_with_pipe(),
 
             # eject drum mission will be executed next
         ])

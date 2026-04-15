@@ -72,7 +72,7 @@ class M030DriveToPipeMission(Mission):
             # TODO: Test this
             #wall_align_forward(accel_threshold=10.0, grace_period=0.5, max_duration=2.5),
             #drive_backward(cm=16),
-            lineup_drum_with_pipe(False),
+            lineup_drum_with_pipe(),
 
 
 
