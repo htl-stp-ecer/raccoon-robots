@@ -37,8 +37,9 @@ class TurnToPeakStep(MotionStep):
     STUCK_THRESHOLD_DEG = 2.0   # minimum heading change within window
 
     PIPE_RADIUS_CM = 1.05       # 2.1 cm diameter pipe
-    FIT_WINDOW_MULT = 2.0       # fit within ±(mult × half-angle) of peak
+    FIT_WINDOW_MULT = 2.0       # fit within ±(mult × half-angle) of peak (geometry fallback)
     RIVAL_PEAK_RATIO = 0.95     # two peaks within this ratio trigger sweep-center tiebreak
+    VALLEY_RISE = 0.02          # stop walking when signal rises this fraction above running min
 
     def __init__(self, direction: float, turn_speed: float, sweep_deg: float):
         super().__init__()
@@ -102,17 +103,16 @@ class TurnToPeakStep(MotionStep):
         return self._elapsed - self._stuck_ref_time >= self.STUCK_WINDOW
 
     def _find_peak_heading(self) -> tuple[float, float]:
-        """Find the true peak center using pipe geometry.
+        """Find the true peak center using data-driven peak boundaries.
 
-        The target is a 2.1 cm diameter cylinder.  At the measured distance
-        the pipe subtends a known angular width, giving us a tight fit
-        window around the highest reading.  A parabola fitted inside that
-        window exploits the cylinder's symmetry to pin-point the center.
+        Walks outward from each peak until a valley is found (signal
+        starts rising into a neighbouring peak), then fits a parabola
+        within those boundaries.
 
         If a rival peak of similar height (within ``RIVAL_PEAK_RATIO``)
-        exists outside the window, prefer whichever peak is **narrower**
-        (larger ``|a|`` curvature).  A 2.1 cm pipe always produces a
-        sharper peak than a human leg, so this reliably picks the pipe.
+        exists outside the primary boundaries, prefer whichever peak is
+        **narrower** (smaller data-driven half-width) — a 2.1 cm pipe
+        always produces a narrower peak than a leg.
         """
         if not self._sweep_samples:
             return self._peak_heading, self._peak_value
@@ -123,28 +123,45 @@ class TurnToPeakStep(MotionStep):
         peak_idx = values.index(peak_val)
         peak_h = headings_rad[peak_idx]
 
-        # Estimate distance from peak ADC reading, derive fit window
-        fit_half = self._geometry_fit_half_angle(peak_val)
+        # Data-driven fit window: walk outward to nearest valley
+        primary_half = self._data_driven_half(values, peak_idx)
+        # Geometry-based upper bound
+        geo_half = self._geometry_fit_half_angle(peak_val)
+        fit_half = min(primary_half, geo_half)
 
-        # Primary: fit parabola in the geometry window around global max
+        # Primary: fit parabola within data-driven boundaries
         primary_center, primary_curvature = self._fit_window(
             headings_rad, values, peak_h, fit_half,
         )
 
-        # Check for a rival peak outside the primary window
-        rival_center, rival_val, rival_curvature = self._find_rival_peak(
-            headings_rad, values, primary_center, fit_half,
-        )
+        # Find rival: highest value outside the primary boundaries
+        p_left, p_right = self._data_driven_bounds(values, peak_idx)
+        rival_idx = None
+        rival_val_raw = 0.0
+        for i, v in enumerate(values):
+            if i < p_left or i > p_right:
+                if v > rival_val_raw:
+                    rival_val_raw = v
+                    rival_idx = i
 
-        # Tiebreak: if rival is close in height, prefer the NARROWER peak
-        # (larger |curvature|) — a 2.1cm pipe is always sharper than a person.
-        # Both peaks must have negative curvature (concave down = valid peak);
-        # positive curvature means the fit window only saw one side (edge artifact).
-        used_rival = (rival_val is not None
-                      and rival_val / peak_val >= self.RIVAL_PEAK_RATIO
-                      and rival_curvature < 0
-                      and (primary_curvature >= 0
-                           or abs(rival_curvature) > abs(primary_curvature)))
+        rival_val: float | None = None
+        rival_center = 0.0
+        rival_curvature = 0.0
+        rival_half = 0.0
+        used_rival = False
+
+        if rival_idx is not None:
+            rival_val = rival_val_raw
+            rival_half = self._data_driven_half(values, rival_idx)
+            rival_fit = min(rival_half, geo_half)
+            rival_h = headings_rad[rival_idx]
+            rival_center, rival_curvature = self._fit_window(
+                headings_rad, values, rival_h, rival_fit,
+            )
+            # Tiebreak: if rival is close in height, prefer the NARROWER peak.
+            # A 2.1 cm pipe always produces a narrower peak than a person.
+            used_rival = (rival_val / peak_val >= self.RIVAL_PEAK_RATIO
+                          and rival_half < primary_half)
 
         if used_rival:
             best_h = rival_center
@@ -159,6 +176,8 @@ class TurnToPeakStep(MotionStep):
         self._decision_meta = {
             "est_distance_cm": round(min(80, max(5, est_dist)), 1),
             "fit_half_deg": round(math.degrees(fit_half), 1),
+            "data_half_deg": round(math.degrees(primary_half), 1),
+            "geo_half_deg": round(math.degrees(geo_half), 1),
             "raw_peak_heading_deg": round(math.degrees(peak_h), 1),
             "raw_peak_value": round(peak_val, 0),
             "primary_center_deg": round(math.degrees(primary_center), 1),
@@ -166,7 +185,7 @@ class TurnToPeakStep(MotionStep):
             "rival_value": round(rival_val, 0) if rival_val is not None else None,
             "rival_center_deg": round(math.degrees(rival_center), 1) if rival_val is not None else None,
             "rival_ratio": round(rival_val / peak_val, 3) if rival_val is not None else None,
-            "rival_curvature": round(rival_curvature, 4) if rival_val is not None else None,
+            "rival_half_deg": round(math.degrees(rival_half), 1) if rival_val is not None else None,
             "used_rival": used_rival,
             "chosen_heading_deg": round(math.degrees(best_h), 1),
             "num_sweep_samples": len(self._sweep_samples),
@@ -177,6 +196,49 @@ class TurnToPeakStep(MotionStep):
     # ------------------------------------------------------------------
     # helpers
     # ------------------------------------------------------------------
+
+    def _data_driven_bounds(self, values: list[float], peak_idx: int) -> tuple[int, int]:
+        """Walk outward from *peak_idx* and stop at the nearest valley.
+
+        A valley is detected when the signal has been dropping and then
+        rises by more than ``VALLEY_RISE`` above the running minimum.
+        This cleanly separates adjacent peaks (e.g. pipe vs. leg) even
+        when both are well above any absolute threshold.
+
+        Returns ``(left_idx, right_idx)`` — the sample indices bounding
+        this peak.
+        """
+        rise_abs = values[peak_idx] * self.VALLEY_RISE
+
+        left = peak_idx
+        run_min = values[peak_idx]
+        for i in range(peak_idx - 1, -1, -1):
+            if values[i] < run_min:
+                run_min = values[i]
+            elif values[i] > run_min + rise_abs:
+                break
+            left = i
+
+        right = peak_idx
+        run_min = values[peak_idx]
+        for i in range(peak_idx + 1, len(values)):
+            if values[i] < run_min:
+                run_min = values[i]
+            elif values[i] > run_min + rise_abs:
+                break
+            right = i
+
+        return left, right
+
+    def _data_driven_half(self, values: list[float], peak_idx: int) -> float:
+        """Return the half-width (radians) of the peak at *peak_idx*."""
+        headings = [h for h, _ in self._sweep_samples]
+        left, right = self._data_driven_bounds(values, peak_idx)
+        half = max(
+            abs(headings[peak_idx] - headings[left]),
+            abs(headings[right] - headings[peak_idx]),
+        )
+        return max(half, math.radians(2.0))
 
     def _geometry_fit_half_angle(self, peak_adc: float) -> float:
         """Return the fit half-window (rad) based on pipe geometry."""
@@ -208,28 +270,6 @@ class TurnToPeakStep(MotionStep):
         if len(wh) < 3:
             return centre, 0.0
         return self._parabola_vertex(wh, wv, fallback=centre)
-
-    def _find_rival_peak(
-        self,
-        headings: list[float],
-        values: list[float],
-        primary_center: float,
-        half: float,
-    ) -> tuple[float, float | None, float]:
-        """Find the highest reading outside the primary fit window.
-
-        Returns ``(center, value, curvature)``."""
-        outside = [
-            (h, v) for h, v in zip(headings, values)
-            if not (primary_center - half <= h <= primary_center + half)
-        ]
-        if not outside:
-            return 0.0, None, 0.0
-        rival_h, rival_v = max(outside, key=lambda hv: hv[1])
-        rival_center, rival_curvature = self._fit_window(
-            headings, values, rival_h, half,
-        )
-        return rival_center, rival_v, rival_curvature
 
     @staticmethod
     def _parabola_vertex(
@@ -299,7 +339,7 @@ class TurnToPeakStep(MotionStep):
 
             # --- metadata header (comment lines) ---
             meta = self._decision_meta
-            w.writerow(["# algorithm=geometry_parabola_fit"])
+            w.writerow(["# algorithm=valley_width_parabola_fit"])
             w.writerow([f"# pipe_diameter_cm={self.PIPE_RADIUS_CM * 2}"])
             w.writerow([f"# fit_window_mult={self.FIT_WINDOW_MULT}"])
             w.writerow([f"# rival_peak_ratio={self.RIVAL_PEAK_RATIO}"])
