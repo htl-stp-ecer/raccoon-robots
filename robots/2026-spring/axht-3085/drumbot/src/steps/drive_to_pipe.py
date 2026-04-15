@@ -24,10 +24,10 @@ def drive_to_second_pipe():
 
         # make sure we are straight (to drive accurace distance
         parallel(
-            turn_to_heading_right(90),
             drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
             Defs.pom_remover_servo.left(),
         ),
+        turn_to_heading_right(90),
 
         drive_forward(37.5,0.7),
         # TODO: Try a drive straight and align on pipe

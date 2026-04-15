@@ -42,9 +42,9 @@ class M000SetupMission(SetupMission):
             align_edge(),
 
             #distance sensor calibration
-            drum_seek(),
-            Defs.pom_remover_servo.left(),
-            calibrate_analog_sensor(Defs.et_range_finder),
+            # drum_seek(),
+            # Defs.pom_remover_servo.left(),
+            # calibrate_analog_sensor(Defs.et_range_finder),
 
             wait_for_button("Move Drum over limit"),
             Defs.pom_remover_servo.start(),

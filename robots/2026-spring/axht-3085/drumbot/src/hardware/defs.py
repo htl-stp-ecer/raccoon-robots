@@ -22,18 +22,19 @@ class Defs:
     wait_for_light_sensor = AnalogSensor(port=5)
     et_range_finder = ETSensor(port=3)
     IR_Distanz_to_pipe_sensor = ETSensor(port=4)
+    drum_found_button = DigitalSensor(port=0)
     front_left_motor = Motor(
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7777971444190104e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7976668705367645e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7691602359103654e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7880417700423927e-05, vel_lpf_alpha=1.0
         ),
     )
     drum_motor = Motor(

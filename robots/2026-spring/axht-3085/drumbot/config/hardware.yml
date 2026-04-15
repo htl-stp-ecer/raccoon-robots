@@ -21,6 +21,9 @@ et_range_finder:
 IR_Distanz_to_pipe_sensor:
   type: ETSensor
   port: 4
+drum_found_button:
+  type: DigitalSensor
+  port: 0
 
 _motors: !include-merge 'motors.yml'
 _servos: !include-merge 'servos.yml'

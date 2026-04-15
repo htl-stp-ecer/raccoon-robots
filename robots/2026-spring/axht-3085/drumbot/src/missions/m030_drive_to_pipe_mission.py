@@ -58,7 +58,7 @@ class M030DriveToPipeMission(Mission):
             parallel(
                 drive_forward(speed=0.7).until(
                     over_line(Defs.front_right_ir_sensor) +
-                    after_cm(24.5)
+                    after_cm(27)
                 ),
                 seq([
                     wait_for_checkpoint(15),

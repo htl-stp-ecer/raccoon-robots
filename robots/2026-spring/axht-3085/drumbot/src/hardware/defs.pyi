@@ -53,6 +53,7 @@ class Defs:
     wait_for_light_sensor: AnalogSensor
     et_range_finder: ETSensor
     IR_Distanz_to_pipe_sensor: ETSensor
+    drum_found_button: DigitalSensor
     front_left_motor: Motor
     front_right_motor: Motor
     drum_motor: Motor
