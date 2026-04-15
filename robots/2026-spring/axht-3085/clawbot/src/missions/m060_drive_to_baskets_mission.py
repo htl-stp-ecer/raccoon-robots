@@ -42,10 +42,12 @@ class M060DriveToBasketsMission(Mission):
             turn_to_heading_right(0),
 
             #drive to cone
-            line_follow().until(
-                on_black(Defs.front.right) +
-                on_black(Defs.rear.right) +
-                after_cm(16)
+            parallel(
+                line_follow().until(
+                    on_black(Defs.front.right) +
+                    on_black(Defs.rear.right) +
+                    after_cm(16)
+                ),
             ),
 
             turn_left().until(after_degrees(50) | after_seconds(3.0)),

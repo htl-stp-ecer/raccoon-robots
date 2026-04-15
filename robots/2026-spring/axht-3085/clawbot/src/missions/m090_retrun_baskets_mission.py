@@ -2,6 +2,7 @@ from raccoon import *
 
 from src.hardware.defs import Defs
 
+
 def strafte_if_on_black(sensor):
     def _build(robot):
         if sensor.isOnBlack():
@@ -13,7 +14,9 @@ def strafte_if_on_black(sensor):
             ])
         else:
             return seq([])
-    return defer(_build) #defer = evaluate _build funciton at runtime and not compiletime
+
+    return defer(_build)  # defer = evaluate _build funciton at runtime and not compiletime
+
 
 class M090RetrunBasketsMission(Mission):
     def sequence(self) -> Sequential:
@@ -40,30 +43,47 @@ class M090RetrunBasketsMission(Mission):
 
             strafte_if_on_black(Defs.rear.right),
 
-            #position mached basket to return
+            # position mached basket to return
             drive_backward().until(
                 after_cm(30) +
                 on_black(Defs.front.right) +
-                after_cm(60) #drives way to much backwards so the other bot can drive next to him
+                after_cm(30)  # drives way to much backwards so the other bot can drive next to him
 
             ),
-            wait_for_checkpoint(60+ 42.25),
+
+            #wait until the bot drives
+            wait_for_checkpoint(60 + 36),
+            drive_backward(cm=30),
+
+            #strafe to the side
+            timeout(
+                strafe_right().until(
+                    on_black(Defs.rear.right)
+                ),
+                seconds=4,
+            ),
+            #wait for the other bot
+            wait_for_checkpoint(60 + 42.25),
+
+            #strafe away from black line
+            strafte_if_on_black(Defs.rear.right),
+
             drive_forward().until(
                 over_line(Defs.front.right) +
                 after_cm(7),
             ),
 
-            #return mached basket
+            # return mached basket
             turn_right(20, speed=0.4),
             parallel(
                 Defs.pom_arm.high_above_basket(),
                 Defs.pom_grab.open(),
             ),
             parallel(
-                turn_left(degrees=50, speed=0.4), #Tanjas magic value (angle was sadly changed :( )
+                turn_left(degrees=50, speed=0.4),  # Tanjas magic value (angle was sadly changed :( )
                 Defs.pom_grab.closed(),
             ),
 
             Defs.pom_arm.down(),
-            turn_to_heading_right(25, speed=0.4), #push basket in
+            turn_to_heading_right(25, speed=0.4),  # push basket in
         ])

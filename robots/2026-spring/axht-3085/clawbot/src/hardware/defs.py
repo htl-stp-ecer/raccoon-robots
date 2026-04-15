@@ -27,28 +27,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7657182059198142e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7665118362446435e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7318654557275524e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7302659744726184e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7466206462555818e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7498668081994414e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7791130892521817e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.780225821628391e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -67,7 +67,7 @@ class Defs:
     pom_arm = ServoPreset(
         Servo(port=1),
         positions={
-            "down": 147,
+            "down": 150,
             "above_pom": 135,
             "high_above_basket": 105,
             "above_basket": 125,
@@ -90,7 +90,7 @@ class Defs:
             "slightly_open": 130,
             "open": 140,
             "wide_open": 180,
-            "m05_collect_poms": 160,
+            "m05_collect_poms": 155,
             "m05_slightly_open": 135,
             "shake_pos_a": 115,
             "shake_pos_b": 130,
