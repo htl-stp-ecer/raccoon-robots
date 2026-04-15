@@ -20,10 +20,6 @@ class M1009TestMission(Mission):
                         turn_speed=0.6,
                         sweep_deg=40,
                     ),
-                    wait_for_button("drive fwd"),
-                    drive_to_analog_target(Defs.et_range_finder, 0.2),
-                    drum_eject_position(),
-                    drive_forward(3.7, speed=0.5),
                 ]),
                 10
             ),

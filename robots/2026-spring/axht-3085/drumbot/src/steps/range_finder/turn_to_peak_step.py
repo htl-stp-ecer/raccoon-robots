@@ -31,6 +31,9 @@ class TurnToPeakStep(MotionStep):
 
     STUCK_WINDOW = 0.3          # seconds of no heading change to consider stuck
     STUCK_THRESHOLD_DEG = 2.0   # minimum heading change within window
+    CLUSTER_THRESHOLD_FRAC = 0.5  # fraction of (peak - baseline) for cluster detection
+    EXPECTED_HEADING_MIN_DEG = -35.0  # expected pipe heading range (degrees)
+    EXPECTED_HEADING_MAX_DEG = -15.0
 
     def __init__(self, direction: float, turn_speed: float, sweep_deg: float):
         super().__init__()
@@ -45,6 +48,7 @@ class TurnToPeakStep(MotionStep):
         self._stuck_ref_heading: float = 0.0
         self._stuck_ref_time: float = 0.0
         self._elapsed: float = 0.0
+        self._sweep_samples: list[tuple[float, float]] = []  # (heading_rad, value)
         self._log_rows: list[tuple[float, float, float, float, float, str]] = []
 
     def _generate_signature(self) -> str:
@@ -75,6 +79,8 @@ class TurnToPeakStep(MotionStep):
         self._stuck_ref_heading = self._peak_heading
         self._stuck_ref_time = 0.0
         self._elapsed = 0.0
+        self._sweep_samples.clear()
+        self._log_rows.clear()
         self.info(f"Peak turn: sweeping {self._sweep_deg:.0f} deg")
 
     def _is_stuck(self, heading: float, dt: float) -> bool:
@@ -85,11 +91,84 @@ class TurnToPeakStep(MotionStep):
             self._stuck_ref_time = self._elapsed
         return self._elapsed - self._stuck_ref_time >= self.STUCK_WINDOW
 
+    def _find_cluster_peak(self) -> tuple[float, float]:
+        """Find the peak heading within the best cluster above threshold.
+
+        Returns:
+            (peak_heading_rad, peak_value) of the best cluster.
+        """
+        if not self._sweep_samples:
+            return self._peak_heading, self._peak_value
+
+        values = [v for _, v in self._sweep_samples]
+        baseline = min(values)
+        peak = max(values)
+        spread = peak - baseline
+
+        if spread < 50:  # no meaningful signal
+            return self._peak_heading, self._peak_value
+
+        threshold = baseline + self.CLUSTER_THRESHOLD_FRAC * spread
+
+        # Find contiguous clusters above threshold
+        clusters: list[list[tuple[float, float]]] = []
+        current: list[tuple[float, float]] = []
+        for heading_rad, value in self._sweep_samples:
+            if value >= threshold:
+                current.append((heading_rad, value))
+            else:
+                if current:
+                    clusters.append(current)
+                    current = []
+        if current:
+            clusters.append(current)
+
+        if not clusters:
+            return self._peak_heading, self._peak_value
+
+        # A valid cluster must have valleys on both sides (i.e. not start
+        # at the first sample or end at the last sample of the sweep)
+        first_hdg = self._sweep_samples[0][0]
+        last_hdg = self._sweep_samples[-1][0]
+        valid = [
+            c for c in clusters
+            if c[0][0] != first_hdg and c[-1][0] != last_hdg
+        ]
+        clusters = valid if valid else clusters
+
+        # Compute centroid for each cluster
+        def _cluster_centroid_deg(c: list[tuple[float, float]]) -> float:
+            w = sum(v for _, v in c)
+            return math.degrees(sum(h * v for h, v in c) / w)
+
+        # Prefer clusters whose centroid falls within the expected heading range
+        in_range = [
+            c for c in clusters
+            if self.EXPECTED_HEADING_MIN_DEG
+            <= _cluster_centroid_deg(c)
+            <= self.EXPECTED_HEADING_MAX_DEG
+        ]
+        candidates = in_range if in_range else clusters
+
+        # Among candidates, pick the widest heading span (real pipe covers
+        # a meaningful angular width, noise spikes are narrow)
+        best = max(candidates, key=lambda c: abs(c[-1][0] - c[0][0]))
+
+        # Use the heading of the max reading within the cluster
+        best_sample = max(best, key=lambda s: s[1])
+        return best_sample[0], best_sample[1]
+
     def _transition_to_return(self, robot: GenericRobot, reason: str) -> None:
+        cluster_heading, cluster_peak = self._find_cluster_peak()
+
         self.info(
-            f"Peak turn: {reason}, peak={self._peak_value:.0f} "
-            f"at {math.degrees(self._peak_heading):.1f} deg"
+            f"Peak turn: {reason}, raw_peak={self._peak_value:.0f} "
+            f"at {math.degrees(self._peak_heading):.1f} deg, "
+            f"cluster_peak={cluster_peak:.0f} "
+            f"at {math.degrees(cluster_heading):.1f} deg"
         )
+        self._peak_heading = cluster_heading
+        self._peak_value = cluster_peak
         error_rad = robot.odometry.get_heading_error(self._peak_heading)
         self._motion = self._make_turn(robot, error_rad)
         self._phase = _Phase.RETURN
@@ -125,6 +204,7 @@ class TurnToPeakStep(MotionStep):
         ))
 
         if self._phase == _Phase.SWEEP:
+            self._sweep_samples.append((heading, value))
             if value > self._peak_value:
                 self._peak_value = value
                 self._peak_heading = heading
