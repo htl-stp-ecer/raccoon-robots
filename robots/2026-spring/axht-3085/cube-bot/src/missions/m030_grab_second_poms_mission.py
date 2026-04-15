@@ -7,7 +7,7 @@ class M030GrabSecondPomsMission(Mission):
         return seq([
 
             parallel(
-                Defs.pom_grab.open(100),
+                #Defs.pom_grab.open(100),
                 Defs.pom_arm.down(200),
             ),
             wait_for_seconds(0.5),
@@ -21,6 +21,7 @@ class M030GrabSecondPomsMission(Mission):
 
             parallel(
                 Defs.pom_grab.closed(),
+                Defs.pom_arm.up(),
                 drive_forward().until(
                     on_black(Defs.front.left) +
                     after_cm(27),
