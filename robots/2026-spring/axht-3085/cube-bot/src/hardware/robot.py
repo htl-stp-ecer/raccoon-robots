@@ -22,18 +22,14 @@ from src.hardware.defs import Defs
 
 from src.missions.m000_setup_mission import M000SetupMission
 from src.missions.m010_grab_first_poms_mission import M010GrabFirstPomsMission
-from src.missions.m020_drive_down_acces_ramp_mission import (
-    M020DriveDownAccesRampMission,
-)
-from src.missions.m030_grab_second_poms_mission import M030GrabSecondPomsMission
-from src.missions.m040_grab_sorted_poms_mission import M040GrabSortedPomsMission
-from src.missions.m050_collect_last_poms_mission import M050CollectLastPomsMission
-from src.missions.m060_drive_to_baskets_mission import M060DriveToBasketsMission
-from src.missions.m070_pull_baskets_out_mission import M070PullBasketsOutMission
-from src.missions.m080drop_maching_poms_mission import M080dropMachingPomsMission
-from src.missions.m090_retrun_baskets_mission import M090RetrunBasketsMission
+from src.missions.m020_collect_sorted_pom_mission import M020CollectSortedPomMission
+from src.missions.m030_collect_last_poms_mission import M030CollectLastPomsMission
+from src.missions.m040_drive_to_baskets_mission import M040DriveToBasketsMission
+from src.missions.m050_pull_baskets_out_mission import M050PullBasketsOutMission
+from src.missions.m060drop_maching_poms_mission import M060dropMachingPomsMission
+from src.missions.m070_retrun_baskets_mission import M070RetrunBasketsMission
 from src.missions.m999_shutdown_mission import M999ShutdownMission
-from src.missions.m100_drive_away_mission import M100DriveAwayMission
+from src.missions.m080_drive_away_mission import M080DriveAwayMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -124,15 +120,13 @@ class Robot(GenericRobot):
     shutdown_in = 120
     missions = [
         M010GrabFirstPomsMission(),
-        M020DriveDownAccesRampMission(),
-        M030GrabSecondPomsMission(),
-        M040GrabSortedPomsMission(),
-        M050CollectLastPomsMission(),
-        M060DriveToBasketsMission(),
-        M070PullBasketsOutMission(),
-        M080dropMachingPomsMission(),
-        M090RetrunBasketsMission(),
-        M100DriveAwayMission(),
+        M020CollectSortedPomMission(),
+        M030CollectLastPomsMission(),
+        M040DriveToBasketsMission(),
+        M050PullBasketsOutMission(),
+        M060dropMachingPomsMission(),
+        M070RetrunBasketsMission(),
+        M080DriveAwayMission(),
     ]
     setup_mission = M000SetupMission()
     shutdown_mission = M999ShutdownMission()
