@@ -3,7 +3,7 @@ from raccoon import *
 from src.hardware.defs import Defs
 
 
-class M080dropMachingPomsMission(Mission):
+class M060dropMachingPomsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #close shild after we droped the poms

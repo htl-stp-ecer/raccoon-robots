@@ -3,6 +3,17 @@ from raccoon import *
 from src.hardware.defs import Defs
 
 
+def line_follow_backwards(speed=1.0):
+    return strafe_follow_line_single(
+        Defs.rear.right,
+        speed=-speed,
+        side=LineSide.RIGHT,
+        kp=0.5,
+        ki=0.3,
+        kd=0.0,
+    )
+
+
 def strafte_if_on_black(sensor):
     def _build(robot):
         if sensor.isOnBlack():
@@ -18,7 +29,7 @@ def strafte_if_on_black(sensor):
     return defer(_build)  # defer = evaluate _build funciton at runtime and not compiletime
 
 
-class M090RetrunBasketsMission(Mission):
+class M070RetrunBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # return sorted basket
@@ -41,31 +52,33 @@ class M090RetrunBasketsMission(Mission):
 
             turn_to_heading_left(0, speed=0.3),  # turn straight
 
-            strafte_if_on_black(Defs.rear.right),
+            #strafte_if_on_black(Defs.rear.right),
 
             # position mached basket to return
-            drive_backward().until(
+            # drive_backward().until(
+            line_follow_backwards().until(
                 after_cm(30) +
                 on_black(Defs.front.right) +
                 after_cm(30)  # drives way to much backwards so the other bot can drive next to him
 
             ),
 
-            #wait until the bot drives
+            # wait until the bot drives
             wait_for_checkpoint(60 + 36),
-            drive_backward(cm=30),
+            line_follow_backwards().until(after_cm(30)),
+            # drive_backward(cm=30),
 
-            #strafe to the side
+            # strafe to the side
             timeout(
                 strafe_right().until(
                     on_black(Defs.rear.right)
                 ),
                 seconds=4,
             ),
-            #wait for the other bot
+            # wait for the other bot
             wait_for_checkpoint(60 + 42.25),
 
-            #strafe away from black line
+            # strafe away from black line
             strafte_if_on_black(Defs.rear.right),
 
             drive_forward().until(

@@ -2,6 +2,7 @@ from raccoon import *
 
 from src.hardware.defs import Defs
 
+
 def drive_if_sensor_tirggerd(sensor):
     def _build(robot):
         if sensor.isOnBlack():
@@ -12,7 +13,8 @@ def drive_if_sensor_tirggerd(sensor):
         else:
             return seq([])
 
-    return defer(_build) #defer = evaluate _build funciton at runtime and not compiletime
+    return defer(_build)  # defer = evaluate _build funciton at runtime and not compiletime
+
 
 class M010GrabFirstPomsMission(Mission):
     time_budget = 30.0  # kills the bot after 30s
@@ -46,7 +48,7 @@ class M010GrabFirstPomsMission(Mission):
                     over_line(Defs.front.left) |
                     over_line(Defs.front.right)
                 ),
-                Defs.shild.up(),  # make usre we don't hit the cube
+                Defs.shild.save_up(),  # make usre we don't hit the cube
             ),
 
             parallel(
@@ -68,14 +70,14 @@ class M010GrabFirstPomsMission(Mission):
                     # wait until we have collected all poms
                     wait_until_distance(35),
                     Defs.pom_grab.closed(),
-                    Defs.pom_arm.up(),
+                    Defs.pom_arm.start(),
 
                     # wait until the claw is over the edge and put it back down
-                    wait_until_distance(45),
-                    Defs.pom_arm.high_up(100),
+                    wait_until_distance(55),
+                    Defs.shild.up(),
                 ]),
             ),
 
             # dont do drive and arm movements at the same time!
-                drive_forward(35),
+            drive_forward(35),
         ])
