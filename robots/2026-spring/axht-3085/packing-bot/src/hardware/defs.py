@@ -27,28 +27,28 @@ class Defs:
         port=1,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7665118362446435e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7649505556919102e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=0,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7302659744726184e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.733007695404769e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7498668081994414e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7342531445213023e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.780225821628391e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7782406614644407e-05, vel_lpf_alpha=1.0
         ),
     )
     shild = ServoPreset(
@@ -61,7 +61,7 @@ class Defs:
             "normal_drive": 170,
             "above_pasked": 125,
             "grab_pasked": 150,
-            "high_up": 50,
+            "high_up": 40,
         },
     )
     pom_arm = ServoPreset(
