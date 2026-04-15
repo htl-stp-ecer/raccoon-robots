@@ -3,7 +3,7 @@ from raccoon import *
 from src.hardware.defs import Defs
 
 
-class M070PullBasketsOutMission(Mission):
+class M050PullBasketsOutMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #drive to baskets and grab

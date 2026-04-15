@@ -29,7 +29,7 @@ def line_follow(speed = 1.0):
     )
 
 
-class M060DriveToBasketsMission(Mission):
+class M040DriveToBasketsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             background(

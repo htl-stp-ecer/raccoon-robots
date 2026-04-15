@@ -3,7 +3,7 @@ from raccoon import *
 from src.hardware.defs import Defs
 
 
-class M100DriveAwayMission(Mission):
+class M080DriveAwayMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             #get straight
