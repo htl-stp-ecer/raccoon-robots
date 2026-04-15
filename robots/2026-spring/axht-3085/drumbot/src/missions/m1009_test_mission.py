@@ -1,21 +1,30 @@
 from raccoon import *
 
 from src.hardware.defs import Defs
-from src.steps.drum_lifting_step import drum_recover_from_over_limit, drum_lifting_down
+from src.steps.drum_lifting_step import drum_recover_from_over_limit, drum_eject_position, drum_seek
+from src.steps.range_finder import turn_to_peak
 
 
 class M1009TestMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            fully_disable_servos(),
             wait_for_button(),
-            drum_recover_from_over_limit(Defs.lift_drums_servo.up),
-            wait_for_button(),
-            parallel(
-                drive_forward(cm=27),
-                Defs.drum_pusher_servo.open(),
+            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
+            loop_for(
                 seq([
-                    wait_until_distance(12),  # only a good guess of distance
-                    drum_lifting_down(slow_mode=False),
+                    wait_for_button("Turn to peak"),
+                    drum_seek(),
+                    wait_for_seconds(1),
+                    turn_to_peak(
+                        turn_speed=0.6,
+                        sweep_deg=40,
+                    ),
+                    wait_for_button("drive fwd"),
+                    drive_to_analog_target(Defs.et_range_finder, 0.2),
+                    drum_eject_position(),
+                    drive_forward(3.7, speed=0.5),
                 ]),
+                10
             ),
         ])

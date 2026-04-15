@@ -29,7 +29,7 @@ def drive_to_second_pipe():
             Defs.pom_remover_servo.left(),
         ),
 
-        drive_forward(37,0.7),
+        drive_forward(37.5,0.7),
         # TODO: Try a drive straight and align on pipe
         #parallel(
         #wall_align_forward(accel_threshold=10, grace_period=0.5, max_duration=3),

@@ -38,6 +38,6 @@ def lineup_drum_with_pipe(recover_from_limit: bool = False):
             seconds=4,
         ),
         drum_eject_position(),
-        drive_forward(3.7, speed=0.5),
+        drive_forward(3.8, speed=0.5),
     ])
     # ),
