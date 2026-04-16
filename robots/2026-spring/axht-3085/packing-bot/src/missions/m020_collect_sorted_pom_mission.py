@@ -41,6 +41,9 @@ class M020CollectSortedPomMission(Mission):
             parallel(
                 Defs.shild.down(),
                 Defs.shild_graber.closed(70),
+                drive_forward(speed=0.6).until(
+                    on_white(Defs.rear.right)
+                ),
             ),
 
             # put the shild temporarly up
