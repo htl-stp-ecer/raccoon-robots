@@ -43,7 +43,9 @@ class M030DriveToPipeMission(Mission):
             wait_for_checkpoint(60),  # only continue if we all drums where dispenced (fail save)
 
             # drive to first black line and turn
-            parallel(
+            #parallel(
+            drive_backward(5),
+            turn_to_heading_right(0),
                 drive_backward().until(
                     over_line(Defs.front_right_ir_sensor)
                 ),
@@ -51,14 +53,14 @@ class M030DriveToPipeMission(Mission):
                 #    wait_until_distance(6),
                 #
                 #]),
-            ),
-            turn_to_heading_left(180),
+            #),
+            turn_to_heading_left(178), #turn a bit less than 180° to make sure we stand as close as possible to the pipe
 
             # drive to pipe
             parallel(
                 drive_forward(speed=0.7).until(
-                    over_line(Defs.front_right_ir_sensor) +
-                    after_cm(27)
+                    after_cm(20) +
+                    over_line(Defs.front_left_ir_sensor)
                 ),
                 seq([
                     wait_for_checkpoint(15),

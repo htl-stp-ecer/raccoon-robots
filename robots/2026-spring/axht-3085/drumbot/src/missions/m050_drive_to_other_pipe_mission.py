@@ -43,7 +43,7 @@ class M050DriveToOtherPipeMission(Mission):
                                    side=LineSide.LEFT,
                                    speed=1.0
                                    ).until(
-                    on_black(Defs.front_left_ir_sensor) & on_black(Defs.front_right_ir_sensor),
+                    after_cm(65),
                     ),
                     #Defs.pom_remover_servo.r_cube(),
                 ),

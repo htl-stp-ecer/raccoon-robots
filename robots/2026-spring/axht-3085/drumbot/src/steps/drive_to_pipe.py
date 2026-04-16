@@ -19,7 +19,8 @@ def drive_to_second_pipe():
     return seq([
         line_follower().until(
             # after_cm(20) +
-            over_line(Defs.front_left_ir_sensor),
+            over_line(Defs.front_left_ir_sensor) +
+            after_cm(14),   #eventuell wall alignen testen
         ),
 
         # make sure we are straight (to drive accurace distance
@@ -28,7 +29,7 @@ def drive_to_second_pipe():
             Defs.pom_remover_servo.left(),
         ),
 
-        drive_forward(36,0.7),
+        #drive_forward(36,0.7),
         # TODO: Try a drive straight and align on pipe
         #parallel(
         #wall_align_forward(accel_threshold=10, grace_period=0.5, max_duration=3),

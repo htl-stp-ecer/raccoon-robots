@@ -42,7 +42,8 @@ def _drive_to_drum_button():
             return seq([
                 drive_backward(speed=0.2).until(on_digital(Defs.drum_found_button, pressed=False)),
                 drive_backward(2, speed=0.2),
-                drive_forward(speed=0.2).until(on_digital(Defs.drum_found_button) | after_cm(15)),
+                drive_forward(speed=0.2).until(on_digital(Defs.drum_found_button) | after_cm(8)),
+                drive_backward(speed=0.2).until(after_cm(1.5)),
             ])
         else:
             return drive_forward(speed=0.2).until(on_digital(Defs.drum_found_button) | after_cm(15))
@@ -56,11 +57,11 @@ def lineup_drum_with_pipe():
         Defs.lift_drums_servo.seek_position(),
         wait_for_seconds(0.5),
         turn_right().until(
-            _heading_stuck()
+            _heading_stuck(stuck_duration=0, threshold_deg=4)
             | on_digital(Defs.drum_found_button)
-            | after_degrees(30)
+            | after_degrees(40)
+            | on_digital(Defs.drum_found_button)
         ),
         _drive_to_drum_button(),
         drum_eject_position(),
-        wait_for_button(),
     ])
