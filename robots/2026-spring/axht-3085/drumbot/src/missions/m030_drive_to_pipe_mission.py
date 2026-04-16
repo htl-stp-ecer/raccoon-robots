@@ -41,6 +41,10 @@ class M030DriveToPipeMission(Mission):
             drum_lifting_up_over_limit(),
 
             wait_for_checkpoint(60),  # only continue if we all drums where dispenced (fail save)
+            # ToDo: Detect pom infront of it
+            # mark_heading_reference(
+            #     origin_offset_deg=90,
+            # ),
 
             # drive to first black line and turn
             #parallel(
@@ -54,14 +58,17 @@ class M030DriveToPipeMission(Mission):
                 #
                 #]),
             #),
-            turn_to_heading_left(178), #turn a bit less than 180° to make sure we stand as close as possible to the pipe
+            turn_to_heading_left(177), #turn a bit less than 180° to make sure we stand as close as possible to the pipe
 
             # drive to pipe
             parallel(
-                drive_forward(speed=0.7).until(
-                    after_cm(20) +
-                    over_line(Defs.front_left_ir_sensor)
-                ),
+                seq([
+                    drive_forward(speed=0.7).until(
+                        after_cm(20) +
+                        over_line(Defs.front_left_ir_sensor) +
+                        after_cm(1),
+                    ),
+                ]),
                 seq([
                     wait_for_checkpoint(15),
                     drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
@@ -75,8 +82,5 @@ class M030DriveToPipeMission(Mission):
             #wall_align_forward(accel_threshold=10.0, grace_period=0.5, max_duration=2.5),
             #drive_backward(cm=16),
             lineup_drum_with_pipe(),
-
-
-
             # eject drum mission will be executed next
         ])

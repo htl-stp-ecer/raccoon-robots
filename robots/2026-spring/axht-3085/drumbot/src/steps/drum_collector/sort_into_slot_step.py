@@ -1,6 +1,7 @@
+import asyncio
 import time
 
-from raccoon import GenericRobot, dsl
+from raccoon import GenericRobot, dsl, turn_left, turn_right
 from raccoon.step import Step
 
 from src.service.color_detection_service import ColorDetectionService
@@ -170,11 +171,23 @@ class EjectNearestColorStep(Step):
                 f"{pockets_to_eject} pocket(s)"
             )
             await drum_service.go_to_pocket(start_slot, precise=False)
-            for _ in range(pockets_to_eject):
+            # Drop all but the last drum (1 implicit from go_to_pocket + (pockets_to_eject - 1) advances = 3 drops for 4 slots).
+            for _ in range(pockets_to_eject - 1):
                 if forward:
                     await drum_service.advance(1)
                 else:
                     await drum_service.retreat(1)
+
+            # Small left turn before the final drop to spread the last drum off the pile.
+            drum_service.info("Turning 2deg left before dropping the last drum")
+            await turn_left(3).run_step(robot)
+            await asyncio.sleep(0.5)
+            await turn_right(3).run_step(robot)
+
+            if forward:
+                await drum_service.advance(1)
+            else:
+                await drum_service.retreat(1)
 
             # Mark ejected slots as empty so the next eject call picks the other color.
             for s in slots:

@@ -13,7 +13,7 @@ pom_remover_servo:
     start: 95
     right: 20
     r_cube: 50  #position to not touch the cube
-    left: 180
+    left: 190
     center: 100
     orange_pom_removel: 130
 

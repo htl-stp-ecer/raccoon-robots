@@ -9,11 +9,17 @@ from src.steps.drum_lineup_step import lineup_drum_with_pipe
 class M1009TestMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            fully_disable_servos(),
+            mark_heading_reference(),
             wait_for_button(),
-            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
-            seq([
-                wait_for_button("PIPE"),
-                lineup_drum_with_pipe()
-            ]),
+            loop_forever(seq([
+                turn_to_heading_left(0),
+                wait_for_button(),
+            ]))
+            # fully_disable_servos(),
+            # wait_for_button(),
+            # drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
+            # seq([
+            #     wait_for_button("PIPE"),
+            #     lineup_drum_with_pipe()
+            # ]),
         ])
