@@ -19,9 +19,9 @@ class M060dropMachingPomsMission(Mission):
             drive_angle(120, 19),
 
             #move the basket a bit forward
-            drive_forward(cm=5),
+            drive_forward(cm=3),
             parallel(
-                drive_backward(cm=8),
+                drive_backward(cm=7),
                 Defs.pom_arm.above_basket(150),
             ),
             wait_for_seconds(0.5),
@@ -44,7 +44,7 @@ class M060dropMachingPomsMission(Mission):
 
             #drive closer
             Defs.pom_arm.high_above_basket(),
-            drive_forward(cm=7),
+            drive_forward(cm=6),
 
             #drop poms a second time
             Defs.pom_grab.wide_open(150),
@@ -58,7 +58,7 @@ class M060dropMachingPomsMission(Mission):
 
             #pull claw up again
             Defs.pom_arm.high_above_basket(),
-            drive_forward(cm=7),
+            drive_forward(cm=6),
             #drop poms a third time
             Defs.pom_grab.wide_open(),
             wait_for_seconds(0.1),
