@@ -1,4 +1,4 @@
-from libstp import *
+from raccoon import *
 from pydantic.json_schema import DefsRef
 
 from src.hardware.defs import Defs

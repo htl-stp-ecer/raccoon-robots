@@ -1,4 +1,4 @@
-from libstp import *
+from raccoon import *
 
 from src.hardware.defs import Defs
 from src.steps.cone_container_steps import down_cone_container
