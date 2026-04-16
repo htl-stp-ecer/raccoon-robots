@@ -58,7 +58,7 @@ class M030DriveToPipeMission(Mission):
                 #
                 #]),
             #),
-            turn_to_heading_left(177), #turn a bit less than 180° to make sure we stand as close as possible to the pipe
+            turn_to_heading_left(178), #turn a bit less than 180° to make sure we stand as close as possible to the pipe
 
             # drive to pipe
             parallel(

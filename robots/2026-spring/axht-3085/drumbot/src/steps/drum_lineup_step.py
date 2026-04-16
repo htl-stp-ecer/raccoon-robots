@@ -4,8 +4,7 @@ import time
 from raccoon import *
 
 from src.hardware.defs import Defs
-from src.steps.drum_lifting_step import drum_seek, drum_eject_position, drum_recover_from_over_limit
-from src.steps.range_finder import turn_to_peak
+from src.steps.drum_lifting_step import drum_eject_position
 
 
 def _heading_stuck(grace_seconds: float = 0.3, threshold_deg: float = 5.0, stuck_duration: float = 0.2):
@@ -37,16 +36,19 @@ def _heading_stuck(grace_seconds: float = 0.3, threshold_deg: float = 5.0, stuck
 
 def _drive_to_drum_button():
     """Drive forward until drum button is pressed; retry if already pressed."""
+
     def _build(_):
         if Defs.drum_found_button.read():
             return seq([
                 drive_backward(speed=0.2).until(on_digital(Defs.drum_found_button, pressed=False)),
                 drive_backward(2, speed=0.2),
                 drive_forward(speed=0.2).until(on_digital(Defs.drum_found_button) | after_cm(8)),
-                drive_backward(speed=0.2).until(after_cm(1.5)),
             ])
         else:
-            return drive_forward(speed=0.2).until(on_digital(Defs.drum_found_button) | after_cm(15))
+            return seq([
+                drive_forward(speed=0.2).until(on_digital(Defs.drum_found_button) | after_cm(15)),
+            ])
+
     return defer(_build)
 
 
@@ -63,5 +65,6 @@ def lineup_drum_with_pipe():
             | on_digital(Defs.drum_found_button)
         ),
         _drive_to_drum_button(),
+        drive_backward(1.5, speed=0.2),
         drum_eject_position(),
     ])
