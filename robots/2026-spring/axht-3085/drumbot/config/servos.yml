@@ -23,8 +23,8 @@ lift_drums_servo:
   positions:
     up: 185       #a bit more thane 170° for better driving
     align_on_back: 70
-    eject_position: 152
-    seek_position: 185
+    eject_position: 149
+    seek_position: 181
     down: 5
     remove_D: 38
     remove_M: 70
