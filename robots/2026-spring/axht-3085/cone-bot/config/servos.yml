@@ -1,18 +1,19 @@
 claw_servo:
   type: Servo
-  port: 2
+  port: 1
   positions:
     closed: 154
     half_open: 70
-    open: 45
+    open: 55
     botguy_open: 90
     botguy_closed: 130
 cone_arm_servo:
   type: Servo
   port: 0
+  offset: 5
   positions:
-    container_pos: 34
-    down: 168
+    container_pos: 18
+    down: 165
     _20deg: 156
     _45deg: 136
     _90deg: 75

@@ -1,9 +1,10 @@
 - M000SetupMission: setup
+- M001DriveDownRampMission
 - M010DriveToConeMission
 - M020CollectConeMission
 - M025CollectSecondConeMission
-- M027DriveToBotguyMission
-- M030CollectBotguyMission
+#- M027DriveToBotguyMission
+#- M030CollectBotguyMission
 - M040DriveToRampMission
 - M050DriveToStartingBoxMission
 - M060DropConeesMission

@@ -9,10 +9,10 @@ class M060DropConeesMission(Mission):
         return seq([
 
             # make sure we are straight
-            turn_to_heading_right(0),
+            turn_to_heading_right(180),
 
             # position to drop cones
-            drive_backward(cm=5),
+            drive_forward(cm=10),
 
             #drop cones
             turn_to_heading_right(135),
@@ -23,6 +23,6 @@ class M060DropConeesMission(Mission):
 
 
             #turn back so we face and dirve into starting box
-            turn_to_heading_right(0),
-            drive_forward(cm=35),
+            turn_to_heading_right(180),
+            drive_backward(cm=40),
         ])

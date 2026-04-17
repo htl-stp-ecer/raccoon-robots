@@ -15,10 +15,7 @@ class M050DriveToStartingBoxMission(Mission):
         return seq([
             switch_calibration_set("upper"),
             #drive up tehe ramp and in front of the startingbox
-            drive_forward(cm=40),
-            line_follower().distance_cm(150),
-
-            #let botguy go
-            Defs.claw_servo.open(),
-            Defs.cone_arm_servo._90deg(),
+            drive_backward(cm=30),
+            turn_to_heading_right(180),
+            drive_backward(cm=200, heading=180),
         ])
