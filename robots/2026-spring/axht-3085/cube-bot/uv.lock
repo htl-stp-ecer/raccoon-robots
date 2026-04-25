@@ -1,0 +1,61 @@
+version = 1
+revision = 3
+requires-python = ">=3.11"
+resolution-markers = [
+    "python_full_version >= '3.12'",
+    "python_full_version < '3.12'",
+]
+
+[[package]]
+name = "packingbot"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "raccoon", version = "3.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "raccoon", version = "4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "raccoon", specifier = ">=1.0.0" }]
+
+[package.metadata.requires-dev]
+dev = []
+
+[[package]]
+name = "raccoon"
+version = "3.3.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.12'",
+]
+dependencies = [
+    { name = "tabulate", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/17/56/367d7ded7bbd5daa84e3ea7b94d5575f63b066d0f8bb88a2e17db6adb976/raccoon-3.3.1.tar.gz", hash = "sha256:f5dc300b84c6609406892f55c6cb1747f38768b50c444e50115298d71f2c6487", size = 25270, upload-time = "2025-12-25T02:45:54.024Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/59/68/f43b7541d408558f7710cf3a88f677f8ae133e61a54db1440f3153b86244/raccoon-3.3.1-py3-none-any.whl", hash = "sha256:43b4cb29d124b9d46e384608725bd9580e2a4ba732a29525d1f6153162b3d475", size = 25327, upload-time = "2025-12-25T02:45:53.123Z" },
+]
+
+[[package]]
+name = "raccoon"
+version = "4.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.12'",
+]
+dependencies = [
+    { name = "tabulate", marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d4/f4/2bfa9799614874bd41ac004d56cf474c1b3c14eab71cbf4b32d88ba07158/raccoon-4.0.tar.gz", hash = "sha256:eac80953f2f5ecbbe683e30891f920924fc6315e185ff9a4a3df0c1320c3e524", size = 26397, upload-time = "2026-04-24T03:01:51.694Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/98/c1/f26903c9f6468ba31b00dccbf6a8b85dbe97fc6d1ae6912dc3cc0abed071/raccoon-4.0-py3-none-any.whl", hash = "sha256:a96dabc6d7077994fa7af7538c86666cacca04526ff57e34ea3c91ccb0179e88", size = 26483, upload-time = "2026-04-24T03:01:50.554Z" },
+]
+
+[[package]]
+name = "tabulate"
+version = "0.10.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/58/8c37dea7bbf769b20d58e7ace7e5edfe65b849442b00ffcdd56be88697c6/tabulate-0.10.0.tar.gz", hash = "sha256:e2cfde8f79420f6deeffdeda9aaec3b6bc5abce947655d17ac662b126e48a60d", size = 91754, upload-time = "2026-03-04T18:55:34.402Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/55/db07de81b5c630da5cbf5c7df646580ca26dfaefa593667fc6f2fe016d2e/tabulate-0.10.0-py3-none-any.whl", hash = "sha256:f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3", size = 39814, upload-time = "2026-03-04T18:55:31.284Z" },
+]
