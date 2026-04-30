@@ -3,6 +3,9 @@ button:
   port: 10
 imu:
   type: IMU
+distance_sensor:
+  type: AnalogSensor
+  port: 0
 rear_right_light_sensor:
   type: IRSensor
   port: 1

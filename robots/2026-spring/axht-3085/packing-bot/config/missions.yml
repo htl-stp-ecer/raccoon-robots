@@ -1,9 +1,10 @@
-- M00SetupMission: setup
-- M99ShutdownMission: shutdown
-- M01GrabFirstPomsMission
-- M02DriveDownAccesRampMission
-- M03GrabSecondPomsMission
-- M04AlignForLastPomsMission
-- M05CollectLastPomsMission
-- M06DriveToBasketsMission
-- M07MoveBasketsToRetrunedMission
+- M000SetupMission: setup
+- M010GrabFirstPomsMission
+- M020CollectSortedPomMission
+- M030CollectLastPomsMission
+- M040DriveToBasketsMission
+- M050PullBasketsOutMission
+- M060dropMachingPomsMission
+- M070RetrunBasketsMission
+- M999ShutdownMission: shutdown
+- M080DriveAwayMission

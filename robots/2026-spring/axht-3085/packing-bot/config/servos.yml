@@ -3,37 +3,45 @@ shild:
   port: 0
   positions:
     up: 65
+    save_up: 90
     _45deg: 125
     down: 180
-    normal_drive: 175
-    above_pasked: 132
-    grab_pasked: 153
+    normal_drive: 170
+    above_pasked: 125
+    grab_pasked: 150
+    high_up: 40
 pom_arm:
   type: Servo
   port: 1
   positions:
-    down: 152
+    down: 150
     above_pom: 135
-    above_basket: 108
-    up: 130
+    high_above_basket: 105
+    above_basket: 125
+    in_basket: 145
+    up: 135
+    drop_poms_pos: 90
     start: 0
     high_up: 30
+    _90deg: 64
 shild_graber:
   type: Servo
   port: 2
   positions:
-    open: 70
+    open: 90
     wide_open: 40
-    closed: 145
+    closed: 150
 pom_grab:
   type: Servo
   port: 3
-  offset: 30
+  offset: 0
   positions:
-    closed: 10
-    start: 30
-    pom_width: 47
-    slightly_open: 700
-    open: 90
-    wide_open: 110
-    m05_collect_poms: 65
+    closed: 75
+    start: 84
+    slightly_open: 130
+    open: 140
+    wide_open: 180
+    m05_collect_poms: 155
+    m05_slightly_open: 135
+    shake_pos_a: 115
+    shake_pos_b: 130
