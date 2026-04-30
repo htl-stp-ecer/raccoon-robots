@@ -1,7 +1,27 @@
-logs/
-.raccoon
-.git
-.idea
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDEs
+.idea/
+.vscode/
+
+# raccoon-cli
+.raccoon/
 .raccoon_codegen_cache.json
-__pycache__
-racoon.calibration.yml
+*.calibration.yml
+
+# Generated hardware files
+src/hardware/defs.py
+src/hardware/defs.pyi
+src/hardware/robot.py
+
+# Logs
+logs/
+*.log
