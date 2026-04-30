@@ -3,6 +3,7 @@
 from raccoon import (
     AnalogSensor,
     DigitalSensor,
+    IMU,
     IRSensor,
     Motor,
     MotorCalibration,
@@ -10,11 +11,10 @@ from raccoon import (
     Servo,
     ServoPreset,
 )
-from raccoon import IMU as Imu
 
 
 class Defs:
-    imu = Imu()
+    imu = IMU()
     button = DigitalSensor(port=10)
     distance_sensor = AnalogSensor(port=0)
     rear_right_light_sensor = IRSensor(port=1)
