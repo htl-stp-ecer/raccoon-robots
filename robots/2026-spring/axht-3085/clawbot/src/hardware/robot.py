@@ -11,6 +11,7 @@ from raccoon import (
     PidConfig,
     PidGains,
     SensorPosition,
+    TableMap,
     UnifiedMotionPidConfig,
     WheelPosition,
 )
@@ -149,6 +150,111 @@ class Robot(GenericRobot):
         defs.rear_left_motor: WheelPosition(forward_cm=-6.25, strafe_cm=10.0),
         defs.rear_right_motor: WheelPosition(forward_cm=-6.25, strafe_cm=-10.0),
     }
+    table_map = TableMap.from_ftmap(
+        {
+            "format": "flowchart-table-map",
+            "version": 1,
+            "table": {"widthCm": 236.4232, "heightCm": 105.918},
+            "lines": [
+                {
+                    "kind": "line",
+                    "startX": 209.75,
+                    "startY": 105.92,
+                    "endX": 209.75,
+                    "endY": 64.01,
+                    "widthCm": 5.08,
+                },
+                {
+                    "kind": "line",
+                    "startX": 209.75,
+                    "startY": 93.29,
+                    "endX": 62.43,
+                    "endY": 93.3,
+                    "widthCm": 5.08,
+                },
+                {
+                    "kind": "line",
+                    "startX": 60.96,
+                    "startY": 64.01,
+                    "endX": 60.96,
+                    "endY": 105.92,
+                    "widthCm": 5,
+                },
+                {
+                    "kind": "line",
+                    "startX": 0,
+                    "startY": 64.01,
+                    "endX": 236.42,
+                    "endY": 64.01,
+                    "widthCm": 5.08,
+                },
+                {
+                    "kind": "line",
+                    "startX": 0,
+                    "startY": 30.99,
+                    "endX": 236.42,
+                    "endY": 30.99,
+                    "widthCm": 5.08,
+                },
+                {
+                    "kind": "line",
+                    "startX": 181.81,
+                    "startY": 0,
+                    "endX": 181.81,
+                    "endY": 64.08,
+                    "widthCm": 5.08,
+                },
+                {
+                    "kind": "line",
+                    "startX": 120.85,
+                    "startY": 0,
+                    "endX": 120.85,
+                    "endY": 63.5,
+                    "widthCm": 5,
+                },
+                {
+                    "kind": "wall",
+                    "startX": 236.42,
+                    "startY": 66.29,
+                    "endX": 75.03,
+                    "endY": 66.29,
+                    "widthCm": 0.25,
+                },
+                {
+                    "kind": "wall",
+                    "startX": 75.03,
+                    "startY": 66.29,
+                    "endX": 75.03,
+                    "endY": 81.53,
+                    "widthCm": 0.25,
+                },
+                {
+                    "kind": "wall",
+                    "startX": 75.03,
+                    "startY": 81.53,
+                    "endX": 62.33,
+                    "endY": 81.53,
+                    "widthCm": 0.25,
+                },
+                {
+                    "kind": "wall",
+                    "startX": 15.24,
+                    "startY": 0,
+                    "endX": 15.24,
+                    "endY": 31.12,
+                    "widthCm": 0.25,
+                },
+                {
+                    "kind": "wall",
+                    "startX": 15.24,
+                    "startY": 31.12,
+                    "endX": 0,
+                    "endY": 31.12,
+                    "widthCm": 0.25,
+                },
+            ],
+        }
+    )
 
 
 __all__ = ["Robot"]
