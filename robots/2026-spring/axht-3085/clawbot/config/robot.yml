@@ -52,9 +52,9 @@ motion_pid:
     output_min: -10.0
     output_max: 10.0
   heading:
-    kp: 5.9297
+    kp: 11.6
     ki: 0.0
-    kd: 0.0
+    kd: 0
     integral_max: 10.0
     integral_deadband: 0.01
     derivative_lpf_alpha: 0.5
@@ -82,12 +82,13 @@ motion_pid:
     acceleration: 0.6485
     deceleration: 0.4498
   angular:
-    max_velocity: 1.7005
-    acceleration: 7.8594
-    deceleration: 17.4353
+    max_velocity: 2.34
+    acceleration: 9.1
+    deceleration: 20
 physical:
   width_cm: 23.5
   length_cm: 29.6
+  table_map: config/2026-game-table.ftmap
   rotation_center:
     x_cm: 11.75
     y_cm: 18.5
