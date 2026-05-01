@@ -1,4 +1,4 @@
-# PackingBot Agent Notes
+# ClawBot Agent Notes
 
 ## Source of Truth
 - `raccoon.project.yml` is the source of truth for robot configuration.

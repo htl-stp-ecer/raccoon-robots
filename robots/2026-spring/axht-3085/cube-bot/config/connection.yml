@@ -1,4 +1,4 @@
-pi_address: 192.168.100.159
+pi_address: 192.168.100.108
 pi_port: 8421
 pi_user: pi
 remote_path:

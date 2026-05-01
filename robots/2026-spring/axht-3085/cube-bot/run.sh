@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 : '
 ===========================================================
- Project:   PackingBot
+ Project:   ClawBot
  Generated: 2026-01-29 14:21:31
  Tool:      Raccoon IDE
  Platform:  StpOS – Robotics Operating System

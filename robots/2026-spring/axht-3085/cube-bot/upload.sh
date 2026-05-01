@@ -1,7 +1,7 @@
 #!/bin/bash
 : '
 ===========================================================
- Project:   PackingBot
+ Project:   ClawBot
  Generated: 2026-01-29 14:21:31
  Tool:      Raccoon IDE
  Platform:  StpOS – Robotics Operating System
@@ -20,4 +20,4 @@ claimed over the generated code itself.
 
 IP_ADDRESS="192.168.100.237"
 USERNAME="pi"
-rsync -avz --progress ./ $USERNAME@$IP_ADDRESS:/home/$USERNAME/programs/packing_bot
+rsync -avz --progress ./ $USERNAME@$IP_ADDRESS:/home/$USERNAME/programs/claw_bot
