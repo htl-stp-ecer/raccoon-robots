@@ -1,29 +1,26 @@
 button:
   type: DigitalSensor
-  port: 10
+  port: 9
 imu:
   type: IMU
-distance_sensor:
-  type: AnalogSensor
-  port: 0
-rear_right_light_sensor:
+rear_left_light_sensor:
   type: IRSensor
-  port: 1
+  port: 4
 wait_for_light_sensor:
   type: AnalogSensor
   port: 2
 front_right_light_sensor:
   type: IRSensor
-  port: 4
+  port: 3
 front_left_light_sensor:
   type: IRSensor
-  port: 5
+  port: 0
 front:
   type: SensorGroup
   left: front_left_light_sensor
   right: front_right_light_sensor
 rear:
   type: SensorGroup
-  right: rear_right_light_sensor
+  right: rear_left_light_sensor
 _motors: !include-merge 'motors.yml'
 _servos: !include-merge 'servos.yml'
