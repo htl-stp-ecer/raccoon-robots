@@ -1,47 +1,34 @@
-shild:
+arm_base:
   type: Servo
   port: 0
   positions:
-    up: 65
-    save_up: 90
-    _45deg: 125
-    down: 180
-    normal_drive: 170
-    above_pasked: 125
-    grab_pasked: 150
-    high_up: 40
-pom_arm:
+    _0deg: 110.3
+    p90deg: 12.7
+    max_left: 0
+    m90deg: 201.8
+    max_right: 208
+arm_sholder:
   type: Servo
   port: 1
   positions:
-    down: 150
-    above_pom: 135
-    high_above_basket: 105
-    above_basket: 125
-    in_basket: 145
-    up: 135
-    drop_poms_pos: 90
-    start: 0
-    high_up: 30
-    _90deg: 64
-shild_graber:
+    max_down: 195.3
+    _0deg: 169.2
+    p90deg: 69
+    max_up: 0
+arm_elbow:
   type: Servo
   port: 2
   positions:
-    open: 90
-    wide_open: 40
-    closed: 150
-pom_grab:
+    _0deg: 105.0
+    p90deg: 195
+    max_max: 208.0
+    m90deg: 5.2
+    max_minus: -25
+arm_claw:
   type: Servo
   port: 3
   offset: 0
   positions:
-    closed: 75
-    start: 84
-    slightly_open: 130
-    open: 140
-    wide_open: 180
-    m05_collect_poms: 155
-    m05_slightly_open: 135
-    shake_pos_a: 115
-    shake_pos_b: 130
+    closed: 50
+    p45deg: 97.8
+    p90deg: 137.3

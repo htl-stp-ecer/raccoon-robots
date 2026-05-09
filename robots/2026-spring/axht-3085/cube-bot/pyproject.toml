@@ -3,8 +3,8 @@ name = "clawbot"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "raccoon-stubs>=1.0.0",
-    "raccoon-cli>=0.1.139",
+    "raccoon-stubs==1.0.157",
+    "raccoon-cli==0.1.100",
 ]
 
 [project.scripts]

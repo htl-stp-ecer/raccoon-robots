@@ -3,7 +3,6 @@
 from raccoon import (
     AnalogSensor,
     DigitalSensor,
-    IMU,
     IRSensor,
     Motor,
     MotorCalibration,
@@ -11,94 +10,75 @@ from raccoon import (
     Servo,
     ServoPreset,
 )
+from raccoon import IMU as Imu
 
 
 class Defs:
-    imu = IMU()
-    button = DigitalSensor(port=10)
-    distance_sensor = AnalogSensor(port=0)
-    rear_right_light_sensor = IRSensor(port=1)
+    imu = Imu()
+    button = DigitalSensor(port=9)
+    rear_left_light_sensor = IRSensor(port=4)
     wait_for_light_sensor = AnalogSensor(port=2)
-    front_right_light_sensor = IRSensor(port=4)
-    front_left_light_sensor = IRSensor(port=5)
+    front_right_light_sensor = IRSensor(port=3)
+    front_left_light_sensor = IRSensor(port=0)
     front = SensorGroup(left=front_left_light_sensor, right=front_right_light_sensor)
-    rear = SensorGroup(right=rear_right_light_sensor)
+    rear = SensorGroup(right=rear_left_light_sensor)
     front_left_motor = Motor(
-        port=1,
+        port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.765824883940979e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.829585351653621e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
-        port=0,
+        port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.730470004035633e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7813664465062122e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7334552548310197e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7250823646842606e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7766885272599e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7683641451385708e-05, vel_lpf_alpha=1.0
         ),
     )
-    shild = ServoPreset(
+    arm_base = ServoPreset(
         Servo(port=0),
         positions={
-            "up": 65,
-            "save_up": 90,
-            "_45deg": 125,
-            "down": 180,
-            "normal_drive": 170,
-            "above_pasked": 125,
-            "grab_pasked": 150,
-            "high_up": 40,
+            "_0deg": 110.3,
+            "p90deg": 12.7,
+            "max_left": 0,
+            "m90deg": 201.8,
+            "max_right": 208,
         },
     )
-    pom_arm = ServoPreset(
+    arm_sholder = ServoPreset(
         Servo(port=1),
+        positions={"max_down": 195.3, "_0deg": 169.2, "p90deg": 69, "max_up": 0},
+    )
+    arm_elbow = ServoPreset(
+        Servo(port=2),
         positions={
-            "down": 150,
-            "above_pom": 135,
-            "high_above_basket": 105,
-            "above_basket": 125,
-            "in_basket": 145,
-            "up": 135,
-            "drop_poms_pos": 90,
-            "start": 0,
-            "high_up": 30,
-            "_90deg": 64,
+            "_0deg": 105.0,
+            "p90deg": 195,
+            "max_max": 208.0,
+            "m90deg": 5.2,
+            "max_minus": -25,
         },
     )
-    shild_graber = ServoPreset(
-        Servo(port=2), positions={"open": 90, "wide_open": 40, "closed": 150}
-    )
-    pom_grab = ServoPreset(
-        Servo(port=3),
-        positions={
-            "closed": 75,
-            "start": 84,
-            "slightly_open": 130,
-            "open": 140,
-            "wide_open": 180,
-            "m05_collect_poms": 155,
-            "m05_slightly_open": 135,
-            "shake_pos_a": 115,
-            "shake_pos_b": 130,
-        },
+    arm_claw = ServoPreset(
+        Servo(port=3), positions={"closed": 50, "p45deg": 97.8, "p90deg": 137.3}
     )
     analog_sensors = [
-        distance_sensor,
-        rear_right_light_sensor,
+        rear_left_light_sensor,
         wait_for_light_sensor,
         front_right_light_sensor,
         front_left_light_sensor,

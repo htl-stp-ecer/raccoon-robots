@@ -87,23 +87,23 @@ motion_pid:
     deceleration: 20
 physical:
   width_cm: 23.5
-  length_cm: 29.6
+  length_cm: 26
   table_map: config/2026-game-table.ftmap
   rotation_center:
     x_cm: 11.75
-    y_cm: 18.5
+    y_cm: 13.5
   sensors:
-  - name: rear_right_light_sensor
-    x_cm: 23.999999999999996
-    y_cm: 2.600000000000003
+  - name: rear_left_light_sensor
+    x_cm: 1
+    y_cm: 1.8
     clearance_cm: 0.0
   - name: front_right_light_sensor
-    x_cm: 15.299999999999999
-    y_cm: 29.0
+    x_cm: 22.5
+    y_cm: 24.7
     clearance_cm: 0.0
   - name: front_left_light_sensor
-    x_cm: 4.0
-    y_cm: 29.0
+    x_cm: 9.5
+    y_cm: 23.8
     clearance_cm: 0.0
   start_pose:
     x_cm: 90.25787965616045
