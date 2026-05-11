@@ -2,6 +2,7 @@ from raccoon import *
 
 from src.hardware.defs import Defs
 
+
 def line_follow():
     return strafe_follow_line_single(
         Defs.front_left_light_sensor,
@@ -12,6 +13,7 @@ def line_follow():
         kd=0.1,
     )
 
+
 class M010DriveDownRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
@@ -20,20 +22,25 @@ class M010DriveDownRampMission(Mission):
 
             # drive to black line
             turn_left(25),
-            drive_backward().until(
-                over_line(Defs.rear_left_light_sensor)
-                + on_black(Defs.rear_left_light_sensor)
+            smooth_path(
+                drive_backward().until(
+                    over_line(Defs.rear_left_light_sensor)
+                    + on_black(Defs.rear_left_light_sensor)
+                ),
+                turn_to_heading_right(0),
             ),
-            turn_to_heading_right(0),
-
             # make sure we are centered on black line
-            line_follow().until(after_cm(80)),
-
-            #drive the rest down the line
-            drive_backward().until(
-                after_cm(30)
+            line_follow().until(
+                after_cm(110)
                 + on_black(Defs.front_right_light_sensor)
-                + after_cm(2)
+            ),#TODO: maby do less line following to increse speed
+
+            smooth_path(
+                # drive the rest down the line
+                drive_backward().until(
+                    after_cm(3)
+                ),
+                turn_to_heading_right(0),
             ),
             switch_calibration_set("default"),
         ])

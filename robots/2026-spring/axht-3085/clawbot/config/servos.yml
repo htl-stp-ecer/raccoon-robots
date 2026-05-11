@@ -11,7 +11,7 @@ arm_base:
 arm_sholder:
   type: Servo
   port: 1
-  offset: 5.6
+  offset: 22.4
   positions:
     max_down: 195.3
     _0deg: 169.2

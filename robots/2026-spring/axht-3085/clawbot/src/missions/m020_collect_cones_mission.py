@@ -23,17 +23,18 @@ class M020CollectConesMission(Mission):
             ),
             #positon arm to grab first cone
             background(
-                step=arm.move_to(35, -5, 5).forearm(angle=0, precision=1),
-            ),
-            background(
-                step=Defs.arm_claw.p90deg(),
+                step=parallel(
+                    arm.move_to(35, -5, 5).forearm(angle=0, precision=1),
+                    Defs.arm_claw.p90deg(),
+                )
             ),
             #drive to line
-            drive_angle(angle_deg=-50).until(
+            drive_angle(angle_deg=-55).until(
                 over_line(Defs.rear_left_light_sensor)
                 + over_line(Defs.front_left_light_sensor)
             ),
 
+            turn_to_heading_right(0),
             #follow the line and grab the cones in parralel
             parallel(
                 line_follow().until(
