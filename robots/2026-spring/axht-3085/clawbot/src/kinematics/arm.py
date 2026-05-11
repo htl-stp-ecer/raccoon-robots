@@ -229,6 +229,7 @@ class ArmKinematics:
             speed      : °/s for all joints; None = max hardware speed
         """
         bv, sv, ev = self.to_servo_values(base_deg, sholder_deg, elbow_deg)
+        print(f"[arm] move_angles({base_deg}, {sholder_deg}, {elbow_deg}) → base={bv:.1f}, shoulder={sv:.1f}, elbow={ev:.1f}")
         if speed is None:
             return parallel(
                 servo(Defs.arm_base,    bv),
