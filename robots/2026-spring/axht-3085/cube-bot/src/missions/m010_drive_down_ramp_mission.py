@@ -18,7 +18,7 @@ class M010DriveDownRampMission(Mission):
             switch_calibration_set("upper"),
             mark_heading_reference(),
 
-            #drive to black line
+            # drive to black line
             turn_left(25),
             drive_backward().until(
                 over_line(Defs.rear_left_light_sensor)
@@ -26,12 +26,12 @@ class M010DriveDownRampMission(Mission):
             ),
             turn_to_heading_right(0),
 
-            #make sure we are centered on black line
-            line_follow().until(after_cm(30)),
+            # make sure we are centered on black line
+            line_follow().until(after_cm(80)),
 
             #drive the rest down the line
             drive_backward().until(
-                after_cm(80)
+                after_cm(30)
                 + on_black(Defs.front_right_light_sensor)
                 + after_cm(2)
             ),

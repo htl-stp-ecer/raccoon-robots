@@ -1,6 +1,7 @@
 arm_base:
   type: Servo
   port: 0
+  offset: 0
   positions:
     _0deg: 110.3
     p90deg: 12.7
@@ -10,6 +11,7 @@ arm_base:
 arm_sholder:
   type: Servo
   port: 1
+  offset: 5.6
   positions:
     max_down: 195.3
     _0deg: 169.2
@@ -18,11 +20,12 @@ arm_sholder:
 arm_elbow:
   type: Servo
   port: 2
+  offset: 0
   positions:
-    _0deg: 105.0
-    p90deg: 195
+    _0deg: 92.2
+    p90deg: 187.3
     max_max: 208.0
-    m90deg: 5.2
+    m90deg: -3.1
     max_minus: -25
 arm_claw:
   type: Servo
