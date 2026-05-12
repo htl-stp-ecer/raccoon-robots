@@ -21,41 +21,41 @@ class Defs:
     front_right_light_sensor = IRSensor(port=3)
     front_left_light_sensor = IRSensor(port=0)
     front = SensorGroup(left=front_left_light_sensor, right=front_right_light_sensor)
-    rear = SensorGroup(right=rear_left_light_sensor)
+    rear = SensorGroup(left=rear_left_light_sensor)
     front_left_motor = Motor(
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.9077897309246966e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.937668572326865e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.8414557269137787e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.8520131804494127e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7478827093512414e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7566776150438883e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.74985158939979e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.737114620211049e-05, vel_lpf_alpha=1.0
         ),
     )
     arm_base = ServoPreset(
         Servo(port=0),
         positions={
             "_0deg": 110.3,
-            "p90deg": 12.7,
-            "max_left": 0,
+            "p90deg": 13.6,
+            "max_left": -30,
             "m90deg": 201.8,
             "max_right": 208,
         },
