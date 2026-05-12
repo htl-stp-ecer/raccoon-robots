@@ -4,8 +4,8 @@ arm_base:
   offset: 0
   positions:
     _0deg: 110.3
-    p90deg: 12.7
-    max_left: 0
+    p90deg: 13.6
+    max_left: -30
     m90deg: 201.8
     max_right: 208
 arm_sholder:
