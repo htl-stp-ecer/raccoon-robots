@@ -2,6 +2,7 @@ from raccoon import *
 
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
+from src.steps.arm_steps import drop_cone_into_holder
 
 
 def line_follow():
@@ -14,19 +15,7 @@ def line_follow():
         kd=0.0,
     )
 
-def drop_cone_into_holder(base_angle: float):
-    return seq([
-        # position over holder
-        #arm.move_angles(base_angle, 90, 70),
 
-        #drop cone
-        arm.move_angles(base_angle, 90, 90),
-        Defs.arm_claw.p45deg(),
-
-        #make arm ready for next move
-        #arm.move_angles(base_angle, 90, 60),
-        #Defs.arm_claw.closed(),
-    ])
 
 class M020CollectConesMission(Mission):
     def sequence(self) -> Sequential:

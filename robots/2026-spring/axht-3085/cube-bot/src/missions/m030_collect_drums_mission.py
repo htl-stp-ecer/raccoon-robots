@@ -30,6 +30,7 @@ def backward_line_follow():
 class M030CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            # Grab tray and position over drum area
             parallel(
                 seq([
                     turn_to_heading_left(0),
@@ -46,23 +47,44 @@ class M030CollectDrumsMission(Mission):
                 ]),
             ),
 
+            # Drive backwards
             line_follow().until(
                 over_line(Defs.rear.left)
                 + after_cm(15)
             ),
 
+            # Wait and more arm stuff
+            background(
+                Defs.arm_claw.p135deg(),
+            ),
             wait_for_checkpoint(70),
-            arm.move_angles(-90, 40, -10),
+            arm.move_angles(-90, 40, -40, speed=100),
+            # background(
+            # ),
 
+            # Put basket fully down when reaching black line
             background(
                 seq([
                     wait_for(on_black(Defs.rear.left)),
-                    arm.move_angles(-90, 45, -80),
+                    arm.move_angles(-90, 45, -70),
                 ]),
             ),
+
+            # Drive towards middle while pushing tray through drum area
             backward_line_follow().until(
                 over_line(Defs.rear.left)
                 + over_line(Defs.front.left)
                 + after_cm(10)
             ),
+
+            # Correct heading, lift tray out of drum area and drive forward until black line
+            turn_to_heading_left(0),
+            parallel(
+                drive_forward().until(
+                    on_black(Defs.front.left)
+                ),
+                arm.move_angles(-90, 40, -30),
+            ),
+            wait_for_button("move servos into starting position"),
+
         ])

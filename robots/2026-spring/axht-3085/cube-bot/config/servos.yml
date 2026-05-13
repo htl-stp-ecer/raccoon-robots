@@ -35,3 +35,4 @@ arm_claw:
     closed: 50
     p45deg: 97.8
     p90deg: 137.3
+    p135deg: 180
