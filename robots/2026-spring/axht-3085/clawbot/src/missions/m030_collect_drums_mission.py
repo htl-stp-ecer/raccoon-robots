@@ -58,19 +58,11 @@ class M030CollectDrumsMission(Mission):
                 Defs.arm_claw.p135deg(),
             ),
             wait_for_checkpoint(70),
-            arm.move_angles(-90, 40, -40, speed=100),
-            # background(
-            # ),
+            turn_to_heading_left(0),
+            arm.move_angles(-90, 45, -80, speed=100),
+            # wait_for_button(),
 
-            # Put basket fully down when reaching black line
-            background(
-                seq([
-                    wait_for(on_black(Defs.rear.left)),
-                    arm.move_angles(-90, 45, -70),
-                ]),
-            ),
-
-            # Drive towards middle while pushing tray through drum area
+            # Drive the length of the drum area while pushing tray through drum area
             backward_line_follow().until(
                 over_line(Defs.rear.left)
                 + over_line(Defs.front.left)
@@ -85,6 +77,7 @@ class M030CollectDrumsMission(Mission):
                 ),
                 arm.move_angles(-90, 40, -30),
             ),
-            wait_for_button("move servos into starting position"),
 
+            # return tray to tray holder
+            # <insert from m000 here>
         ])

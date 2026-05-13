@@ -22,7 +22,7 @@ def arm_grab_basket():
 def drop_cone_into_holder(base_angle: float):
     return seq([
         #drop cone
-        arm.move_angles(base_angle, 92, 90),
+        arm.move_angles(base_angle, 90, 91),
         wait_for_seconds(0.2),
         Defs.arm_claw.p45deg(),
 
