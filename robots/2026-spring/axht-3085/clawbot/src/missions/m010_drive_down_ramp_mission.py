@@ -30,15 +30,14 @@ class M010DriveDownRampMission(Mission):
             # make sure we are centered on black line
             line_follow().until(
                 after_cm(110)
-                + on_black(Defs.front.left)
-            ),#TODO: maby do less line following to increse speed
+                + on_black(Defs.front.right)
+            ), # TODO: maby do less line following to increse speed
 
             smooth_path(
-                # drive the rest down the line and
-                drive_backward().until(
-                    after_cm(2)
-                ),
+                # drive backwards a little to avoid hitting the drum pole
+                drive_backward(2),
                 turn_to_heading_right(0),
             ),
+
             switch_calibration_set("default"),
         ])
