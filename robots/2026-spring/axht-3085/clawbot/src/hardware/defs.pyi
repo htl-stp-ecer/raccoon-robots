@@ -46,6 +46,7 @@ class _ArmClawPreset(ServoPreset):
     closed: _PresetPosition
     p45deg: _PresetPosition
     p90deg: _PresetPosition
+    p135deg: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...

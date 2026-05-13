@@ -26,28 +26,28 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.9558913301141137e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.959320913612022e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.8574997017151143e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.854977219871643e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7626766801059688e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.762668189831098e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7406826044123747e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.739176149172205e-05, vel_lpf_alpha=1.0
         ),
     )
     arm_base = ServoPreset(
@@ -76,7 +76,8 @@ class Defs:
         },
     )
     arm_claw = ServoPreset(
-        Servo(port=3), positions={"closed": 50, "p45deg": 97.8, "p90deg": 137.3}
+        Servo(port=3),
+        positions={"closed": 50, "p45deg": 97.8, "p90deg": 137.3, "p135deg": 180},
     )
     analog_sensors = [
         rear_left_light_sensor,
