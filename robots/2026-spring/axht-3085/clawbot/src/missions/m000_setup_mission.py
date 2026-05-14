@@ -8,34 +8,6 @@ class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         setup_time = 120
         return seq([
-            loop_forever(
-                seq([  # TODO: mehr hinten beim loslassen
-                    wait_for_button("init"),
-                    arm.move_angles(-90, 40, -30),
-
-                    wait_for_button("go"),
-                    arm.move_angles(-90, 90, -100),
-                    # wait_for_button(),
-                    arm.move_angles(-90, 90, -50),
-                    # wait_for_button(),
-                    # arm.move_angles(0, 90, -50, speed=100),
-                    arm.move_angles(105, 90, -50, speed=100),
-                    # wait_for_button(),
-                    arm.move_angles(105, 90, -100, speed=60),
-                    # wait_for_button(),
-                    arm.move_angles(140, 90, -100, speed=70),
-
-                    # wait_for_button(),
-                    arm.move_angles(110, 90, -100),
-                    # wait_for_button(),
-                    arm.move_angles(110, 90, 0),
-                    arm.move_angles(0, 90, 0),
-
-                    wait_for_button("press to disable servos fully"),
-                    fully_disable_servos(),
-                ]),
-            ),
-
             pause_setup_timer(),
             fully_disable_servos(),
 
