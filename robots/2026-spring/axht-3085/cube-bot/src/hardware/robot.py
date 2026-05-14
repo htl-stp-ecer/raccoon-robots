@@ -25,6 +25,7 @@ from src.missions.m999_shutdown_mission import M999ShutdownMission
 from src.missions.m010_drive_down_ramp_mission import M010DriveDownRampMission
 from src.missions.m020_collect_cones_mission import M020CollectConesMission
 from src.missions.m030_collect_drums_mission import M030CollectDrumsMission
+from src.missions.m040_collect_botguy_mission import M040CollectBotguyMission
 
 
 def _build_chassis_vel_config(vx=None, vy=None, wz=None):
@@ -119,6 +120,7 @@ class Robot(GenericRobot):
         M010DriveDownRampMission(),
         M020CollectConesMission(),
         M030CollectDrumsMission(),
+        M040CollectBotguyMission(),
     ]
     setup_mission = M000SetupMission()
     shutdown_mission = M999ShutdownMission()

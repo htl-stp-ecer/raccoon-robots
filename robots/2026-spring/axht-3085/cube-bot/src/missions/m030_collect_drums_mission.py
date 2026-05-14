@@ -2,7 +2,7 @@ from raccoon import *
 
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
-from src.steps.arm_steps import arm_grab_basket
+from src.steps.arm_steps import *
 
 
 def line_follow():
@@ -60,7 +60,6 @@ class M030CollectDrumsMission(Mission):
             wait_for_checkpoint(70),
             turn_to_heading_left(0),
             arm.move_angles(-90, 45, -80, speed=100),
-            # wait_for_button(),
 
             # Drive the length of the drum area while pushing tray through drum area
             backward_line_follow().until(
@@ -79,5 +78,9 @@ class M030CollectDrumsMission(Mission):
             ),
 
             # return tray to tray holder
-            # <insert from m000 here>
+            return_tray_to_tray_holder_phase1(),
+            background(
+                step=return_tray_to_tray_holder_phase2(),
+                name="return_tray"
+            ),
         ])
