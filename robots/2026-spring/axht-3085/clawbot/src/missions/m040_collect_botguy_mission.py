@@ -26,7 +26,7 @@ class M040CollectBotguyMission(Mission):
             ),
 
             # wait for completion of tray return and turn after
-            wait_for_background("return_tray"),
-            arm.move_angles(-90, 50, -80),
-            turn_to_heading_left(90),
+            # wait_for_background("return_tray"),
+            # arm.move_angles(-90, 50, -80),
+            # turn_to_heading_left(90),
         ])
