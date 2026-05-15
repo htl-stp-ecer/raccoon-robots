@@ -41,7 +41,7 @@ class M030CollectDrumsMission(Mission):
                 ]),
                 seq([
                     wait_for_background("drop_cone"),
-                    arm_grab_basket(),
+                    arm_grab_tray(),
                     arm.move_angles(-90, 90, -45),
                     arm.move_angles(-90, 40, 0),
                 ]),
@@ -54,9 +54,9 @@ class M030CollectDrumsMission(Mission):
             ),
 
             # Wait and more arm stuff
-            background(
-                Defs.arm_claw.p135deg(),
-            ),
+            # background(
+            #     Defs.arm_claw.p135deg(),
+            # ),
             wait_for_checkpoint(70),
             turn_to_heading_left(0),
             arm.move_angles(-90, 45, -80, speed=100),

@@ -29,27 +29,22 @@ class M010DriveDownRampMission(Mission):
             ),
             turn_to_heading_right(0),
 
-            # move arm to angles 0 0 0 for balance
+            # move arm to shift center of gravity for balance and better grip
             background(
-                arm.move_angles(0, 0, 0),
+                arm.move_angles(0, 0, 10),
             ),
 
             # make sure we are centered on black line
             line_follow().until(
                 after_cm(110)
-                + on_black(Defs.front.right)
+                + over_line(Defs.front.right)
             ),
 
-            # revert arm position
+            # revert arm position and turn to absolute heading
             background(
                 arm.move_angles(-55, 90, 90),
             ),
-
-            # smooth_path(
-                # drive backwards a little more
-                drive_backward(2),
-                turn_to_heading_right(0),
-            # ),
+            turn_to_heading_right(0),
 
             switch_calibration_set("default"),
         ])
