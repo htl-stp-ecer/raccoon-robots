@@ -52,10 +52,10 @@ class M030CollectDrumsMission(Mission):
                 + after_cm(15)
             ),
 
-            # Wait and more arm stuff
+            # wait until all drums has dispenced
             wait_for_checkpoint(70),
             turn_to_heading_left(0),
-            arm.move_angles(-90, 45, -80, speed=100),    # fully put tray on the floor
+            arm.move_angles(-90, 48, -75, speed=100),    # fully put tray on the floor
 
             # Drive the length of the drum area while pushing tray through drum area
             backward_line_follow().until(
@@ -67,8 +67,11 @@ class M030CollectDrumsMission(Mission):
             # Correct heading, lift tray out of drum area and drive forward until black line
             turn_to_heading_left(0),
             parallel(
-                drive_forward().until(
-                    on_black(Defs.front.left)
+                timeout(
+                    drive_forward().until(
+                        on_black(Defs.front.left)
+                    ),
+                    seconds=0.5
                 ),
                 arm.move_angles(-90, 40, -30),    # slightly lift tray ahead of full sequence
             ),

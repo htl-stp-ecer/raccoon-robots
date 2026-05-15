@@ -38,13 +38,12 @@ def return_tray_to_tray_holder_phase1():
 
 def return_tray_to_tray_holder_phase2():
     return seq([
-        arm.move_angles(115, 90, -50, speed=100),  # move over tray holder
+        arm.move_angles(115, 90, -50, speed=130),  # move over tray holder
         arm.move_angles(115, 90, -100, speed=60),  # place tray down
         arm.move_angles(140, 90, -100, speed=70),  # move it back so it sits fully on the tray holder
 
         arm.move_angles(110, 90, -100),
         arm.move_angles(110, 90, 0),
-        arm.move_angles(0, 90, 0),
     ])
 
 
