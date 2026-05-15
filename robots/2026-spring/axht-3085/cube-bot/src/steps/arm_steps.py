@@ -5,8 +5,7 @@ from src.kinematics.arm import arm
 def drop_cone_into_holder(base_angle: float):
     return seq([
         # drop cone
-        arm.move_angles(base_angle, 98, 60),
-        # arm.move_angles(base_angle, 98, 80),
+        arm.move_angles(base_angle, 90, 65),
         Defs.arm_claw.p135deg(),
     ])
 

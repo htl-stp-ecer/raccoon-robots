@@ -61,7 +61,7 @@ class M020CollectConesMission(Mission):
                     # wait until we reach the first T --> grab --> then drop into holder
                     wait_for(on_black(Defs.front.right)),
                     Defs.arm_claw.closed(),   # grab cone
-                    drop_cone_into_holder(base_angle=10),
+                    drop_cone_into_holder(base_angle=17),
 
                     # position arm so we can grab the second cone
                     parallel(
@@ -74,7 +74,7 @@ class M020CollectConesMission(Mission):
                     background(
                         step=seq([
                             Defs.arm_claw.closed(),   # grab cone
-                            drop_cone_into_holder(base_angle=25),
+                            drop_cone_into_holder(base_angle=35),
                         ]),
                         name="drop_cone",
                     ),

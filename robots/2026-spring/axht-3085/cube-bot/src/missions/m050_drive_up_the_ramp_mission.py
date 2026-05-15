@@ -37,7 +37,7 @@ def forward_line_follow():
 class M050DriveUpTheRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            #drive back to starting box
+            # drive back to starting box
             left_lateral_line_follow().until(
                 after_cm(90)
             ),
@@ -52,17 +52,15 @@ class M050DriveUpTheRampMission(Mission):
                 on_black(Defs.front.right)
             ),
 
-            #algin on pipe
+            # align on pipe
             right_lateral_line_follow().until(
-              after_cm(25)
+                after_cm(25)
             ),
 
-            #drive the up the ramp
+            # drive the up the ramp
             switch_calibration_set("upper"),
             forward_line_follow().until(
                 after_cm(130)
                 + over_line(Defs.front.right)
             )
-
-
         ])
