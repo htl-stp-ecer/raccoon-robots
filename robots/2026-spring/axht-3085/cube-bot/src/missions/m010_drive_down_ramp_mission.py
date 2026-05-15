@@ -3,7 +3,6 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 
-
 def line_follow():
     return strafe_follow_line_single(
         Defs.front_left_light_sensor,
@@ -13,7 +12,6 @@ def line_follow():
         ki=0.3,
         kd=0.0,
     )
-
 
 class M010DriveDownRampMission(Mission):
     def sequence(self) -> Sequential:

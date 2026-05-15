@@ -10,15 +10,25 @@ def backward_line_follow():
         speed=-1,
         side=LineSide.RIGHT,
         kp=0.4,
-        ki=0.2,
+        ki=0.3,
         kd=0.0,
     )
+
+
+def left_lateral_line_follow():
+    return lateral_follow_line_single_free(
+        sensor=Defs.front.left,
+        speed=-1,
+        side=LineSide.LEFT,
+        kp=0.4,
+        ki=0.05,
+        kd=0.0,
+    )
+
 
 class M040CollectBotguyMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            wait_for_button(),
-
             # move away from black line
             drive_backward().until(
                 on_white(Defs.front.left)
@@ -29,7 +39,7 @@ class M040CollectBotguyMission(Mission):
                 after_cm(30)
                 + on_black(Defs.front.right)
             ),
-            drive_backward(speed=0.3).until(
+            drive_backward(speed=0.1).until(
                 on_white(Defs.front.right)
             ),
 
@@ -42,30 +52,26 @@ class M040CollectBotguyMission(Mission):
             ),
             arm.move_angles(-45, 63, -85),
             Defs.arm_base.max_right(),
+            wait_for_seconds(0.5),
 
             # push away big cube
             arm.move_angles(-90, 45, -90),
             arm.move_angles(-45, 45, -90),
 
             # push open right door
-            arm.move_angles(-80, 40, -40),    # position arm
-            arm.move_angles(-45, 40, -40),    # push open the door
+            arm.move_angles(-80, 35, -30),  # position arm
+            arm.move_angles(-45, 35, -30),  # push open the door
 
-            arm.move_angles(-90, 60, -90),
+            arm.move_angles(-90, 60, -83),
             drive_forward().until(
                 on_black(Defs.front.left),
             ),
-            lateral_follow_line_single_free(
-                sensor=Defs.front.left,
-                distance_cm=20,
-                speed=-1,
-                side=LineSide.LEFT,
-                kp=0.4,
-                ki=0.05,
-                kd=0.0,
+            # align on pipe
+            left_lateral_line_follow().until(
+                after_cm(30),
             ),
             mark_heading_reference(),
-            arm.move_angles(-90, 60, -83),
+
             drive_forward(8),
             Defs.arm_claw.soft_close(),
 

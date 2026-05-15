@@ -26,28 +26,28 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.942834481672029e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.9396835288017595e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.8333419401315064e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.8281800509699208e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.745381059497146e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.741193394913758e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7480059059472155e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.74618870990923e-05, vel_lpf_alpha=1.0
         ),
     )
     arm_base = ServoPreset(
