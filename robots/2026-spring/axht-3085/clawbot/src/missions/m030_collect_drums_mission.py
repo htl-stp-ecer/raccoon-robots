@@ -42,8 +42,7 @@ class M030CollectDrumsMission(Mission):
                 seq([
                     wait_for_background("drop_cone"),
                     arm_grab_tray(),
-                    arm.move_angles(-90, 90, -45),
-                    arm.move_angles(-90, 40, 0),
+                    arm_put_tray_into_drum_area(),
                 ]),
             ),
 
@@ -54,18 +53,15 @@ class M030CollectDrumsMission(Mission):
             ),
 
             # Wait and more arm stuff
-            # background(
-            #     Defs.arm_claw.p135deg(),
-            # ),
             wait_for_checkpoint(70),
             turn_to_heading_left(0),
-            arm.move_angles(-90, 45, -80, speed=100),
+            arm.move_angles(-90, 45, -80, speed=100),    # fully put tray on the floor
 
             # Drive the length of the drum area while pushing tray through drum area
             backward_line_follow().until(
                 over_line(Defs.rear.left)
                 + over_line(Defs.front.left)
-                + after_cm(10)
+                + after_cm(8)
             ),
 
             # Correct heading, lift tray out of drum area and drive forward until black line
@@ -74,7 +70,7 @@ class M030CollectDrumsMission(Mission):
                 drive_forward().until(
                     on_black(Defs.front.left)
                 ),
-                arm.move_angles(-90, 40, -30),
+                arm.move_angles(-90, 40, -30),    # slightly lift tray ahead of full sequence
             ),
 
             # return tray to tray holder

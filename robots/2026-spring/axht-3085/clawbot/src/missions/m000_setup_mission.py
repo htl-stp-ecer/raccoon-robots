@@ -31,6 +31,4 @@ class M000SetupMission(SetupMission):
                 distance_cm=70,
                 calibration_sets=["default", "upper"],
             ),
-
-            # fully_disable_servos(),
         ])

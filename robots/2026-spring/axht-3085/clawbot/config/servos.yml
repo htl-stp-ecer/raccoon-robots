@@ -16,7 +16,7 @@ arm_sholder:
     max_down: 195.3
     _0deg: 169.2
     p90deg: 69
-    max_up: 0
+    max_up: 20
 arm_elbow:
   type: Servo
   port: 2
@@ -33,6 +33,7 @@ arm_claw:
   offset: 0
   positions:
     closed: 50
+    soft_close: 60
     p45deg: 97.8
     p90deg: 137.3
     p135deg: 180
