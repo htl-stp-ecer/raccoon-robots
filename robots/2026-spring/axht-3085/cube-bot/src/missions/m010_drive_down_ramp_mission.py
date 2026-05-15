@@ -42,7 +42,7 @@ class M010DriveDownRampMission(Mission):
 
             # revert arm position and turn to absolute heading
             background(
-                arm.move_angles(-55, 90, 90),
+                arm.move_angles(-12, 90, 0),
             ),
             turn_to_heading_right(0),
 

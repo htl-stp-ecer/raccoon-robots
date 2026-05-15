@@ -44,6 +44,7 @@ class _ArmElbowPreset(ServoPreset):
 
 class _ArmClawPreset(ServoPreset):
     closed: _PresetPosition
+    soft_close: _PresetPosition
     p45deg: _PresetPosition
     p90deg: _PresetPosition
     p135deg: _PresetPosition
