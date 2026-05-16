@@ -287,7 +287,7 @@ class SingleSensorLineFollow(MotionStep):
         # Edge-tracking error: 0.5 = edge of line
         reading = cfg.sensor.probabilityOfBlack()
         error = reading - 0.5
-        if cfg.side == LineSide.RIGHT:
+        if cfg.side.value == "right":
             error = -error
 
         # PID steering -> omega override on LinearMotion
@@ -532,7 +532,6 @@ class DirectionalLineFollowConfig:
     kd: float = 0.1
     lateral_correction: bool = False
     forward_correction: bool = False
-    correction_sign: float = 1.0
 
 
 def _correction_mode_name(
@@ -545,9 +544,14 @@ def _correction_mode_name(
     return "angular"
 
 
-def _forward_correction_sign_for_lateral_follow(strafe_speed: float) -> float:
-    # For +vy (right), the travel-right normal is -vx; for -vy it is +vx.
-    return -1.0 if strafe_speed >= 0.0 else 1.0
+def _lateral_effective_side(side: LineSide, speed: float) -> LineSide:
+    # Compare by .value to guard against double-import identity mismatches.
+    # For lateral follow going right (speed >= 0), the sensor geometry is
+    # mirrored relative to travel direction, so flip the effective side.
+    is_right = side.value == "right"
+    if speed >= 0.0:
+        return LineSide.LEFT if is_right else LineSide.RIGHT
+    return LineSide.RIGHT if is_right else LineSide.LEFT
 
 
 @dsl(hidden=True)
@@ -687,7 +691,7 @@ class DirectionalLineFollow(MotionStep):
 
         # PID steering: sensor error -> correction
         error = left_conf - right_conf
-        correction = self._pid.update(error, dt) * cfg.correction_sign
+        correction = self._pid.update(error, dt)
 
         if cfg.forward_correction:
             # Correct forward/backward while gyro PID holds heading.
@@ -738,7 +742,6 @@ class DirectionalSingleLineFollowConfig:
     kd: float = 0.1
     lateral_correction: bool = False
     forward_correction: bool = False
-    correction_sign: float = 1.0
     heading_hold: bool = True
 
 
@@ -870,10 +873,10 @@ class DirectionalSingleLineFollow(MotionStep):
         # Edge-tracking error: 0.5 = edge of line
         reading = cfg.sensor.probabilityOfBlack()
         error = reading - 0.5
-        if cfg.side == LineSide.RIGHT:
+        if cfg.side.value == "right":
             error = -error
 
-        correction = self._pid.update(error, dt) * cfg.correction_sign
+        correction = self._pid.update(error, dt)
 
         if cfg.forward_correction:
             vx = self._vx + correction * self._max_linear
@@ -882,7 +885,6 @@ class DirectionalSingleLineFollow(MotionStep):
                 wz = self._heading_pid.update(heading_error, dt)
             else:
                 wz = 0.0
-            self.info(f"{vx}, {self._vy}, {error}, {correction}, {reading}")
             robot.drive.set_velocity(ChassisVelocity(vx, self._vy, wz))
         elif cfg.lateral_correction:
             # Correct by strafing left/right; gyro PID holds heading
@@ -1251,10 +1253,14 @@ class LateralFollowLine(DirectionalLineFollow):
         self._kp = kp
         self._ki = ki
         self._kd = kd
+        # Swap sensors when going right so the error sign is correct without
+        # a separate correction_sign — LineSide direction is encoded here.
+        eff_left = right_sensor if speed >= 0.0 else left_sensor
+        eff_right = left_sensor if speed >= 0.0 else right_sensor
         super().__init__(
             DirectionalLineFollowConfig(
-                left_sensor=left_sensor,
-                right_sensor=right_sensor,
+                left_sensor=eff_left,
+                right_sensor=eff_right,
                 heading_speed=0.0,
                 strafe_speed=speed,
                 distance_cm=distance_cm,
@@ -1262,7 +1268,6 @@ class LateralFollowLine(DirectionalLineFollow):
                 ki=ki,
                 kd=kd,
                 forward_correction=True,
-                correction_sign=_forward_correction_sign_for_lateral_follow(speed),
             ),
             until=until,
         )
@@ -1334,12 +1339,11 @@ class LateralFollowLineSingle(DirectionalSingleLineFollow):
                 heading_speed=0.0,
                 strafe_speed=speed,
                 distance_cm=distance_cm,
-                side=LineSide.LEFT,   # force line side left as line side is already encoded into the correction sign
+                side=_lateral_effective_side(side, speed),
                 kp=kp,
                 ki=ki,
                 kd=kd,
                 forward_correction=True,
-                correction_sign=_forward_correction_sign_for_lateral_follow(speed),
             ),
             until=until,
         )
@@ -1415,13 +1419,12 @@ class LateralFollowLineSingleFree(DirectionalSingleLineFollow):
                 heading_speed=0.0,
                 strafe_speed=speed,
                 distance_cm=distance_cm,
-                side=side,
+                side=_lateral_effective_side(side, speed),
                 kp=kp,
                 ki=ki,
                 kd=kd,
                 forward_correction=True,
                 heading_hold=False,
-                correction_sign=_forward_correction_sign_for_lateral_follow(speed),
             ),
             until=until,
         )
