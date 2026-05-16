@@ -53,15 +53,15 @@ class M030CollectDrumsMission(Mission):
             ),
 
             # wait until all drums has dispenced
-            wait_for_checkpoint(70),
+            wait_for_checkpoint(68),
             turn_to_heading_left(0),
-            arm.move_angles(-90, 53, -83, speed=100),    # fully put tray on the floor
+            arm.move_angles(-90, 53, -83, speed=200),    # fully put tray on the floor
 
             # Drive the length of the drum area while pushing tray through drum area
             backward_line_follow().until(
                 over_line(Defs.rear.left)
                 + over_line(Defs.front.left)
-                + after_cm(8)
+                + after_cm(6)
             ),
 
             # Correct heading, lift tray out of drum area and drive forward until black line

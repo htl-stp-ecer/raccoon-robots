@@ -14,15 +14,13 @@ class M000SetupMission(SetupMission):
                 distance_cm=70,
                 calibration_sets=["default", "upper"],
             ),
-            lateral_follow_line_single(
-                sensor=Defs.rear.left,
-                distance_cm=100,
-                speed=1,
-                side=LineSide.RIGHT,
-                kp=0.4,
-                ki=0.1,
-                kd=0.0,
+
+            strafe_right().until(
+                over_line(Defs.front.right)
+                + on_black(Defs.front.right)
             ),
+            wait_for_button(),
+
 
             pause_setup_timer(),
             fully_disable_servos(),

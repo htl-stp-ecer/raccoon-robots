@@ -85,21 +85,31 @@ class M040CollectBotguyMission(Mission):
             ),
             mark_heading_reference(),
 
-            drive_forward(8),
+            drive_forward(3),
             Defs.arm_claw.soft_close(),
 
             # get out botguy
             arm.move_angles(-90, 75, -90),
             background(
                 seq([
+                    #start pulling out botguy when we hit black line
                     wait_for(on_black(Defs.front.right)),
                     arm.move_angles(-90, 135, -115),
                 ]),
             ),
-            strafe_right().until(
-                over_line(Defs.front.right)
+
+            smooth_path(
+                step=seq([
+                    #turn_to_heading_left(0), done with the heading parameter of strafe
+                    strafe_right(heading=0).until(
+                        over_line(Defs.front.right)
+                    ),
+
+                    #turn the bot the pipe and # make sure we are not blocking the oter bot
+                    #turn_to_heading_left(90), # done with heading of drive forward
+                    drive_forward(heading=90).until(
+                        on_black(Defs.rear.left)
+                    ),
+                ]),
             ),
-            turn_to_heading_left(90),
-            # wall_align_forward(accel_threshold=0.3, grace_period=0.5),
-            # turn_to_heading_left(90),
         ])
