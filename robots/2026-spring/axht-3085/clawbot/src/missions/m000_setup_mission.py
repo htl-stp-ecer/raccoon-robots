@@ -2,6 +2,7 @@ from raccoon import *
 
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
+from src.steps.line_follow_dsl import lateral_follow_line_single
 
 
 class M000SetupMission(SetupMission):
@@ -9,6 +10,20 @@ class M000SetupMission(SetupMission):
         setup_time = 120
 
         return seq([
+            calibrate(
+                distance_cm=70,
+                calibration_sets=["default", "upper"],
+            ),
+            lateral_follow_line_single(
+                sensor=Defs.rear.left,
+                distance_cm=100,
+                speed=1,
+                side=LineSide.RIGHT,
+                kp=0.4,
+                ki=0.1,
+                kd=0.0,
+            ),
+
             pause_setup_timer(),
             fully_disable_servos(),
 

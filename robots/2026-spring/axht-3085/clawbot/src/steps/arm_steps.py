@@ -18,8 +18,8 @@ def arm_grab_tray():
             Defs.arm_claw.closed(),
         ),
 
-        arm.move_angles(115, 96, -102),    # move down
-        arm.move_angles(128, 96, -102),    # move to the side under holder
+        arm.move_angles(115, 90, -102),    # move down
+        arm.move_angles(128, 90, -102),    # move to the side under holder
         arm.move_angles(128, 90, -45),     # move arm up
     ])
 

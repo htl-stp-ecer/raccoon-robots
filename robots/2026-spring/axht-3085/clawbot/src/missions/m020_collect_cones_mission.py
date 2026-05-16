@@ -24,6 +24,13 @@ class M020CollectConesMission(Mission):
                 + after_cm(23),
             ),
 
+            # drive to line
+            drive_angle(angle_deg=-75).until(
+                over_line(Defs.rear_left_light_sensor)
+                + over_line(Defs.front_left_light_sensor)
+            ),
+            turn_to_heading_right(0),
+
             # position arm over first cone grab position to avoid
             # pushing pom, then lower it
             background(
@@ -32,30 +39,19 @@ class M020CollectConesMission(Mission):
                         arm.move_angles(-12, 10, -10),
                         Defs.arm_claw.p90deg(),
                     ),
-                    wait_for_seconds(2.5),
+                    wait_for(after_forward_cm(5)),
                     arm.move_angles(-12, -10, 20),
                 ]),
             ),
-
-            # drive to line
-            drive_angle(angle_deg=-75).until(
-                over_line(Defs.rear_left_light_sensor)
-                + over_line(Defs.front_left_light_sensor)
-            ),
-            turn_to_heading_right(0),
 
             # follow the line and grab the cones in parallel
             parallel(
                 seq([
                     line_follow().until(
                         over_line(Defs.front.right)
+                        + over_line(Defs.front.right)
+                        + after_cm(5)   # make sure we are over the line (for strafing)
                     ),
-                    line_follow(speed=0.7).until(
-                        over_line(Defs.front.right)
-                    ),
-                    line_follow().until(
-                        after_cm(5)   # make sure we are over the line (for strafing)
-                    )
                 ]),
                 seq([
                     # wait until we reach the first T --> grab --> then drop into holder

@@ -882,6 +882,7 @@ class DirectionalSingleLineFollow(MotionStep):
                 wz = self._heading_pid.update(heading_error, dt)
             else:
                 wz = 0.0
+            self.info(f"{vx}, {self._vy}, {error}, {correction}, {reading}")
             robot.drive.set_velocity(ChassisVelocity(vx, self._vy, wz))
         elif cfg.lateral_correction:
             # Correct by strafing left/right; gyro PID holds heading
@@ -1333,7 +1334,7 @@ class LateralFollowLineSingle(DirectionalSingleLineFollow):
                 heading_speed=0.0,
                 strafe_speed=speed,
                 distance_cm=distance_cm,
-                side=side,
+                side=LineSide.LEFT,   # force line side left as line side is already encoded into the correction sign
                 kp=kp,
                 ki=ki,
                 kd=kd,
