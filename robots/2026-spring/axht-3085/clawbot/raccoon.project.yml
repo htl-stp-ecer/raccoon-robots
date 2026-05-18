@@ -1,7 +1,7 @@
 name: ClawBot
 uuid: 322a6cb2-b54d-4ad2-bb55-14d157403ae7
 format_version: 2
-auto_checkpoints: true
+auto_checkpoints: false
 
 robot: !include config/robot.yml
 definitions: !include config/hardware.yml
