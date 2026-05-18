@@ -37,10 +37,6 @@ drive:
         kS: 0.0
         kV: 1.0
         kA: 0.0
-odometry:
-  type: FusedOdometry
-  config:
-    bemf_trust: 1.0
 motion_pid:
   distance:
     kp: 5.1566
