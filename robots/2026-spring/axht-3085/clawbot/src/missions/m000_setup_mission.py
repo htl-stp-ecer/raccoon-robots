@@ -10,17 +10,16 @@ class M000SetupMission(SetupMission):
         setup_time = 120
 
         return seq([
-            calibrate(
-                distance_cm=70,
-                calibration_sets=["default", "upper"],
-            ),
-
-            strafe_right().until(
-                over_line(Defs.front.right)
-                + on_black(Defs.front.right)
-            ),
-            wait_for_button(),
-
+            # calibrate(
+            #     distance_cm=70,
+            #     calibration_sets=["default", "upper"],
+            # ),
+            #
+            # strafe_right().until(
+            #     over_line(Defs.front.right)
+            #     + on_black(Defs.front.right)
+            # ),
+            # wait_for_button(),
 
             pause_setup_timer(),
             fully_disable_servos(),

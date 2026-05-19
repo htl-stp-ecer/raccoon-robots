@@ -52,6 +52,5 @@ class M010DriveDownRampMission(Mission):
             ),
 
             turn_to_heading_right(0),
-
             switch_calibration_set("default"),
         ])

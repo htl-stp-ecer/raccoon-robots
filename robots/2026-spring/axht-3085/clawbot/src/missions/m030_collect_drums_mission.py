@@ -79,7 +79,7 @@ class M030CollectDrumsMission(Mission):
             # return tray to tray holder
             return_tray_to_tray_holder_phase1(),
             background(
-                step=return_tray_to_tray_holder_phase2(),
+                return_tray_to_tray_holder_phase2(),
                 name="return_tray"
             ),
         ])

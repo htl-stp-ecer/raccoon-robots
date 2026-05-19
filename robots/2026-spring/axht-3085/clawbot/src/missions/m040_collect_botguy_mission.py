@@ -99,8 +99,8 @@ class M040CollectBotguyMission(Mission):
             ),
 
             smooth_path(
-                step=seq([
-                    #turn_to_heading_left(0), done with the heading parameter of strafe
+                seq([
+                    # turn_to_heading_left(0), done with the heading parameter of strafe
                     strafe_right(heading=0).until(
                         over_line(Defs.front.right)
                     ),
