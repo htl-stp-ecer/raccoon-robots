@@ -85,7 +85,7 @@ class M050DriveUpTheRampMission(Mission):
                 drive_forward(cm=80, heading=0),
 
                 background(
-                    step=arm.move_angles(-50, 80, -80),
+                    arm.move_angles(-50, 80, -80),
                 ),
                 strafe_left(heading=0).until(
                     on_black(Defs.front.left)
