@@ -1,11 +1,33 @@
-logs/
-.mission_snapshots
-.raccoon
-.git
-.idea
-__pycache__
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDEs
+.idea/
+.vscode/
+
+# raccoon-cli
+.raccoon/
 .raccoon_codegen_cache.json
-defs.py
-robot.py
-racoon.calibration.yml
-/drum_detections/
+*.calibration.yml
+
+# Generated hardware files
+src/hardware/defs.py
+src/hardware/defs.pyi
+src/hardware/robot.py
+
+# Mission state
+.mission_snapshots/
+
+# Runtime output
+drum_detections/
+
+# Logs
+logs/
+*.log

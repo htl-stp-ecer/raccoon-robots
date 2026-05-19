@@ -136,20 +136,20 @@ class TestGoToLogic:
         assert self._go_to_direction(0, 3) == ("advance", 3)
 
     def test_backward_short(self):
-        # 0 -> 7: delta=7, > 4, so retreat 9-7=2
-        assert self._go_to_direction(0, 7) == ("retreat", 2)
+        # 0 -> 7: delta=7, > 4, so retreat NUM_POCKETS-7=1
+        assert self._go_to_direction(0, 7) == ("retreat", NUM_POCKETS - 7)
 
     def test_wraparound_forward(self):
-        # 7 -> 1: delta=(1-7)%9=3, advance 3
-        assert self._go_to_direction(7, 1) == ("advance", 3)
+        # 7 -> 1: delta=(1-7)%NUM_POCKETS, advance
+        assert self._go_to_direction(7, 1) == ("advance", (1 - 7) % NUM_POCKETS)
 
     def test_wraparound_backward(self):
-        # 1 -> 7: delta=(7-1)%9=6, > 4, retreat 9-6=3
-        assert self._go_to_direction(1, 7) == ("retreat", 3)
+        # 1 -> 7: delta=(7-1)%NUM_POCKETS=6, > 4, retreat NUM_POCKETS-6
+        assert self._go_to_direction(1, 7) == ("retreat", NUM_POCKETS - 6)
 
     def test_halfway_prefers_advance(self):
-        # delta=4, 4 <= 4 (NUM_POCKETS//2), so advance
-        assert self._go_to_direction(0, 4) == ("advance", 4)
+        # delta=NUM_POCKETS//2, so advance
+        assert self._go_to_direction(0, NUM_POCKETS // 2) == ("advance", NUM_POCKETS // 2)
 
     def test_all_targets_reachable(self):
         """Every target from every starting index should produce a valid plan."""

@@ -3,7 +3,6 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.steps.collect_drums_step import collect_drums
-from src.steps.drum_collector import go_to_empty_slot_plus_one
 from src.steps.drum_lifting_step import drum_lifting_up
 
 
@@ -20,7 +19,6 @@ def after_collect():
 
         return seq([
             Defs.drum_pusher_servo.close(),
-            go_to_empty_slot_plus_one(),
         ])
 
     return defer(_build)

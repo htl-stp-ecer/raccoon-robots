@@ -11,7 +11,7 @@ class PrefillDrumsStep(Step):
     async def _execute_step(self, robot: "GenericRobot") -> None:
         sorting = robot.get_service(SortingService)
 
-        # Slots 0-3: blue, slot 4: empty, slots 5-8: pink
+        # Slots 0-3: blue, slots 4-7: pink
         for i in range(4):
             sorting.assign_slot("blue")
         for i in range(4):
@@ -22,5 +22,5 @@ class PrefillDrumsStep(Step):
 
 @dsl()
 def prefill_drums() -> PrefillDrumsStep:
-    """Set drum slots to: 0-3 blue, 4 empty, 5-8 pink."""
+    """Set drum slots to: 0-3 blue, 4-7 pink."""
     return PrefillDrumsStep()

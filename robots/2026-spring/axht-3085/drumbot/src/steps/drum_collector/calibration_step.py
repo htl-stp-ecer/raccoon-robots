@@ -10,7 +10,7 @@ from src.service.drum_motor_service import DrumMotorService, NUM_POCKETS
 from .dataclasses import MIN_DELTA
 from .screens import DrumConfirmScreen
 
-DEFAULT_REVIEW_DELTA = 750.0
+DEFAULT_REVIEW_DELTA = 300.0
 
 
 @dataclass

@@ -8,7 +8,7 @@ and do not require any hardware.
 
 MECHANICAL MODEL
 ----------------
-The revolver has NUM_POCKETS = 9 pockets. `current_pocket` is the pocket
+The revolver has NUM_POCKETS = 8 pockets. `current_pocket` is the pocket
 index currently aligned with the physical ejection hole. A drum in pocket
 X is ejected at the moment `current_pocket` transitions to X. Each call
 to advance(1)/retreat(1) or a step of go_to_pocket() corresponds to one
@@ -37,7 +37,6 @@ from src.service.sorting_service import SortingService
 from src.steps.drum_collector.sort_into_slot_step import (
     EJECT_HOLE_SLOT,
     EjectNearestColorStep,
-    GoToEmptySlotStep,
     SortIntoSlotStep,
 )
 
@@ -86,12 +85,6 @@ class FakeDrumMotor:
             self._step(-1)
         self.at_midpoint = False
         return "backward"
-
-    async def go_to_pocket_via_gap(
-        self, pocket: int, filled_slots: set[int], *, precise: bool = False
-    ) -> str:
-        """Simplified gap-aware navigation for tests — just delegates to go_to_pocket."""
-        return await self.go_to_pocket(pocket, precise=precise)
 
     async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
         self.calls.append(("advance", pockets))
@@ -185,7 +178,7 @@ def fill(*colors: str) -> SortingService:
 
 
 def perfect() -> SortingService:
-    """The expected end-of-intake state: 4 blue (0-3), 4 pink (5-8), empty 4."""
+    """The expected end-of-intake state: 4 blue (0-3), 4 pink (4-7)."""
     return fill("blue", "pink", "blue", "pink", "blue", "pink", "blue", "pink")
 
 
@@ -232,7 +225,7 @@ class TestEjectAllFourDrums:
         """Whichever color the step picks first, every slot it marks as
         ejected must have rotated through the ejection hole."""
         sorting = perfect()
-        motor = FakeDrumMotor(current_pocket=4)
+        motor = FakeDrumMotor(current_pocket=0)
         claimed, color, since = run_eject(sorting, motor)
         assert len(claimed) == 4, (
             f"Step must claim to eject all 4 of {color}, got {claimed}"
@@ -244,7 +237,7 @@ class TestEjectAllFourDrums:
         remaining color — this is the 'second sweep' the user reported
         losing drums on."""
         sorting = perfect()
-        motor = FakeDrumMotor(current_pocket=4)
+        motor = FakeDrumMotor(current_pocket=0)
         run_eject(sorting, motor)  # whichever color was closer
 
         claimed2, color2, since2 = run_eject(sorting, motor)
@@ -299,8 +292,8 @@ class TestEjectAllFourDrums:
         assert_all_ejected(motor, claimed, since=since)
 
     def test_revolver_full_blue_then_pink(self):
-        """9-drum full load: must cleanly eject every drum."""
-        sorting = fill(*(["blue", "pink"] * 4), "blue")  # 5 blue, 4 pink
+        """8-drum full load: must cleanly eject every drum."""
+        sorting = fill(*(["blue", "pink"] * 4))  # 4 blue, 4 pink
         assert sorting.slots.count(None) == 0
         motor = FakeDrumMotor(current_pocket=0)
 
@@ -335,24 +328,21 @@ class TestImperfectSortingState:
             assert guard < 10, "Eject loop did not converge"
 
     def test_uneven_3_blue_5_pink(self):
-        """Color detection skewed: 3 blues recognised, 5 pinks. With 8
-        drums total the 'empty slot' is not where it normally is, which
-        shifts every distance calculation."""
         sorting = fill("blue", "blue", "blue",
                        "pink", "pink", "pink", "pink", "pink")
         assert sorting.blue_slots == [0, 1, 2]
-        assert sorted(sorting.pink_slots) == [4, 5, 6, 7, 8]
+        assert sorted(sorting.pink_slots) == [3, 4, 5, 6, 7]
 
-        motor = FakeDrumMotor(current_pocket=3)  # empty slot
+        motor = FakeDrumMotor(current_pocket=3)
         self._drain_and_verify(sorting, motor)
 
     def test_uneven_5_blue_3_pink(self):
         sorting = fill("blue", "blue", "blue", "blue", "blue",
                        "pink", "pink", "pink")
         assert sorted(sorting.blue_slots) == [0, 1, 2, 3, 4]
-        assert sorted(sorting.pink_slots) == [6, 7, 8]
+        assert sorted(sorting.pink_slots) == [5, 6, 7]
 
-        motor = FakeDrumMotor(current_pocket=5)  # empty slot
+        motor = FakeDrumMotor(current_pocket=5)
         self._drain_and_verify(sorting, motor)
 
     def test_uneven_1_blue_7_pink(self):
@@ -385,23 +375,6 @@ class TestImperfectSortingState:
         motor = FakeDrumMotor(current_pocket=0)
         self._drain_and_verify(sorting, motor)
 
-    def test_all_eight_blue(self):
-        """Worst case: every drum read as blue (total detection bias)."""
-        sorting = fill(*(["blue"] * 8))
-        assert sorted(sorting.blue_slots) == [0, 1, 2, 3, 4, 5, 6, 7]
-        motor = FakeDrumMotor(current_pocket=8)
-        claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {0, 1, 2, 3, 4, 5, 6, 7}
-        assert_all_ejected(motor, claimed, since=since)
-
-    def test_all_eight_pink(self):
-        sorting = fill(*(["pink"] * 8))
-        assert sorted(sorting.pink_slots) == [0, 1, 2, 3, 4, 5, 6, 7]
-        motor = FakeDrumMotor(current_pocket=8)
-        claimed, _, since = run_eject(sorting, motor)
-        assert claimed == {0, 1, 2, 3, 4, 5, 6, 7}
-        assert_all_ejected(motor, claimed, since=since)
-
 
 # ── Starting from midpoint (mid-rotation interrupted) ──────────
 
@@ -431,57 +404,12 @@ class TestNothingToEject:
 
     def test_after_both_colors_ejected_is_noop(self):
         sorting = perfect()
-        motor = FakeDrumMotor(current_pocket=4)
+        motor = FakeDrumMotor(current_pocket=0)
         run_eject(sorting, motor)
         run_eject(sorting, motor)
         pre = len(motor.visited)
         run_eject(sorting, motor)
         assert len(motor.visited) == pre, "Third eject should be a no-op"
-
-
-# ── Nearest-empty-slot / intake alignment ───────────────────────
-
-
-class TestNearestEmptySlot:
-    """go_to_empty_slot runs between drums; if it picks a wrong slot, the
-    pusher opens above an occupied slot and drums fall out. Exhaustively
-    verify the nearest-slot math across every occupancy + cursor combo."""
-
-    def test_picks_nearest_on_ring(self):
-        sorting = fill("blue", "pink", "blue", "pink")
-        # slots: [b, b, None, None, None, None, None, p, p]
-        assert sorting.slots == ["blue", "blue", None, None, None,
-                                 None, None, "pink", "pink"]
-        # current_pocket = 8 → nearest empty is slot 2? no, distance 6/3.
-        # empties: [2,3,4,5,6]. ring_dist(8,2)=3, (8,3)=4, (8,4)=4,
-        # (8,5)=3, (8,6)=2. Best = 6.
-        assert sorting.nearest_empty_slot(8) == 6
-
-    def test_nearest_empty_wraps_short(self):
-        sorting = fill("blue", "blue", "blue", "blue", "pink", "pink",
-                       "pink", "pink")
-        # empties: [4]. Only one choice regardless of cursor.
-        assert sorting.nearest_empty_slot(0) == 4
-        assert sorting.nearest_empty_slot(4) == 4
-        assert sorting.nearest_empty_slot(8) == 4
-
-    def test_nearest_empty_raises_when_full(self):
-        sorting = fill(*(["blue", "pink"] * 4), "blue")
-        assert sorting.slots.count(None) == 0
-        with pytest.raises(RuntimeError, match="No empty slots"):
-            sorting.nearest_empty_slot(4)
-
-    def test_go_to_empty_step_moves_to_correct_slot(self):
-        """The step must move the motor to whichever slot is reported
-        empty, not some pre-baked constant."""
-        sorting = fill("blue", "pink", "blue")  # empties 3..7
-        motor = FakeDrumMotor(current_pocket=5)
-        robot = make_robot(sorting, motor)
-        step = GoToEmptySlotStep()
-        step.info = lambda msg: None
-        step.warn = lambda msg: None
-        run(step._execute_step(robot))
-        assert motor.current_pocket == sorting.nearest_empty_slot(5)
 
 
 # ── SortIntoSlotStep: wrong / missing detection ─────────────────
@@ -550,16 +478,16 @@ class TestSortIntoSlotFallback:
             f"guess (slot={target}, motor={motor.current_pocket})"
         )
 
-    def test_eight_drums_each_misdetected_fills_all_slots(self):
-        """Pathological case: every detection fails. After 8 drums the
-        revolver should be full *in the logical model* so ejection has
-        something to sweep. Guessing can pick either color but must never
-        collide with itself."""
+    def test_all_drums_misdetected_fills_all_slots(self):
+        """Pathological case: every detection fails. After NUM_POCKETS
+        drums the revolver should be full *in the logical model* so
+        ejection has something to sweep. Guessing can pick either color
+        but must never collide with itself."""
         sorting = SortingService(MagicMock())
         sorting.info = lambda msg: None
         sorting.warn = lambda msg: None
         motor = FakeDrumMotor(current_pocket=0)
-        for _ in range(8):
+        for _ in range(NUM_POCKETS):
             step = SortIntoSlotStep()
             step.info = lambda msg: None
             step.warn = lambda msg: None
@@ -567,8 +495,8 @@ class TestSortIntoSlotFallback:
                              sorting, motor)
 
         filled = [c for c in sorting.slots if c is not None]
-        assert len(filled) == 8
-        assert sorting.slots.count(None) == 1
+        assert len(filled) == NUM_POCKETS
+        assert sorting.slots.count(None) == 0
         # And now ejection must still clear everything.
         run_eject(sorting, motor)
         run_eject(sorting, motor)
@@ -589,7 +517,7 @@ class TestNoCrossContamination:
         sorting = perfect()
         blue_slots = set(sorting.blue_slots)
         pink_slots = set(sorting.pink_slots)
-        motor = FakeDrumMotor(current_pocket=4)
+        motor = FakeDrumMotor(current_pocket=0)
 
         claimed, color, since = run_eject(sorting, motor)
         visited = motor.visited[since:]
@@ -599,21 +527,6 @@ class TestNoCrossContamination:
             f"Ejecting {color} rotated the wrong-color slots {overrun} "
             f"under the hole — a drum of the other color would drop "
             f"here. visited={visited}"
-        )
-
-    def test_second_eject_never_visits_phantom_first_color(self):
-        """After color A is cleared, color B's sweep must stay inside
-        B's slot range (A's pockets are now empty so transiting them
-        is fine for correctness, but a good implementation should not
-        rotate through more than it needs to)."""
-        sorting = fill("pink", "pink", "pink", "pink")
-        motor = FakeDrumMotor(current_pocket=5)
-        claimed, color, since = run_eject(sorting, motor)
-        assert color == "pink"
-        visited = motor.visited[since:]
-        # Pink first → slots 0-3. Sweep should not enter the empty far region.
-        assert not (set(visited) & {5, 6, 7, 8}), (
-            f"Pink sweep entered the empty far region: {visited}"
         )
 
 
@@ -630,7 +543,7 @@ class TestSortingServiceEdge:
         assert s.pink_next == 3  # 0,1,2 used (pink first → near side)
 
     def test_assign_after_full_raises_immediately(self):
-        s = fill(*(["blue", "pink"] * 4), "blue")
+        s = fill(*(["blue", "pink"] * 4))
         with pytest.raises(RuntimeError, match="Revolver full"):
             s.assign_slot("pink")
         with pytest.raises(RuntimeError, match="Revolver full"):
@@ -663,12 +576,11 @@ class TestSortingServiceEdge:
         for _ in range(50):
             assert s.guess_color() == "blue"
 
-    def test_eject_hole_slot_is_central(self):
-        """The ejection hole is assumed to sit in the middle of the pink
-        half so pink is always the shorter sweep. Several tests depend
-        on this — pin it."""
+    def test_eject_hole_slot_is_in_pink_half(self):
+        """The ejection hole sits in the pink half so pink is the shorter
+        sweep when both colors are present. Several tests depend on this — pin it."""
         assert EJECT_HOLE_SLOT == 5
-        assert NUM_POCKETS == 9
+        assert NUM_POCKETS == 8
 
 
 # ── Sweep length: exactly len(slots) - 1 ─────────────────────────
@@ -694,14 +606,14 @@ class TestSweepCountIsSlotsMinus1:
     def test_four_drums_sweep_three(self):
         """4 drums in a group → exactly 3 advance/retreat steps."""
         sorting = perfect()
-        motor = FakeDrumMotor(current_pocket=4)
+        motor = FakeDrumMotor(current_pocket=0)
         run_eject(sorting, motor)
         assert self._count_sweep_steps(motor) == 3
 
     def test_five_drums_sweep_four(self):
         """5 drums of one color → exactly 4 advance/retreat steps."""
         sorting = fill(*(["blue"] * 5), *(["pink"] * 3))
-        motor = FakeDrumMotor(current_pocket=4)
+        motor = FakeDrumMotor(current_pocket=0)
         run_eject(sorting, motor)
         assert self._count_sweep_steps(motor) == 4
 

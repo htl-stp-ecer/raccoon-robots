@@ -31,10 +31,7 @@ class SortIntoSlotStep(Step):
             color = sorting_service.guess_color(current_pocket=drum_service.current_pocket)
             self.warn(f"Camera failed — guessed color: {color}")
         target = sorting_service.assign_slot(color, current_pocket=drum_service.current_pocket)
-        # Collect filled slots *before* this assignment (target not yet occupied,
-        # so it is safe to pass through it if needed — but it won't be intermediate).
-        filled = {i for i, s in enumerate(sorting_service.slots) if s is not None and i != target}
-        await drum_service.go_to_pocket_via_gap(target, filled, precise=False)
+        await drum_service.go_to_pocket(target, precise=False)
 
 
 @dsl(hidden=True)
@@ -63,19 +60,6 @@ class BlockTimerCheckStep(Step):
                 f"TIMING CRITICAL: drum #{self.drum_number} block took {elapsed:.2f}s "
                 f"(> {DEADLINE_WARNING_SECS}s) — next drum checkpoint at risk!",
             )
-
-
-@dsl(hidden=True)
-class GoToEmptySlotStep(Step):
-    """Move revolver to the nearest empty slot so opening the pusher is safe."""
-
-    async def _execute_step(self, robot: "GenericRobot") -> None:
-        sorting_service = robot.get_service(SortingService)
-        drum_service = robot.get_service(DrumMotorService)
-
-        empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
-        drum_service.info(f"Moving to empty slot {empty} before opening pusher")
-        await drum_service.go_to_pocket(empty, precise=False)
 
 
 @dsl(hidden=True)
@@ -207,32 +191,6 @@ class EjectNearestColorStep(Step):
 def eject_nearest_color() -> EjectNearestColorStep:
     """Navigate to each slot of the nearest color group and eject all four drums."""
     return EjectNearestColorStep()
-
-
-@dsl(hidden=True)
-class GoToEmptySlotPlusOneStep(Step):
-    """Move revolver to the nearest empty slot + 1 pocket."""
-
-    async def _execute_step(self, robot: "GenericRobot") -> None:
-        sorting_service = robot.get_service(SortingService)
-        drum_service = robot.get_service(DrumMotorService)
-
-        empty = sorting_service.nearest_empty_slot(drum_service.current_pocket)
-        target = (empty - 1) % NUM_POCKETS
-        drum_service.info(f"Moving to empty slot {empty} + 1 = pocket {target}")
-        await drum_service.go_to_pocket(target, precise=False)
-
-
-@dsl()
-def go_to_empty_slot() -> GoToEmptySlotStep:
-    """Move revolver to nearest empty slot (safe to open pusher)."""
-    return GoToEmptySlotStep()
-
-
-@dsl()
-def go_to_empty_slot_plus_one() -> GoToEmptySlotPlusOneStep:
-    """Move revolver to nearest empty slot + 1 pocket."""
-    return GoToEmptySlotPlusOneStep()
 
 
 @dsl()

@@ -15,7 +15,6 @@ def print_debug_info(robot):
     info(f"[DEBUG] Slots: {sorting.slots}")
     info(f"[DEBUG] Blue slots: {sorting.blue_slots}  (next: {sorting.blue_next})")
     info(f"[DEBUG] Pink slots: {sorting.pink_slots}  (next: {sorting.pink_next})")
-    info(f"[DEBUG] Empty slot: {sorting.empty_slot}")
 
 
 @dsl

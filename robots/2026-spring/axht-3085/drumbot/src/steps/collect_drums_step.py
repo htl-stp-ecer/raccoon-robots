@@ -13,7 +13,6 @@ from src.steps.drum_collector.sort_into_slot_step import (
     advance_to_midpoint,
     block_timer_check,
     block_timer_start,
-    go_to_empty_slot,
     sort_into_slot,
 )
 from src.steps.drum_lifting_step import drum_align_on_back, drum_lifting_down, drum_lifting_up
@@ -155,7 +154,6 @@ class CollectDrumsStep(UIStep):
                     phase3 = seq([
                         Defs.drum_pusher_servo.close(),
                         wait_for_seconds(0.5),
-                        go_to_empty_slot(),
                         block_timer_check(drum_number),
                     ])
                     await phase3.run_step(robot)
@@ -164,7 +162,7 @@ class CollectDrumsStep(UIStep):
                         continue
                     drum_service.motor.brake()
                     if await self._show_emergency_ui(
-                        f"Drum Motor is stuck (moving to empty slot after drum #{drum_number})",
+                        f"Drum Motor is stuck (closing pusher after drum #{drum_number})",
                         robot=robot,
                     ):
                         self._enter_safe_mode(drum_service)
@@ -172,7 +170,7 @@ class CollectDrumsStep(UIStep):
                     await self._emergency_shutdown(
                         drum_service,
                         robot,
-                        f"Motor stalled moving to empty slot after drum #{drum_number} — user did not continue",
+                        f"Motor stalled closing pusher after drum #{drum_number} — user did not continue",
                     )
                     return
 
