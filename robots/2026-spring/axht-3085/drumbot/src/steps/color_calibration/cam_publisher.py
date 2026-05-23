@@ -5,7 +5,7 @@ import time
 
 import cv2
 import numpy as np
-from raccoon_transport import Transport
+from raccoon.transport import get_transport
 from raccoon_transport.types.raccoon.cam_blob_t import cam_blob_t
 from raccoon_transport.types.raccoon.cam_frame_t import cam_frame_t
 
@@ -32,7 +32,7 @@ class CamPublisher:
         self._fps = fps
         self._jpeg_quality = jpeg_quality
 
-        self._transport = Transport()
+        self._transport = get_transport()
         self._running = False
         self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
@@ -53,7 +53,6 @@ class CamPublisher:
         if self._thread:
             self._thread.join(timeout=2.0)
             self._thread = None
-        self._transport.close()
 
     def set_overlay(self, text: str) -> None:
         with self._lock:
