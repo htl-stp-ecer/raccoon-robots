@@ -1,5 +1,6 @@
 name: drumbot
 uuid: 21e5bb71-a37d-4a2f-99ed-ad10963fe875
+format_version: 2
 
 robot: !include 'config/robot.yml'
 missions: !include 'config/missions.yml'
