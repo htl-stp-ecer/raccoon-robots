@@ -3,8 +3,8 @@ drum_pusher_servo:
   port: 0
   offset: 0
   positions:
-    close: 10
-    open: 180
+    close: 141 # 10
+    open: 0 #180
     block_angle: 55
 pom_remover_servo:
   type: Servo
@@ -21,10 +21,10 @@ lift_drums_servo:
   type: Servo
   port: 1
   positions:
-    up: 185       #a bit more thane 170° for better driving
+    up: 180       #a bit more thane 170° for better driving
     align_on_back: 70
-    eject_position: 149
-    seek_position: 181
-    down: 5
+    eject_position: 145
+    seek_position: 180
+    down: -5
     remove_D: 38
     remove_M: 70

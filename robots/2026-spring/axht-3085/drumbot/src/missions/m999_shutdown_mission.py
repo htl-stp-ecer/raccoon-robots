@@ -14,7 +14,7 @@ Authors:
    You are free to modify it as needed. Regeneration may overwrite changes.
 
 Note: This header credits the scaffold and tooling only - no copyright is
-claimed over the generated code itself.
+claim Anlenkung und Aufhängung der Räder, Auslegen, Konstruieren und berechenen mittels der Solidworks FEM Simulationed over the generated code itself.
 """
 
 from raccoon import Mission, Sequential, seq
