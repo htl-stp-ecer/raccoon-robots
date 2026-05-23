@@ -27,6 +27,7 @@ def after_collect():
 class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            wait_for_background("lower_drum"),
             collect_drums(),
             after_collect(),
         ])

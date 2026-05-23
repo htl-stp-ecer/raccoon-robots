@@ -60,8 +60,8 @@ class M050DriveToOtherPipeMission(Mission):
                 ki=0.2,
                 kd=0.1,
                 side=LineSide.RIGHT,
-            ).until(over_line(Defs.front_left_ir_sensor) +
-                    over_line(Defs.front_left_ir_sensor) +
+            ).until(over_line(Defs.rear_left_ir_sensor) +
+                    over_line(Defs.rear_left_ir_sensor) +
                     after_cm(14)
                     ),  # fahre 15 cm auf der rechten Seite des Cubes vorbei
             # smooth_path(

@@ -47,7 +47,7 @@ class _LiftDrumsServoPreset(ServoPreset):
 class Defs:
     imu: Imu
     button: DigitalSensor
-    front_left_ir_sensor: IRSensor
+    rear_left_ir_sensor: IRSensor
     front_right_ir_sensor: IRSensor
     drum_light_sensor: IRSensor
     wait_for_light_sensor: AnalogSensor
