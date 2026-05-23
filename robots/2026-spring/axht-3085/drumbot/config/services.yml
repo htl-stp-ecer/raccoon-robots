@@ -1,0 +1,10 @@
+vision:
+  module: src.daemons.vision
+  restart: always
+  restart_sec: 1
+  after_sync: restart_if_changed
+  required_for_run: true
+  watch:
+    - src/daemons/vision.py
+    - src/hardware/usb_camera.py
+    - src/service/color_detection_service.py
