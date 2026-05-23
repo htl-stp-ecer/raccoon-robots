@@ -61,10 +61,10 @@ def lineup_drum_with_pipe():
         turn_right().until(
             _heading_stuck(stuck_duration=0, threshold_deg=4)
             | on_digital(Defs.drum_found_button)
-            | after_degrees(40)
+            | after_degrees(60)
             | on_digital(Defs.drum_found_button)
         ),
         _drive_to_drum_button(),
-        drive_backward(1, speed=0.2),
+        drive_backward(3, speed=0.2),
         drum_eject_position(),
     ])

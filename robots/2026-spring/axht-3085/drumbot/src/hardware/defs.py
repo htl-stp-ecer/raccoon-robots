@@ -27,14 +27,14 @@ class Defs:
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.769646715070492e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7616676383693458e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7934204489567347e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7920063643237234e-05, vel_lpf_alpha=1.0
         ),
     )
     drum_motor = Motor(
@@ -48,7 +48,7 @@ class Defs:
         calibration=MotorCalibration(ticks_to_rad=1e-05, vel_lpf_alpha=1.0),
     )
     drum_pusher_servo = ServoPreset(
-        Servo(port=0), positions={"close": 10, "open": 180, "block_angle": 55}
+        Servo(port=0), positions={"close": 141, "open": 0, "block_angle": 55}
     )
     pom_remover_servo = ServoPreset(
         Servo(port=3),
@@ -64,11 +64,11 @@ class Defs:
     lift_drums_servo = ServoPreset(
         Servo(port=1),
         positions={
-            "up": 185,
+            "up": 180,
             "align_on_back": 70,
-            "eject_position": 149,
-            "seek_position": 181,
-            "down": 5,
+            "eject_position": 145,
+            "seek_position": 180,
+            "down": -5,
             "remove_D": 38,
             "remove_M": 70,
         },

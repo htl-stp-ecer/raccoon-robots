@@ -64,8 +64,7 @@ class M030DriveToPipeMission(Mission):
                 seq([
                     drive_forward(speed=0.7).until(
                         after_cm(20) +
-                        over_line(Defs.front_left_ir_sensor) +
-                        after_cm(1),
+                        over_line(Defs.front_left_ir_sensor)
                     ),
                 ]),
                 seq([
@@ -77,7 +76,7 @@ class M030DriveToPipeMission(Mission):
             #background(Defs.pom_remover_servo.center()),
 
             #drive_forward(cm=8, speed=0.35),
-            # TODO: Test this
+            # TODO: Test this shit
             #wall_align_forward(accel_threshold=10.0, grace_period=0.5, max_duration=2.5),
             #drive_backward(cm=16),
             lineup_drum_with_pipe(),
