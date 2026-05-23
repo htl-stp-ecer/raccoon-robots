@@ -21,6 +21,7 @@ class _DrumPusherServoPreset(ServoPreset):
 
 class _PomRemoverServoPreset(ServoPreset):
     start: _PresetPosition
+    yeet_blue_pom: _PresetPosition
     right: _PresetPosition
     r_cube: _PresetPosition
     left: _PresetPosition
