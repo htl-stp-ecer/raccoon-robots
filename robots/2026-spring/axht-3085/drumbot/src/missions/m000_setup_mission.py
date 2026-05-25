@@ -1,5 +1,4 @@
 from raccoon import *
-from raccoon.step.sequential import *
 
 from src.steps.camera_lifecycle_step import start_camera
 from src.steps.color_calibration import calibrate_colors
@@ -17,23 +16,27 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
-
-
             pause_setup_timer(),
             fully_disable_servos(),
+
             # Camera opens once here and stays open until the shutdown mission.
             # All downstream steps (color calibration, color detection) share
             # this single USBCamera instance.
             start_camera(),
+
             wait_for_button("Move Servos"),
-            start_setup_timer(),  # countdown begins here, full duration
+            start_setup_timer(),
 
-            drum_lifting_up(),
-            Defs.pom_remover_servo.start(),
+            # initial servo positions
+            parallel(
+                Defs.lift_drums_servo.down(100),  # use drum_lifting_up() if motor also needs to be used
+                Defs.drum_pusher_servo.open(),
+                Defs.pom_remover_servo.start(),
+            ),
 
-            #color calibration
-            Defs.drum_pusher_servo.open(),
-            drum_lifting_down(),
+            # color calibration
+            # FIXME: not doing anything right now
+            # drum_lifting_down(),
             parallel(
                 calibrate_colors(),
                 sample_drum_collector(calibration_time=5.0),
@@ -41,18 +44,14 @@ class M000SetupMission(SetupMission):
             review_drum_collector(review_delta=750),
             align_edge(),
 
-            #distance sensor calibration
+            # distance sensor calibration
+            # TODO: check if still needed
             # drum_seek(),
             # Defs.pom_remover_servo.left(),
             # calibrate_analog_sensor(Defs.et_range_finder),
-
-            wait_for_button("Move Drum over limit"),
-            Defs.pom_remover_servo.start(),
-            drum_lifting_up_over_limit(),
 
             calibrate(distance_cm=50, speed=0.5, exclude_ir_sensors=[
                 Defs.wait_for_light_sensor,
                 Defs.drum_light_sensor,
             ]),
-
         ])

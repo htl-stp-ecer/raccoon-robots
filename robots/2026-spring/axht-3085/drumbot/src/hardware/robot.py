@@ -115,7 +115,7 @@ class Robot(GenericRobot):
     rotation_center_forward_cm = -4.0
     rotation_center_strafe_cm = 0.0
     _sensor_positions = {
-        defs.front_left_ir_sensor: SensorPosition(
+        defs.rear_left_ir_sensor: SensorPosition(
             forward_cm=7.5, strafe_cm=7.25, clearance_cm=1.0
         ),
         defs.front_right_ir_sensor: SensorPosition(

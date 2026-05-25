@@ -3,19 +3,21 @@ drum_pusher_servo:
   port: 0
   offset: 0
   positions:
-    close: 141 # 10
+    close: 138 # 10
     open: 0 #180
     block_angle: 55
+    
 pom_remover_servo:
   type: Servo
   port: 3
   positions:
-    start: 95
-    right: 20
-    r_cube: 50  #position to not touch the cube
-    left: 190
-    center: 100
-    orange_pom_removel: 130
+    start: 0
+    yeet_blue_pom: 110
+    right: 20  # TODO: remove unless needed
+    r_cube: 50  # TODO: remove unless needed  # position to not touch the cube
+    left: 190  # TODO: remove unless needed
+    center: 100  # TODO: remove unless needed
+    orange_pom_removel: 130  # TODO: remove unless needed
 
 lift_drums_servo:
   type: Servo

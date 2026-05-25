@@ -57,14 +57,14 @@ class M030DriveToPipeMission(Mission):
                 #
                 #]),
             #),
-            turn_to_heading_left(178), #turn a bit less than 180° to make sure we stand as close as possible to the pipe
+            turn_to_heading_left(180), #turn a bit less than 180° to make sure we stand as close as possible to the pipe
 
             # drive to pipe
             parallel(
                 seq([
                     drive_forward(speed=0.7).until(
                         after_cm(20) +
-                        over_line(Defs.front_left_ir_sensor)
+                        over_line(Defs.rear_left_ir_sensor)
                     ),
                 ]),
                 seq([

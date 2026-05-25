@@ -1,7 +1,7 @@
 [project]
 name = "drumbot"
 version = "0.1.0"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "raccoon-library==1.0.101",
     "raccoon-cli==0.1.154",

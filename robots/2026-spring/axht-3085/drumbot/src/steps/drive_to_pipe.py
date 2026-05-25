@@ -19,7 +19,7 @@ def drive_to_second_pipe():
     return seq([
         #line_follower().until(
             # after_cm(20) +
-        #    over_line(Defs.front_left_ir_sensor) +
+        #    over_line(Defs.rear_left_ir_sensor) +
         #    after_cm(14),   #eventuell wall alignen testen
         #),
 
