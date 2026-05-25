@@ -3,7 +3,7 @@ button:
   port: 10
 imu:
   type: IMU
-front_left_ir_sensor:
+rear_left_ir_sensor:
   type: IRSensor
   port: 1
 front_right_ir_sensor:

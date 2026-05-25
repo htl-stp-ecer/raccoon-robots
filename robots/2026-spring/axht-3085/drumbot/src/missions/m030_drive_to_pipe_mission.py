@@ -64,7 +64,7 @@ class M030DriveToPipeMission(Mission):
                 seq([
                     drive_forward(speed=0.7).until(
                         after_cm(20) +
-                        over_line(Defs.front_left_ir_sensor)
+                        over_line(Defs.rear_left_ir_sensor)
                     ),
                 ]),
                 seq([

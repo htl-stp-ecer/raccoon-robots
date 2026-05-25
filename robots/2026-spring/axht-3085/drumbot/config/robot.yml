@@ -51,7 +51,7 @@ motion_pid:
   heading:
     kp: 6
     ki: 0.0
-    kd: 0.15
+    kd: 0.2
     integral_max: 10.0
     integral_deadband: 0.01
     derivative_lpf_alpha: 0.5
@@ -86,7 +86,7 @@ physical:
   width_cm: 13.0
   length_cm: 19.0
   sensors:
-  - name: front_left_ir_sensor
+  - name: rear_left_ir_sensor
     x_cm: -0.75
     y_cm: 17.0
     clearance_cm: 1.0

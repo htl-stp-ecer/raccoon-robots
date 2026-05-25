@@ -20,8 +20,9 @@ class _DrumPusherServoPreset(ServoPreset):
 
 
 class _PomRemoverServoPreset(ServoPreset):
-    start: _PresetPosition
     right: _PresetPosition
+    yeet_blue_pom: _PresetPosition
+    drum_moving_pos: _PresetPosition
     r_cube: _PresetPosition
     left: _PresetPosition
     center: _PresetPosition
@@ -47,7 +48,7 @@ class _LiftDrumsServoPreset(ServoPreset):
 class Defs:
     imu: Imu
     button: DigitalSensor
-    front_left_ir_sensor: IRSensor
+    rear_left_ir_sensor: IRSensor
     front_right_ir_sensor: IRSensor
     drum_light_sensor: IRSensor
     wait_for_light_sensor: AnalogSensor
