@@ -3,9 +3,10 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
-from src.steps.drum_lifting_step import drum_lifting_up, drum_lifting_up_over_limit
+from src.steps.drum_lifting_step import drum_lifting_up_over_limit
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_lifting_step import drum_recover_from_over_limit
+from src.steps.drum_collector import eject_nearest_color
 
 
 def print_debug_info(robot):
@@ -39,25 +40,16 @@ class M030DriveToPipeMission(Mission):
             close_pusher_if_not_in_safe_mode(),
             drum_lifting_up_over_limit(),
 
-            wait_for_checkpoint(60),  # only continue if we all drums where dispenced (fail save)
-            # ToDo: Detect pom infront of it
-            # mark_heading_reference(
-            #     origin_offset_deg=90,
-            # ),
+            # only continue if all drums where dispensed (failsafe)
+            wait_for_checkpoint(60),
 
             # drive to first black line and turn
-            #parallel(
             drive_backward(5),
             turn_to_heading_right(0),
-                drive_backward().until(
-                    over_line(Defs.front_right_ir_sensor)
-                ),
-                #seq([
-                #    wait_until_distance(6),
-                #
-                #]),
-            #),
-            turn_to_heading_left(178), #turn a bit less than 180° to make sure we stand as close as possible to the pipe
+            drive_backward().until(
+                over_line(Defs.front_right_ir_sensor)
+            ),
+            turn_to_heading_left(178), # turn a bit less than 180° to make sure we stand as close as possible to the pipe
 
             # drive to pipe
             parallel(
@@ -73,12 +65,6 @@ class M030DriveToPipeMission(Mission):
                 ])
             ),
 
-            #background(Defs.pom_remover_servo.center()),
-
-            #drive_forward(cm=8, speed=0.35),
-            # TODO: Test this shit
-            #wall_align_forward(accel_threshold=10.0, grace_period=0.5, max_duration=2.5),
-            #drive_backward(cm=16),
             lineup_drum_with_pipe(),
-            # eject drum mission will be executed next
+            eject_nearest_color(),
         ])
