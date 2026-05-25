@@ -42,8 +42,6 @@ class M010DriveToDrumsMission(Mission):
             ),
             turn_to_heading_left(0),
 
-            wait_for_button(),
-
             background(
                 seq([
                     Defs.pom_remover_servo.drum_moving_pos(),
