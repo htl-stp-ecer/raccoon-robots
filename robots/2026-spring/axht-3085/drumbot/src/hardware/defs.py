@@ -9,7 +9,7 @@ from raccoon.step.servo.preset import ServoPreset
 
 class Defs:
     imu = IMU()
-    button = DigitalSensor(port=10)
+    button = DigitalSensor(port=2)
     rear_left_ir_sensor = IRSensor(port=1)
     front_right_ir_sensor = IRSensor(port=2)
     drum_light_sensor = IRSensor(port=0)
@@ -61,7 +61,7 @@ class Defs:
         positions={
             "up": 180,
             "align_on_back": 70,
-            "eject_position": 145,
+            "eject_position": 133,
             "seek_position": 180,
             "down": -5,
             "remove_D": 38,

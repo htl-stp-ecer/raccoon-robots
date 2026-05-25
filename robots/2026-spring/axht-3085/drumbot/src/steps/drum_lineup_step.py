@@ -65,6 +65,6 @@ def lineup_drum_with_pipe():
             | on_digital(Defs.drum_found_button)
         ),
         _drive_to_drum_button(),
-        drive_backward(3, speed=0.2),
+        drive_backward(7, speed=0.2),
         drum_eject_position(),
     ])
