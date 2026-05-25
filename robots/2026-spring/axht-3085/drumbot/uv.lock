@@ -348,8 +348,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "raccoon-cli" },
-    { name = "raccoon-library" },
+    { name = "raccoon-cli", specifier = "==0.1.154" },
+    { name = "raccoon-library", specifier = "==1.0.101" },
     { name = "raccoon-transport" },
 ]
 
@@ -1232,7 +1232,7 @@ wheels = [
 
 [[package]]
 name = "raccoon-cli"
-version = "0.1.148"
+version = "0.1.154"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "black" },
@@ -1249,7 +1249,7 @@ dependencies = [
     { name = "pytest-asyncio" },
     { name = "pyyaml" },
     { name = "questionary" },
-    { name = "raccoon-stubs" },
+    { name = "raccoon-library" },
     { name = "raccoon-transport" },
     { name = "rich" },
     { name = "ruamel-yaml" },
@@ -1260,35 +1260,24 @@ dependencies = [
     { name = "wheel" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dd/99/8efe82ce116169e0fd442febd21407d602aa39379673a5e27c633f9474f3/raccoon_cli-0.1.148-py3-none-any.whl", hash = "sha256:216971ada48ee23168b18c6dab21c766fcc0c1d32cd857f702c5ebe1e9f6c761", size = 1951653, upload-time = "2026-05-23T15:48:14.405Z" },
+    { url = "https://files.pythonhosted.org/packages/93/8f/0e8b6571be5ca8ee25b8d79c5e4582cdfcf112d651348d9c28254107c1f9/raccoon_cli-0.1.154-py3-none-any.whl", hash = "sha256:7f336997c03e5969208b4a0e0681bf81525a6332f2bc780d7f51c3209b78a2cb", size = 1952834, upload-time = "2026-05-25T09:14:45.315Z" },
 ]
 
 [[package]]
 name = "raccoon-library"
-version = "1.0.93"
+version = "1.0.101"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosqlite" },
     { name = "pyyaml" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ac/26/78fd3e388aa987d22e4db025946649cb7fea5bb8b248b19214d81a4e234e/raccoon_library-1.0.93-cp311-cp311-macosx_14_0_universal2.whl", hash = "sha256:277bb412d3dfe072ba134a3b05d3beac20f5afcba1e429e0a3a21e5a0e0cf094", size = 8291756, upload-time = "2026-05-23T15:44:41.324Z" },
-    { url = "https://files.pythonhosted.org/packages/b6/37/01a783ad1fac6a488caf519bb767e991603e74b3dda7a3c1291e2b7151c5/raccoon_library-1.0.93-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:57a92bc229d6004017325f026255d2d660ce42984e994447552f2b85d66e04e5", size = 7588920, upload-time = "2026-05-23T15:44:43.568Z" },
-    { url = "https://files.pythonhosted.org/packages/3e/e4/db424ba02bcc969428e88975f5341e231b3d5417edef08ada93e3ed887d5/raccoon_library-1.0.93-cp311-cp311-win_amd64.whl", hash = "sha256:ccd79ae6ff5b0072f2d9ec5589ed9ae0ff83d059a5fd8b0954be1f8e416192cb", size = 5297515, upload-time = "2026-05-23T15:44:45.983Z" },
-    { url = "https://files.pythonhosted.org/packages/48/c1/cdd4c293a71534684aa5a3dfb079988664e65945d25b0d6fc9c5e9943bff/raccoon_library-1.0.93-cp312-cp312-macosx_14_0_universal2.whl", hash = "sha256:646ce7d993c71a9da25257b8ae507a9293acc71074ecdbaffd9f1413bb01e9f5", size = 8266772, upload-time = "2026-05-23T15:44:48.149Z" },
-    { url = "https://files.pythonhosted.org/packages/1d/d3/e283b905f41132e7747f87a2a5ef218de1b80254e81874b7d75d55872676/raccoon_library-1.0.93-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c572347e2c2d3cd64269195977c14dc59250f72ed30736338becf744f014caa5", size = 7619960, upload-time = "2026-05-23T15:44:50.151Z" },
-    { url = "https://files.pythonhosted.org/packages/fd/17/9cc0f3a12a7f0eab63988d81df97d051c1434ad67e455abea03a692c1af9/raccoon_library-1.0.93-cp312-cp312-win_amd64.whl", hash = "sha256:caf91393753ef77a1fe3820e5befc22e4da45039ddfb5bc3e038a8ef83a70ca1", size = 5310278, upload-time = "2026-05-23T15:44:52.138Z" },
-    { url = "https://files.pythonhosted.org/packages/f6/9d/bf396441aeee354bb9014b5e48ca75924aab9900200ebe202b16c8b86791/raccoon_library-1.0.93-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:4831e857cf17afcb217d4d29d4eada43f87bb15fb1f7bb2c2d6e45d25064ce61", size = 8268706, upload-time = "2026-05-23T15:44:53.982Z" },
-    { url = "https://files.pythonhosted.org/packages/3e/bf/95732585086045e90a489b06a76b356592b2cd821e64785890e279287eb3/raccoon_library-1.0.93-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:efd0b2c6772021253d531e4e9f329426876971f56a1d461a2a9636d034631031", size = 7619642, upload-time = "2026-05-23T15:44:56.199Z" },
-    { url = "https://files.pythonhosted.org/packages/6f/0d/77c4b11865776385f9e544ac266e484f2403a381d7dde3de5439b5fd3f15/raccoon_library-1.0.93-cp313-cp313-win_amd64.whl", hash = "sha256:4acc449c0e790b35bf4ef626d91725451a90a24342db741a5737a8394de54de6", size = 5310733, upload-time = "2026-05-23T15:44:58.49Z" },
-]
-
-[[package]]
-name = "raccoon-stubs"
-version = "1.0.161"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1c/41/1cac5ffc527c672444d7e45424222f8ff2d025b471a2019f78599a129a39/raccoon_stubs-1.0.161-py3-none-any.whl", hash = "sha256:568621a38aa2053535c4008d540c095c075bdabf8cfb0ce0728dfa47c2cdfe0d", size = 204469, upload-time = "2026-04-26T11:54:50.446Z" },
+    { url = "https://files.pythonhosted.org/packages/1d/5c/e6f617b950a9f2d2cc28ecd7fb285a057aba6fd9ada4d484672afd398f06/raccoon_library-1.0.101-cp312-cp312-macosx_14_0_universal2.whl", hash = "sha256:fbe5578c9bf7ce57762a62d47f8dd889febd404531993ac9d065f3b657af3239", size = 8468259, upload-time = "2026-05-23T21:09:38.79Z" },
+    { url = "https://files.pythonhosted.org/packages/0a/c3/05758afa29da58e12b222b2823a303221522b2f85e7084b19198cbe7cdc7/raccoon_library-1.0.101-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6e19e53e608c44003d517beef0430a408805f7d45ea4f3b55b4e7ad5fe711ca1", size = 7823460, upload-time = "2026-05-23T21:09:41.149Z" },
+    { url = "https://files.pythonhosted.org/packages/65/7c/0d5418d94321f03f18ded8cfbba34b1689059518db06f28b2bfbd02c4db1/raccoon_library-1.0.101-cp312-cp312-win_amd64.whl", hash = "sha256:58582e9d19a4c6dae4a9cdcd99f803467b1247a095e4f34615bd67f3b130cd23", size = 5526443, upload-time = "2026-05-23T21:09:42.985Z" },
+    { url = "https://files.pythonhosted.org/packages/52/36/db94963dbf435a31252f611aa5b7bac7576ca0848e98a537c3d9ece4be4b/raccoon_library-1.0.101-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:1538e752dae95864dce826ee6f6636cbed9c6a61445b2925fae5324a17a143e3", size = 8470202, upload-time = "2026-05-23T21:09:44.813Z" },
+    { url = "https://files.pythonhosted.org/packages/55/5e/2d3a8bb7b875b273316f73dbb0dcee07f0b42564eba90d4e689bdd480f52/raccoon_library-1.0.101-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:bc307ba96908d70af12ab49142b9e94f496f48d0e280007e3e5ff1ecdae2f6f3", size = 7823116, upload-time = "2026-05-23T21:09:47.751Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/ec/538573173ebec4e6560ed72c1129ff12d67c2036d6e8d6ef34b4d2e39387/raccoon_library-1.0.101-cp313-cp313-win_amd64.whl", hash = "sha256:8a9ad2406c550ec3b21d2139970d964696cc7acd51d0547cbdf007bc6c6f6ba2", size = 5526911, upload-time = "2026-05-23T21:09:49.463Z" },
 ]
 
 [[package]]
