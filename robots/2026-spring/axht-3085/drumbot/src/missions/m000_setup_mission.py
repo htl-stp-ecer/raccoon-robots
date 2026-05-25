@@ -28,15 +28,13 @@ class M000SetupMission(SetupMission):
             start_setup_timer(),
 
             # initial servo positions
+            Defs.pom_remover_servo.drum_moving_pos(),
             parallel(
                 Defs.lift_drums_servo.down(100),  # use drum_lifting_up() if motor also needs to be used
                 Defs.drum_pusher_servo.open(),
-                Defs.pom_remover_servo.start(),
             ),
 
             # color calibration
-            # FIXME: not doing anything right now
-            # drum_lifting_down(),
             parallel(
                 calibrate_colors(),
                 sample_drum_collector(calibration_time=5.0),

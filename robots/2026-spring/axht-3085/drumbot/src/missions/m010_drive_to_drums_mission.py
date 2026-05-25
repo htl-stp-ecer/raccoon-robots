@@ -10,7 +10,10 @@ class M010DriveToDrumsMission(Mission):
             mark_heading_reference(origin_offset_deg=-90),
 
             background(
-                Defs.lift_drums_servo.up(),
+                seq([
+                    Defs.lift_drums_servo.up(),
+                    Defs.pom_remover_servo.right(),
+                ]),
             ),
 
             wait_for_seconds(0.5),
@@ -42,7 +45,8 @@ class M010DriveToDrumsMission(Mission):
 
             background(
                 seq([
-                    wait_for_seconds(0.1),
+                    # wait_for_seconds(0.1),
+                    Defs.pom_remover_servo.drum_moving_pos(),
                     Defs.lift_drums_servo.down(),
                 ]),
                 name="lower_drum"
