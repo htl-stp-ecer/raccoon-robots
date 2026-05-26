@@ -32,8 +32,7 @@ arm_claw:
   port: 3
   offset: 0
   positions:
-    closed: 50
-    soft_close: 60
-    p45deg: 97.8
-    p90deg: 137.3
-    p135deg: 180
+    idle: 10
+    open: 50
+    full_open: 70
+    grab: 18

@@ -1,10 +1,11 @@
 [project]
-name = "clawbot"
+name = "cube-bot"
 version = "0.1.0"
-requires-python = ">=3.11"
+requires-python = "==3.12"
 dependencies = [
-    "raccoon-stubs==1.0.157",
-    "raccoon-cli==0.1.100",
+    "raccoon-cli==0.1.148",
+    "raccoon-transport",
+    "raccoon-library==1.0.96",
 ]
 
 [project.scripts]

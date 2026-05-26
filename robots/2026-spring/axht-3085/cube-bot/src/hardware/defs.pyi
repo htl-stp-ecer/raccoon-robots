@@ -43,11 +43,10 @@ class _ArmElbowPreset(ServoPreset):
 
 
 class _ArmClawPreset(ServoPreset):
-    closed: _PresetPosition
-    soft_close: _PresetPosition
-    p45deg: _PresetPosition
-    p90deg: _PresetPosition
-    p135deg: _PresetPosition
+    idle: _PresetPosition
+    open: _PresetPosition
+    full_open: _PresetPosition
+    grab: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...
