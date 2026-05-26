@@ -26,19 +26,28 @@ class M010TestMission(Mission):
             ),
 
             # Position
+            background(
+                arm.move_angles(-90, 110, -120),
+            ),
+            drive_forward(17),
             strafe_left().until(
                 on_black(Defs.front_right_light_sensor),
             ),
-            drive_forward(18),
             turn_to_heading_left(0),
 
+            # arm.move_angles(-90, 80, -75),
+            # arm.move_angles(-120, 80, -75),
             arm.move_angles(-90, 80, -75),
+            arm.move_angles(-90, 60, -35),
             Defs.arm_claw.full_open(),
-            arm.move_angles(-120, 80, -75),
-            arm.move_angles(-90, 80, -75),
-            Defs.arm_claw.open(),
             arm.move_angles(-90, 40, -50),
             arm.move_angles(-90, 25, -25),
             Defs.arm_claw.grab(),
             arm.move_angles(-90, 40, -50),
+
+            arm.move_angles(-90, 45, -45),
+
+            strafe_right().until(
+                on_black(Defs.front_left_light_sensor)
+            ),
         ])
