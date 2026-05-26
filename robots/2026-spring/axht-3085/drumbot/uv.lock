@@ -258,7 +258,7 @@ dependencies = [
 requires-dist = [
     { name = "raccoon-cli", specifier = "==0.1.154" },
     { name = "raccoon-library", specifier = "==1.0.101" },
-    { name = "raccoon-transport" },
+    { name = "raccoon-transport", specifier = "==0.1.49" },
 ]
 
 [[package]]
@@ -948,20 +948,17 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1d/5c/e6f617b950a9f2d2cc28ecd7fb285a057aba6fd9ada4d484672afd398f06/raccoon_library-1.0.101-cp312-cp312-macosx_14_0_universal2.whl", hash = "sha256:fbe5578c9bf7ce57762a62d47f8dd889febd404531993ac9d065f3b657af3239", size = 8468259, upload-time = "2026-05-23T21:09:38.79Z" },
     { url = "https://files.pythonhosted.org/packages/0a/c3/05758afa29da58e12b222b2823a303221522b2f85e7084b19198cbe7cdc7/raccoon_library-1.0.101-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6e19e53e608c44003d517beef0430a408805f7d45ea4f3b55b4e7ad5fe711ca1", size = 7823460, upload-time = "2026-05-23T21:09:41.149Z" },
     { url = "https://files.pythonhosted.org/packages/65/7c/0d5418d94321f03f18ded8cfbba34b1689059518db06f28b2bfbd02c4db1/raccoon_library-1.0.101-cp312-cp312-win_amd64.whl", hash = "sha256:58582e9d19a4c6dae4a9cdcd99f803467b1247a095e4f34615bd67f3b130cd23", size = 5526443, upload-time = "2026-05-23T21:09:42.985Z" },
-    { url = "https://files.pythonhosted.org/packages/52/36/db94963dbf435a31252f611aa5b7bac7576ca0848e98a537c3d9ece4be4b/raccoon_library-1.0.101-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:1538e752dae95864dce826ee6f6636cbed9c6a61445b2925fae5324a17a143e3", size = 8470202, upload-time = "2026-05-23T21:09:44.813Z" },
-    { url = "https://files.pythonhosted.org/packages/55/5e/2d3a8bb7b875b273316f73dbb0dcee07f0b42564eba90d4e689bdd480f52/raccoon_library-1.0.101-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:bc307ba96908d70af12ab49142b9e94f496f48d0e280007e3e5ff1ecdae2f6f3", size = 7823116, upload-time = "2026-05-23T21:09:47.751Z" },
-    { url = "https://files.pythonhosted.org/packages/a0/ec/538573173ebec4e6560ed72c1129ff12d67c2036d6e8d6ef34b4d2e39387/raccoon_library-1.0.101-cp313-cp313-win_amd64.whl", hash = "sha256:8a9ad2406c550ec3b21d2139970d964696cc7acd51d0547cbdf007bc6c6f6ba2", size = 5526911, upload-time = "2026-05-23T21:09:49.463Z" },
 ]
 
 [[package]]
 name = "raccoon-transport"
-version = "0.1.46"
+version = "0.1.49"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "lcm" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ac/1d/67a6033980df910880ea2b60db02a381b9de55f7e5bd84288b85a60225bd/raccoon_transport-0.1.46-py3-none-any.whl", hash = "sha256:4019da6e87c187e6d91771b9538ee89366f1e8b427987aded279507367d58768", size = 26063, upload-time = "2026-05-18T09:51:57.689Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/84/c9ba7eb53c31f8da29249d3e0e9205ab9cfd3aed43273f8e3a37c5a51ff4/raccoon_transport-0.1.49-py3-none-any.whl", hash = "sha256:121d28ef51013d5167835c01a9fd75bd50899a95723e4d1f7468d01fa4ec9660", size = 26315, upload-time = "2026-05-25T09:56:58.944Z" },
 ]
 
 [[package]]

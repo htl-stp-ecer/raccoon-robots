@@ -5,7 +5,7 @@ requires-python = ">=3.11,<3.13"
 dependencies = [
     "raccoon-library==1.0.101",
     "raccoon-cli==0.1.154",
-    "raccoon-transport"
+    "raccoon-transport==0.1.49",
 ]
 
 [project.scripts]
