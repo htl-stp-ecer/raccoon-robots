@@ -28,9 +28,10 @@ class M000SetupMission(SetupMission):
             start_setup_timer(),
 
             # initial servo positions
+            Defs.lift_drums_servo.up(),
             Defs.pom_remover_servo.drum_moving_pos(),
             parallel(
-                Defs.lift_drums_servo.down(100),  # use drum_lifting_up() if motor also needs to be used
+                Defs.lift_drums_servo.down(),  # use drum_lifting_up() if motor also needs to be used
                 Defs.drum_pusher_servo.open(),
             ),
 

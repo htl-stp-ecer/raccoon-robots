@@ -51,7 +51,7 @@ motion_pid:
   heading:
     kp: 6
     ki: 0.0
-    kd: 0.15
+    kd: 0.2
     integral_max: 10.0
     integral_deadband: 0.01
     derivative_lpf_alpha: 0.5

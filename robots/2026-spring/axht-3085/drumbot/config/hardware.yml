@@ -1,6 +1,6 @@
 button:
   type: DigitalSensor
-  port: 10
+  port: 2
 imu:
   type: IMU
 rear_left_ir_sensor:

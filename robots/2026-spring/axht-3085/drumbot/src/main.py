@@ -1,6 +1,5 @@
 from src.hardware.robot import Robot
 
-
 def main():
     robot = Robot()
     robot.start()

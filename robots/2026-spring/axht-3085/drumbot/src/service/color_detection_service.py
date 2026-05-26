@@ -6,9 +6,33 @@ import uuid
 from typing import Any
 
 from raccoon import GenericRobot, RobotService
-from raccoon.transport import get_transport
-from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
-from raccoon_transport.types.raccoon.string_t import string_t
+
+try:
+    from raccoon.transport import get_transport
+    from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
+    from raccoon_transport.types.raccoon.string_t import string_t
+except ModuleNotFoundError:
+    def get_transport():
+        raise RuntimeError("raccoon transport is unavailable in this environment")
+
+    class string_t:
+        def __init__(self) -> None:
+            self.value = ""
+
+        @staticmethod
+        def decode(data):
+            if isinstance(data, string_t):
+                return data
+            msg = string_t()
+            msg.value = data.decode() if isinstance(data, bytes) else str(data)
+            return msg
+
+    class cam_detections_t:
+        detections = []
+
+        @staticmethod
+        def decode(data):
+            return data
 
 
 DETECTIONS_CHANNEL = "drumbot/cam/detections"
@@ -56,18 +80,25 @@ class ColorDetectionService(RobotService):
         if self._running:
             return
 
+        self._status_event.clear()
+        self._last_status = {}
+        self._detection_paused = False
         self._transport = get_transport()
-        self._subscriptions = [
-            self._transport.subscribe(DETECTIONS_CHANNEL, self._on_detections, request_retained=True),
-            self._transport.subscribe(STATUS_CHANNEL, self._on_status, request_retained=True),
-            self._transport.subscribe(RESPONSE_CHANNEL, self._on_response),
-        ]
-        self._running = True
-        self._send_command("resume", {})
-        if not self._status_event.wait(timeout=10.0):
-            raise RuntimeError("Vision daemon did not publish ready status")
-        if not self._last_status.get("camera_ready"):
-            raise RuntimeError(f"Vision daemon not ready: {self._last_status}")
+        try:
+            self._subscriptions = [
+                self._transport.subscribe(DETECTIONS_CHANNEL, self._on_detections, request_retained=True),
+                self._transport.subscribe(STATUS_CHANNEL, self._on_status, request_retained=True),
+                self._transport.subscribe(RESPONSE_CHANNEL, self._on_response),
+            ]
+            self._running = True
+            self._send_command("resume", {})
+            if not self._status_event.wait(timeout=10.0):
+                raise RuntimeError("Vision daemon did not publish ready status")
+            if not self._last_status.get("camera_ready"):
+                raise RuntimeError(f"Vision daemon not ready: {self._last_status}")
+        except Exception:
+            self.stop_camera()
+            raise
         self.info("Connected to vision daemon")
 
     def stop_camera(self) -> None:
@@ -78,6 +109,9 @@ class ColorDetectionService(RobotService):
                 self._transport.unsubscribe(sub)
             self._subscriptions = []
             self._transport = None
+        self._status_event.clear()
+        self._last_status = {}
+        self._pending.clear()
         self.info("Disconnected from vision daemon")
 
     def _on_status(self, _channel: str, data: bytes) -> None:
