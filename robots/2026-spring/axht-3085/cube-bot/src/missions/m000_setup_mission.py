@@ -1,35 +1,12 @@
 from raccoon import *
-
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 
-
-def test():
-    return seq([
-        wait_for_button("go"),
-
-        arm.move_angles(-90, 80, -75),
-        arm.move_angles(-90, 60, -35),
-        Defs.arm_claw.full_open(),
-        arm.move_angles(-90, 40, -50),
-        arm.move_angles(-90, 25, -25),
-        Defs.arm_claw.grab(),
-        arm.move_angles(-90, 40, -50),
-
-        wait_for_button("fully disable"),
-        fully_disable_servos(),
-    ])
-
-
 class M000SetupMission(SetupMission):
+    setup_time = 120
+
     def sequence(self) -> Sequential:
-        setup_time = 120
-
         return seq([
-            # loop_forever(
-            #     test()
-            # ),
-
             pause_setup_timer(),
             fully_disable_servos(),
 
