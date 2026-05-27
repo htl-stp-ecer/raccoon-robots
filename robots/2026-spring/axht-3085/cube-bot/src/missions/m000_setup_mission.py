@@ -9,15 +9,12 @@ def test():
         wait_for_button("go"),
 
         arm.move_angles(-90, 80, -75),
+        arm.move_angles(-90, 60, -35),
         Defs.arm_claw.full_open(),
-        arm.move_angles(-120, 80, -75),
-        arm.move_angles(-90, 80, -75),
-        Defs.arm_claw.open(),
         arm.move_angles(-90, 40, -50),
-        wait_for_button(),
         arm.move_angles(-90, 25, -25),
-        wait_for_button(),
         Defs.arm_claw.grab(),
+        arm.move_angles(-90, 40, -50),
 
         wait_for_button("fully disable"),
         fully_disable_servos(),

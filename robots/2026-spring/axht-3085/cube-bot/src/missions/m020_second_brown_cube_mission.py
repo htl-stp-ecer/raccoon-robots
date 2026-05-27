@@ -15,7 +15,7 @@ def line_follow():
     )
 
 
-class M010TestMission(Mission):
+class M020SecondBrownCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             mark_heading_reference(),
