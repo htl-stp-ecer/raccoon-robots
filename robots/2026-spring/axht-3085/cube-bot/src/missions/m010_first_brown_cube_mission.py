@@ -44,7 +44,7 @@ class M010FirstBrownCubeMission(Mission):
                 on_black(Defs.front_left_light_sensor)
             ),
 
-            arm.move_angles(
-
-            ),
+            arm.move_angles(0, 110, -120),       # rotate arm forward
+            arm.move_angles(0, 65, 110),         # move arm to drop cube into container position
+            Defs.arm_claw.full_open(),           # let go of cube
         ])
