@@ -1,5 +1,4 @@
 from raccoon import *
-
 from src.hardware.defs import Defs
 from src.steps.line_follow_dsl import *
 from src.kinematics.arm import arm
