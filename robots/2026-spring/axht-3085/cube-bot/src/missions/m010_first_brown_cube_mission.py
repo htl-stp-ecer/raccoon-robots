@@ -23,7 +23,7 @@ class M010FirstBrownCubeMission(Mission):
             drive_forward(heading=180).until(
                 on_black(Defs.front_right_light_sensor)
             ),
-            drive_backward().until(
+            drive_backward(heading=180).until(
                 on_white(Defs.front_right_light_sensor)
                 + after_cm(1)
             ),
@@ -34,5 +34,11 @@ class M010FirstBrownCubeMission(Mission):
             ),
 
             grab_brown_cube(),
+
+            # move away from shared warehouse
+            strafe_right(heading=180).until(
+                on_black(Defs.front_left_light_sensor)
+            ),
+
             drop_cube_into_container(),
         ])
