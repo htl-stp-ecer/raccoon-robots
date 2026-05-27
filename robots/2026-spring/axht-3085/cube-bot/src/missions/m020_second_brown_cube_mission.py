@@ -51,4 +51,6 @@ class M020SecondBrownCubeMission(Mission):
             ),
 
             grab_brown_cube(),
+
+
         ])
