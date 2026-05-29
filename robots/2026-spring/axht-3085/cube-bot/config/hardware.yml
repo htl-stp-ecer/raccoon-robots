@@ -1,14 +1,14 @@
 button:
   type: DigitalSensor
   port: 9
+wait_for_light_sensor:
+  type: AnalogSensor
+  port: 5
 imu:
   type: IMU
 rear_left_light_sensor:
   type: IRSensor
   port: 2
-wait_for_light_sensor:
-  type: AnalogSensor
-  port: 5
 front_right_light_sensor:
   type: IRSensor
   port: 1
