@@ -5,13 +5,13 @@ imu:
   type: IMU
 rear_left_light_sensor:
   type: IRSensor
-  port: 4
+  port: 2
 wait_for_light_sensor:
   type: AnalogSensor
-  port: 2
+  port: 5
 front_right_light_sensor:
   type: IRSensor
-  port: 3
+  port: 1
 front_left_light_sensor:
   type: IRSensor
   port: 0
