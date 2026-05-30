@@ -15,6 +15,9 @@ front_right_light_sensor:
 rear_left_light_sensor:
   type: IRSensor
   port: 2
+et_sensor:
+  type: AnalogSensor
+  port: 4
 front:
   type: SensorGroup
   left: front_left_light_sensor

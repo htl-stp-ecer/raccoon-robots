@@ -1,6 +1,8 @@
 from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
+from src.steps.drive_to_analog_target_bidirectional import drive_to_analog_target_bidirectional
+
 
 class M000SetupMission(SetupMission):
     setup_time = 120
@@ -15,12 +17,23 @@ class M000SetupMission(SetupMission):
 
             # arm start position
             Defs.arm_claw.idle(),
-            arm.move_angles(0, 110, -120),
+            #TODO: Im sorry but me don't care about raccon not letting me do my servo shit (fix it some day) LG Matthias
+            arm.move_angles(0, 90, -90),
+            servo(Defs.arm_sholder, 25),
+            servo(Defs.arm_elbow, -28),
 
-            fully_disable_servos(),
+            background(
+                seq([
+                    wait_for_seconds(1),
+                    fully_disable_servos(),
+                ])
+            ),
 
             calibrate(
                 distance_cm=70,
                 calibration_sets=["default", "upper"],
             ),
+            calibrate_analog_sensor(Defs.et_sensor, set_name="upper_cube"),
+
+
         ])

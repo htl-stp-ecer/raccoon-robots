@@ -59,6 +59,7 @@ class Defs:
     front_left_light_sensor: IRSensor
     front_right_light_sensor: IRSensor
     rear_left_light_sensor: IRSensor
+    et_sensor: AnalogSensor
     front: SensorGroup
     rear: SensorGroup
     front_left_motor: Motor

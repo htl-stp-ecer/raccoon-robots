@@ -40,7 +40,7 @@ class M020SecondBrownCubeMission(Mission):
                 seq([
                     line_follow().until(
                         over_line(Defs.rear.left)
-                        + after_cm(16)
+                        + after_cm(17)
                     ),
                 ]),
             ),
@@ -49,7 +49,9 @@ class M020SecondBrownCubeMission(Mission):
             strafe_left(heading=180).until(
                 on_black(Defs.front.right),
             ),
-            turn_to_heading_left(180),
+            strafe_right(heading=180, speed=0.2).until(
+                on_white(Defs.front.right),
+            ),
 
-            grab_brown_cube(),
+            grab_brown_cube(LineSide.RIGHT, heading=180),
         ])

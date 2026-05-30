@@ -24,19 +24,33 @@ class M030GrabRedCubeMission(Mission):
 
             # move arm into position for placing brown cube on red cube
             background(
-                arm.move_angles(-90, 90, -90),
+                arm.move_angles(-90, 90, -85),
             ),
 
             # drive to red cube
             backward_line_follow().until(
                 over_line(Defs.rear.left)
-                + after_cm(7.5)
+                + after_cm(4)
             ),
+            turn_to_heading_left(180),
 
             # place down cube
             Defs.arm_claw.full_open(speed=100),
 
-            arm.move_angles(-90, 60, -70),
+            #drive to side and grab both cubes
+            strafe_right(heading=180).until(
+                over_line(Defs.rear.left)
+            ),
+            arm.move_angles(-90, 30, -20),
+
+            strafe_left(heading=180).until(
+                over_line(Defs.rear.left)
+                + after_cm(1)
+            ),
             Defs.arm_claw.grab(),
-            wait_for_button()
+
+            #lift cubes
+            wait_for_button(),
+            arm.move_angles(-90, 110, -90).arm_speeds(sholder=150, elbow=100),
+
         ])

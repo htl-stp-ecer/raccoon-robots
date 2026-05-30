@@ -1,4 +1,8 @@
 shutdown_in: 120
+odometry:
+  type: FusedOdometry
+  config:
+    bemf_trust: 1.0
 drive:
   kinematics:
     type: mecanum

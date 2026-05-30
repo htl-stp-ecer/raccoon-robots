@@ -28,6 +28,10 @@ class M010FirstBrownCubeMission(Mission):
         return seq([
             mark_heading_reference(origin_offset_deg=180),
 
+            background( #make sure claw is closed
+                step=Defs.arm_claw.idle(),
+            ),
+
             # align to black line linear
             forward_line_follow().until(
                 on_black(Defs.front.left)
@@ -40,7 +44,7 @@ class M010FirstBrownCubeMission(Mission):
             ),
             turn_to_heading_left(180),
 
-            grab_brown_cube(),
+            grab_brown_cube(LineSide.LEFT, heading=180),
 
             # move away from shared warehouse
             strafe_right(heading=180).until(

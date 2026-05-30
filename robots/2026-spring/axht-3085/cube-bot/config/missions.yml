@@ -1,5 +1,8 @@
 - M000SetupMission: setup
 - M999ShutdownMission: shutdown
+- M005MoveDownRampMission
+- M007MoveToCenter
 - M010FirstBrownCubeMission
 - M020SecondBrownCubeMission
 - M030GrabRedCubeMission
+- M040DropFirstCubeStack
