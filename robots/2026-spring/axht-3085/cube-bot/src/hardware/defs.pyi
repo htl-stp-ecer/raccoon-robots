@@ -55,10 +55,10 @@ class _ArmClawPreset(ServoPreset):
 class Defs:
     imu: Imu
     button: DigitalSensor
-    rear_left_light_sensor: IRSensor
     wait_for_light_sensor: AnalogSensor
-    front_right_light_sensor: IRSensor
     front_left_light_sensor: IRSensor
+    front_right_light_sensor: IRSensor
+    rear_left_light_sensor: IRSensor
     front: SensorGroup
     rear: SensorGroup
     front_left_motor: Motor

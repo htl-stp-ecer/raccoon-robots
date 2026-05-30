@@ -10,38 +10,38 @@ from raccoon.step.servo.preset import ServoPreset
 class Defs:
     imu = IMU()
     button = DigitalSensor(port=9)
-    rear_left_light_sensor = IRSensor(port=4)
-    wait_for_light_sensor = AnalogSensor(port=2)
-    front_right_light_sensor = IRSensor(port=3)
+    wait_for_light_sensor = AnalogSensor(port=5)
     front_left_light_sensor = IRSensor(port=0)
+    front_right_light_sensor = IRSensor(port=1)
+    rear_left_light_sensor = IRSensor(port=2)
     front = SensorGroup(left=front_left_light_sensor, right=front_right_light_sensor)
     rear = SensorGroup(left=rear_left_light_sensor)
     front_left_motor = Motor(
         port=0,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.9715983848282747e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=2.02972814437092e-05, vel_lpf_alpha=1.0
         ),
     )
     front_right_motor = Motor(
         port=1,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.859206838814434e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.8538177554545025e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_left_motor = Motor(
         port=2,
         inverted=False,
         calibration=MotorCalibration(
-            ticks_to_rad=1.7927250741248256e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7729942292447445e-05, vel_lpf_alpha=1.0
         ),
     )
     rear_right_motor = Motor(
         port=3,
         inverted=True,
         calibration=MotorCalibration(
-            ticks_to_rad=1.783691894151415e-05, vel_lpf_alpha=1.0
+            ticks_to_rad=1.7970918216002377e-05, vel_lpf_alpha=1.0
         ),
     )
     arm_base = ServoPreset(
@@ -73,10 +73,10 @@ class Defs:
         Servo(port=3), positions={"idle": 10, "open": 50, "full_open": 70, "grab": 18}
     )
     analog_sensors = [
-        rear_left_light_sensor,
         wait_for_light_sensor,
-        front_right_light_sensor,
         front_left_light_sensor,
+        front_right_light_sensor,
+        rear_left_light_sensor,
     ]
     wait_for_light_mode = "auto"
 

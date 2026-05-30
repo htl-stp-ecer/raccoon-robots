@@ -69,6 +69,36 @@ def _elbow_cal() -> list[tuple[float, float]]:
     ]
 
 
+# ── Servo-step helper ─────────────────────────────────────────────────────────
+
+def _build_servo_step(
+    bv: float,
+    sv: float,
+    ev: float,
+    speed: float | None,
+    speeds: tuple[float | None, float | None, float | None],
+):
+    """
+    Build the parallel servo step for a move.
+
+    `speed` is the fallback °/s applied to every joint (None = max hardware speed).
+    `speeds` holds optional per-joint overrides (base, sholder, elbow); each entry
+    that is None falls back to `speed`.  A joint with no speed at all uses servo()
+    (max hardware speed), otherwise slow_servo() at the resolved °/s.
+    """
+    base_s, sholder_s, elbow_s = speeds
+
+    def _one(servo_def, value: float, joint_speed: float | None):
+        s = joint_speed if joint_speed is not None else speed
+        return servo(servo_def, value) if s is None else slow_servo(servo_def, value, s)
+
+    return parallel(
+        _one(Defs.arm_base,    bv, base_s),
+        _one(Defs.arm_sholder, sv, sholder_s),
+        _one(Defs.arm_elbow,   ev, elbow_s),
+    )
+
+
 # ── Kinematics ────────────────────────────────────────────────────────────────
 
 class ArmKinematics:
@@ -217,30 +247,24 @@ class ArmKinematics:
         sholder_deg: float,
         elbow_deg: float,
         speed: float | None = None,
-    ):
+    ) -> "AngleMoveBuilder":
         """
         Return a raccoon step that drives the arm to the given joint angles directly,
         bypassing IK.  Useful for testing or for moves where the angles are already known.
+
+        Chain .arm_speeds() to set per-joint speeds:
+
+            arm.move_angles(0, 90, -45)
+            arm.move_angles(0, 90, -45, speed=150)
+            arm.move_angles(0, 90, -45).arm_speeds(base=200, sholder=80, elbow=120)
 
         Args:
             base_deg   : base rotation (0 = forward, + = left)
             sholder_deg: shoulder elevation (0 = horizontal, + = up)
             elbow_deg  : elbow bend (0 = straight, + = up, − = down)
-            speed      : °/s for all joints; None = max hardware speed
+            speed      : fallback °/s for all joints; None = max hardware speed
         """
-        bv, sv, ev = self.to_servo_values(base_deg, sholder_deg, elbow_deg)
-        print(f"[arm] move_angles({base_deg}, {sholder_deg}, {elbow_deg}) → base={bv:.1f}, shoulder={sv:.1f}, elbow={ev:.1f}")
-        if speed is None:
-            return parallel(
-                servo(Defs.arm_base,    bv),
-                servo(Defs.arm_sholder, sv),
-                servo(Defs.arm_elbow,   ev),
-            )
-        return parallel(
-            slow_servo(Defs.arm_base,    bv, speed),
-            slow_servo(Defs.arm_sholder, sv, speed),
-            slow_servo(Defs.arm_elbow,   ev, speed),
-        )
+        return AngleMoveBuilder(self, base_deg, sholder_deg, elbow_deg, speed)
 
 
 # ── Move builder ──────────────────────────────────────────────────────────────
@@ -273,12 +297,28 @@ class MoveBuilder(StepBuilder):
         self._z       = z
         self._current = current
         self._speed   = speed
+        self._speeds: tuple[float | None, float | None, float | None] = (None, None, None)
         self._base_deg:        float | None = None
         self._base_precision:  float        = 0.5
         self._upper_arm_deg:   float | None = None
         self._upper_precision: float        = 0.5
         self._forearm_deg:     float | None = None
         self._lower_precision: float        = 0.5
+
+    # ── Speed setter ──────────────────────────────────────────────────────────
+
+    def arm_speeds(
+        self,
+        base: float | None = None,
+        sholder: float | None = None,
+        elbow: float | None = None,
+    ) -> "MoveBuilder":
+        """
+        Set individual °/s speeds per joint.  Any joint left as None falls back to
+        the move's global `speed` (or max hardware speed if that is also None).
+        """
+        self._speeds = (base, sholder, elbow)
+        return self
 
     # ── Preference setters ────────────────────────────────────────────────────
 
@@ -366,17 +406,58 @@ class MoveBuilder(StepBuilder):
 
     def _build(self) -> StepBuilder:
         bv, sv, ev = self._kin.to_servo_values(*self._select())
-        if self._speed is None:
-            return parallel(
-                servo(Defs.arm_base,    bv),
-                servo(Defs.arm_sholder, sv),
-                servo(Defs.arm_elbow,   ev),
-            )
-        return parallel(
-            slow_servo(Defs.arm_base,    bv, self._speed),
-            slow_servo(Defs.arm_sholder, sv, self._speed),
-            slow_servo(Defs.arm_elbow,   ev, self._speed),
+        return _build_servo_step(bv, sv, ev, self._speed, self._speeds)
+
+
+# ── Angle move builder ────────────────────────────────────────────────────────
+
+class AngleMoveBuilder(StepBuilder):
+    """
+    Fluent builder for a direct joint-angle move (bypasses IK).
+
+    Like MoveBuilder it is a StepBuilder, so it drops straight into seq() /
+    parallel().  Chain .arm_speeds() to set per-joint speeds before placing it in
+    a sequence — _build() runs once at resolve() time.
+    """
+
+    def __init__(
+        self,
+        kin: ArmKinematics,
+        base_deg: float,
+        sholder_deg: float,
+        elbow_deg: float,
+        speed: float | None,
+    ) -> None:
+        super().__init__()
+        self._kin         = kin
+        self._base_deg    = base_deg
+        self._sholder_deg = sholder_deg
+        self._elbow_deg   = elbow_deg
+        self._speed       = speed
+        self._speeds: tuple[float | None, float | None, float | None] = (None, None, None)
+
+    def arm_speeds(
+        self,
+        base: float | None = None,
+        sholder: float | None = None,
+        elbow: float | None = None,
+    ) -> "AngleMoveBuilder":
+        """
+        Set individual °/s speeds per joint.  Any joint left as None falls back to
+        the move's global `speed` (or max hardware speed if that is also None).
+        """
+        self._speeds = (base, sholder, elbow)
+        return self
+
+    def _build(self) -> StepBuilder:
+        bv, sv, ev = self._kin.to_servo_values(
+            self._base_deg, self._sholder_deg, self._elbow_deg
         )
+        print(
+            f"[arm] move_angles({self._base_deg}, {self._sholder_deg}, {self._elbow_deg}) "
+            f"→ base={bv:.1f}, shoulder={sv:.1f}, elbow={ev:.1f}"
+        )
+        return _build_servo_step(bv, sv, ev, self._speed, self._speeds)
 
 
 # Module-level singleton

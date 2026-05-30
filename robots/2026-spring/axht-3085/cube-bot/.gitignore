@@ -10,7 +10,12 @@ build/
 .python-version
 
 # IDEs
-.idea/
+.idea/*
+!.idea/cube-bot.iml
+!.idea/modules.xml
+!.idea/misc.xml
+!.idea/vcs.xml
+!.idea/inspectionProfiles/
 .vscode/
 
 # raccoon-cli
