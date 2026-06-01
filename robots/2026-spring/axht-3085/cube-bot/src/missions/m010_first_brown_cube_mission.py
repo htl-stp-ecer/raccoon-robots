@@ -26,9 +26,7 @@ def backward_line_follow():
 class M010FirstBrownCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            mark_heading_reference(origin_offset_deg=180),
-
-            background( #make sure claw is closed
+            background( # make sure claw is closed
                 step=Defs.arm_claw.idle(),
             ),
 

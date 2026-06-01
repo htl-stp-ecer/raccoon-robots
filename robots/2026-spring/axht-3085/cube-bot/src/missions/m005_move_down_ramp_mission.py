@@ -19,13 +19,13 @@ def line_follow():
 class M005MoveDownRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            mark_heading_reference(origin_offset_deg=90),
+            mark_heading_reference(origin_offset_deg=-90),
             switch_calibration_set("upper"),
             turn_left(90),
-            drive_backward(heading=0).until(
+            drive_backward(heading=180).until(
                 over_line(Defs.front.right)
 
-                # fallback if we ever are execly on black line
+                # fallback if we ever are exactly on black line
                 | (on_black(Defs.front.right) + after_seconds(0.6))
             ),
 
@@ -36,16 +36,18 @@ class M005MoveDownRampMission(Mission):
                 )
             ),
             line_follow().until(
-                after_cm(40)
+                after_cm(45)
             ),
-            drive_to_analog_target_bidirectional(Defs.et_sensor,
-                                                 direction="backward",
-                                                 speed=0.4,
-                                                 set_name="upper_cube"),
+            drive_to_analog_target_bidirectional(
+                Defs.et_sensor,
+                direction="backward",
+                speed=0.4,
+                set_name="upper_cube"
+            ),
             arm.move_angles(-90, 80, -120),
             Defs.arm_claw.grab(),
 
-            #move cube out of the way
+            # move cube out of the way
             background(
                 arm.move_angles(0, 100, -80).arm_speeds(base=50),
             ),
@@ -54,5 +56,4 @@ class M005MoveDownRampMission(Mission):
                 after_cm(40)
                 + over_line(Defs.front.right)
             ),
-
         ])

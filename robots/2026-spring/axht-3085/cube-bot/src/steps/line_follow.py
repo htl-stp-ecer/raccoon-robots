@@ -887,10 +887,13 @@ class DirectionalSingleLineFollow(MotionStep):
                 wz = 0.0
             robot.drive.set_velocity(ChassisVelocity(vx, self._vy, wz))
         elif cfg.lateral_correction:
-            # Correct by strafing left/right; gyro PID holds heading
+            # Correct by strafing left/right; optionally gyro PID holds heading
             vy = self._vy + correction * self._max_lateral
-            heading_error = self._initial_heading - robot.odometry.get_heading()
-            wz = self._heading_pid.update(heading_error, dt)
+            if cfg.heading_hold:
+                heading_error = self._initial_heading - robot.odometry.get_heading()
+                wz = self._heading_pid.update(heading_error, dt)
+            else:
+                wz = 0.0
             robot.drive.set_velocity(ChassisVelocity(self._vx, vy, wz))
         else:
             # Standard angular correction
@@ -1195,6 +1198,76 @@ class StrafeFollowLineSingle(DirectionalSingleLineFollow):
         mode = "+".join(parts)
         return (
             f"StrafeFollowLineSingle(mode={mode}, "
+            f"side={self._side.value}, speed={self._speed:.2f})"
+        )
+
+
+@dsl_step(tags=["motion", "line-follow"])
+class StrafeFollowLineSingleFree(DirectionalSingleLineFollow):
+    """Follow a line edge forward, correcting position by strafing, without heading correction.
+
+    Like ``StrafeFollowLineSingle`` but ``wz`` is always 0 — no heading-hold
+    PID runs. The robot's orientation is free to drift; only ``vy``
+    (left/right strafe) corrects for line-edge position. Useful when the
+    platform should not yaw-correct while driving forward.
+
+    Args:
+        sensor: IR sensor for edge tracking.
+        distance_cm: Distance to follow in centimeters. Optional if ``until`` is provided.
+        speed: Forward speed as fraction of max velocity (0.0 to 1.0). Default 0.5.
+        side: Which edge of the line to track. Default ``LineSide.LEFT``.
+        kp: Proportional gain for lateral PID.
+        ki: Integral gain for lateral PID.
+        kd: Derivative gain for lateral PID.
+        until: Composable stop condition. Can also be chained via the ``.until()`` builder method.
+    """
+
+    def __init__(
+        self,
+        sensor: IRSensor,
+        distance_cm: float | None = None,
+        speed: float = 0.5,
+        side: LineSide = LineSide.LEFT,
+        kp: float = 0.4,
+        ki: float = 0.0,
+        kd: float = 0.1,
+        until: StopCondition | None = None,
+    ) -> None:
+        if distance_cm is None and until is None:
+            msg = "StrafeFollowLineSingleFree requires either 'distance_cm' or 'until'"
+            raise ValueError(msg)
+        self._sensor = sensor
+        self._distance_cm = distance_cm
+        self._speed = speed
+        self._side = side
+        self._kp = kp
+        self._ki = ki
+        self._kd = kd
+        super().__init__(
+            DirectionalSingleLineFollowConfig(
+                sensor=sensor,
+                heading_speed=speed,
+                strafe_speed=0.0,
+                distance_cm=distance_cm,
+                side=side,
+                kp=kp,
+                ki=ki,
+                kd=kd,
+                lateral_correction=True,
+                heading_hold=False,
+            ),
+            until=until,
+        )
+
+    def _generate_signature(self) -> str:
+        parts = []
+        if self._distance_cm is not None:
+            parts.append(f"{self._distance_cm:.1f}cm")
+        if self._until is not None:
+            parts.append("until")
+        mode = "+".join(parts)
+        return (
+            f"StrafeFollowLineSingleFree(mode={mode}, "
             f"side={self._side.value}, speed={self._speed:.2f})"
         )
 

@@ -16,35 +16,34 @@ def left_lateral_line_follow():
         kd=0.0,
     )
 
-def pipe_aline():
+def pipe_align():
     return lateral_follow_line_single_free(
         sensor=Defs.front.right,
         speed=0.6,
-        side=LineSide.LEFT,
+        side=LineSide.RIGHT,
         kp=0.4,
         ki=0.05,
         kd=0.0,
     )
 
 
-
-
 class M007MoveToCenter(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            pipe_aline().until(
+            pipe_align().until(
                 after_seconds(0.8)
             ),
-            mark_heading_reference(),
+            mark_heading_reference(origin_offset_deg=180),
 
-            #align to drop green cube
+            # align to drop green cube
             left_lateral_line_follow().until(
                 on_black(Defs.rear.left)
             ),
-            strafe_right(heading=0, speed=0.4).until(
+            strafe_right(heading=180, speed=0.4).until(
                on_white(Defs.rear.left)
             ),
-            #drop green cube
+
+            # drop green cube
             arm.move_angles(0, 64, -62).arm_speeds(sholder=100),
             Defs.arm_claw.full_open(100),
             arm.move_angles(0, 100, -62),
@@ -56,7 +55,6 @@ class M007MoveToCenter(Mission):
             ),
             drive_angle(angle_deg=-60).until(
                 over_line(Defs.rear_left_light_sensor)
-                + over_line(Defs.front_left_light_sensor)
+                + over_line(Defs.front_right_light_sensor)
             ),
-
         ])

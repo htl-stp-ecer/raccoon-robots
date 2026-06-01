@@ -16,6 +16,7 @@ from .line_follow import (
     DirectionalFollowLine,
     StrafeFollowLine,
     StrafeFollowLineSingle,
+    StrafeFollowLineSingleFree,
     LateralFollowLine,
     LateralFollowLineSingle,
     LateralFollowLineSingleFree,
@@ -678,6 +679,110 @@ def strafe_follow_line_single(
     return b
 
 
+class StrafeFollowLineSingleFreeBuilder(StepBuilder):
+    """Builder for StrafeFollowLineSingleFree. Auto-generated — do not edit."""
+
+    def __init__(self):
+        super().__init__()
+        self._sensor = _UNSET
+        self._distance_cm = None
+        self._speed = 0.5
+        self._side = LineSide.LEFT
+        self._kp = 0.4
+        self._ki = 0.0
+        self._kd = 0.1
+        self._until = None
+
+    def sensor(self, value: IRSensor):
+        self._sensor = value
+        return self
+
+    def distance_cm(self, value: float | None):
+        self._distance_cm = value
+        return self
+
+    def speed(self, value: float):
+        self._speed = value
+        return self
+
+    def side(self, value: LineSide):
+        self._side = value
+        return self
+
+    def kp(self, value: float):
+        self._kp = value
+        return self
+
+    def ki(self, value: float):
+        self._ki = value
+        return self
+
+    def kd(self, value: float):
+        self._kd = value
+        return self
+
+    def until(self, value: StopCondition | None):
+        self._until = value
+        return self
+
+    def _build(self):
+        kwargs = {}
+        if self._sensor is not _UNSET:
+            kwargs["sensor"] = self._sensor
+        kwargs["distance_cm"] = self._distance_cm
+        kwargs["speed"] = self._speed
+        kwargs["side"] = self._side
+        kwargs["kp"] = self._kp
+        kwargs["ki"] = self._ki
+        kwargs["kd"] = self._kd
+        kwargs["until"] = self._until
+        return StrafeFollowLineSingleFree(**kwargs)
+
+
+@dsl(tags=["motion", "line-follow"])
+def strafe_follow_line_single_free(
+    sensor: IRSensor = _UNSET,
+    distance_cm: float | None = None,
+    speed: float = 0.5,
+    side: LineSide = LineSide.LEFT,
+    kp: float = 0.4,
+    ki: float = 0.0,
+    kd: float = 0.1,
+    until: StopCondition | None = None,
+):
+    """
+    Follow a line edge forward, correcting position by strafing, without heading correction.
+
+    Like ``strafe_follow_line_single`` but ``wz`` is always 0 — no heading-hold
+    PID. The robot's orientation is free to drift; only lateral strafing corrects
+    for line-edge position.
+
+    Args:
+        sensor: IR sensor for edge tracking.
+        distance_cm: Distance to follow in centimeters. Optional if ``until`` is provided.
+        speed: Forward speed as fraction of max velocity (0.0 to 1.0). Default 0.5.
+        side: Which edge of the line to track. Default ``LineSide.LEFT``.
+        kp: Proportional gain for lateral PID.
+        ki: Integral gain for lateral PID.
+        kd: Derivative gain for lateral PID.
+        until: Composable stop condition. Can also be chained via the ``.until()`` builder method.
+
+    Returns:
+        A StrafeFollowLineSingleFreeBuilder.
+    """
+    b = StrafeFollowLineSingleFreeBuilder()
+    if sensor is not _UNSET:
+        b._sensor = sensor
+    b._distance_cm = distance_cm
+    b._speed = speed
+    b._side = side
+    b._kp = kp
+    b._ki = ki
+    b._kd = kd
+    b._until = until
+    return b
+
+
 class LateralFollowLineBuilder(StepBuilder):
     """Builder for LateralFollowLine. Auto-generated — do not edit."""
 
@@ -1170,6 +1275,8 @@ __all__ = [
     "strafe_follow_line",
     "StrafeFollowLineSingleBuilder",
     "strafe_follow_line_single",
+    "StrafeFollowLineSingleFreeBuilder",
+    "strafe_follow_line_single_free",
     "LateralFollowLineBuilder",
     "lateral_follow_line",
     "LateralFollowLineSingleBuilder",

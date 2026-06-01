@@ -25,8 +25,8 @@ def grab_brown_cube( side: LineSide,heading: int | None):
 
 def drop_cube_into_container():
     return seq([
-        #TODO: arm etwas nach hinten beweben, damit der cube besser rein fälld (<= 1cm nach hinten)
-        arm.move_angles(0, 87, 92),           # move arm to drop cube into container position
+        # TODO: arm etwas nach hinten beweben, damit der cube besser rein fälld (<= 1cm nach hinten)
+        arm.move_angles(0, 87, 87),           # move arm to drop cube into container position
         Defs.arm_claw.full_open(),            # let go of cube
     ])
 
