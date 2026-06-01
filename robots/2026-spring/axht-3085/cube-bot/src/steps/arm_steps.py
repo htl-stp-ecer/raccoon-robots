@@ -4,7 +4,7 @@ from src.kinematics.arm import arm
 
 def grab_brown_cube( side: LineSide,heading: int | None):
     def drive():
-        return drive_forward(cm=1, heading=heading) if (LineSide.RIGHT == side) \
+        return drive_forward(cm=1, heading=heading, speed=0.5) if (LineSide.RIGHT == side) \
             else run(lambda robot: None)
             #else drive_backward(cm=1) #we dont need this at the left side
     return seq([

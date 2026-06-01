@@ -3,6 +3,7 @@ from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 
+
 def backward_line_follow():
     return strafe_follow_line_single(
         sensor=Defs.front.left,
@@ -24,10 +25,11 @@ class M030GrabRedCubeMission(Mission):
 
             # move arm into position for placing brown cube on red cube
             background(
-                arm.move_angles(-90, 90, -85),
+                arm.move_angles(-90, 90, -25),
             ),
 
             # drive to red cube
+            # TODO: Maby use the et sensor
             backward_line_follow().until(
                 over_line(Defs.rear.left)
                 + after_cm(4)
@@ -35,6 +37,7 @@ class M030GrabRedCubeMission(Mission):
             turn_to_heading_left(180),
 
             # place down cube
+            arm.move_angles(-90, 90, -90),
             Defs.arm_claw.full_open(speed=100),
 
             # drive to side and grab both cubes
@@ -47,6 +50,8 @@ class M030GrabRedCubeMission(Mission):
                 on_black(Defs.rear.left)
                 + after_cm(1)
             ),
+            Defs.arm_claw.grab(),
+            Defs.arm_claw.full_open(speed=100),
             Defs.arm_claw.grab(),
 
             # lift cubes

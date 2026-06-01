@@ -17,7 +17,7 @@ def line_follow():
 def align_line_follow():
     return strafe_follow_line_single_free(
         sensor=Defs.rear.left,
-        speed=1,
+        speed=0.4,
         side=LineSide.RIGHT,
         kp=0.6,
         ki=0.5,
@@ -29,26 +29,32 @@ class M040DropFirstCubeStack(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # turn around
-            turn_to_heading_left(0, force_direction='left'),
 
             # drive to external loading dock while rotating arm
             parallel(
                 seq([
+                    smooth_path(
+                        drive_backward(cm=5),  # make sure we never hit the upper warehous with something of the bot
+                        turn_left(180),
+                        strafe_right().until(
+                            on_black(Defs.rear.left)
+                        )
+                    ),
                     line_follow().until(
                         after_cm(105)
                     ),
                     align_line_follow().until(
-                        after_seconds(0.7),
+                        after_seconds(0.4),
                     ),
+                    mark_heading_reference()
                 ]),
                 arm.move_angles(
                     0, 110, -90
                 ),
             ),
-            turn_to_heading_left(0),
 
             # place cube tower
-            arm.move_angles(7, 135, -135),
+            arm.move_angles(10, 130, -130),
             servo(Defs.arm_elbow, -28),
             Defs.arm_claw.full_open(),
         ])

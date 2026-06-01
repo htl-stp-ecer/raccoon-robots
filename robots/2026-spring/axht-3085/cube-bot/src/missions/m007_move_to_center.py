@@ -21,8 +21,8 @@ def pipe_align():
         sensor=Defs.front.right,
         speed=0.6,
         side=LineSide.RIGHT,
-        kp=0.4,
-        ki=0.05,
+        kp=0.6,
+        ki=0.3,
         kd=0.0,
     )
 
@@ -54,7 +54,7 @@ class M007MoveToCenter(Mission):
                 + after_cm(23)
             ),
             drive_angle(angle_deg=-60).until(
-                over_line(Defs.rear_left_light_sensor)
-                + over_line(Defs.front_right_light_sensor)
+                over_line(Defs.rear.left)
+                + on_black(Defs.front.right)
             ),
         ])
