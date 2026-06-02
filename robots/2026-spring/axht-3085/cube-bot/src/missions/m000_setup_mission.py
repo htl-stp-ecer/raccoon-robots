@@ -144,7 +144,7 @@ class M000SetupMission(SetupMission):
 
             # drive away again and get ready for placing brown cube from storage container
             drive_backward(20),
-            arm.move_angles(0, 45, 45),
+            # arm.move_angles(0, 45, 45),
             grab_cube_from_container(),
 
             # --- END ---

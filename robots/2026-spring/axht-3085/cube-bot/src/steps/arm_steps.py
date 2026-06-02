@@ -33,7 +33,8 @@ def drop_cube_into_container():
 def grab_cube_from_container():
     return seq([
         arm.move_angles(0, 110, -120),        # rotate arm forward
-        Defs.arm_claw.open(),            # open claw
-        arm.move_angles(0, 65, 110),          # move arm to drop cube into container position
-        Defs.arm_claw.grab(),                 # let go of cube
+        Defs.arm_claw.open(),                 # open claw
+        arm.move_angles(0, 80, 105),          # move arm to drop cube into container position
+        Defs.arm_claw.grab(),                 # grab cube
+        arm.move_angles(0, 60, -50),          # move into neutral position
     ])
