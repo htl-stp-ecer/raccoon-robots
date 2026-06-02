@@ -5,40 +5,16 @@ import time
 import uuid
 from typing import Any
 
-from raccoon import GenericRobot, RobotService
+from raccoon import GenericRobot, RobotService, get_transport
 
-try:
-    from raccoon.transport import get_transport
-    from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
-    from raccoon_transport.types.raccoon.string_t import string_t
-except ModuleNotFoundError:
-    def get_transport():
-        raise RuntimeError("raccoon transport is unavailable in this environment")
-
-    class string_t:
-        def __init__(self) -> None:
-            self.value = ""
-
-        @staticmethod
-        def decode(data):
-            if isinstance(data, string_t):
-                return data
-            msg = string_t()
-            msg.value = data.decode() if isinstance(data, bytes) else str(data)
-            return msg
-
-    class cam_detections_t:
-        detections = []
-
-        @staticmethod
-        def decode(data):
-            return data
-
+from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
+from raccoon_transport.types.raccoon.string_t import string_t
 
 DETECTIONS_CHANNEL = "drumbot/cam/detections"
 COMMAND_CHANNEL = "drumbot/cam/cmd"
 RESPONSE_CHANNEL = "drumbot/cam/response"
 STATUS_CHANNEL = "drumbot/cam/status"
+ERROR_CHANNEL = "drumbot/cam/error"
 DEFAULT_MIN_AREA = 500
 
 
@@ -78,24 +54,62 @@ class ColorDetectionService(RobotService):
     def start_camera(self) -> None:
         """Connect to the vision daemon and start receiving detections."""
         if self._running:
+            self.info("Vision client already running")
             return
 
         self._status_event.clear()
         self._last_status = {}
         self._detection_paused = False
         self._transport = get_transport()
+        self.info("Connecting to vision daemon transport")
         try:
+            self.info("Subscribing to vision status channel")
+            status_sub = self._transport.subscribe(STATUS_CHANNEL, self._on_status, request_retained=True)
+            self.info("Subscribed to vision status channel")
+
+            self.info("Subscribing to vision response channel")
+            response_sub = self._transport.subscribe(RESPONSE_CHANNEL, self._on_response)
+            self.info("Subscribed to vision response channel")
+
+            self.info("Subscribing to vision detections channel")
+            detections_sub = self._transport.subscribe(DETECTIONS_CHANNEL, self._on_detections)
+            self.info("Subscribed to vision detections channel")
+
+            self.info("Subscribing to vision error channel")
+            error_sub = self._transport.subscribe(ERROR_CHANNEL, self._on_error, request_retained=True)
+            self.info("Subscribed to vision error channel")
+
             self._subscriptions = [
-                self._transport.subscribe(DETECTIONS_CHANNEL, self._on_detections, request_retained=True),
-                self._transport.subscribe(STATUS_CHANNEL, self._on_status, request_retained=True),
-                self._transport.subscribe(RESPONSE_CHANNEL, self._on_response),
+                status_sub,
+                response_sub,
+                detections_sub,
+                error_sub,
             ]
             self._running = True
+            self.info("Vision client subscriptions established")
             self._send_command("resume", {})
-            if not self._status_event.wait(timeout=10.0):
-                raise RuntimeError("Vision daemon did not publish ready status")
-            if not self._last_status.get("camera_ready"):
-                raise RuntimeError(f"Vision daemon not ready: {self._last_status}")
+            self.info("Waiting for vision daemon ready status")
+            deadline = time.monotonic() + 10.0
+            while True:
+                status = dict(self._last_status)
+                if status.get("camera_ready"):
+                    self.info(f"Vision daemon ready: {status}")
+                    break
+                if status and not status.get("starting", False):
+                    raise RuntimeError(f"Vision daemon not ready: {status}")
+
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise RuntimeError(
+                        f"Vision daemon startup timed out; last_status={status or None}"
+                    )
+
+                self.info(
+                    "Still waiting for vision daemon status "
+                    f"(remaining={remaining:.2f}s, last_status={status or None})"
+                )
+                self._status_event.clear()
+                self._status_event.wait(timeout=remaining)
         except Exception:
             self.stop_camera()
             raise
@@ -114,12 +128,24 @@ class ColorDetectionService(RobotService):
         self._pending.clear()
         self.info("Disconnected from vision daemon")
 
+    def _on_error(self, _channel: str, data: bytes) -> None:
+        try:
+            msg = string_t.decode(data)
+            payload = json.loads(msg.value)
+        except Exception:
+            self.warn("Ignoring malformed vision error message")
+            return
+        message = payload.get("message", "<unknown>")
+        context = payload.get("context") or {}
+        phase = context.get("phase") or "unknown"
+        self.error(f"Vision daemon error [{phase}]: {message} (context={context})")
+
     def _on_status(self, _channel: str, data: bytes) -> None:
         try:
             msg = string_t.decode(data)
             self._last_status = json.loads(msg.value)
-            if self._last_status.get("camera_ready"):
-                self._status_event.set()
+            self.info(f"Vision status received: {self._last_status}")
+            self._status_event.set()
         except Exception:
             self.warn("Ignoring malformed vision status message")
 
@@ -276,6 +302,7 @@ class ColorDetectionService(RobotService):
                 "payload": payload,
             }
         )
+        self.info(f"Sending vision command: command={command!r}, wait={wait}, payload={payload}")
         self._transport.publish(COMMAND_CHANNEL, msg, reliable=wait)
 
         if not wait or event is None:
