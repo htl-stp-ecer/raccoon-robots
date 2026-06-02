@@ -18,6 +18,7 @@ from typing import Any
 import cv2
 from raccoon import error, info, warn, get_transport, shutdown_transport
 from raccoon_transport import Transport
+from raccoon_transport.channels import Channels as TransportChannels
 from raccoon_transport.types.raccoon.cam_blob_t import cam_blob_t
 from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
 from raccoon_transport.types.raccoon.cam_frame_t import cam_frame_t
@@ -100,6 +101,7 @@ class VisionDaemon:
         self._publish_status(starting=True, started=False)
 
         attempt = 0
+        open_had_failed = False
         while True:
             attempt += 1
             try:
@@ -107,6 +109,7 @@ class VisionDaemon:
                 self._camera.start(open_retries=60, retry_delay=1.0)
                 break
             except Exception as exc:
+                open_had_failed = True
                 self._publish_error(
                     f"Camera open failed: {exc}",
                     phase="open",
@@ -126,6 +129,17 @@ class VisionDaemon:
             "USB camera opened "
             f"(buffer_count={self._camera.buffer_count}, total_frames={self._camera.total_frames})"
         )
+        # If we ever published an error during the open loop, broadcast a
+        # cleared-event so subscribers (Robot UI, color_detection_service,
+        # tests) replace the retained error snapshot with "recovered" instead
+        # of seeing a stale "Camera open failed" forever.
+        if open_had_failed:
+            self._publish_recovered(
+                "Camera open recovered",
+                phase="open",
+                attempts=attempt,
+                device=self._camera_device,
+            )
         self._publish_status(starting=False, started=True)
 
         signal.signal(signal.SIGTERM, lambda *_: self.stop())
@@ -144,17 +158,44 @@ class VisionDaemon:
 
     def _publish_error(self, message: str, **context: Any) -> None:
         error(message)
+        self._publish_vision_event(message, cleared=False, **context)
+
+    def _publish_recovered(self, message: str, **context: Any) -> None:
+        info(f"Vision recovered: {message}")
+        self._publish_vision_event(message, cleared=True, **context)
+
+    def _publish_vision_event(self, message: str, *, cleared: bool, **context: Any) -> None:
+        """Publish to both the project-specific drumbot/cam/error channel
+        and the official raccoon/errors string channel. Both are retained
+        so a late subscriber sees the latest state (error OR recovery).
+        cleared=True signals subscribers that the prior retained error is
+        resolved — they should drop any "vision is broken" UI state.
+        """
+        phase = context.get("phase", "unknown")
+        prefix = "Vision RECOVERED" if cleared else "Vision ERROR"
+        official_text = f"{prefix} [{phase}]: {message}"
+        if context:
+            official_text += f" (context={context})"
+
         try:
             payload = {
                 "timestamp": int(time.time() * 1_000_000),
                 "message": message,
+                "cleared": cleared,
                 "context": context,
             }
             msg = string_t()
             msg.value = json.dumps(payload)
             self._transport.publish(ERROR_CHANNEL, msg, retained=True)
         except Exception as exc:
-            warn(f"Failed to publish vision error on transport: {exc}")
+            warn(f"Failed to publish vision event on project error channel: {exc}")
+
+        try:
+            official_msg = string_t()
+            official_msg.value = official_text
+            self._transport.publish(TransportChannels.ERROR_MESSAGES, official_msg, retained=True)
+        except Exception as exc:
+            warn(f"Failed to publish vision event on raccoon/errors: {exc}")
 
     def _publish_status(self, **extra: Any) -> None:
         msg = string_t()
@@ -253,8 +294,10 @@ class VisionDaemon:
         last_no_frame_log = 0.0
         consecutive_detection_failures = 0
         last_detection_error_publish = 0.0
+        detect_error_active = False
         no_new_frames_since: float | None = None
         last_stall_error_publish = 0.0
+        stall_error_active = False
 
         info("Starting detection loop")
 
@@ -291,10 +334,18 @@ class VisionDaemon:
                             stalled_for_seconds=round(now - no_new_frames_since, 2),
                         )
                         last_stall_error_publish = now
+                        stall_error_active = True
                 time.sleep(0.005)
                 continue
             last_frame_id = current_frame_id
             no_new_frames_since = None
+            if stall_error_active:
+                self._publish_recovered(
+                    "Camera stream recovered — new frames flowing again",
+                    phase="stream",
+                    frame_id=current_frame_id,
+                )
+                stall_error_active = False
 
             try:
                 result = self._camera.analyze(
@@ -308,6 +359,13 @@ class VisionDaemon:
                 self._publish_detections(detections)
                 detect_count += 1
                 consecutive_detection_failures = 0
+                if detect_error_active:
+                    self._publish_recovered(
+                        "Detection pipeline recovered",
+                        phase="detect",
+                        frame_id=current_frame_id,
+                    )
+                    detect_error_active = False
             except Exception as exc:
                 warn(f"Detection failed: {exc}")
                 consecutive_detection_failures += 1
@@ -320,6 +378,7 @@ class VisionDaemon:
                         frame_id=current_frame_id,
                     )
                     last_detection_error_publish = now
+                    detect_error_active = True
 
             elapsed = time.monotonic() - log_window_start
             if elapsed >= 5.0:

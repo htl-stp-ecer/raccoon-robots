@@ -138,7 +138,15 @@ class ColorDetectionService(RobotService):
         message = payload.get("message", "<unknown>")
         context = payload.get("context") or {}
         phase = context.get("phase") or "unknown"
-        self.error(f"Vision daemon error [{phase}]: {message} (context={context})")
+        cleared = bool(payload.get("cleared", False))
+        if cleared:
+            # The daemon explicitly cleared an earlier retained error
+            # (e.g. camera recovered after open-loop failure). Log at info
+            # so a stale "vision is broken" message doesn't sit in the
+            # robot's error log forever.
+            self.info(f"Vision daemon recovered [{phase}]: {message} (context={context})")
+        else:
+            self.error(f"Vision daemon error [{phase}]: {message} (context={context})")
 
     def _on_status(self, _channel: str, data: bytes) -> None:
         try:
