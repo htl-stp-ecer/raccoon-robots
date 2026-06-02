@@ -1,17 +1,19 @@
 """Background thread that publishes frames from a shared USBCamera to botui."""
 
+import os
 import threading
 import time
 
 import cv2
 import numpy as np
-from raccoon.transport import get_transport
+from raccoon_transport import Transport
 from raccoon_transport.types.raccoon.cam_blob_t import cam_blob_t
 from raccoon_transport.types.raccoon.cam_frame_t import cam_frame_t
 
 from src.hardware.usb_camera import USBCamera
 
 CHANNEL = "raccoon/cam/frame"
+DEFAULT_FRAME_TRANSPORT_PROVIDER = "udpm://239.255.76.68:7668?ttl=0"
 
 
 class CamPublisher:
@@ -32,7 +34,11 @@ class CamPublisher:
         self._fps = fps
         self._jpeg_quality = jpeg_quality
 
-        self._transport = get_transport()
+        self._frame_transport_provider = os.environ.get(
+            "DRUMBOT_CAMERA_FRAME_LCM_PROVIDER",
+            DEFAULT_FRAME_TRANSPORT_PROVIDER,
+        )
+        self._frame_transport = Transport.create(self._frame_transport_provider)
         self._running = False
         self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
@@ -53,6 +59,7 @@ class CamPublisher:
         if self._thread:
             self._thread.join(timeout=2.0)
             self._thread = None
+        self._frame_transport.close()
 
     def set_overlay(self, text: str) -> None:
         with self._lock:
@@ -109,7 +116,7 @@ class CamPublisher:
             msg.detections = [_make_blob(d, timestamp) for d in detections]
             msg.num_detections = len(msg.detections)
 
-            self._transport.publish(CHANNEL, msg)
+            self._frame_transport.publish(CHANNEL, msg)
 
             elapsed = time.monotonic() - t0
             if elapsed < interval:

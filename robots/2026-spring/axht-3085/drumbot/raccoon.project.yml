@@ -3,8 +3,11 @@ uuid: 21e5bb71-a37d-4a2f-99ed-ad10963fe875
 format_version: 2
 auto_checkpoints: false
 
-robot: !include 'config/robot.yml'
-missions: !include 'config/missions.yml'
-definitions: !include 'config/hardware.yml'
-connection: !include 'config/connection.yml'
-services: !include 'config/services.yml'
+robot: !include config/robot.yml
+missions: !include config/missions.yml
+definitions: !include config/hardware.yml
+connection: !include config/connection.yml
+services: !include config/services.yml
+run_configurations: !include config/run-configurations.yml
+
+hidden_run_configurations: []
