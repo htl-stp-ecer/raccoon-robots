@@ -13,7 +13,7 @@ def grab_brown_cube( side: LineSide,heading: int | None):
             .arm_speeds(base=999, sholder=100, elbow=200),        # move into shared area
         arm.move_angles(-90, 60, -40)
             .arm_speeds(base=999, sholder=100, elbow=200),        # move further into shared area
-        Defs.arm_claw.full_open(),            # open claw
+        Defs.arm_claw.open(),            # open claw
         drive(),
         arm.move_angles(-90, 20, -25),        # move down
         Defs.arm_claw.grab(),                 # grab cube
@@ -27,13 +27,13 @@ def drop_cube_into_container():
     return seq([
         # TODO: arm etwas nach hinten beweben, damit der cube besser rein fälld (<= 1cm nach hinten)
         arm.move_angles(0, 87, 87),           # move arm to drop cube into container position
-        Defs.arm_claw.full_open(),            # let go of cube
+        Defs.arm_claw.open(),            # let go of cube
     ])
 
 def grab_cube_from_container():
     return seq([
         arm.move_angles(0, 110, -120),        # rotate arm forward
-        Defs.arm_claw.full_open(),            # open claw
+        Defs.arm_claw.open(),            # open claw
         arm.move_angles(0, 65, 110),          # move arm to drop cube into container position
         Defs.arm_claw.grab(),                 # let go of cube
     ])

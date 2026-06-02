@@ -33,6 +33,7 @@ arm_claw:
   offset: 0
   positions:
     idle: 10
-    open: 50
-    full_open: 70
+    open: 70
+    full_open: 80
     grab: 10
+    strong_grab: 0

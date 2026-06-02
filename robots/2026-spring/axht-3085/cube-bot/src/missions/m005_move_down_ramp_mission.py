@@ -32,7 +32,7 @@ class M005MoveDownRampMission(Mission):
             background(
                 parallel(
                     arm.move_angles(-90, 80, -45),
-                    Defs.arm_claw.full_open(),
+                    Defs.arm_claw.open(),
                 )
             ),
             line_follow().until(

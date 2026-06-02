@@ -77,7 +77,14 @@ class Defs:
         },
     )
     arm_claw = ServoPreset(
-        Servo(port=3), positions={"idle": 10, "open": 50, "full_open": 70, "grab": 10}
+        Servo(port=3),
+        positions={
+            "idle": 10,
+            "open": 70,
+            "full_open": 80,
+            "grab": 10,
+            "strong_grab": 0,
+        },
     )
     analog_sensors = [
         wait_for_light_sensor,

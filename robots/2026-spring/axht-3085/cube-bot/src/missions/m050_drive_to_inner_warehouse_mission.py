@@ -27,16 +27,18 @@ class M050DriveToInnerWarehouseMission(Mission):
                 ]),
             ),
 
-            wait_for_button(),
+            background(
+                Defs.arm_claw.idle(),
+            ),
 
-            #drive backwards to green cube
+            # drive backwards to green cube
             drive_angle(angle_deg=-120).until(
                 over_line(Defs.front.right)
             ),
             backward_line_follow().until( #hit the middle line
                 on_black(Defs.rear.left)
             ),
-            #drive to the black line besides the internal loading dock
+            # drive to the black line besides the internal loading dock
             drive_forward(cm=5),
             drive_angle(angle_deg=-60).until(
                 on_black(Defs.rear.left)

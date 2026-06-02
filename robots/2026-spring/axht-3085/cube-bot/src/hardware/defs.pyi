@@ -47,6 +47,7 @@ class _ArmClawPreset(ServoPreset):
     open: _PresetPosition
     full_open: _PresetPosition
     grab: _PresetPosition
+    strong_grab: _PresetPosition
 
     @property
     def device(self) -> "Servo": ...

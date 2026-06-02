@@ -38,7 +38,7 @@ class M030GrabRedCubeMission(Mission):
 
             # place down cube
             arm.move_angles(-90, 90, -90),
-            Defs.arm_claw.full_open(speed=100),
+            Defs.arm_claw.open(speed=100),
 
             # drive to side and grab both cubes
             strafe_right(heading=180).until(
@@ -51,7 +51,7 @@ class M030GrabRedCubeMission(Mission):
                 + after_cm(1)
             ),
             Defs.arm_claw.grab(),
-            Defs.arm_claw.full_open(speed=100),
+            Defs.arm_claw.open(speed=100),
             Defs.arm_claw.grab(),
 
             # lift cubes
