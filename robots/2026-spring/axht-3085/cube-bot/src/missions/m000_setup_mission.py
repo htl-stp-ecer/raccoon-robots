@@ -112,8 +112,9 @@ class M000SetupMission(SetupMission):
             drive_backward(4),
 
             # position arm and grab
-            arm.move_angles(-90, 25, -30),
+            arm.move_angles(-90, 25, -25),
             strafe_left(5),
+            arm.move_angles(elbow_deg=-30),
             loop_for(
                 seq([
                     Defs.arm_claw.grab(),
