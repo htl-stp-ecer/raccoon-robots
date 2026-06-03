@@ -65,9 +65,9 @@ class M070PlaceSecondBrownCubeMission(Mission):
 
             # place brown cube
             arm.move_angles(base_deg=45, speed=150),
-            arm.move_angles(35, 80, -60)
-            .arm_speeds(base=100),
-            arm.move_angles(elbow_deg=-75, speed=80),
+            arm.move_angles(35, 80, -55)
+                .arm_speeds(base=100),
+            arm.move_angles(elbow_deg=-65, speed=80),
 
             Defs.arm_claw.open(),
             arm.move_angles(elbow_deg=0),

@@ -28,8 +28,6 @@ def align_line_follow():
 class M040DropFirstCubeStack(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # turn around
-
             # drive to external loading dock while rotating arm
             parallel(
                 seq([
@@ -40,6 +38,9 @@ class M040DropFirstCubeStack(Mission):
                     ),
                     line_follow().until(
                         after_cm(95)
+                    ),
+                    strafe_right().until(
+                        over_line(Defs.rear.left),
                     ),
                     align_line_follow().until(
                         after_seconds(0.4),
