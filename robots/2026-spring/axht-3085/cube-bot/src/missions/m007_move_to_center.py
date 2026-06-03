@@ -44,8 +44,8 @@ class M007MoveToCenter(Mission):
             ),
 
             # drop green cube
-            arm.move_angles(0, 64, -62).arm_speeds(sholder=100),
-            Defs.arm_claw.open(100),
+            arm.move_angles(0, 60, -66).arm_speeds(sholder=100),
+            Defs.arm_claw.open(80),
             arm.move_angles(0, 100, -62),
 
             # drive to line

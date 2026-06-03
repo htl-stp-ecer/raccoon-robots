@@ -43,9 +43,9 @@ drive:
         kA: 0.0
 motion_pid:
   distance:
-    kp: 8.8629
+    kp: 8.0
     ki: 0.0
-    kd: 0.2916
+    kd: 0.2
     integral_max: 10.0
     integral_deadband: 0.01
     derivative_lpf_alpha: 0.5
@@ -76,7 +76,7 @@ motion_pid:
   linear:
     max_velocity: 0.2139
     acceleration: 0.9402
-    deceleration: 1.6644
+    deceleration: 1.4
   lateral:
     max_velocity: 0.2209
     acceleration: 0.6485

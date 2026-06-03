@@ -21,8 +21,8 @@ class M020SecondBrownCubeMission(Mission):
             # move arm into starting position again
             background(
                 seq([
-                    arm.move_angles(0, 65, 0,speed=150),
-                    arm.move_angles(0, 110, -120,speed=150),
+                    arm.move_angles(0, 65, 0, speed=150),
+                    arm.move_angles(0, 110, -120, speed=150),
                     Defs.arm_claw.idle(),
                 ]),
             ),
@@ -40,7 +40,7 @@ class M020SecondBrownCubeMission(Mission):
                 seq([
                     line_follow().until(
                         over_line(Defs.rear.left)
-                        + after_cm(16)
+                        + after_cm(15)
                     ),
                 ]),
             ),

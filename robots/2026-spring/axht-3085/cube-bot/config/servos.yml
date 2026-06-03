@@ -36,4 +36,4 @@ arm_claw:
     open: 70
     full_open: 80
     grab: 10
-    strong_grab: 0
+    strong_grab: -10

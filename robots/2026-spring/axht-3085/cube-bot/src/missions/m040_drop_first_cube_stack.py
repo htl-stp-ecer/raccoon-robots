@@ -33,15 +33,13 @@ class M040DropFirstCubeStack(Mission):
             # drive to external loading dock while rotating arm
             parallel(
                 seq([
-                    # smooth_path(
-                        drive_backward(cm=5),  # make sure we never hit the upper warehous with something of the bot
-                        turn_left(180),
-                        strafe_right().until(
-                            on_black(Defs.rear.left)
-                        ),
-                    # ),
+                    drive_backward(cm=15),  # make sure we never hit the upper warehous with something of the bot
+                    turn_left(180),
+                    strafe_right().until(
+                        on_black(Defs.rear.left)
+                    ),
                     line_follow().until(
-                        after_cm(105)
+                        after_cm(95)
                     ),
                     align_line_follow().until(
                         after_seconds(0.4),
@@ -54,7 +52,7 @@ class M040DropFirstCubeStack(Mission):
             ),
 
             # place cube tower
-            arm.move_angles(10, 130, -130),
+            arm.move_angles(15, 130, -130, speed=180),
             servo(Defs.arm_elbow, -28),
             Defs.arm_claw.open(),
         ])
