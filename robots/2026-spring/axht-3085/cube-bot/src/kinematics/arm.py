@@ -1,6 +1,6 @@
 from __future__ import annotations
 import math
-from raccoon import servo, slow_servo, parallel, StepBuilder
+from raccoon import servo, slow_servo, parallel, run, StepBuilder
 from src.hardware.defs import Defs
 
 # ── Link lengths — mirror of config/servos.yml arm_geometry (all in cm) ──────
@@ -243,9 +243,9 @@ class ArmKinematics:
 
     def move_angles(
         self,
-        base_deg: float,
-        sholder_deg: float,
-        elbow_deg: float,
+        base_deg: float | None = None,
+        sholder_deg: float | None = None,
+        elbow_deg: float | None = None,
         speed: float | None = None,
     ) -> "AngleMoveBuilder":
         """
@@ -423,9 +423,9 @@ class AngleMoveBuilder(StepBuilder):
     def __init__(
         self,
         kin: ArmKinematics,
-        base_deg: float,
-        sholder_deg: float,
-        elbow_deg: float,
+        base_deg: float | None,
+        sholder_deg: float | None,
+        elbow_deg: float | None,
         speed: float | None,
     ) -> None:
         super().__init__()
@@ -450,14 +450,30 @@ class AngleMoveBuilder(StepBuilder):
         return self
 
     def _build(self) -> StepBuilder:
-        bv, sv, ev = self._kin.to_servo_values(
-            self._base_deg, self._sholder_deg, self._elbow_deg
-        )
+        base_s, sholder_s, elbow_s = self._speeds
+
+        def _one(servo_def, angle_deg, cal_fn, min_val, max_val, joint_speed):
+            val = _interp(cal_fn(), angle_deg, min_val, max_val)
+            s = joint_speed if joint_speed is not None else self._speed
+            return servo(servo_def, val) if s is None else slow_servo(servo_def, val, s)
+
+        steps = []
+        if self._base_deg is not None:
+            steps.append(_one(Defs.arm_base, self._base_deg, _base_cal,
+                              Defs.arm_base.max_left.value, Defs.arm_base.max_right.value, base_s))
+        if self._sholder_deg is not None:
+            steps.append(_one(Defs.arm_sholder, self._sholder_deg, _sholder_cal,
+                              Defs.arm_sholder.max_up.value, Defs.arm_sholder.max_down.value, sholder_s))
+        if self._elbow_deg is not None:
+            steps.append(_one(Defs.arm_elbow, self._elbow_deg, _elbow_cal,
+                              Defs.arm_elbow.max_minus.value, Defs.arm_elbow.max_max.value, elbow_s))
+
         print(
-            f"[arm] move_angles({self._base_deg}, {self._sholder_deg}, {self._elbow_deg}) "
-            f"→ base={bv:.1f}, shoulder={sv:.1f}, elbow={ev:.1f}"
+            f"[arm] move_angles({self._base_deg}, {self._sholder_deg}, {self._elbow_deg})"
         )
-        return _build_servo_step(bv, sv, ev, self._speed, self._speeds)
+        if not steps:
+            return run(lambda robot: None)
+        return parallel(*steps) if len(steps) > 1 else steps[0]
 
 
 # Module-level singleton

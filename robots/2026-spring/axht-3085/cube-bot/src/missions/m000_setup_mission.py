@@ -48,7 +48,7 @@ def line_follow():
 
 def backward_line_follow():
     return strafe_follow_line_single(
-        sensor=Defs.front.right,
+        sensor=Defs.rear.left,
         speed=-1,
         side=LineSide.LEFT,
         kp=0.6,
@@ -66,6 +66,10 @@ class M000SetupMission(SetupMission):
                 distance_cm=70,
                 calibration_sets=["default", "upper"],
             ), # TODO: remove this
+            calibrate_analog_sensor(
+                Defs.et_sensor,
+                set_name="lower_cube"
+            ), # TODO: remove this too
 
             pause_setup_timer(),
             fully_disable_servos(),
@@ -75,6 +79,7 @@ class M000SetupMission(SetupMission):
 
             arm.move_angles(-90, 90, -10),
             wait_for_button(),
+            mark_heading_reference(),
             drive_to_analog_target_bidirectional(
                 Defs.et_sensor,
                 direction="forward",
@@ -98,9 +103,7 @@ class M000SetupMission(SetupMission):
             arm.move_angles(-90, 40, -20),
 
             # move cube
-            backward_line_follow().until(
-                after_cm(20)
-            ),
+            drive_backward(20, heading=0),
 
             # get ready for grabbing palette with cube
             arm.move_angles(-90, 60, 0),
@@ -110,7 +113,7 @@ class M000SetupMission(SetupMission):
 
             # position arm and grab
             arm.move_angles(-90, 25, -30),
-            strafe_left(4),
+            strafe_left(5),
             loop_for(
                 seq([
                     Defs.arm_claw.grab(),
@@ -126,26 +129,49 @@ class M000SetupMission(SetupMission):
             #! NEW MISSION
 
             # navigate to external dock
-            strafe_right().until(
-                on_black(Defs.rear.left)
-            ),
             line_follow().until(
-                after_cm(43)
+                after_cm(70),
             ),
-            strafe_right(12),
+            strafe_right(5),
 
-            # position arm
-            arm.move_angles(22, 60, -50),
-            drive_forward(17),
+            # align on wall
+            wall_align_forward(
+                speed=0.4,
+                accel_threshold=0.3,
+                grace_period=0.6,
+                settle_duration=0.3,
+            ),
+            mark_heading_reference(),
 
-            # place down cube
-            arm.move_angles(22, 30, -20),
-            Defs.arm_claw.open(),
+            # start positioning arm while driving backward
+            background(
+                seq([
+                    arm.move_angles(-90, 110, -60, speed=100),
+                    arm.move_angles(30, 110, -60, speed=120),
+                ]),
+                name="prepare_arm_position"
+            ),
 
-            # drive away again and get ready for placing brown cube from storage container
-            drive_backward(20),
-            # arm.move_angles(0, 45, 45),
+            # move away from wall to avoid hitting already present cube stack
+            backward_line_follow().until(
+                after_cm(17)
+            ),
+
+            # place cube
+            wait_for_background("prepare_arm_position"),
+            arm.move_angles(31, 30, -20, speed=100),
+            Defs.arm_claw.full_open(),
+
             grab_cube_from_container(),
+
+            # place brown cube
+            arm.move_angles(base_deg=45, speed=150),
+            arm.move_angles(35, 80, -60)
+                .arm_speeds(base=100),
+            arm.move_angles(elbow_deg=-75, speed=80),
+
+            Defs.arm_claw.open(),
+            arm.move_angles(elbow_deg=0),
 
             # --- END ---
 
