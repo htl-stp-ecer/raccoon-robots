@@ -146,7 +146,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                 # ── periodic raw signal heartbeat ─────────────────
                 if now - _last_raw_log_time >= RAW_LOG_INTERVAL:
                     low, high = self.hysteresis_thresholds
-                    self.info(
+                    self.trace(
                         f"[IR-RAW] raw={raw:.0f} pocket={self._current_pocket} "
                         f"pos={pos} on_black={self._tracker_on_black} "
                         f"thresholds=[{low:.0f},{high:.0f}] "
@@ -182,7 +182,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                         self._last_entry_pos = pos
                         self._tracker_last_edge_pos = pos
                         self._at_midpoint = False
-                        self.info(
+                        self.debug(
                             f"[IR-EDGE] COUNTED pocket {old} → {self._current_pocket} "
                             f"pos={pos} delta_last_edge={delta:+d} "
                             f"delta_move_start={move_start_delta} "
@@ -204,7 +204,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     if _black_entry_pos is not None and _black_entry_time is not None:
                         stripe_ticks = abs(pos - _black_entry_pos)
                         stripe_ms = (now - _black_entry_time) * 1000
-                        self.info(
+                        self.debug(
                             f"[IR-FALL] stripe exit pos={pos} "
                             f"stripe_width={stripe_ticks} ticks "
                             f"stripe_duration={stripe_ms:.1f}ms "
@@ -270,32 +270,69 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
 
     async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
         """Move forward N pockets (black stripes)."""
-        self.info(f"advance({pockets}) from pocket {self._current_pocket}")
+        self.debug(f"advance({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
         await self._move(pockets, forward=True, precise=precise)
 
     async def retreat(self, pockets: int = 1, *, precise: bool = False) -> None:
         """Move backward N pockets."""
-        self.info(f"retreat({pockets}) from pocket {self._current_pocket}")
+        self.debug(f"retreat({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
         await self._move(pockets, forward=False, precise=precise)
 
     async def eject(self, pockets: int = 1) -> None:
-        self.info(f"eject({pockets}) from pocket {self._current_pocket}")
+        self.debug(f"eject({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
         await self._move(pockets, forward=False, velocity=int(FULL_VELOCITY * 0.8))
 
 
-    async def go_to_pocket(self, pocket: int, *, precise: bool = False) -> str:
+    async def go_to_pocket(
+        self,
+        pocket: int,
+        *,
+        precise: bool = False,
+        occupied: "set[int] | frozenset[int] | None" = None,
+    ) -> str:
         delta = (pocket - self._current_pocket) % NUM_POCKETS
         if delta == 0:
-            self.info(f"Already at pocket {pocket}")
+            self.debug(f"Already at pocket {pocket}")
             return "none"
-        if delta <= NUM_POCKETS // 2:
-            await self.advance(delta, precise=precise)
+
+        forward_steps = delta
+        backward_steps = NUM_POCKETS - delta
+
+        if occupied:
+            cur = self._current_pocket
+            fwd_path = {(cur + i) % NUM_POCKETS for i in range(1, forward_steps)}
+            bwd_path = {(cur - i) % NUM_POCKETS for i in range(1, backward_steps)}
+            fwd_cross = len(fwd_path & occupied)
+            bwd_cross = len(bwd_path & occupied)
+
+            if fwd_cross != bwd_cross:
+                choose_forward = fwd_cross < bwd_cross
+            else:
+                choose_forward = forward_steps <= backward_steps
+
+            if fwd_cross > 0 and bwd_cross > 0:
+                self.warn(
+                    f"go_to_pocket({pocket}) from {cur}: both directions cross "
+                    f"occupied pockets (fwd={fwd_cross} via {sorted(fwd_path & occupied)}, "
+                    f"bwd={bwd_cross} via {sorted(bwd_path & occupied)}) — "
+                    f"picking {'forward' if choose_forward else 'backward'} (fewer crossings)"
+                )
+            else:
+                self.debug(
+                    f"go_to_pocket({pocket}) from {cur}: fwd_cross={fwd_cross} "
+                    f"bwd_cross={bwd_cross} → {'forward' if choose_forward else 'backward'}"
+                )
+        else:
+            choose_forward = forward_steps <= NUM_POCKETS // 2
+
+        if choose_forward:
+            await self.advance(forward_steps, precise=precise)
             return "forward"
         else:
-            await self.retreat(NUM_POCKETS - delta, precise=precise)
+            await self.retreat(backward_steps, precise=precise)
             return "backward"
 
     async def go_to_edge(self, target_edge: int) -> str:
@@ -328,7 +365,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
 
         start_pocket = self._current_pocket
         target_pocket = (start_pocket + pockets * sign) % NUM_POCKETS
-        self.info(
+        self.debug(
             f"{'fwd' if forward else 'bwd'} {pockets} pockets "
             f"{'precise' if precise else 'fast'} "
             f"(from {start_pocket} → {target_pocket}, midpoint={self._at_midpoint})"
@@ -338,7 +375,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         expected_ticks = pockets * self._ticks_per_pocket
         low, high = self.hysteresis_thresholds
         raw_at_start = float(self.light_sensor.read())
-        self.info(
+        self.debug(
             f"[MOVE-START] pos={self._move_start_pos} pocket={start_pocket} "
             f"target={target_pocket} expected_ticks={expected_ticks} "
             f"IR_raw={raw_at_start:.0f} thresholds=[{low:.0f},{high:.0f}] "
@@ -354,7 +391,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         actual_ticks = abs(pos_at_stop - self._move_start_pos)
         raw_at_stop = float(self.light_sensor.read())
         self.motor.set_velocity(0)
-        self.info(
+        self.debug(
             f"[MOVE-STOP] pos={pos_at_stop} pocket={self._current_pocket} "
             f"actual_ticks={actual_ticks} expected_ticks={expected_ticks} "
             f"tick_error={actual_ticks - expected_ticks:+d} "
@@ -371,7 +408,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         pos_after_coast = self.motor.get_position()
         coast_ticks = abs(pos_after_coast - pos_at_stop)
         raw_after_coast = float(self.light_sensor.read())
-        self.info(
+        self.debug(
             f"[COAST] coast_ticks={coast_ticks} "
             f"pocket_before={pocket_before_coast} pocket_after={self._current_pocket} "
             f"IR_raw={raw_after_coast:.0f} pos={pos_after_coast}"
@@ -390,7 +427,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             await self._center_on_stripe(self._last_entry_pos)
 
         self._at_midpoint = False
-        self.info(f"[MOVE-DONE] pocket={self._current_pocket} target={target_pocket}")
+        self.debug(f"[MOVE-DONE] pocket={self._current_pocket} target={target_pocket}")
 
     async def _center_on_stripe(self, entry_pos: int) -> None:
         """Creep back and forth to find the center of the current stripe."""

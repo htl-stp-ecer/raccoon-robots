@@ -109,6 +109,9 @@ class FakeColorDetectionService(RobotService):
         with self._lock:
             color = self._latest_color
             self._latest_color = None
+            self._color_locked = False
+            self._color_event.clear()
+        self._color_first_seen = None
         if color is None:
             self.error("No color detected (fake service)")
             return None

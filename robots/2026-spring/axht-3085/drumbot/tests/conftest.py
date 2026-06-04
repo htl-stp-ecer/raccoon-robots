@@ -21,13 +21,23 @@ class _RobotService:
     def warn(self, msg): pass
     def error(self, msg): pass
 
+class _HardwareStub:
+    """Generic hardware stub: accepts any constructor args, exposes any attr."""
+    def __init__(self, *args, **kwargs):
+        pass
+    def __getattr__(self, name):
+        return MagicMock()
+
 class _GenericRobot: pass
-class _Motor: pass
-class _Servo: pass
-class _AnalogSensor: pass
+class _Motor(_HardwareStub): pass
+class _Servo(_HardwareStub): pass
+class _AnalogSensor(_HardwareStub): pass
 class _IRSensor(_AnalogSensor): pass
-class _ETSensor: pass
-class _IMU: pass
+class _ETSensor(_HardwareStub): pass
+class _DigitalSensor(_HardwareStub): pass
+class _IMU(_HardwareStub): pass
+class _MotorCalibration(_HardwareStub): pass
+class _ServoPreset(_HardwareStub): pass
 class _KMeans:
     def __init__(self, max_iterations=10):
         self.max_iterations = max_iterations
@@ -139,7 +149,22 @@ _raccoon_ui_step.UIStep = _Step
 
 sys.modules["raccoon"] = raccoon_mock
 sys.modules["raccoon.sensor_et"] = MagicMock(ETSensor=_ETSensor)
+sys.modules["raccoon.sensor_ir"] = MagicMock(IRSensor=_IRSensor)
+sys.modules["raccoon.hal"] = MagicMock(
+    AnalogSensor=_AnalogSensor,
+    DigitalSensor=_DigitalSensor,
+    IMU=_IMU,
+    Motor=_Motor,
+    Servo=_Servo,
+)
+sys.modules["raccoon.foundation"] = MagicMock(MotorCalibration=_MotorCalibration)
+_raccoon_step_servo_preset = _types.ModuleType("raccoon.step.servo.preset")
+_raccoon_step_servo_preset.ServoPreset = _ServoPreset
+_raccoon_step_servo_preset._PresetPosition = _ServoPreset
+_raccoon_step_servo_preset.PresetPosition = _ServoPreset
 sys.modules["raccoon.step"] = MagicMock(Step=_Step)
+sys.modules["raccoon.step.servo"] = MagicMock()
+sys.modules["raccoon.step.servo.preset"] = _raccoon_step_servo_preset
 sys.modules["raccoon.ui"] = _raccoon_ui
 sys.modules["raccoon.ui.step"] = _raccoon_ui_step
 

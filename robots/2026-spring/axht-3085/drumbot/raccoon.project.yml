@@ -10,4 +10,6 @@ connection: !include config/connection.yml
 services: !include config/services.yml
 run_configurations: !include config/run-configurations.yml
 
-hidden_run_configurations: []
+hidden_run_configurations:
+- default
+- simulated

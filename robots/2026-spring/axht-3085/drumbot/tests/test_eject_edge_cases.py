@@ -70,7 +70,7 @@ class FakeDrumMotor:
 
     # ── DrumMotorService-compatible API ──────────────────────────
 
-    async def go_to_pocket(self, pocket: int, *, precise: bool = False) -> str:
+    async def go_to_pocket(self, pocket: int, *, precise: bool = False, occupied=None) -> str:
         pocket = pocket % NUM_POCKETS
         delta = (pocket - self.current_pocket) % NUM_POCKETS
         self.calls.append(("go_to_pocket", pocket))

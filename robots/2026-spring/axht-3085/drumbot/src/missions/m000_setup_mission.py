@@ -35,9 +35,11 @@ class M000SetupMission(SetupMission):
                 Defs.drum_pusher_servo.open(),
             ),
 
+            wait_for_button(),
+
             # color calibration
             parallel(
-                calibrate_colors(),
+                #calibrate_colors(),
                 sample_drum_collector(calibration_time=5.0),
             ),
             review_drum_collector(review_delta=750),

@@ -1,16 +1,3 @@
-default:
-  name: default
-  description: Standard run (codegen + calibrate + checkpoints)
-  target: auto
-  dev: false
-  no_calibrate: false
-  no_checkpoints: false
-  no_codegen: false
-  no_sync: false
-  record_localization: false
-  record_hz:
-  args: []
-  env: {}
 dev:
   name: dev
   description: 'Fast iteration: --dev --no-calibrate --no-checkpoints'
@@ -24,16 +11,17 @@ dev:
   record_hz:
   args: []
   env: {}
-simulated:
-  name: simulated
-  description: Run under the libstp simulator
-  target: simulated
-  dev: false
-  no_calibrate: false
-  no_checkpoints: false
+dev-fake-cam:
+  name: dev-fake-cam
+  description: 'Fast iteration: --dev --no-calibrate --no-checkpoints'
+  target: auto
+  dev: true
+  no_calibrate: true
+  no_checkpoints: true
   no_codegen: false
   no_sync: false
   record_localization: false
   record_hz:
   args: []
-  env: {}
+  env:
+    DRUMBOT_FAKE_CAMERA: '1'

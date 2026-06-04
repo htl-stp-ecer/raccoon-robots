@@ -31,7 +31,12 @@ class SortIntoSlotStep(Step):
             color = sorting_service.guess_color(current_pocket=drum_service.current_pocket)
             self.warn(f"Camera failed — guessed color: {color}")
         target = sorting_service.assign_slot(color, current_pocket=drum_service.current_pocket)
-        await drum_service.go_to_pocket(target, precise=False)
+        # Avoid rotating across pockets that already hold a sorted drum — the
+        # loading-position opening would let them fall back out. Exclude the
+        # target itself (assign_slot already marked it, but it is still
+        # physically empty until we arrive).
+        occupied = {i for i, s in enumerate(sorting_service.slots) if s is not None and i != target}
+        await drum_service.go_to_pocket(target, precise=False, occupied=occupied)
 
 
 @dsl(hidden=True)

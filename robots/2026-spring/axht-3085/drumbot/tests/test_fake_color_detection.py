@@ -2,6 +2,7 @@
 replacement for ColorDetectionService in the collect/sort/eject pipeline."""
 
 import asyncio
+import time
 from unittest.mock import MagicMock
 
 import pytest
@@ -79,6 +80,58 @@ class TestFakeDetectionCycle:
         run(svc.wait_for_color(1.0))
         assert svc.continuous_color_seconds is not None
         assert svc.continuous_color_seconds >= 0
+
+
+class TestDetectColorClearsState:
+    """Regression: detect_color must clear continuous_color_seconds, the
+    lock flag, and the color event. Otherwise the stuck-drum watchdog in
+    CollectDrumsStep eventually treats every run as a stuck drum and
+    enters safe mode after the first drum (~1.5s)."""
+
+    def test_continuous_seconds_cleared_after_detect(self):
+        svc = make_fake(["blue"])
+        svc.reset()
+        run(svc.wait_for_color(1.0))
+        svc.lock_color()
+        assert svc.continuous_color_seconds is not None
+        run(svc.detect_color())
+        assert svc.continuous_color_seconds is None
+
+    def test_lock_released_after_detect(self):
+        # If lock isn't released, the next wait_for_color silently drops
+        # the next color and the fake stops advancing the sequence.
+        svc = make_fake(["blue", "pink"])
+        svc.reset()
+        run(svc.wait_for_color(1.0))
+        svc.lock_color()
+        run(svc.detect_color())
+        run(svc.wait_for_color(1.0))
+        assert svc.peek_color == "pink"
+
+    def test_event_cleared_after_detect(self):
+        svc = make_fake(["blue"])
+        svc.reset()
+        run(svc.wait_for_color(1.0))
+        assert svc._color_event.is_set()
+        svc.lock_color()
+        run(svc.detect_color())
+        assert not svc._color_event.is_set()
+
+    def test_next_wait_starts_fresh_timer(self):
+        # After detect_color, the *next* drum's visibility window must
+        # start at ~0, not accumulate the previous drum's elapsed time.
+        svc = make_fake(["blue", "pink"])
+        svc.reset()
+        run(svc.wait_for_color(1.0))
+        svc.lock_color()
+        time.sleep(0.2)
+        run(svc.detect_color())
+
+        svc.reset()
+        run(svc.wait_for_color(1.0))
+        elapsed = svc.continuous_color_seconds
+        assert elapsed is not None
+        assert elapsed < 0.15  # fresh window, NOT 0.2s+ from the previous drum
 
 
 class TestInstallHelper:
