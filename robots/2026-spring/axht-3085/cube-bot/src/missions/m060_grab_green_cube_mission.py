@@ -1,6 +1,8 @@
 from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
+from src.steps.calibrate_analog_drive import on_analog_flank
+from src.steps.drive_to_analog_target_bidirectional import drive_to_analog_target_bidirectional
 
 
 class M060GrabGreenCubeMission(Mission):
@@ -11,6 +13,10 @@ class M060GrabGreenCubeMission(Mission):
                     arm.move_angles(-90, 90, 0, speed=100),
                     Defs.arm_claw.idle(),
                 ),
+            ),
+
+            drive_forward(speed=1.0, heading=0).until(
+                on_analog_flank(Defs.et_sensor, set_name="upper_cube")
             ),
 
             # align for moving cube
@@ -33,7 +39,9 @@ class M060GrabGreenCubeMission(Mission):
 
             # position arm and grab
             arm.move_angles(-90, 25, -20),
-            strafe_left(5),
+            strafe_left().until(
+                on_black(Defs.front.right) | after_seconds(1)
+            ),
             arm.move_angles(elbow_deg=-30),
             loop_for(
                 seq([
@@ -45,5 +53,8 @@ class M060GrabGreenCubeMission(Mission):
             Defs.arm_claw.strong_grab(),
 
             # lift palette with cube
-            arm.move_angles(-90, 60, -50),
+            arm.move_angles(-90, 60, -50, speed=100),
+            background(
+                step=arm.move_angles(-90, 110, -90, speed=80),
+            ),
         ])

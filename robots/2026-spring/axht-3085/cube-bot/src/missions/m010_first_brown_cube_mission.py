@@ -36,11 +36,18 @@ class M010FirstBrownCubeMission(Mission):
             ),
 
             # line follow backwards to retrieve spot
+            background(
+                step= grab_brown_cube_start_pos(),
+                name="prep_arm"
+            ),
             backward_line_follow().until(
                 on_white(Defs.front.left)
                 + after_cm(13)
             ),
             turn_to_heading_left(180),
+            wait_for_background(
+                name="prep_arm"
+            ),
 
             grab_brown_cube(LineSide.LEFT, heading=180),
 
@@ -49,5 +56,8 @@ class M010FirstBrownCubeMission(Mission):
                 on_black(Defs.front_left_light_sensor)
             ),
 
-            drop_cube_into_container(),
+            background(
+                step=drop_cube_into_container(),
+                name="drop_cube"
+            ),
         ])

@@ -15,25 +15,20 @@ def line_follow():
         kd=0.05,
     )
 
+
 class M020SecondBrownCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # move arm into starting position again
-            background(
-                seq([
-                    arm.move_angles(0, 65, 0, speed=150),
-                    arm.move_angles(0, 110, -120, speed=150),
-                    Defs.arm_claw.idle(),
-                ]),
-            ),
-
             parallel(
                 # start moving arm by 90° as soon as black line was crossed
                 seq([
+                    wait_for_background(name="drop_cube"),
+                    arm.move_angles(0, 65, 0, speed=150),
+                    Defs.arm_claw.idle(),
                     wait_for(
-                        over_line(Defs.rear.left)
+                        over_line(Defs.rear.left) | after_seconds(2),
                     ),
-                    arm.move_angles(-90, 110, -120),
+                    grab_brown_cube_start_pos()
                 ]),
 
                 # drive forward to 2nd cube pickup
@@ -49,9 +44,10 @@ class M020SecondBrownCubeMission(Mission):
             strafe_left(heading=180).until(
                 on_black(Defs.front.right),
             ),
-            strafe_right(heading=180, speed=0.2).until(
-                on_white(Defs.front.right),
-            ),
+            # dont strafe back to white so the arm reaches te cube better
+            # strafe_right(heading=180, speed=0.2).until(
+            #    on_white(Defs.front.right),
+            # ),
 
             grab_brown_cube(LineSide.RIGHT, heading=180),
         ])

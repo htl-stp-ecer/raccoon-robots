@@ -1,6 +1,7 @@
 from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
+from src.steps.calibrate_analog_drive import on_analog_flank
 from src.steps.drive_to_analog_target_bidirectional import drive_to_analog_target_bidirectional
 
 
@@ -19,35 +20,27 @@ class M050DriveToInnerWarehouseMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # back away from first cube stack
-            parallel(
-                drive_backward(5),
-                seq([
-                    wait_for_seconds(0.2),
-                    arm.move_angles(10, 135, -30),
-                ]),
-            ),
+            drive_backward(10),
 
             background(
-                Defs.arm_claw.idle(),
+                seq([
+                    arm.move_angles(10, 135, -30),
+                    Defs.arm_claw.idle(),
+                    wait_for_seconds(3),
+                    arm.move_angles(-90, 90, 0, speed=100),
+                ]),
             ),
 
             # drive backwards to green cube
             drive_angle(angle_deg=-120).until(
                 over_line(Defs.front.right)
             ),
-            backward_line_follow().until( #hit the middle line
+            backward_line_follow().until(  # hit the middle line
                 on_black(Defs.rear.left)
             ),
             # drive to the black line besides the internal loading dock
             drive_forward(cm=5),
             drive_angle(angle_deg=-60).until(
                 on_black(Defs.rear.left)
-            ),
-
-            drive_to_analog_target_bidirectional(
-                Defs.et_sensor,
-                direction="forward",
-                speed=0.4,
-                set_name="lower_cube"
             ),
         ])

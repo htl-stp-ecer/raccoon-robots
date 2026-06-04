@@ -2,9 +2,21 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.arm_steps import grab_cube_from_container
+from src.steps.line_follow_dsl import strafe_follow_line_single_free
+
 
 def line_follow():
     return strafe_follow_line_single(
+        sensor=Defs.rear.left,
+        speed=1,
+        side=LineSide.RIGHT,
+        kp=0.6,
+        ki=0.5,
+        kd=0.05,
+    )
+
+def wall_align():
+    return strafe_follow_line_single_free(
         sensor=Defs.rear.left,
         speed=1,
         side=LineSide.RIGHT,
@@ -29,16 +41,17 @@ class M070PlaceSecondBrownCubeMission(Mission):
         return seq([
             # navigate to external dock
             line_follow().until(
-                after_cm(70),
+                after_cm(75),
             ),
-            strafe_right(5),
+            drive_backward(cm=2),
+            strafe_right().until(
+                over_line(Defs.rear.left)
+                + after_cm(5)
+            ),
 
             # align on wall
-            wall_align_forward(
-                speed=0.4,
-                accel_threshold=0.3,
-                grace_period=0.6,
-                settle_duration=0.3,
+            wall_align().until(
+                after_seconds(0.4),
             ),
             mark_heading_reference(),
 

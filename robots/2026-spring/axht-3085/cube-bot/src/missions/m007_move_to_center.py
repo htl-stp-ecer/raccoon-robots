@@ -30,23 +30,24 @@ def pipe_align():
 class M007MoveToCenter(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            pipe_align().until(
-                after_seconds(0.8)
-            ),
-            mark_heading_reference(origin_offset_deg=180),
+            #removed the aling since poms are there and alin was bad
+            #pipe_align().until(
+            #    after_seconds(0.8)
+            #),
+            #mark_heading_reference(origin_offset_deg=180),
 
             # align to drop green cube
             left_lateral_line_follow().until(
-                on_black(Defs.rear.left)
+                over_line(Defs.rear.left)
             ),
             strafe_right(heading=180, speed=0.4).until(
-               on_white(Defs.rear.left)
+               on_black(Defs.rear.left)
             ),
 
             # drop green cube
-            arm.move_angles(0, 60, -66).arm_speeds(sholder=100),
+            arm.move_angles(10, 60, -66).arm_speeds(sholder=100),
             Defs.arm_claw.open(80),
-            arm.move_angles(0, 100, -62),
+            arm.move_angles(10, 100, -62),
 
             # drive to line
             left_lateral_line_follow().until(

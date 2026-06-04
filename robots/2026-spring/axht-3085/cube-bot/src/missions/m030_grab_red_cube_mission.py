@@ -46,9 +46,12 @@ class M030GrabRedCubeMission(Mission):
             ),
             arm.move_angles(-90, 30, -20),
 
-            strafe_left(heading=180).until(
-                on_black(Defs.rear.left)
-                + after_cm(1)
+            timeout(
+                step= strafe_left(heading=180).until(
+                    on_black(Defs.rear.left)
+                    + after_cm(1)
+                ),
+                seconds=5
             ),
             Defs.arm_claw.grab(),
             Defs.arm_claw.open(speed=100),

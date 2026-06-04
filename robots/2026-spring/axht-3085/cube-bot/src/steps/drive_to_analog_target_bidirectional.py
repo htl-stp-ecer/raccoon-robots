@@ -19,6 +19,7 @@ from raccoon.step.motion.motion_step import MotionStep
 if TYPE_CHECKING:
     from raccoon.hal import AnalogSensor
     from raccoon.robot.api import GenericRobot
+    from raccoon.step.base import Step
 
 
 class DriveToAnalogTargetBidirectional(MotionStep):
@@ -64,6 +65,8 @@ class DriveToAnalogTargetBidirectional(MotionStep):
         # start and the step finishes instantly without moving.
         self._approach_from_below: bool = True
         self._motion = None
+        self._target_found: bool = False
+        self._if_found_step: "Step | None" = None
 
     def _generate_signature(self) -> str:
         timeout_str = f", timeout={self._timeout_cm}cm" if self._timeout_cm else ""
@@ -121,18 +124,34 @@ class DriveToAnalogTargetBidirectional(MotionStep):
         self._motion = LinearMotion(robot.drive, robot.odometry, robot.motion_pid_config, config)
         self._motion.start()
 
+    def if_found(self, step: "Step") -> "DriveToAnalogTargetBidirectional":
+        """Register a step to run only when the sensor target is reached.
+
+        If the drive times out (timeout_cm reached) without the sensor crossing
+        its target, the registered step is skipped entirely.
+        """
+        self._if_found_step = step
+        return self
+
     def on_update(self, robot: "GenericRobot", dt: float) -> bool:
         current = float(self._sensor.read())
         # Stop when the reading crosses the target. Which comparison applies is
         # fixed by the starting side (see on_start), not the drive direction.
         if self._approach_from_below:
             if current >= self._target_value:
+                self._target_found = True
                 return True
         elif current <= self._target_value:
+            self._target_found = True
             return True
 
         self._motion.update(dt)
         return self._motion.is_finished()
+
+    def on_stop(self, robot: "GenericRobot") -> None:
+        super().on_stop(robot)
+        if self._target_found and self._if_found_step is not None:
+            self._if_found_step.run_step(robot)
 
 
 def drive_to_analog_target_bidirectional(

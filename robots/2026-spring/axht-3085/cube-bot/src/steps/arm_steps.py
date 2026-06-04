@@ -1,6 +1,9 @@
 from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
+def grab_brown_cube_start_pos():
+    return arm.move_angles(-90, 110, -120)  # rotate left to face correct direction
+
 
 def grab_brown_cube(side: LineSide, heading: int | None):
     def drive():
@@ -8,11 +11,10 @@ def grab_brown_cube(side: LineSide, heading: int | None):
             else run(lambda robot: None)
             #else drive_backward(cm=1) #we dont need this at the left side
     return seq([
-        arm.move_angles(-90, 110, -120),      # rotate left to face correct direction
         arm.move_angles(-90, 80, -75)
             .arm_speeds(base=999, sholder=100, elbow=200),        # move into shared area
         arm.move_angles(-90, 60, -40)
-            .arm_speeds(base=999, sholder=100, elbow=200),        # move further into shared area
+            .arm_speeds(base=999, sholder=70, elbow=200),        # move further into shared area
         Defs.arm_claw.open(),            # open claw
         drive(),
         arm.move_angles(-90, 20, -25),        # move down
