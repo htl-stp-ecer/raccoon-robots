@@ -53,8 +53,10 @@ class FakeColorDetectionService(RobotService):
     def resume_detection(self) -> None:
         pass
 
-    def apply_calibration(self, sat_threshold: int) -> None:
-        self.info(f"FakeColorDetectionService: calibration applied (no-op, sat={sat_threshold})")
+    def apply_calibration(self, chroma_threshold: int) -> None:
+        self.info(
+            f"FakeColorDetectionService: calibration applied (no-op, chroma={chroma_threshold})"
+        )
 
     # ── Properties ────────────────────────────────────────────────
 

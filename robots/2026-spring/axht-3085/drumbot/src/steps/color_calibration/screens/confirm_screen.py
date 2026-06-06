@@ -2,7 +2,7 @@ from raccoon.ui import *
 
 
 class ColorConfirmScreen(UIScreen[str]):
-    """Displays computed saturation thresholds and lets the user confirm or retry.
+    """Displays computed CIELAB chroma thresholds and lets the user confirm or retry.
 
     Closes with ``"confirm"`` to proceed or ``"retry_all"`` to redo captures.
     """
@@ -11,30 +11,30 @@ class ColorConfirmScreen(UIScreen[str]):
 
     def __init__(
         self,
-        sat_threshold: int,
-        blue_sat: int,
-        pink_sat: int,
-        empty_sat: int,
+        chroma_threshold: int,
+        blue_chroma: int,
+        pink_chroma: int,
+        empty_p95_chroma: int,
     ):
         super().__init__()
         self.title = "Calibration Results"
-        self.sat_threshold = sat_threshold
-        self.blue_sat = blue_sat
-        self.pink_sat = pink_sat
-        self.empty_sat = empty_sat
+        self.chroma_threshold = chroma_threshold
+        self.blue_chroma = blue_chroma
+        self.pink_chroma = pink_chroma
+        self.empty_p95_chroma = empty_p95_chroma
 
     def build(self) -> Widget:
-        margin_above = self.sat_threshold - self.empty_sat
-        margin_below = min(self.blue_sat, self.pink_sat) - self.sat_threshold
+        margin_above = self.chroma_threshold - self.empty_p95_chroma
+        margin_below = min(self.blue_chroma, self.pink_chroma) - self.chroma_threshold
         ok = margin_above > 0 and margin_below > 0
 
         left = [
-            Card(title="Saturation Samples", children=[
+            Card(title="Chroma Samples", children=[
                 ResultsTable(rows=[
-                    ("Blue drum", str(self.blue_sat), None),
-                    ("Pink drum", str(self.pink_sat), None),
-                    ("Empty", str(self.empty_sat), None),
-                    ("Threshold", str(self.sat_threshold), "success" if ok else "error"),
+                    ("Blue drum (p95 C*)", str(self.blue_chroma), None),
+                    ("Pink drum (p95 C*)", str(self.pink_chroma), None),
+                    ("Empty (p95 C*)", str(self.empty_p95_chroma), None),
+                    ("Threshold", str(self.chroma_threshold), "success" if ok else "error"),
                 ]),
             ]),
         ]

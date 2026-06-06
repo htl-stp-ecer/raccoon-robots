@@ -177,6 +177,26 @@ class SortingService(RobotService):
         timeout = max(max_delta * TIMING_MARGIN, max_delta + TIMING_ADDITIVE_MARGIN)
         return max(timeout, DEFAULT_DETECTION_TIMEOUT)  # never go below the default
 
+    def nearest_empty_pocket(self, current_pocket: int) -> int | None:
+        """Return the nearest empty pocket index, or None if all are full.
+
+        Ring distance is used; ties are broken by forward direction so the
+        revolver doesn't reverse when both sides are equidistant. The
+        current pocket itself counts as empty if its slot is None.
+        """
+        empty = [i for i, s in enumerate(self.slots) if s is None]
+        if not empty:
+            return None
+
+        def ring_dist(i: int) -> int:
+            d = abs(i - current_pocket)
+            return min(d, NUM_SLOTS - d)
+
+        def fwd_dist(i: int) -> int:
+            return (i - current_pocket) % NUM_SLOTS
+
+        return min(empty, key=lambda i: (ring_dist(i), fwd_dist(i)))
+
     @property
     def blue_slots(self) -> list[int]:
         """Indices of blue-occupied slots, in filling order (ascending)."""

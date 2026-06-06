@@ -13,6 +13,7 @@ from src.steps.drum_collector.sort_into_slot_step import (
     advance_to_midpoint,
     block_timer_check,
     block_timer_start,
+    rotate_to_next_empty_pocket,
     sort_into_slot,
 )
 from src.steps.drum_lifting_step import drum_align_on_back, drum_lifting_down, drum_lifting_up
@@ -88,8 +89,12 @@ class CollectDrumsStep(UIStep):
                 )
 
                 try:
-                    # Wait for the drum to arrive and get captured
+                    # Wait for the drum to arrive and get captured.
+                    # rotate_to_next_empty_pocket must run before pusher.open():
+                    # current_pocket sits on the just-filled slot, so opening
+                    # the loading hole there would let the sorted drum fall out.
                     phase1a = seq([
+                        rotate_to_next_empty_pocket(),
                         Defs.drum_pusher_servo.open(),
                         wait_for_drum(checkpoint=checkpoint),
                         block_timer_start(),

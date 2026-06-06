@@ -32,3 +32,4 @@ drum_detections/
 # Logs
 logs/
 *.log
+calibration_samples

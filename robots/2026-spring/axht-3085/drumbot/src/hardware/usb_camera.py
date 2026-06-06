@@ -21,10 +21,17 @@ from raccoon import debug, error, info, warn
 
 @dataclass
 class ColorProfile:
-    """A named color with HSV or LAB+saturation-gate ranges."""
+    """A named color used by the chroma-based detector.
+
+    The legacy ``hsv_ranges`` / ``lab_ranges`` / ``sat_min`` fields are kept so
+    existing callers (and persisted configs) don't break, but the runtime only
+    uses ``name``, ``min_area`` and ``min_dimension``. Per-color hue thresholds
+    are global on the camera (``pink_a_min``, ``blue_b_max``) — they are
+    intrinsic to the CIELAB axes and don't need per-instance tuning.
+    """
 
     name: str
-    hsv_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]]
+    hsv_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]] = field(default_factory=list)
     min_area: int = 900
     min_dimension: int = 20
     lab_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None
@@ -94,7 +101,15 @@ class USBCamera:
             cv2.MORPH_ELLIPSE, (morph_kernel_size, morph_kernel_size)
         )
 
-        self._sat_threshold: int = 50  # calibrated via set_sat_threshold()
+        # CIELAB chroma detector tunables. ``chroma_threshold`` is the only
+        # value the calibration step learns from the empty background; the
+        # hue-axis thresholds and the L* clip are intrinsic and stay constant.
+        # See _analyze_frame for the geometry.
+        self._chroma_threshold: int = 25
+        self._pink_a_min: int = 18
+        self._blue_b_max: int = -18
+        self._l_min: int = 25     # ignore deep shadows
+        self._l_max: int = 240    # ignore specular highlights on glossy drums
         self._colors: dict[str, ColorProfile] = {}
         self._buffer: deque[np.ndarray] = deque(maxlen=buffer_size)
         self._lock = threading.Lock()
@@ -112,31 +127,45 @@ class USBCamera:
     def add_color(
         self,
         name: str,
-        hsv_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]],
+        hsv_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None,
         min_area: int = 900,
         min_dimension: int = 20,
         lab_ranges: list[tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None,
         sat_min: int = 0,
     ) -> None:
-        """Register a color profile for detection."""
+        """Register a color profile for detection.
+
+        Only ``name``, ``min_area`` and ``min_dimension`` matter for the
+        chroma-based detector; the other arguments are accepted for
+        backwards compatibility with old call sites.
+        """
         self._colors[name] = ColorProfile(
             name=name,
-            hsv_ranges=hsv_ranges,
+            hsv_ranges=hsv_ranges or [],
             min_area=min_area,
             min_dimension=min_dimension,
             lab_ranges=lab_ranges,
             sat_min=sat_min,
         )
-        mode = "LAB+sat" if lab_ranges else "HSV"
-        debug(f"Registered color '{name}' ({mode}, {len(lab_ranges or hsv_ranges)} range(s))")
+        debug(f"Registered color '{name}' (chroma detector, min_area={min_area})")
 
     def remove_color(self, name: str) -> None:
         """Remove a registered color profile."""
         self._colors.pop(name, None)
 
-    def set_sat_threshold(self, value: int) -> None:
-        """Set the global saturation gate threshold used in _analyze_frame."""
-        self._sat_threshold = value
+    def set_chroma_threshold(self, value: int) -> None:
+        """Set the global CIELAB chroma threshold used in _analyze_frame.
+
+        Chroma = sqrt((a-128)^2 + (b-128)^2). Neutral gray pixels have
+        chroma ~ 0; the empty background sits low (5..20 typical), drum
+        surfaces sit high (40..100). Calibration learns this value from
+        the empty-background sample.
+        """
+        self._chroma_threshold = int(value)
+
+    # Back-compat alias: previously the camera exposed a saturation gate.
+    # Kept so unrelated callers don't blow up if they still call it.
+    set_sat_threshold = set_chroma_threshold
 
     def start(self, open_retries: int = 5, retry_delay: float = 1.0) -> "USBCamera":
         """Open the camera and start the background capture thread."""
@@ -276,147 +305,207 @@ class USBCamera:
             return self._buffer[-1].copy() if self._buffer else None
 
     def get_annotated_debug_frame(self, frame: np.ndarray) -> np.ndarray:
-        """Return an annotated copy of frame showing full detection debug info.
+        """Return an annotated copy of ``frame`` visualising the chroma detector.
 
         Overlays:
-        - Green tint on saturated pixels (the sat_mask)
-        - Detected contour drawn in its detected color (blue/pink)
-        - Bounding box with label: color, area, mean LAB a*
-        - Text panel with sat_threshold and per-color presence
+        - Pink mask tinted magenta, blue mask tinted cyan.
+        - Bounding boxes around each detected blob with label/area/mean chroma.
+        - Text panel with the active chroma threshold and per-pixel chroma stats.
         """
         annotated = frame.copy()
-        h, w = frame.shape[:2]
+        L, a_s, b_s, chroma, valid_L = self._chroma_planes(frame)
 
-        # Stage 1: saturation gate
-        hsv_raw = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        max_sat = int(hsv_raw[:, :, 1].max())
-        gate_passed = max_sat >= self._sat_threshold
+        max_c = float(chroma.max())
+        cv2.putText(
+            annotated,
+            f"C_thresh={self._chroma_threshold} max_C={max_c:.0f}",
+            (4, 14),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.4,
+            (255, 255, 255),
+            1,
+            cv2.LINE_AA,
+        )
 
-        # Always show sat_threshold info
-        cv2.putText(annotated, f"sat_max={max_sat} thresh={self._sat_threshold}",
-                    (4, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+        pink_mask, blue_mask = self._build_color_masks(a_s, b_s, chroma, valid_L)
 
-        if not gate_passed:
-            cv2.putText(annotated, "SAT GATE FAILED", (4, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 1, cv2.LINE_AA)
-            return annotated
-
-        pp = self._preprocess(frame)
-        hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
-        lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
-
-        # Build sat_mask
-        sat_mask = (hsv[:, :, 1] >= self._sat_threshold).astype(np.uint8) * 255
-        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_OPEN, self._morph_kernel)
-        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_CLOSE, self._morph_kernel)
-
-        # Overlay sat_mask as a green tint (50% opacity)
+        # Tint detected pixels for visual feedback.
         overlay = annotated.copy()
-        overlay[sat_mask == 255] = (0, 200, 0)
-        cv2.addWeighted(overlay, 0.35, annotated, 0.65, 0, annotated)
-
-        contours, _ = cv2.findContours(sat_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if not contours:
-            cv2.putText(annotated, "NO CONTOURS", (4, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 1, cv2.LINE_AA)
-            return annotated
-
-        largest = max(contours, key=cv2.contourArea)
-        area = int(cv2.contourArea(largest))
-        x, y, bw, bh = cv2.boundingRect(largest)
+        overlay[pink_mask == 255] = (180, 80, 255)   # magenta-ish BGR
+        overlay[blue_mask == 255] = (255, 150, 0)    # cyan-ish BGR
+        cv2.addWeighted(overlay, 0.4, annotated, 0.6, 0, annotated)
 
         first_profile = next(iter(self._colors.values())) if self._colors else None
         min_area = first_profile.min_area if first_profile else 500
         min_dim = first_profile.min_dimension if first_profile else 5
 
-        size_ok = area >= min_area and bw >= min_dim and bh >= min_dim
-
-        # Compute mean LAB a* inside contour
-        contour_mask = np.zeros(lab.shape[:2], dtype=np.uint8)
-        cv2.drawContours(contour_mask, [largest], -1, 255, cv2.FILLED)
-        pixels_in = contour_mask == 255
-        mean_a = float(lab[:, :, 1][pixels_in].mean()) if pixels_in.any() else 128.0
-        detected_color = "pink" if mean_a > 128 else "blue"
-
-        # Draw contour and bounding box in the detected color
-        draw_bgr = (255, 100, 180) if detected_color == "pink" else (255, 80, 0)
-        cv2.drawContours(annotated, [largest], -1, draw_bgr, 2)
-        rect_color = (0, 0, 200) if not size_ok else draw_bgr
-        cv2.rectangle(annotated, (x, y), (x + bw, y + bh), rect_color, 2)
-
-        # Label at the bounding box
-        label = f"{detected_color} a*={mean_a:.0f} area={area}"
-        label_y = max(y - 4, 12)
-        cv2.putText(annotated, label, (x, label_y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.38, draw_bgr, 1, cv2.LINE_AA)
-
-        if not size_ok:
-            cv2.putText(annotated, f"TOO SMALL ({bw}x{bh})", (x, y + bh + 12),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 0, 255), 1, cv2.LINE_AA)
-
-        # Also annotate all other (smaller) contours faintly
-        for c in contours:
-            if c is largest:
+        for label, mask in (("pink", pink_mask), ("blue", blue_mask)):
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if not contours:
                 continue
-            cv2.drawContours(annotated, [c], -1, (180, 180, 0), 1)
+            largest = max(contours, key=cv2.contourArea)
+            area = int(cv2.contourArea(largest))
+            x, y, bw, bh = cv2.boundingRect(largest)
+            size_ok = area >= min_area and bw >= min_dim and bh >= min_dim
+            draw_bgr = (180, 80, 255) if label == "pink" else (255, 150, 0)
+            rect_color = (0, 0, 200) if not size_ok else draw_bgr
+            cv2.drawContours(annotated, [largest], -1, draw_bgr, 1)
+            cv2.rectangle(annotated, (x, y), (x + bw, y + bh), rect_color, 2)
+
+            contour_mask = np.zeros(mask.shape, dtype=np.uint8)
+            cv2.drawContours(contour_mask, [largest], -1, 255, cv2.FILLED)
+            pix = contour_mask == 255
+            mean_c = float(chroma[pix].mean()) if pix.any() else 0.0
+            tag = f"{label} C={mean_c:.0f} area={area}"
+            cv2.putText(
+                annotated,
+                tag,
+                (x, max(y - 4, 12)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.38,
+                draw_bgr,
+                1,
+                cv2.LINE_AA,
+            )
+            if not size_ok:
+                cv2.putText(
+                    annotated,
+                    f"TOO SMALL ({bw}x{bh})",
+                    (x, y + bh + 12),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.38,
+                    (0, 0, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
 
         return annotated
 
     @staticmethod
     def _preprocess(frame: np.ndarray) -> np.ndarray:
-        """Gray-world white balance plus Gaussian blur."""
-        avg = frame.mean(axis=(0, 1))
-        avg_all = avg.mean()
-        scale = avg_all / (avg + 1e-6)
-        wb = np.clip(frame * scale, 0, 255).astype(np.uint8)
-        return cv2.GaussianBlur(wb, (3, 3), 0)
+        """Light Gaussian blur — no white balance.
+
+        Gray-world WB destroys color information when the drum fills the
+        frame (pink → green, blue → yellow), which is exactly the case
+        during calibration. CIELAB chroma is already largely invariant to
+        the camera's white point, so blur is all we need.
+        """
+        return cv2.GaussianBlur(frame, (3, 3), 0)
+
+    def _chroma_planes(
+        self, frame: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Return (L, a_s, b_s, chroma, valid_L) for a BGR frame.
+
+        ``a_s = a - 128`` and ``b_s = b - 128`` are signed CIELAB hue
+        components in roughly [-128, 127]. ``chroma`` is their L2 norm.
+        ``valid_L`` masks pixels whose lightness is in the usable band —
+        glossy specular highlights and deep shadows are excluded.
+        """
+        blurred = self._preprocess(frame)
+        lab = cv2.cvtColor(blurred, cv2.COLOR_BGR2LAB)
+        L = lab[:, :, 0]
+        a_s = lab[:, :, 1].astype(np.int16) - 128
+        b_s = lab[:, :, 2].astype(np.int16) - 128
+        chroma = np.sqrt(a_s.astype(np.float32) ** 2 + b_s.astype(np.float32) ** 2)
+        valid_L = (L >= self._l_min) & (L <= self._l_max)
+        return L, a_s, b_s, chroma, valid_L
+
+    def _build_color_masks(
+        self,
+        a_s: np.ndarray,
+        b_s: np.ndarray,
+        chroma: np.ndarray,
+        valid_L: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Build morphologically-cleaned pink and blue masks."""
+        chromatic = (chroma > self._chroma_threshold) & valid_L
+        pink = (chromatic & (a_s > self._pink_a_min)).astype(np.uint8) * 255
+        blue = (chromatic & (b_s < self._blue_b_max)).astype(np.uint8) * 255
+        pink = cv2.morphologyEx(pink, cv2.MORPH_OPEN, self._morph_kernel)
+        pink = cv2.morphologyEx(pink, cv2.MORPH_CLOSE, self._morph_kernel)
+        blue = cv2.morphologyEx(blue, cv2.MORPH_OPEN, self._morph_kernel)
+        blue = cv2.morphologyEx(blue, cv2.MORPH_CLOSE, self._morph_kernel)
+        return pink, blue
+
+    def chroma_stats(self, frame: np.ndarray) -> dict[str, float]:
+        """Return summary chroma/hue statistics for a single frame.
+
+        Used by the calibration step to learn the chroma threshold from
+        empty-background frames and to sanity-check drum samples.
+        """
+        _, a_s, b_s, chroma, valid_L = self._chroma_planes(frame)
+        valid = valid_L
+        chroma_v = chroma[valid]
+        a_v = a_s[valid]
+        b_v = b_s[valid]
+        if chroma_v.size == 0:
+            return {
+                "median_chroma": 0.0,
+                "p95_chroma": 0.0,
+                "max_chroma": 0.0,
+                "mean_a_chromatic": 0.0,
+                "mean_b_chromatic": 0.0,
+                "chromatic_fraction": 0.0,
+            }
+        chromatic = chroma_v > self._chroma_threshold
+        n_chrom = int(chromatic.sum())
+        return {
+            "median_chroma": float(np.median(chroma_v)),
+            "p95_chroma": float(np.percentile(chroma_v, 95)),
+            "max_chroma": float(chroma_v.max()),
+            "mean_a_chromatic": float(a_v[chromatic].mean()) if n_chrom else 0.0,
+            "mean_b_chromatic": float(b_v[chromatic].mean()) if n_chrom else 0.0,
+            "chromatic_fraction": n_chrom / chroma_v.size,
+        }
 
     def _analyze_frame(self, frame: np.ndarray) -> dict[str, BlobResult]:
-        """Analyze a single frame for all registered colors.
+        """Detect blue/pink blobs using CIELAB chroma.
 
-        Two-stage detection:
-        1. Frame-level saturation gate — gray/white scene means no drum.
-        2. LAB a* discriminator — pink has a* > 128, blue has a* < 128.
-           No per-color calibration needed.
+        Pipeline:
+          1. Convert to LAB, compute chroma and valid-L mask (drops
+             specular highlights on glossy drums and deep shadows).
+          2. Build two separate masks via hue-axis signs on (a-128, b-128).
+          3. Pick the largest contour per mask, gated by min area/dim.
+          4. If both colors trigger (e.g. a multi-color reflection), keep
+             the one with the larger area — the drum is a single object.
         """
         absent = {name: BlobResult(present=False) for name in self._colors}
-
-        # Stage 1: saturation gate on the raw frame.
-        hsv_raw = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        if int(hsv_raw[:, :, 1].max()) < self._sat_threshold:
+        if not self._colors:
             return absent
 
-        pp = self._preprocess(frame)
-        hsv = cv2.cvtColor(pp, cv2.COLOR_BGR2HSV)
-        lab = cv2.cvtColor(pp, cv2.COLOR_BGR2LAB)
-
-        # Mask of all saturated pixels — the drum is the only saturated object.
-        sat_mask = (hsv[:, :, 1] >= self._sat_threshold).astype(np.uint8) * 255
-        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_OPEN, self._morph_kernel)
-        sat_mask = cv2.morphologyEx(sat_mask, cv2.MORPH_CLOSE, self._morph_kernel)
-
-        contours, _ = cv2.findContours(sat_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if not contours:
-            return absent
-
-        largest = max(contours, key=cv2.contourArea)
-        area = int(cv2.contourArea(largest))
-        x, y, w, h = cv2.boundingRect(largest)
+        _, a_s, b_s, chroma, valid_L = self._chroma_planes(frame)
+        pink_mask, blue_mask = self._build_color_masks(a_s, b_s, chroma, valid_L)
 
         first_profile = next(iter(self._colors.values()))
-        if area < first_profile.min_area or w < first_profile.min_dimension or h < first_profile.min_dimension:
-            return absent
+        min_area = first_profile.min_area
+        min_dim = first_profile.min_dimension
 
-        # Stage 2: LAB a* discriminator — pink is magenta (a* > 128), blue is cool (a* < 128).
-        contour_mask = np.zeros(lab.shape[:2], dtype=np.uint8)
-        cv2.drawContours(contour_mask, [largest], -1, 255, cv2.FILLED)
-        mean_a = float(lab[:, :, 1][contour_mask == 255].mean())
-        detected = "pink" if mean_a > 128 else "blue"
-
-        cx = x + w // 2
-        cy = y + h // 2
         results = absent.copy()
-        results[detected] = BlobResult(present=True, area=area, bounding_box=(x, y, w, h), center=(cx, cy))
+        for label, mask in (("pink", pink_mask), ("blue", blue_mask)):
+            if label not in self._colors:
+                continue
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if not contours:
+                continue
+            largest = max(contours, key=cv2.contourArea)
+            area = int(cv2.contourArea(largest))
+            x, y, w, h = cv2.boundingRect(largest)
+            if area < min_area or w < min_dim or h < min_dim:
+                continue
+            results[label] = BlobResult(
+                present=True,
+                area=area,
+                bounding_box=(x, y, w, h),
+                center=(x + w // 2, y + h // 2),
+            )
+
+        if results.get("pink", BlobResult(False)).present and results.get("blue", BlobResult(False)).present:
+            if results["pink"].area >= results["blue"].area:
+                results["blue"] = BlobResult(present=False)
+            else:
+                results["pink"] = BlobResult(present=False)
+
         return results
 
     def analyze(

@@ -16,8 +16,8 @@ import time
 from typing import Any
 
 import cv2
+import numpy as np
 from raccoon import error, info, warn, get_transport, shutdown_transport
-from raccoon_transport import Transport
 from raccoon_transport.channels import Channels as TransportChannels
 from raccoon_transport.types.raccoon.cam_blob_t import cam_blob_t
 from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
@@ -30,12 +30,11 @@ from src.service.color_detection_service import (
     DEFAULT_MIN_AREA,
     DETECTIONS_CHANNEL,
     ERROR_CHANNEL,
+    FRAME_CHANNEL,
     RESPONSE_CHANNEL,
     STATUS_CHANNEL,
 )
 
-FRAME_CHANNEL = "raccoon/cam/frame"
-DEFAULT_FRAME_TRANSPORT_PROVIDER = "udpm://239.255.76.68:7668?ttl=0"
 PRESENCE_THRESHOLD = 0.9
 ANALYSIS_FRAMES = 1
 
@@ -45,14 +44,9 @@ class VisionDaemon:
         self._camera_device = os.environ.get("DRUMBOT_CAMERA_DEVICE", "/dev/video0")
         self._camera_index = _normalize_camera_device(self._camera_device)
         self._camera_codec = os.environ.get("DRUMBOT_CAMERA_CODEC", "YUYV")
-        self._stream_fps = int(os.environ.get("DRUMBOT_CAMERA_STREAM_FPS", "10"))
-        self._jpeg_quality = int(os.environ.get("DRUMBOT_CAMERA_JPEG_QUALITY", "70"))
+        self._stream_fps = int(os.environ.get("DRUMBOT_CAMERA_STREAM_FPS", "30"))
+        self._jpeg_quality = int(os.environ.get("DRUMBOT_CAMERA_JPEG_QUALITY", "55"))
         self._transport = get_transport()
-        self._frame_transport_provider = os.environ.get(
-            "DRUMBOT_CAMERA_FRAME_LCM_PROVIDER",
-            DEFAULT_FRAME_TRANSPORT_PROVIDER,
-        )
-        self._frame_transport = Transport.create(self._frame_transport_provider)
         self._camera = USBCamera(
             camera_index=self._camera_index,
             resolution=(160, 120),
@@ -63,22 +57,17 @@ class VisionDaemon:
             get_time=lambda: time.monotonic() - self._start_time,
             codec=self._camera_codec,
         )
-        self._camera.add_color(
-            "blue",
-            hsv_ranges=[],
-            lab_ranges=[],
-            sat_min=0,
-            min_area=DEFAULT_MIN_AREA,
-            min_dimension=5,
+        self._camera.add_color("blue", min_area=DEFAULT_MIN_AREA, min_dimension=5)
+        self._camera.add_color("pink", min_area=DEFAULT_MIN_AREA, min_dimension=5)
+
+        # Directory that holds raw calibration sample frames. A new sub-
+        # directory per ``start_time`` keeps re-runs from clobbering each
+        # other and gives us something to load offline next session.
+        self._calibration_samples_root = os.environ.get(
+            "DRUMBOT_CALIBRATION_SAMPLES_DIR", "calibration_samples"
         )
-        self._camera.add_color(
-            "pink",
-            hsv_ranges=[],
-            lab_ranges=[],
-            sat_min=0,
-            min_area=DEFAULT_MIN_AREA,
-            min_dimension=5,
-        )
+        self._calibration_session_dir: str | None = None
+        self._calibration_sample_count = int(os.environ.get("DRUMBOT_CALIBRATION_SAMPLE_COUNT", "30"))
 
         self._running = False
         self._paused = False
@@ -94,8 +83,7 @@ class VisionDaemon:
             "Vision daemon starting "
             f"(device={self._camera_device}, normalized_device={self._camera_index!r}, "
             f"codec={self._camera_codec}, "
-            f"stream_fps={self._stream_fps}, jpeg_quality={self._jpeg_quality}, "
-            f"frame_transport_provider={self._frame_transport_provider})"
+            f"stream_fps={self._stream_fps}, jpeg_quality={self._jpeg_quality})"
         )
         self._transport.subscribe(COMMAND_CHANNEL, self._on_command, reliable=True)
         self._publish_status(starting=True, started=False)
@@ -152,7 +140,6 @@ class VisionDaemon:
         info("Stopping vision daemon")
         self._running = False
         self._camera.stop()
-        self._frame_transport.close()
         shutdown_transport()
         info("Vision daemon transport shut down")
 
@@ -165,7 +152,7 @@ class VisionDaemon:
         self._publish_vision_event(message, cleared=True, **context)
 
     def _publish_vision_event(self, message: str, *, cleared: bool, **context: Any) -> None:
-        """Publish to both the project-specific drumbot/cam/error channel
+        """Publish to both the project-specific raccoon/cam/error channel
         and the official raccoon/errors string channel. Both are retained
         so a late subscriber sees the latest state (error OR recovery).
         cleared=True signals subscribers that the prior retained error is
@@ -251,40 +238,95 @@ class VisionDaemon:
                 self._publish_response(request_id, True)
                 info(f"Vision overlay updated: {self._overlay!r}")
             elif command == "apply_calibration":
-                self._apply_calibration(int(payload["sat_threshold"]))
+                threshold = int(payload.get("chroma_threshold", payload.get("sat_threshold", 0)))
+                self._apply_calibration(threshold)
                 self._publish_response(request_id, True)
             elif command == "capture_calibration_sample":
-                max_sat = self._capture_max_saturation()
-                self._publish_response(request_id, max_sat is not None, {"max_sat": max_sat})
-                info(f"Calibration sample result: max_sat={max_sat}")
+                label = str(payload.get("label", "sample"))
+                result = self._capture_calibration_samples(label)
+                self._publish_response(request_id, result is not None, result or {})
+                info(f"Calibration sample result: label={label}, summary={result}")
             else:
                 self._publish_response(request_id, False, {"error": f"unknown command {command!r}"})
         except Exception as exc:
             warn(f"Vision command failed: {exc}")
             self._publish_response(request_id, False, {"error": str(exc)})
 
-    def _apply_calibration(self, sat_threshold: int) -> None:
-        info(f"Applying vision calibration: sat_threshold={sat_threshold}")
-        self._camera.set_sat_threshold(sat_threshold)
-        for color in ("blue", "pink"):
-            self._camera.remove_color(color)
-            self._camera.add_color(
-                color,
-                hsv_ranges=[],
-                lab_ranges=[],
-                sat_min=sat_threshold,
-                min_area=DEFAULT_MIN_AREA,
-                min_dimension=5,
-            )
-        self._publish_status(sat_threshold=sat_threshold)
+    def _apply_calibration(self, chroma_threshold: int) -> None:
+        info(f"Applying vision calibration: chroma_threshold={chroma_threshold}")
+        self._camera.set_chroma_threshold(chroma_threshold)
+        self._publish_status(chroma_threshold=chroma_threshold)
 
-    def _capture_max_saturation(self) -> int | None:
-        frame = self._camera.grab_frame()
-        if frame is None:
-            warn("Calibration sample requested but no frame was available")
+    def _ensure_calibration_session_dir(self) -> str:
+        if self._calibration_session_dir is None:
+            stamp = time.strftime("%Y%m%d-%H%M%S")
+            self._calibration_session_dir = os.path.join(self._calibration_samples_root, stamp)
+            os.makedirs(self._calibration_session_dir, exist_ok=True)
+            info(f"Calibration samples will be written to {self._calibration_session_dir}")
+        return self._calibration_session_dir
+
+    def _capture_calibration_samples(self, label: str) -> dict[str, Any] | None:
+        """Capture N raw frames, persist them, and return chroma stats.
+
+        Frames are written as lossless PNG so a future offline session can
+        load them and re-run the detector without touching the camera.
+        """
+        session_dir = self._ensure_calibration_session_dir()
+        safe_label = re.sub(r"[^a-zA-Z0-9_-]", "_", label) or "sample"
+        out_dir = os.path.join(session_dir, safe_label)
+        os.makedirs(out_dir, exist_ok=True)
+
+        n = max(1, self._calibration_sample_count)
+        captured: list[np.ndarray] = []
+        seen_ids: set[int] = set()
+        deadline = time.monotonic() + 3.0
+        while len(captured) < n and time.monotonic() < deadline:
+            frame_id = self._camera.total_frames
+            if frame_id and frame_id not in seen_ids:
+                frame = self._camera.grab_frame()
+                if frame is not None:
+                    captured.append(frame)
+                    seen_ids.add(frame_id)
+                    continue
+            time.sleep(0.01)
+
+        if not captured:
+            warn(f"Calibration sample requested but no frames were available (label={label})")
             return None
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        return int(hsv[:, :, 1].max())
+
+        stats_per_frame: list[dict[str, float]] = []
+        for idx, frame in enumerate(captured):
+            path = os.path.join(out_dir, f"frame_{idx:03d}.png")
+            try:
+                cv2.imwrite(path, frame)
+            except Exception as exc:
+                warn(f"Failed to write calibration frame {path}: {exc}")
+            stats_per_frame.append(self._camera.chroma_stats(frame))
+
+        def _avg(key: str) -> float:
+            vals = [s[key] for s in stats_per_frame]
+            return float(sum(vals) / len(vals))
+
+        summary = {
+            "label": safe_label,
+            "frames_captured": len(captured),
+            "samples_dir": os.path.abspath(out_dir),
+            "median_chroma": _avg("median_chroma"),
+            "p95_chroma": _avg("p95_chroma"),
+            "max_chroma": max(s["max_chroma"] for s in stats_per_frame),
+            "mean_a_chromatic": _avg("mean_a_chromatic"),
+            "mean_b_chromatic": _avg("mean_b_chromatic"),
+            "chromatic_fraction": _avg("chromatic_fraction"),
+        }
+        info(
+            "Calibration capture: "
+            f"label={safe_label}, frames={len(captured)}, "
+            f"median_C={summary['median_chroma']:.1f}, p95_C={summary['p95_chroma']:.1f}, "
+            f"max_C={summary['max_chroma']:.1f}, "
+            f"mean_a*={summary['mean_a_chromatic']:.1f}, mean_b*={summary['mean_b_chromatic']:.1f}, "
+            f"chromatic_frac={summary['chromatic_fraction']:.2f}, dir={out_dir}"
+        )
+        return summary
 
     def _detection_loop(self) -> None:
         last_frame_id = 0
@@ -448,11 +490,23 @@ class VisionDaemon:
     def _frame_loop(self) -> None:
         interval = 1.0 / max(self._stream_fps, 1)
         last_no_frame_log = 0.0
+        publish_window_start = time.monotonic()
+        publish_count = 0
+        bytes_window = 0
+        last_published_frame_id = 0
 
         info(f"Starting frame publisher loop (fps={self._stream_fps}, jpeg_quality={self._jpeg_quality})")
 
         while self._running:
             t0 = time.monotonic()
+            # Skip publishing if the camera hasn't produced a new frame yet.
+            # Re-encoding the same frame at stream_fps wastes CPU and floods
+            # the transport with byte-identical JPEGs that the UI can't tell
+            # apart from a stalled stream.
+            current_frame_id = self._camera.total_frames
+            if current_frame_id == last_published_frame_id:
+                time.sleep(0.002)
+                continue
             frame = self._camera.grab_frame()
             if frame is None:
                 now = time.monotonic()
@@ -508,9 +562,25 @@ class VisionDaemon:
                 msg.frame_size = len(msg.frame_data)
                 msg.detections = [_make_blob(d, msg.timestamp) for d in detections]
                 msg.num_detections = len(msg.detections)
-                self._frame_transport.publish(FRAME_CHANNEL, msg)
+                self._transport.publish(FRAME_CHANNEL, msg)
+                last_published_frame_id = current_frame_id
+                publish_count += 1
+                bytes_window += msg.frame_size
             else:
                 warn("JPEG encode failed for current camera frame")
+
+            now = time.monotonic()
+            window = now - publish_window_start
+            if window >= 2.0:
+                info(
+                    "Frame publisher: "
+                    f"publish_fps={publish_count / window:.1f}, "
+                    f"avg_kb={bytes_window / max(publish_count, 1) / 1024:.1f}, "
+                    f"window_s={window:.1f}"
+                )
+                publish_window_start = now
+                publish_count = 0
+                bytes_window = 0
 
             elapsed = time.monotonic() - t0
             if elapsed < interval:

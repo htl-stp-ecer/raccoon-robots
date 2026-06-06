@@ -87,6 +87,39 @@ class RetreatFromMidpointStep(Step):
         await drum_service.move_from_midpoint()
 
 
+@dsl(hidden=True)
+class RotateToNextEmptyPocketStep(Step):
+    """Rotate the revolver to the nearest empty pocket.
+
+    Run before opening the drum pusher: if the current pocket already
+    holds a sorted drum, opening the loading hole over it would let
+    the drum fall back out. Routes around occupied pockets to avoid
+    exposing them to the loading hole during transit.
+    """
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        sorting_service = robot.get_service(SortingService)
+        drum_service = robot.get_service(DrumMotorService)
+
+        cur = drum_service.current_pocket
+        target = sorting_service.nearest_empty_pocket(cur)
+        if target is None:
+            drum_service.warn("No empty pocket available — skipping pre-open rotation")
+            return
+        if target == cur:
+            return
+
+        occupied = {i for i, s in enumerate(sorting_service.slots) if s is not None}
+        drum_service.info(f"Rotating to next empty pocket: {cur} → {target}")
+        await drum_service.go_to_pocket(target, precise=False, occupied=occupied)
+
+
+@dsl()
+def rotate_to_next_empty_pocket() -> RotateToNextEmptyPocketStep:
+    """Rotate to nearest empty pocket so opening the pusher doesn't drop a sorted drum."""
+    return RotateToNextEmptyPocketStep()
+
+
 @dsl()
 def advance_to_midpoint() -> AdvanceToMidpointStep:
     """Advance one pocket to midpoint to prevent drums from falling out during lift."""

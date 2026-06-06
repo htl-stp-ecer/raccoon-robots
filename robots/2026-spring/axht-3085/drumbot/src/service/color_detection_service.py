@@ -10,11 +10,12 @@ from raccoon import GenericRobot, RobotService, get_transport
 from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
 from raccoon_transport.types.raccoon.string_t import string_t
 
-DETECTIONS_CHANNEL = "drumbot/cam/detections"
-COMMAND_CHANNEL = "drumbot/cam/cmd"
-RESPONSE_CHANNEL = "drumbot/cam/response"
-STATUS_CHANNEL = "drumbot/cam/status"
-ERROR_CHANNEL = "drumbot/cam/error"
+FRAME_CHANNEL = "raccoon/cam/frame"
+DETECTIONS_CHANNEL = "raccoon/cam/detections"
+COMMAND_CHANNEL = "raccoon/cam/cmd"
+RESPONSE_CHANNEL = "raccoon/cam/response"
+STATUS_CHANNEL = "raccoon/cam/status"
+ERROR_CHANNEL = "raccoon/cam/error"
 DEFAULT_MIN_AREA = 500
 
 
@@ -265,14 +266,23 @@ class ColorDetectionService(RobotService):
         self.info(f"Detected color: {color}")
         return color
 
-    def apply_calibration(self, sat_threshold: int) -> None:
-        self._send_command("apply_calibration", {"sat_threshold": int(sat_threshold)})
-        self.info(f"Color calibration sent: sat_threshold={sat_threshold}")
+    def apply_calibration(self, chroma_threshold: int) -> None:
+        self._send_command(
+            "apply_calibration",
+            {"chroma_threshold": int(chroma_threshold)},
+        )
+        self.info(f"Color calibration sent: chroma_threshold={chroma_threshold}")
 
     def set_overlay(self, text: str) -> None:
         self._send_command("overlay", {"text": text})
 
-    def capture_calibration_sample(self, label: str, timeout: float = 2.0) -> int | None:
+    def capture_calibration_sample(self, label: str, timeout: float = 5.0) -> dict | None:
+        """Trigger the daemon to capture N raw frames for ``label``.
+
+        Returns the daemon's chroma-stats summary (median/p95/max chroma,
+        mean a*/b* of chromatic pixels, samples directory) or ``None`` on
+        failure. The raw frames live under ``samples_dir`` for offline use.
+        """
         response = self._send_command(
             "capture_calibration_sample",
             {"label": label},
@@ -283,7 +293,10 @@ class ColorDetectionService(RobotService):
             self.warn(f"Calibration capture failed for {label}")
             return None
         data = response.get("data") or {}
-        return int(data["max_sat"]) if "max_sat" in data else None
+        if "p95_chroma" not in data:
+            self.warn(f"Calibration capture for {label} returned no chroma stats: {data}")
+            return None
+        return data
 
     def _send_command(
         self,
