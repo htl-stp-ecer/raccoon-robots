@@ -1,7 +1,7 @@
 - M000SetupMission: setup
-#- M010DriveToDrumsMission
+- M010DriveToDrumsMission
 - M020CollectDrumsMission
-#- M030DriveToPipeMission
-#- M050DriveToOtherPipeMission
+- M030DriveToPipeMission
+- M050DriveToOtherPipeMission
 - M999ShutdownMission: shutdown
 #- M1009TestMission
