@@ -35,8 +35,6 @@ class M000SetupMission(SetupMission):
                 Defs.drum_pusher_servo.open(),
             ),
 
-            wait_for_button(),
-
             # color calibration
             parallel(
                 calibrate_colors(),
@@ -51,8 +49,14 @@ class M000SetupMission(SetupMission):
             # Defs.pom_remover_servo.left(),
             # calibrate_analog_sensor(Defs.et_range_finder),
 
-            calibrate(distance_cm=50, speed=0.5, exclude_ir_sensors=[
-                Defs.wait_for_light_sensor,
-                Defs.drum_light_sensor,
-            ]),
+            Defs.lift_drums_servo.up(),
+
+            calibrate(
+                distance_cm=50,
+                speed=0.5,
+                exclude_ir_sensors=[
+                    Defs.wait_for_light_sensor,
+                    Defs.drum_light_sensor,
+                ],
+            ),
         ])

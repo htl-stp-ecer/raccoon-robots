@@ -2,16 +2,11 @@ from raccoon import *
 from src.hardware.defs import *
 from src.steps.drum_lifting_step import *
 
+
 class M010DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             mark_heading_reference(origin_offset_deg=-90),
-
-            background(
-                Defs.lift_drums_servo.up(),
-            ),
-
-            wait_for_seconds(0.3),
 
             drive_backward(heading=90).until(
                 on_black(Defs.rear_left_ir_sensor)
