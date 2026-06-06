@@ -2,7 +2,6 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.calibrate_analog_drive import on_analog_flank
-from src.steps.drive_to_analog_target_bidirectional import drive_to_analog_target_bidirectional
 
 
 class M060GrabGreenCubeMission(Mission):

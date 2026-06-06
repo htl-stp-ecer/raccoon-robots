@@ -19,7 +19,7 @@ class M000SetupMission(SetupMission):
             # arm start position
             background(
                 seq([
-                    # TODO: Im sorry but me don't care about raccon not letting me do my servo shit (fix it some day) LG Matthias
+                    # TODO: Im sorry but me don't care about raccoon not letting me do my servo shit (fix it some day) LG Matthias
                     # ok :) 👍
 
                     Defs.arm_claw.idle(),
