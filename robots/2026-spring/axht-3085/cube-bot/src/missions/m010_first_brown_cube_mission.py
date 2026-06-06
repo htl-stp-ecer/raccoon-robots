@@ -26,37 +26,32 @@ def backward_line_follow():
 class M010FirstBrownCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            background( # make sure claw is closed
-                step=Defs.arm_claw.idle(),
-            ),
-
-            # align to black line linear
-            forward_line_follow().until(
-                on_black(Defs.front.right)
-            ),
-
             # line follow backwards to retrieve spot
             background(
-                step= grab_brown_cube_start_pos(),
+                step=parallel(
+                    grab_brown_cube_start_pos(),
+                    Defs.arm_claw.idle(),# make sure claw is closed
+                ),
                 name="prep_arm"
             ),
-            backward_line_follow().until(
-                on_white(Defs.front.left)
-                + after_cm(13)
+            drive_forward().until(
+                over_line(Defs.rear.left) #if we ever are over the line this conditio will fix it
+                + after_cm(6)
             ),
             # go into correct lateral position for pickup
-            strafe_left(heading=180).until(
-                on_black(Defs.front.right),
+            strafe_right(heading=0).until(
+                on_black(Defs.rear.left),
             ),
             wait_for_background(
                 name="prep_arm"
             ),
 
-            grab_brown_cube(LineSide.LEFT, heading=180),
+            grab_brown_cube(LineSide.LEFT, heading=0),
+            turn_to_heading_right(0),
 
             # move away from shared warehouse
-            strafe_right(heading=180).until(
-                on_black(Defs.front_left_light_sensor)
+            strafe_left(heading=0).until(
+                over_line(Defs.front.left)
             ),
 
             background(

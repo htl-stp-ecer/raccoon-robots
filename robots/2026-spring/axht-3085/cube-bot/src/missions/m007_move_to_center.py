@@ -9,7 +9,7 @@ from src.steps.line_follow_dsl import lateral_follow_line_single_free, lateral_f
 def left_lateral_line_follow():
     return lateral_follow_line_single(
         sensor=Defs.front.right,
-        speed=-1,
+        speed=1,
         side=LineSide.RIGHT,
         kp=0.4,
         ki=0.05,
@@ -30,31 +30,21 @@ def pipe_align():
 class M007MoveToCenter(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            #removed the aling since poms are there and alin was bad
-            #pipe_align().until(
-            #    after_seconds(0.8)
-            #),
-            #mark_heading_reference(origin_offset_deg=180),
-
-            # align to drop green cube
-            left_lateral_line_follow().until(
+            mark_heading_reference(origin_offset_deg=90),
+            drive_forward().until(
                 over_line(Defs.rear.left)
+                + (on_black(Defs.front.right) | on_black(Defs.front.left))
             ),
-            strafe_right(heading=180, speed=0.4).until(
-               on_black(Defs.rear.left)
-            ),
-
-            # drop green cube
-            arm.move_angles(10, 60, -66).arm_speeds(sholder=100),
-            Defs.arm_claw.open(80),
-            arm.move_angles(10, 100, -62),
 
             # drive to line
             left_lateral_line_follow().until(
-                over_line(Defs.rear.left)
-                + after_cm(23)
+                after_cm(40)
             ),
-            drive_angle(angle_deg=-60).until(
-                on_black(Defs.front.left)
-            ),
+
+            turn_to_heading_left(0),
+
+            drive_backward().until(
+                on_black(Defs.rear.left)
+            )
+
         ])

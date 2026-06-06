@@ -8,7 +8,7 @@ from src.steps.arm_steps import *
 def line_follow():
     return strafe_follow_line_single(
         sensor=Defs.front.left,
-        speed=1,
+        speed=-1,
         side=LineSide.RIGHT,
         kp=0.6,
         ki=0.3,
@@ -25,24 +25,22 @@ class M020SecondBrownCubeMission(Mission):
                     wait_for_background(name="drop_cube"),
                     arm.move_angles(0, 65, 0, speed=150),
                     Defs.arm_claw.idle(),
-                    # wait_for(
-                    #     over_line(Defs.rear.left) | after_seconds(2),
-                    # ),
                     grab_brown_cube_start_pos()
                 ]),
 
                 # drive forward to 2nd cube pickup
                 seq([
                     line_follow().until(
-                        over_line(Defs.rear.left)
-                        + after_cm(15)
-                    ),
-                    # go into correct lateral position for pickup
-                    strafe_left(heading=180).until(
-                        on_black(Defs.front.right),
+                        over_line(Defs.front.right)
+                        + after_cm(20)
                     ),
                 ]),
             ),
+            # go into correct lateral position for pickup
+            strafe_right(heading=0).until(
+                on_black(Defs.rear.left),
+            ),
 
-            grab_brown_cube(LineSide.RIGHT, heading=180),
+            grab_brown_cube(LineSide.RIGHT, heading=0),
+            turn_to_heading_right(0),
         ])
