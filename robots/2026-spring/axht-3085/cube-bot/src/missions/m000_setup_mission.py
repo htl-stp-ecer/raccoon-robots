@@ -11,7 +11,11 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
-            arm.move_angles(85, 70, -50),
+            wait_for_button(),
+            Defs.arm_claw.grab(),
+            arm.move_angles(90, 100, -35),
+            wait_for_button(),
+            arm.move_angles(90, 115, -95),
             wait_for_button(),
 
             pause_setup_timer(),
