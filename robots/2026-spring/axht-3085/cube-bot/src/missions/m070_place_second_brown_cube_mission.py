@@ -51,7 +51,7 @@ class M070PlaceSecondBrownCubeMission(Mission):
 
             # align on wall
             wall_align().until(
-                after_seconds(0.4),
+                after_seconds(0.7),
             ),
             mark_heading_reference(),
 

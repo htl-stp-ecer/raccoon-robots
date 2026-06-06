@@ -5,9 +5,9 @@ from src.steps.arm_steps import *
 
 def forward_line_follow():
     return strafe_follow_line_single(
-        sensor=Defs.front.right,
+        sensor=Defs.front.left,
         speed=1,
-        side=LineSide.LEFT,
+        side=LineSide.RIGHT,
         kp=0.7,
         ki=0.3,
         kd=0.1,
@@ -15,9 +15,9 @@ def forward_line_follow():
 
 def backward_line_follow():
     return strafe_follow_line_single(
-        sensor=Defs.front.right,
+        sensor=Defs.front.left,
         speed=-1,
-        side=LineSide.LEFT,
+        side=LineSide.RIGHT,
         kp=0.7,
         ki=0.3,
         kd=0.1,
@@ -32,7 +32,7 @@ class M010FirstBrownCubeMission(Mission):
 
             # align to black line linear
             forward_line_follow().until(
-                on_black(Defs.front.left)
+                on_black(Defs.front.right)
             ),
 
             # line follow backwards to retrieve spot
@@ -44,7 +44,10 @@ class M010FirstBrownCubeMission(Mission):
                 on_white(Defs.front.left)
                 + after_cm(13)
             ),
-            turn_to_heading_left(180),
+            # go into correct lateral position for pickup
+            strafe_left(heading=180).until(
+                on_black(Defs.front.right),
+            ),
             wait_for_background(
                 name="prep_arm"
             ),

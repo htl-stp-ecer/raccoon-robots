@@ -39,21 +39,26 @@ class M005MoveDownRampMission(Mission):
             line_follow().until(
                 after_cm(45)
             ),
-            drive_backward(speed=1.0, heading=180).until( #drive to
+            drive_backward(speed=1.0, heading=180).until( # drive to
                 on_analog_flank(Defs.et_sensor, set_name="upper_cube")
             ),
             arm.move_angles(-90, 80, -120),
             Defs.arm_claw.strong_grab(),
 
-            # move cube out of the way
-            background(
-                arm.move_angles(0, 100, -80).arm_speeds(base=50),
+            # move arm out of the way
+            arm.move_angles(0, 100, -80).arm_speeds(base=50),
+
+            # push poms down ramp a little
+            line_follow().until(
+                after_cm(2),
             ),
+            drive_forward(8),
 
             line_follow().until(
-                after_cm(40) +
-                (
-                        over_line(Defs.front.right) | after_cm(60)
+                after_cm(42)
+                + (
+                    over_line(Defs.front.right)
+                    | after_cm(60)
                 )
 
             ),

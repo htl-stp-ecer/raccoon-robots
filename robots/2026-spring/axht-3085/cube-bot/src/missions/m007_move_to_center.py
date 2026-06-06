@@ -55,7 +55,6 @@ class M007MoveToCenter(Mission):
                 + after_cm(23)
             ),
             drive_angle(angle_deg=-60).until(
-                over_line(Defs.rear.left)
-                + on_black(Defs.front.right)
+                on_black(Defs.front.left)
             ),
         ])

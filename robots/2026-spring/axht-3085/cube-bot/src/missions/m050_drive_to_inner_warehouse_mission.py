@@ -24,7 +24,7 @@ class M050DriveToInnerWarehouseMission(Mission):
 
             background(
                 seq([
-                    arm.move_angles(10, 135, -30),
+                    arm.move_angles(10, 135, -30, speed=100),
                     Defs.arm_claw.idle(),
                     wait_for_seconds(3),
                     arm.move_angles(-90, 90, 0, speed=100),

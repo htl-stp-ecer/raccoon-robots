@@ -25,9 +25,9 @@ class M020SecondBrownCubeMission(Mission):
                     wait_for_background(name="drop_cube"),
                     arm.move_angles(0, 65, 0, speed=150),
                     Defs.arm_claw.idle(),
-                    wait_for(
-                        over_line(Defs.rear.left) | after_seconds(2),
-                    ),
+                    # wait_for(
+                    #     over_line(Defs.rear.left) | after_seconds(2),
+                    # ),
                     grab_brown_cube_start_pos()
                 ]),
 
@@ -37,17 +37,12 @@ class M020SecondBrownCubeMission(Mission):
                         over_line(Defs.rear.left)
                         + after_cm(15)
                     ),
+                    # go into correct lateral position for pickup
+                    strafe_left(heading=180).until(
+                        on_black(Defs.front.right),
+                    ),
                 ]),
             ),
-
-            # go into correct lateral position for pickup
-            strafe_left(heading=180).until(
-                on_black(Defs.front.right),
-            ),
-            # dont strafe back to white so the arm reaches te cube better
-            # strafe_right(heading=180, speed=0.2).until(
-            #    on_white(Defs.front.right),
-            # ),
 
             grab_brown_cube(LineSide.RIGHT, heading=180),
         ])

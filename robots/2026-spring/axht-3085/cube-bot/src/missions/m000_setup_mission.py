@@ -19,11 +19,11 @@ class M000SetupMission(SetupMission):
             # arm start position
             background(
                 seq([
-                    Defs.arm_claw.idle(),
                     # TODO: Im sorry but me don't care about raccon not letting me do my servo shit (fix it some day) LG Matthias
-                    # ok :)👍
-                    arm.move_angles(0, 90, -90),
-                    servo(Defs.arm_sholder, 25),
+                    # ok :) 👍
+
+                    Defs.arm_claw.idle(),
+                    arm.move_angles(0, 100, -90),
                     servo(Defs.arm_elbow, -28),
 
                     wait_for_seconds(1),
@@ -32,31 +32,45 @@ class M000SetupMission(SetupMission):
             ),
 
             custom_calibrate(
-                distance_cm=130,
+                distance_cm=80,
                 calibration_sets=["default"],
-                ema_alpha=0.3
+                ema_alpha=0.8
             ),
 
+            servo(Defs.arm_sholder, 25),
+
             wait_for_button("calibrate lower cube"),
-            calibrate_analog_drive(Defs.et_sensor,
-                                   set_name="lower_cube",
-                                   speed=-0.4,
-                                   drive_duration_s=2
-                                   ),
+            calibrate_analog_drive(
+                Defs.et_sensor,
+                set_name="lower_cube",
+                speed=-0.4,
+                drive_duration_s=2
+            ),
+
+            wait_for_button("calibrate cube stack"),
+            calibrate_analog_drive(
+                Defs.et_sensor,
+                set_name="cube_stack",
+                speed=0.4,
+                drive_duration_s=2
+            ),
 
             wait_for_button("calibrate upper cube"),
             mark_heading_reference(),
-            calibrate_analog_drive(Defs.et_sensor,
-                                   set_name="upper_cube",
-                                   speed=0.4,
-                                   drive_duration_s=2
-                                   ),
+            calibrate_analog_drive(
+                Defs.et_sensor,
+                set_name="upper_cube",
+                speed=0.4,
+                drive_duration_s=2
+            ),
 
             custom_calibrate(
                 sensor_drive_cm=90,
                 calibrate_distance=False,
                 calibration_sets=["upper"],
             ),
+
+            switch_calibration_set("upper"),
 
             wait_for_button("drive into starting box"),
             drive_backward().until(
@@ -66,11 +80,11 @@ class M000SetupMission(SetupMission):
             drive_backward().until(
                 on_black(Defs.front.right)
             ),
-            strafe_left().until( #stras into line
+            strafe_left().until(  # strafe into line
                 over_line(Defs.front.right)
                 + after_cm(2)
             ),
-            drive_forward(cm=9),
+            drive_forward(8.5),
             arm.move_angles(-30, 130, -110),
 
             fully_disable_servos(),

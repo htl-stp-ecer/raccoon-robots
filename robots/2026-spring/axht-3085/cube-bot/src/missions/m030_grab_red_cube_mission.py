@@ -2,6 +2,7 @@ from raccoon import *
 
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
+from src.steps.calibrate_analog_drive import on_analog_flank
 
 
 def backward_line_follow():
@@ -29,16 +30,15 @@ class M030GrabRedCubeMission(Mission):
             ),
 
             # drive to red cube
-            # TODO: Maby use the et sensor
             backward_line_follow().until(
                 over_line(Defs.rear.left)
-                + after_cm(4)
+                + on_analog_flank(Defs.et_sensor, set_name="cube_stack")
             ),
             turn_to_heading_left(180),
 
             # place down cube
             arm.move_angles(-90, 90, -90),
-            Defs.arm_claw.open(speed=100),
+            Defs.arm_claw.open(speed=70),
 
             # drive to side and grab both cubes
             strafe_right(heading=180).until(
@@ -47,7 +47,7 @@ class M030GrabRedCubeMission(Mission):
             arm.move_angles(-90, 30, -20),
 
             timeout(
-                step= strafe_left(heading=180).until(
+                step=strafe_left(heading=180).until(
                     on_black(Defs.rear.left)
                     + after_cm(1)
                 ),
