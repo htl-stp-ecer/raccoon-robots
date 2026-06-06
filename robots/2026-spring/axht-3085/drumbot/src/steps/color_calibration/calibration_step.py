@@ -17,7 +17,7 @@ from dataclasses import dataclass
 
 import cv2
 
-from raccoon import GenericRobot, dsl
+from raccoon import GenericRobot, dsl, run
 from raccoon.step.calibration import CalibrateStep
 
 from src.hardware.usb_camera import USBCamera
@@ -264,4 +264,7 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
 @dsl()
 def calibrate_colors() -> ColorCalibrationStep:
     """Interactive chroma-threshold calibration for daemon-backed drum detection."""
-    return ColorCalibrationStep()
+    if os.getenv("DRUMBOT_FAKE_CAMERA") == "1":
+        return run(lambda robot: None)
+    else:
+        return ColorCalibrationStep()
