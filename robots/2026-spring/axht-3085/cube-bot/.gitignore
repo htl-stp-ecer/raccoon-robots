@@ -27,6 +27,7 @@ build/
 src/hardware/defs.py
 src/hardware/defs.pyi
 src/hardware/robot.py
+src/hardware/.raccoon_codegen_cache.json
 
 # Logs
 logs/
