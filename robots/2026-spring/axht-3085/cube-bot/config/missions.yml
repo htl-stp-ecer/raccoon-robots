@@ -5,6 +5,4 @@
 - M020SecondBrownCubeMission
 - M030GrabRedCubeMission
 - M040DropFirstCubeStack
-#- M050DriveToInnerWarehouseMission
-#- M060GrabGreenCubeMission
-#- M070PlaceSecondBrownCubeMission
+- M050DriveUpRampMission
