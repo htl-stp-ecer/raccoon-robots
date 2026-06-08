@@ -36,14 +36,14 @@ class M030GrabRedCubeMission(Mission):
             ),
 
             # place down cube
-            arm.move_angles(90, 115, -95),
+            arm.move_angles(90, 115, -100),
             Defs.arm_claw.open(speed=70),
 
             # drive to side and grab both cubes
             strafe_left(heading=0).until(
-                after_cm(10)
+                after_cm(12)
             ),
-            arm.move_angles(90, 60, -55),
+            arm.move_angles(90, 50, -40),
 
             strafe_right(heading=0).until(
                 after_cm(6)

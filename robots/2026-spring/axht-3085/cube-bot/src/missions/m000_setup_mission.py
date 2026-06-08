@@ -1,9 +1,7 @@
 from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
-from src.steps.arm_steps import grab_brown_cube_start_pos, grab_brown_cube, drop_cube_into_container
 from src.steps.calibrate_analog_drive import calibrate_analog_drive
-from src.steps.custom_calibrate import custom_calibrate
 
 
 class M000SetupMission(SetupMission):
@@ -11,13 +9,6 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
-            wait_for_button(),
-            Defs.arm_claw.grab(),
-            arm.move_angles(90, 100, -35),
-            wait_for_button(),
-            arm.move_angles(90, 115, -95),
-            wait_for_button(),
-
             pause_setup_timer(),
             fully_disable_servos(),
 

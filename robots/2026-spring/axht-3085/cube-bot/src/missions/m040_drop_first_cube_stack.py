@@ -55,7 +55,7 @@ class M040DropFirstCubeStack(Mission):
                 ),
             ),
             mark_heading_reference(),
-            arm.move_angles(85, 75, -55, speed=150),
+            arm.move_angles(93, 75, -55, speed=150),
 
             # place cube tower
             Defs.arm_claw.open(),
