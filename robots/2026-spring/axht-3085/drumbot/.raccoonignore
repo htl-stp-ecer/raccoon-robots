@@ -2,3 +2,4 @@
 .idea
 __pycache_
 drum_detections
+calibration_samples

@@ -6,18 +6,25 @@ from src.steps.drum_lifting_step import *
 class M010DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            mark_heading_reference(origin_offset_deg=-90),
+            mark_heading_reference(),
 
-            drive_backward(heading=90).until(
-                on_black(Defs.rear_left_ir_sensor)
+            #drive_backward(heading=90).until(
+            #    on_black(Defs.rear_left_ir_sensor)
+            #),
+
+            #turn_right(45),
+            #drive_forward(14),
+            #parallel(
+            #    turn_to_heading_left(0),
+            #    Defs.pom_remover_servo.right(),
+            #),
+
+            drive_forward(heading=0).until(
+                over_line(Defs.front_right_ir_sensor)
             ),
-
             turn_right(45),
-            drive_forward(14),
-            parallel(
-                turn_to_heading_left(0),
-                Defs.pom_remover_servo.right(),
-            ),
+            drive_forward(cm=15, speed=0.6),
+            turn_to_heading_right(0),
 
             # wait a little and then remove the blue pom
             background(
@@ -29,8 +36,7 @@ class M010DriveToDrumsMission(Mission):
             ),
 
             drive_forward(heading=0).until(
-                after_cm(7)
-                + over_line(Defs.front_right_ir_sensor)
+                over_line(Defs.front_right_ir_sensor)
                 + after_cm(15)
             ),
             turn_to_heading_left(0),
@@ -44,7 +50,7 @@ class M010DriveToDrumsMission(Mission):
             ),
 
             wall_align_forward(accel_threshold=0.3),
-            mark_heading_reference(),
+            #mark_heading_reference(),
         ])
 
 

@@ -30,5 +30,6 @@ class M020CollectDrumsMission(Mission):
         return seq([
             wait_for_background("lower_drum"),
             collect_drums(),
+            mark_heading_reference(origin_offset_deg=0),
             after_collect(),
         ])
