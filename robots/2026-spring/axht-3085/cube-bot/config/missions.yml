@@ -6,3 +6,6 @@
 - M030GrabRedCubeMission
 - M040DropFirstCubeStack
 - M050DriveUpRampMission
+- M070GrabUpperCube
+- M080DriveToExternalLoadingDock
+- M090PlaceSecondCubeMission

@@ -36,17 +36,16 @@ def backward_line_follow():
     )
 
 
-class M070PlaceSecondBrownCubeMission(Mission):
+class M090PlaceSecondCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # navigate to external dock
             line_follow().until(
-                after_cm(75),
+                after_cm(10),
             ),
             drive_backward(cm=2),
             strafe_right().until(
-                over_line(Defs.rear.left)
-                + after_cm(5)
+                after_cm(20)
             ),
 
             # align on wall
@@ -58,8 +57,7 @@ class M070PlaceSecondBrownCubeMission(Mission):
             # start positioning arm while driving backward
             background(
                 seq([
-                    arm.move_angles(-90, 110, -60, speed=100),
-                    arm.move_angles(30, 110, -60, speed=120),
+                    arm.move_angles(30, 110, -60, speed=100),
                 ]),
                 name="prepare_arm_position"
             ),
@@ -71,7 +69,8 @@ class M070PlaceSecondBrownCubeMission(Mission):
 
             # place cube
             wait_for_background("prepare_arm_position"),
-            arm.move_angles(31, 30, -20, speed=100),
+            arm.move_angles(31, 30, -20, speed=70),
+            wait_for_seconds(0.5),
             Defs.arm_claw.full_open(),
 
             grab_cube_from_container(),

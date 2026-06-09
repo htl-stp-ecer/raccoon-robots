@@ -18,6 +18,9 @@ def line_follow():
 class M005MoveDownRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            background( #make sure servos are re enabled
+                arm.move_angles(-30, 130, -110),
+            ),
             mark_heading_reference(origin_offset_deg=-90),
             switch_calibration_set("upper"),
             turn_left(90),

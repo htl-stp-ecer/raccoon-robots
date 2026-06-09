@@ -31,8 +31,9 @@ class M020SecondBrownCubeMission(Mission):
                 # drive forward to 2nd cube pickup
                 seq([
                     line_follow().until(
-                        over_line(Defs.front.right)
-                        + after_cm(20)
+                        (over_line(Defs.front.right)
+                        + after_cm(20))
+                        | after_seconds(6)
                     ),
                 ]),
             ),

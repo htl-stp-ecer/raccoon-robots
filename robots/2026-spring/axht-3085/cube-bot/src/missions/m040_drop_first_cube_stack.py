@@ -44,7 +44,7 @@ class M040DropFirstCubeStack(Mission):
                 on_black(Defs.rear.left)
             ),
             line_follow().until(
-                after_cm(115)
+                after_cm(120)
             ),
             parallel(
                 align_line_follow().until(
@@ -59,5 +59,4 @@ class M040DropFirstCubeStack(Mission):
 
             # place cube tower
             Defs.arm_claw.open(),
-            wait_for_button(),
         ])
