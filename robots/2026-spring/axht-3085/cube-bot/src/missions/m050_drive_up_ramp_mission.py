@@ -30,7 +30,7 @@ class M050DriveUpRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # move away from cube stack
-            arm.move_angles(sholder_deg=110, elbow_deg=-90).arm_speeds(sholder=100, elbow=200),
+            arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
             drive_backward(cm=10),
             strafe_left().until(
                 after_cm(40)
@@ -63,6 +63,6 @@ class M050DriveUpRampMission(Mission):
             # magical drive up ramp
             drive_backward(heading=0).until(
                 on_black(Defs.front.right)
-                + after_cm(85)
+                + after_cm(80)
             ),
         ])

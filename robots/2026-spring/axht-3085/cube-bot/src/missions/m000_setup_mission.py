@@ -9,7 +9,6 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
-
             fully_disable_servos(),
 
             pause_setup_timer(),
@@ -37,7 +36,6 @@ class M000SetupMission(SetupMission):
             calibrate(
                 distance_cm=70,
                 calibration_sets=["default", "upper"],
-                ema_alpha=0.9
             ),
 
             servo(Defs.arm_sholder, 25),
@@ -58,6 +56,27 @@ class M000SetupMission(SetupMission):
                 drive_duration_s=2
             ),
 
-            arm.move_angles(-30, 130, -110),
+            wait_for_button("go to strart possiont"),
+            mark_heading_reference(),
+            #align on the black line on the right
+            strafe_right().until(
+                on_black(Defs.front.right)
+            ),
+            strafe_left().until(
+                on_white(Defs.front.right)
+                + after_cm(1)
+            ),
+            #aling witht the black line in front
+            drive_forward().until(
+                on_black(Defs.front.left)
+            ),
+            drive_backward().until(
+                on_white(Defs.front.left)
+                + after_cm(1)
+            ),
+            turn_to_heading_right(0),
+
+
+            arm.move_angles(-90, 130, -110),
             fully_disable_servos(),
         ])

@@ -36,7 +36,7 @@ class M010FirstBrownCubeMission(Mission):
             ),
             drive_forward().until(
                 over_line(Defs.rear.left) #if we ever are over the line this conditio will fix it
-                + after_cm(6)
+                + after_cm(7)
             ),
             # go into correct lateral position for pickup
             strafe_right(heading=0).until(

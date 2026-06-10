@@ -22,8 +22,8 @@ def align_line_follow():
         speed=0.4,
         side=LineSide.LEFT,
         kp=0.6,
-        ki=0.5,
-        kd=0.05,
+        ki=0.3,
+        kd=0.0,
     )
 
 
@@ -34,7 +34,7 @@ class M040DropFirstCubeStack(Mission):
                 step=seq([
                     wait_for_background("arm_up"),
                     arm.move_angles( #move servo forward
-                        0, 110, -70, speed=150
+                        0, 110, -60, speed=150
                     ),
                 ])
             ),
@@ -50,13 +50,19 @@ class M040DropFirstCubeStack(Mission):
                 align_line_follow().until(
                     after_seconds(0.4),
                 ),
-                arm.move_angles(  # move servo forward
-                    85, 70, -30, speed=150
+                arm.move_angles(
+                    base_deg=91, speed=80
                 ),
             ),
             mark_heading_reference(),
-            arm.move_angles(91, 75, -55, speed=150),
+            strafe_left(heading=0).until(
+                on_black(Defs.rear.left)
+            ),
+            turn_to_heading_right(0),
 
             # place cube tower
+            arm.move_angles(91,elbow_deg=-63, speed=150),
+            arm.move_angles(sholder_deg=88, speed=150),
+            wait_for_seconds(0.5),
             Defs.arm_claw.open(),
         ])

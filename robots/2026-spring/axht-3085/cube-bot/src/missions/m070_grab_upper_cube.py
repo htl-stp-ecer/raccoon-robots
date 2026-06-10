@@ -29,6 +29,7 @@ class M070GrabUpperCube(Mission):
             # push cube back
             drive_angle(-130).until(
                 on_black(Defs.front.left)
+                + after_cm(2),
             ),
 
             arm.move_angles(elbow_deg=0),
@@ -36,21 +37,20 @@ class M070GrabUpperCube(Mission):
                 Defs.arm_claw.full_open(),
             ),
             # drive back befor grabing cube
-            strafe_right().until(
+            strafe_right(heading=0).until(
                 over_line(Defs.rear.left)
             ),
-            drive_backward(cm=15),
+            drive_backward(cm=15, heading=0),
 
             arm.move_angles(0, 10, 0, speed=150),
-            drive_forward(cm=15),
+            drive_forward(cm=11, heading=0),
             Defs.arm_claw.strong_grab(speed=100),
             Defs.arm_claw.open(speed=100),
             Defs.arm_claw.strong_grab(speed=100),
 
-            background(
-                arm.move_angles(0, 90, 45, speed=70),
-            ),
-            strafe_left().until(
+            #move arm up
+            arm.move_angles(0, 90, 50, speed=70),
+            strafe_left(heading=0).until(
                 over_line(Defs.front.left)
             ),
         ])
