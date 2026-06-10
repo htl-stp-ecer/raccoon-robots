@@ -64,5 +64,7 @@ class M050DriveUpRampMission(Mission):
             drive_backward(heading=0).until(
                 on_black(Defs.front.right)
                 + after_cm(80)
+                + on_black(Defs.front.right)
             ),
+            drive_forward(cm=10)
         ])

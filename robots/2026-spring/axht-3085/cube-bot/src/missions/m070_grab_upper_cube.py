@@ -29,27 +29,36 @@ class M070GrabUpperCube(Mission):
             # push cube back
             drive_angle(-130).until(
                 on_black(Defs.front.left)
-                + after_cm(2),
             ),
 
             arm.move_angles(elbow_deg=0),
             background(  # open claw to gab cube + pallet
                 Defs.arm_claw.full_open(),
             ),
-            # drive back befor grabing cube
+
+            # drive back befor grabing cube to habe some space for the arm
             strafe_right(heading=0).until(
                 over_line(Defs.rear.left)
+                + after_cm(3),
             ),
             drive_backward(cm=15, heading=0),
 
+            #put arm down
             arm.move_angles(0, 10, 0, speed=150),
-            drive_forward(cm=11, heading=0),
+
+            #drive back to cube
+            drive_forward(cm=12, heading=0),
+
+            #close claw
             Defs.arm_claw.strong_grab(speed=100),
             Defs.arm_claw.open(speed=100),
             Defs.arm_claw.strong_grab(speed=100),
 
             #move arm up
             arm.move_angles(0, 90, 50, speed=70),
+            drive_backward().until(
+                over_line(Defs.rear.left)
+            ),
             strafe_left(heading=0).until(
                 over_line(Defs.front.left)
             ),

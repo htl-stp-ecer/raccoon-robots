@@ -16,6 +16,7 @@ def line_follow():
         kd=0.0,
     )
 
+
 def wall_align():
     return strafe_follow_line_single_free(
         sensor=Defs.rear.left,
@@ -26,15 +27,26 @@ def wall_align():
         kd=0.05,
     )
 
+
 class M080DriveToExternalLoadingDock(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            mark_heading_reference(),
-            line_follow().until(
-                after_cm(100)
-                + over_line(Defs.rear.left)
-                + after_cm(5)
+            timeout_or(
+                step=line_follow().until(
+                    over_line(Defs.rear.left)
+                    + after_cm(160)
+                    + over_line(Defs.rear.left)
+                    + after_cm(5)
+                ),
+                seconds=12,
+                fallback=seq([
+                    drive_backward().until(
+                        on_black(Defs.rear.left)
+                    ),
+                    drive_forward(cm=10),
+                ])
             ),
+
             switch_calibration_set("default"),
             strafe_right(heading=0).until(
                 over_line(Defs.front.right)
