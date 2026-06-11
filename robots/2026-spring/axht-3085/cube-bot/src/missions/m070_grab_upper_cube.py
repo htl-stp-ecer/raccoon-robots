@@ -44,7 +44,7 @@ class M070GrabUpperCube(Mission):
             drive_backward(cm=15, heading=0),
 
             #put arm down
-            arm.move_angles(0, 10, 0, speed=150),
+            arm.move_angles(0, 10, 0, speed=120),
 
             #drive back to cube
             drive_forward(cm=12, heading=0),

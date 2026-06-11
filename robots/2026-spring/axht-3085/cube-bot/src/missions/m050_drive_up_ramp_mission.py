@@ -66,5 +66,4 @@ class M050DriveUpRampMission(Mission):
                 + after_cm(80)
                 + on_black(Defs.front.right)
             ),
-            drive_forward(cm=10)
         ])
