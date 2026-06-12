@@ -75,6 +75,7 @@ class VisionDaemon:
         )
         self._calibration_session_dir: str | None = None
         self._calibration_sample_count = int(os.environ.get("DRUMBOT_CALIBRATION_SAMPLE_COUNT", "30"))
+        self._calibration_settle_seconds = float(os.environ.get("DRUMBOT_CALIBRATION_SETTLE_SECONDS", "0.25"))
         self._detection_debug_enabled = os.environ.get("DRUMBOT_DETECTION_DEBUG", "1") != "0"
         self._detection_debug_root = os.environ.get("DRUMBOT_DETECTION_DEBUG_DIR", "detection_debug")
         self._detection_debug_dir: str | None = None
@@ -295,10 +296,15 @@ class VisionDaemon:
         n = max(1, self._calibration_sample_count)
         captured: list[np.ndarray] = []
         seen_ids: set[int] = set()
+        start_frame_id = self._camera.total_frames
+        self._camera.clear_buffer()
+        if self._calibration_settle_seconds > 0:
+            time.sleep(self._calibration_settle_seconds)
+
         deadline = time.monotonic() + 3.0
         while len(captured) < n and time.monotonic() < deadline:
             frame_id = self._camera.total_frames
-            if frame_id and frame_id not in seen_ids:
+            if frame_id > start_frame_id and frame_id not in seen_ids:
                 frame = self._camera.grab_frame()
                 if frame is not None:
                     captured.append(frame)
@@ -337,6 +343,7 @@ class VisionDaemon:
         info(
             "Calibration capture: "
             f"label={safe_label}, frames={len(captured)}, "
+            f"start_frame_id={start_frame_id}, settle_s={self._calibration_settle_seconds:.2f}, "
             f"median_C={summary['median_chroma']:.1f}, p95_C={summary['p95_chroma']:.1f}, "
             f"max_C={summary['max_chroma']:.1f}, "
             f"mean_a*={summary['mean_a_chromatic']:.1f}, mean_b*={summary['mean_b_chromatic']:.1f}, "

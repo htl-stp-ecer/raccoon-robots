@@ -23,7 +23,12 @@ from raccoon.step.calibration import CalibrateStep
 from src.hardware.usb_camera import USBCamera
 from src.service.color_detection_service import ColorDetectionService
 
-from .screens import BaselineScreen, ColorConfirmScreen, ColorTestScreen
+from .screens import (
+    BaselineScreen,
+    ColorCapturingScreen,
+    ColorConfirmScreen,
+    ColorTestScreen,
+)
 
 CONFIDENCE_THRESHOLD = 0.9
 
@@ -122,7 +127,18 @@ class ColorCalibrationStep(CalibrateStep[ColorCalibration]):
         confirmed = await self.show(screen)
         if not confirmed:
             return None
-        return service.capture_calibration_sample(label)
+
+        async def capture() -> dict | None:
+            loop = asyncio.get_running_loop()
+            return await loop.run_in_executor(
+                None,
+                lambda: service.capture_calibration_sample(label),
+            )
+
+        return await self.run_with_ui(
+            ColorCapturingScreen(instruction=instruction, badge=badge),
+            capture,
+        )
 
     async def _collect(self, robot: GenericRobot) -> ColorCalibration | None:
         blue = await self._capture_sample(robot, "Place BLUE drum in view", "BLUE", "blue")
