@@ -208,6 +208,7 @@ class VisionDaemon:
             "paused": self._paused,
             "total_frames": self._camera.total_frames,
             "buffer_count": self._camera.buffer_count,
+            "chroma_threshold": self._camera.chroma_threshold,
         }
         payload.update(extra)
         msg.value = json.dumps(payload)

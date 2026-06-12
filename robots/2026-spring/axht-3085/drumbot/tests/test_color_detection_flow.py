@@ -14,6 +14,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from src.service.color_detection_service import ColorDetectionService
+from raccoon_transport.types.raccoon.cam_blob_t import cam_blob_t
+from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
 
 
 def make_color_service() -> ColorDetectionService:
@@ -21,6 +23,27 @@ def make_color_service() -> ColorDetectionService:
     svc = ColorDetectionService(robot)
     # Don't start the real camera/thread — we'll poke _latest_color directly.
     return svc
+
+
+def make_detection_message(label: str | None) -> bytes:
+    msg = cam_detections_t()
+    msg.timestamp = 1
+    msg.frame_width = 160
+    msg.frame_height = 120
+    msg.detections = []
+    if label is not None:
+        blob = cam_blob_t()
+        blob.timestamp = 1
+        blob.label = label
+        blob.x = 10
+        blob.y = 10
+        blob.width = 20
+        blob.height = 20
+        blob.area = 400
+        blob.confidence = 1.0
+        msg.detections = [blob]
+    msg.num_detections = len(msg.detections)
+    return msg.encode()
 
 
 class TestColorSurvivesLockToDetect:
@@ -104,6 +127,30 @@ class TestColorSurvivesLockToDetect:
 
         second = loop.run_until_complete(svc.detect_color())
         assert second is None, "detect_color() should be single-shot"
+
+    def test_empty_daemon_detection_clears_visible_color(self):
+        """The calibration test UI must return to NONE when detections disappear."""
+        svc = make_color_service()
+
+        svc._on_detections("raccoon/cam/detections", make_detection_message("pink"))
+        assert svc.peek_color == "pink"
+        assert svc.peek_confidence == 1.0
+        assert svc._color_event.is_set()
+
+        svc._on_detections("raccoon/cam/detections", make_detection_message(None))
+        assert svc.peek_color is None
+        assert svc.peek_confidence == 0.0
+        assert not svc._color_event.is_set()
+
+    def test_empty_daemon_detection_does_not_clear_locked_color(self):
+        """Locked colors must survive until SortIntoSlotStep consumes them."""
+        svc = make_color_service()
+
+        svc._on_detections("raccoon/cam/detections", make_detection_message("blue"))
+        svc.lock_color()
+        svc._on_detections("raccoon/cam/detections", make_detection_message(None))
+
+        assert svc.peek_color == "blue"
 
 
 class TestCollectionFlowDoesNotReset:

@@ -115,6 +115,8 @@ class ColorDetectionService(RobotService):
                 )
                 self._status_event.clear()
                 self._status_event.wait(timeout=remaining)
+
+            self._apply_stored_calibration()
         except Exception:
             self.stop_camera()
             raise
@@ -203,10 +205,13 @@ class ColorDetectionService(RobotService):
         elif color is None:
             self._color_first_seen = None
 
-        if color is not None:
-            with self._lock:
+        with self._lock:
+            if not self._color_locked:
                 self._latest_confidence = confidence
-                if not self._color_locked:
+                if color is None:
+                    self._latest_color = None
+                    self._color_event.clear()
+                else:
                     self._latest_color = color
                     self._color_event.set()
 
@@ -271,11 +276,49 @@ class ColorDetectionService(RobotService):
         return color
 
     def apply_calibration(self, chroma_threshold: int) -> None:
-        self._send_command(
+        response = self._send_command(
             "apply_calibration",
             {"chroma_threshold": int(chroma_threshold)},
+            wait=True,
+            timeout=2.0,
         )
-        self.info(f"Color calibration sent: chroma_threshold={chroma_threshold}")
+        if response and response.get("ok"):
+            self.info(f"Color calibration applied by daemon: chroma_threshold={chroma_threshold}")
+        else:
+            self.warn(
+                "Color calibration command was not acknowledged by daemon: "
+                f"chroma_threshold={chroma_threshold}, response={response}"
+            )
+
+    def _apply_stored_calibration(self) -> None:
+        """Push persisted calibration into the long-lived vision daemon.
+
+        The daemon can outlive this robot process, so its in-memory camera
+        threshold must be refreshed whenever the client reconnects.
+        """
+        try:
+            from raccoon.step.calibration import CalibrationStore
+        except Exception as exc:
+            self.warn(f"Could not load color calibration store API: {exc}")
+            return
+
+        try:
+            data = CalibrationStore().load("color-detection", "default")
+        except Exception as exc:
+            self.warn(f"Could not read stored color calibration: {exc}")
+            return
+
+        if not data:
+            self.warn("No stored color calibration found; vision daemon keeps its current/default threshold")
+            return
+
+        if "chroma_threshold" not in data:
+            self.warn(f"Stored color calibration has no chroma_threshold: {data}")
+            return
+
+        threshold = int(data["chroma_threshold"])
+        self.info(f"Applying stored color calibration on vision connect: chroma_threshold={threshold}")
+        self.apply_calibration(threshold)
 
     def set_overlay(self, text: str) -> None:
         self._send_command("overlay", {"text": text})

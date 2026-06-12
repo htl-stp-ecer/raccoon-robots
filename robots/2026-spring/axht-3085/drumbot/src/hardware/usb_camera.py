@@ -163,6 +163,10 @@ class USBCamera:
         """
         self._chroma_threshold = int(value)
 
+    @property
+    def chroma_threshold(self) -> int:
+        return self._chroma_threshold
+
     # Back-compat alias: previously the camera exposed a saturation gate.
     # Kept so unrelated callers don't blow up if they still call it.
     set_sat_threshold = set_chroma_threshold
