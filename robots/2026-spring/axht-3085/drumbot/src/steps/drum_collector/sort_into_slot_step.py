@@ -200,11 +200,12 @@ class EjectNearestColorStep(Step):
                 else:
                     await drum_service.retreat(1)
 
-            # Small left turn before the final drop to spread the last drum off the pile.
-            drum_service.info("Turning 2deg left before dropping the last drum")
-            await turn_left(3).run_step(robot)
-            await asyncio.sleep(0.5)
-            await turn_right(3).run_step(robot)
+            # TODO: probably remove
+            # # Small left turn before the final drop to spread the last drum off the pile.
+            # drum_service.info("Turning 2deg left before dropping the last drum")
+            # await turn_left(3).run_step(robot)
+            # await asyncio.sleep(0.5)
+            # await turn_right(3).run_step(robot)
 
             if forward:
                 await drum_service.advance(1)
