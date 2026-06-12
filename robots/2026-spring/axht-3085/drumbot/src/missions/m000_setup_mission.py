@@ -43,12 +43,7 @@ class M000SetupMission(SetupMission):
             review_drum_collector(review_delta=750),
             align_edge(),
 
-            # distance sensor calibration
-            # TODO: check if still needed
-            # drum_seek(),
-            # Defs.pom_remover_servo.left(),
-            # calibrate_analog_sensor(Defs.et_range_finder),
-
+            # lift up for calibration
             Defs.lift_drums_servo.up(),
 
             calibrate(
@@ -59,4 +54,7 @@ class M000SetupMission(SetupMission):
                     Defs.drum_light_sensor,
                 ],
             ),
+
+            Defs.drum_pusher_servo.block_angle(),
+            Defs.lift_drums_servo.over_limit(),
         ])
