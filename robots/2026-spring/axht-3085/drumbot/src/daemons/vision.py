@@ -13,6 +13,7 @@ import re
 import signal
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import cv2
@@ -35,8 +36,14 @@ from src.service.color_detection_service import (
     STATUS_CHANNEL,
 )
 
+
+# Bring encode/decode of cam_blob_t, cam_frame_t, cam_detections_t in line
+# with the C++/Dart wire format (no LCM fingerprint, raw-length strings).
+# See src/transport_wire_patch.py for details.
+import src.transport_wire_patch  # noqa: F401
+
 PRESENCE_THRESHOLD = 0.9
-ANALYSIS_FRAMES = 1
+ANALYSIS_FRAMES = 2
 
 
 class VisionDaemon:
@@ -44,8 +51,8 @@ class VisionDaemon:
         self._camera_device = os.environ.get("DRUMBOT_CAMERA_DEVICE", "/dev/video0")
         self._camera_index = _normalize_camera_device(self._camera_device)
         self._camera_codec = os.environ.get("DRUMBOT_CAMERA_CODEC", "YUYV")
-        self._stream_fps = int(os.environ.get("DRUMBOT_CAMERA_STREAM_FPS", "30"))
-        self._jpeg_quality = int(os.environ.get("DRUMBOT_CAMERA_JPEG_QUALITY", "55"))
+        self._stream_fps = int(os.environ.get("DRUMBOT_CAMERA_STREAM_FPS", "15"))
+        self._jpeg_quality = int(os.environ.get("DRUMBOT_CAMERA_JPEG_QUALITY", "60"))
         self._transport = get_transport()
         self._camera = USBCamera(
             camera_index=self._camera_index,
@@ -68,6 +75,11 @@ class VisionDaemon:
         )
         self._calibration_session_dir: str | None = None
         self._calibration_sample_count = int(os.environ.get("DRUMBOT_CALIBRATION_SAMPLE_COUNT", "30"))
+        self._detection_debug_enabled = os.environ.get("DRUMBOT_DETECTION_DEBUG", "1") != "0"
+        self._detection_debug_root = os.environ.get("DRUMBOT_DETECTION_DEBUG_DIR", "detection_debug")
+        self._detection_debug_dir: str | None = None
+        self._detection_debug_seq = 0
+        self._detection_debug_io = ThreadPoolExecutor(max_workers=1) if self._detection_debug_enabled else None
 
         self._running = False
         self._paused = False
@@ -83,7 +95,8 @@ class VisionDaemon:
             "Vision daemon starting "
             f"(device={self._camera_device}, normalized_device={self._camera_index!r}, "
             f"codec={self._camera_codec}, "
-            f"stream_fps={self._stream_fps}, jpeg_quality={self._jpeg_quality})"
+            f"stream_fps={self._stream_fps}, jpeg_quality={self._jpeg_quality}, "
+            f"analysis_frames={ANALYSIS_FRAMES}, detection_debug={self._detection_debug_enabled})"
         )
         self._transport.subscribe(COMMAND_CHANNEL, self._on_command, reliable=True)
         self._publish_status(starting=True, started=False)
@@ -140,6 +153,9 @@ class VisionDaemon:
         info("Stopping vision daemon")
         self._running = False
         self._camera.stop()
+        if self._detection_debug_io is not None:
+            self._detection_debug_io.shutdown(wait=True)
+            self._detection_debug_io = None
         shutdown_transport()
         info("Vision daemon transport shut down")
 
@@ -398,6 +414,7 @@ class VisionDaemon:
                 with self._lock:
                     self._latest_detections = detections
                 self._log_detection_state(detections, current_frame_id)
+                self._save_detection_debug_frames(detections, current_frame_id)
                 self._publish_detections(detections)
                 detect_count += 1
                 consecutive_detection_failures = 0
@@ -455,6 +472,64 @@ class VisionDaemon:
     def _publish_empty_detection(self) -> None:
         self._publish_detections([])
 
+    def _ensure_detection_debug_dir(self) -> str:
+        if self._detection_debug_dir is None:
+            stamp = time.strftime("%Y%m%d-%H%M%S")
+            self._detection_debug_dir = os.path.join(self._detection_debug_root, stamp)
+            os.makedirs(self._detection_debug_dir, exist_ok=True)
+            info(f"Detection debug frames will be written to {self._detection_debug_dir}")
+        return self._detection_debug_dir
+
+    def _save_detection_debug_frames(self, detections: list[dict[str, Any]], frame_id: int) -> None:
+        if not self._detection_debug_enabled or not detections:
+            return
+
+        frames = self._camera.grab_frames(ANALYSIS_FRAMES)
+        if not frames:
+            warn(f"Could not save detection debug frames: no frames available (frame_id={frame_id})")
+            return
+
+        out_dir = self._ensure_detection_debug_dir()
+        labels = "-".join(sorted({str(det["label"]) for det in detections}))
+        self._detection_debug_seq += 1
+        prefix = f"{self._detection_debug_seq:05d}_frame{frame_id}_{labels}"
+        metadata = {
+            "frame_id": frame_id,
+            "analysis_frames": ANALYSIS_FRAMES,
+            "detections": detections,
+        }
+
+        if self._detection_debug_io is None:
+            return
+
+        self._detection_debug_io.submit(
+            self._write_detection_debug_frames,
+            out_dir,
+            prefix,
+            frames,
+            metadata,
+        )
+
+    def _write_detection_debug_frames(
+        self,
+        out_dir: str,
+        prefix: str,
+        frames: list[np.ndarray],
+        metadata: dict[str, Any],
+    ) -> None:
+        try:
+            for idx, frame in enumerate(frames):
+                raw_path = os.path.join(out_dir, f"{prefix}_raw_{idx:02d}.png")
+                debug_path = os.path.join(out_dir, f"{prefix}_debug_{idx:02d}.png")
+                cv2.imwrite(raw_path, frame)
+                cv2.imwrite(debug_path, self._camera.get_annotated_debug_frame(frame))
+
+            metadata_path = os.path.join(out_dir, f"{prefix}.json")
+            with open(metadata_path, "w", encoding="utf-8") as fh:
+                json.dump(metadata, fh, indent=2, sort_keys=True)
+        except Exception as exc:
+            warn(f"Failed to save detection debug frames: {exc}")
+
     def _publish_detections(self, detections: list[dict[str, Any]]) -> None:
         timestamp = int(time.time() * 1_000_000)
         msg = cam_detections_t()
@@ -493,20 +568,11 @@ class VisionDaemon:
         publish_window_start = time.monotonic()
         publish_count = 0
         bytes_window = 0
-        last_published_frame_id = 0
 
         info(f"Starting frame publisher loop (fps={self._stream_fps}, jpeg_quality={self._jpeg_quality})")
 
         while self._running:
             t0 = time.monotonic()
-            # Skip publishing if the camera hasn't produced a new frame yet.
-            # Re-encoding the same frame at stream_fps wastes CPU and floods
-            # the transport with byte-identical JPEGs that the UI can't tell
-            # apart from a stalled stream.
-            current_frame_id = self._camera.total_frames
-            if current_frame_id == last_published_frame_id:
-                time.sleep(0.002)
-                continue
             frame = self._camera.grab_frame()
             if frame is None:
                 now = time.monotonic()
@@ -560,10 +626,20 @@ class VisionDaemon:
                 msg.frame_height = h
                 msg.frame_data = jpeg.tobytes()
                 msg.frame_size = len(msg.frame_data)
-                msg.detections = [_make_blob(d, msg.timestamp) for d in detections]
-                msg.num_detections = len(msg.detections)
+                # Detections embedded inside cam_frame_t hit an
+                # encoder/decoder mismatch between the Python
+                # lcm-generated cam_blob_t (string written as
+                # length+1 with trailing NUL) and the hand-written
+                # Dart decoder used by botui. Any frame with
+                # num_detections > 0 crashes CamFrameT.decodeBody with
+                # a RangeError, so botui never sees a frame and the
+                # UI stays stuck at "Waiting for camera…".
+                # Fix: drop the embedded detections. The UI subscribes
+                # to the dedicated raccoon/cam/detections channel
+                # anyway and draws boxes from there.
+                msg.detections = []
+                msg.num_detections = 0
                 self._transport.publish(FRAME_CHANNEL, msg)
-                last_published_frame_id = current_frame_id
                 publish_count += 1
                 bytes_window += msg.frame_size
             else:

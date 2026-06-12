@@ -304,6 +304,12 @@ class USBCamera:
         with self._lock:
             return self._buffer[-1].copy() if self._buffer else None
 
+    def grab_frames(self, count: int) -> list[np.ndarray]:
+        """Return copies of the most recent ``count`` frames, oldest first."""
+        with self._lock:
+            frames = list(self._buffer)[-max(0, count):]
+        return [frame.copy() for frame in frames]
+
     def get_annotated_debug_frame(self, frame: np.ndarray) -> np.ndarray:
         """Return an annotated copy of ``frame`` visualising the chroma detector.
 

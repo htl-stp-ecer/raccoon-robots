@@ -7,6 +7,10 @@ from typing import Any
 
 from raccoon import GenericRobot, RobotService, get_transport
 
+# Aligns Python encode/decode for cam_* with the C++/Dart wire format used
+# by the vision daemon and botui. Import for side-effect; safe to import
+# multiple times.
+import src.transport_wire_patch  # noqa: F401
 from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
 from raccoon_transport.types.raccoon.string_t import string_t
 
@@ -323,7 +327,12 @@ class ColorDetectionService(RobotService):
                 "payload": payload,
             }
         )
-        self.info(f"Sending vision command: command={command!r}, wait={wait}, payload={payload}")
+        # Overlay refreshes fire at ~10 Hz from the calibration test loop and
+        # would otherwise flood the log with hundreds of identical-looking
+        # info lines per second. Anything that actually changes vision state
+        # (pause/resume/apply_calibration/capture_*) stays at info.
+        log = self.debug if command == "overlay" else self.info
+        log(f"Sending vision command: command={command!r}, wait={wait}, payload={payload}")
         self._transport.publish(COMMAND_CHANNEL, msg, reliable=wait)
 
         if not wait or event is None:
