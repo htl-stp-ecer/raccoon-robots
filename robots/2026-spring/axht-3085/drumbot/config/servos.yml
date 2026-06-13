@@ -3,7 +3,7 @@ drum_pusher_servo:
   port: 0
   offset: 0
   positions:
-    close: 17
+    close: 18
     open: 180
     block_angle: 55
     

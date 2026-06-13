@@ -11,6 +11,7 @@ dev:
   record_hz:
   args: []
   env:
+    DRUMBOT_NO_POSITION_HOLD: '1'
     DRUMBOT_DETECTION_DEBUG: '0'
 dev-nc:
   name: dev-nc
@@ -25,6 +26,7 @@ dev-nc:
   record_hz:
   args: [ ]
   env:
+    DRUMBOT_NO_POSITION_HOLD: '1'
     DRUMBOT_DETECTION_DEBUG: '0'
 dev-fake:
   name: dev-fake
@@ -39,6 +41,7 @@ dev-fake:
   record_hz:
   args: []
   env:
+    DRUMBOT_NO_POSITION_HOLD: '1'
     DRUMBOT_DETECTION_DEBUG: '0'
     DRUMBOT_FAKE_CAMERA: '1'
 dev-nc-fake:
@@ -54,5 +57,6 @@ dev-nc-fake:
   record_hz:
   args: []
   env:
+    DRUMBOT_NO_POSITION_HOLD: '1'
     DRUMBOT_DETECTION_DEBUG: '0'
     DRUMBOT_FAKE_CAMERA: '1'

@@ -1,26 +1,20 @@
 button:
   type: DigitalSensor
   port: 2
+wait_for_light_sensor:
+  type: AnalogSensor
+  port: 5
 imu:
   type: IMU
+drum_light_sensor:
+  type: IRSensor
+  port: 0
 rear_left_ir_sensor:
   type: IRSensor
   port: 1
 front_right_ir_sensor:
   type: IRSensor
   port: 2
-drum_light_sensor:
-  type: IRSensor
-  port: 0
-wait_for_light_sensor:
-  type: AnalogSensor
-  port: 5
-et_range_finder:
-  type: ETSensor
-  port: 3
-IR_Distanz_to_pipe_sensor:
-  type: ETSensor
-  port: 4
 drum_found_button:
   type: DigitalSensor
   port: 0

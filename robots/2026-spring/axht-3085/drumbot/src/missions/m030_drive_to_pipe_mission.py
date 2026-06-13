@@ -3,9 +3,7 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
-from src.steps.drum_lifting_step import drum_lifting_up_over_limit
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
-from src.steps.drum_lifting_step import drum_recover_from_over_limit
 from src.steps.drum_collector import eject_nearest_color
 
 
@@ -49,20 +47,16 @@ class M030DriveToPipeMission(Mission):
             drive_backward().until(
                 over_line(Defs.front_right_ir_sensor)
             ),
-            turn_to_heading_left(180), # turn a bit less than 180° to make sure we stand as close as possible to the pipe
+            turn_to_heading_left(180),
 
             # drive to pipe
             parallel(
-                seq([
-                    drive_forward(speed=0.7).until(
-                        after_cm(20) +
-                        over_line(Defs.rear_left_ir_sensor)
-                    ),
-                ]),
-                seq([
-                    wait_for_checkpoint(15),
-                    Defs.lift_drums_servo.seek_position(30), #degrees per seconds
-                ])
+                drive_forward().until(
+                    after_cm(15) +
+                    over_line(Defs.rear_left_ir_sensor) +
+                    after_cm(1.5)
+                ),
+                Defs.lift_drums_servo.seek_position(30),
             ),
 
             lineup_drum_with_pipe(),
