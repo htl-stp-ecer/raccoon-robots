@@ -21,7 +21,7 @@ def wall_align():
     return strafe_follow_line_single_free(
         sensor=Defs.rear.left,
         speed=1,
-        side=LineSide.LEFT,
+        side=LineSide.RIGHT,
         kp=0.6,
         ki=0.6,
         kd=0.05,
@@ -56,6 +56,6 @@ class M080DriveToExternalLoadingDock(Mission):
 
             # align on wall
             wall_align().until(
-                after_seconds(2),
+                after_seconds(2.0),
             ),
         ])

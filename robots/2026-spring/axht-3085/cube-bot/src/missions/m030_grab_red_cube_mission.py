@@ -31,9 +31,9 @@ class M030GrabRedCubeMission(Mission):
 
             # drive to red cube
             forward_line_follow().until(
-                on_black(Defs.front.right)
-                + on_analog_flank(Defs.et_sensor, set_name="cube_stack")
-                #+ after_cm(1)
+                over_line(Defs.front.right)
+                #+ on_analog_flank(Defs.et_sensor, set_name="cube_stack")
+                + after_cm(3)
             ),
 
             # place down cube
@@ -50,7 +50,7 @@ class M030GrabRedCubeMission(Mission):
                 after_cm(6)
             ),
             Defs.arm_claw.grab(),
-            arm.move_angles(90, 60, -30, speed=100),
+            arm.move_angles(90, 110, -90).arm_speeds(sholder=150, elbow=100),
             arm.move_angles(90, 50, -40),
             Defs.arm_claw.open(speed=100),
             Defs.arm_claw.strong_grab(),

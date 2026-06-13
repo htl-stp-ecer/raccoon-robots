@@ -29,7 +29,6 @@ class M000SetupMission(SetupMission):
 
                     Defs.arm_claw.idle(),
                     arm.move_angles(0, 110, -90),
-                    servo(Defs.arm_elbow, -28),
 
                     wait_for_seconds(1),
                 ])
@@ -40,6 +39,7 @@ class M000SetupMission(SetupMission):
                 calibration_sets=["default", "upper"],
             ),
 
+            servo(Defs.arm_elbow, -28),
             servo(Defs.arm_sholder, 25),
 
             wait_for_button("calibrate upper cube"),
@@ -50,15 +50,14 @@ class M000SetupMission(SetupMission):
                 drive_duration_s=2
             ),
 
-            wait_for_button("calibrate cube stack"),
-            calibrate_analog_drive(
-                Defs.et_sensor,
-                set_name="cube_stack",
-                speed=-0.4,
-                drive_duration_s=2
-            ),
+            #wait_for_button("calibrate cube stack"),
+            #calibrate_analog_drive(
+            #    Defs.et_sensor,
+            #    set_name="cube_stack",
+            #    speed=-0.4,
+            #    drive_duration_s=2
+            #),
 
-            sample_analog_between_lines(speed=0.3),
 
             wait_for_button("go to strart possiont"),
             mark_heading_reference(),
