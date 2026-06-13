@@ -27,13 +27,6 @@ class M010FirstBrownCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # line follow backwards to retrieve spot
-            background(
-                step=parallel(
-                    grab_brown_cube_start_pos(),
-                    Defs.arm_claw.idle(),# make sure claw is closed
-                ),
-                name="prep_arm"
-            ),
             drive_forward().until(
                 over_line(Defs.rear.left) #if we ever are over the line this conditio will fix it
                 + after_cm(7)

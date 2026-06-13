@@ -33,7 +33,7 @@ class M050DriveUpRampMission(Mission):
             arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
             drive_backward(cm=10),
             strafe_left().until(
-                after_cm(40)
+                after_cm(35)
             ),
 
             # drive to black line where palette with two yellow cubes is
@@ -50,7 +50,7 @@ class M050DriveUpRampMission(Mission):
 
             # drive to the right to the pipe
             left_lateral_line_follow().until(
-                after_cm(25)
+                after_cm(30)
             ),
             left_lateral_align_line_follow().until(
                 after_seconds(0.5)

@@ -3,6 +3,8 @@ from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 from src.steps.calibrate_analog_drive import calibrate_analog_drive, on_analog_flank
 from src.steps.line_follow_dsl import lateral_follow_line_single, lateral_follow_line_single_free
+from src.steps.sample_analog_between_lines import sample_analog_between_lines
+
 
 class M000SetupMission(SetupMission):
     setup_time = 120
@@ -52,9 +54,11 @@ class M000SetupMission(SetupMission):
             calibrate_analog_drive(
                 Defs.et_sensor,
                 set_name="cube_stack",
-                speed=0.4,
+                speed=-0.4,
                 drive_duration_s=2
             ),
+
+            sample_analog_between_lines(speed=0.3),
 
             wait_for_button("go to strart possiont"),
             mark_heading_reference(),
@@ -77,6 +81,6 @@ class M000SetupMission(SetupMission):
             turn_to_heading_right(0),
 
 
-            arm.move_angles(-90, 130, -110),
+            arm.move_angles(-55, 130, -110),
             fully_disable_servos(),
         ])
