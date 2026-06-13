@@ -35,6 +35,8 @@ from raccoon.sensor_ir import IRSensor
 
 from raccoon import *
 
+from ._odometry_snapshot import PoseSnapshot
+
 if TYPE_CHECKING:
     from raccoon.robot.api import GenericRobot
 
@@ -581,6 +583,7 @@ class DirectionalLineFollow(MotionStep):
         self._max_lateral: float = 0.0
         self._initial_heading: float = 0.0
         self._target_distance_m: float | None = None
+        self._start_pose: PoseSnapshot | None = None
 
     def _generate_signature(self) -> str:
         parts = []
@@ -626,7 +629,13 @@ class DirectionalLineFollow(MotionStep):
         if cfg.distance_cm is not None:
             self._target_distance_m = cfg.distance_cm / 100.0
 
-        robot.odometry.reset()
+        # Snapshot the absolute pose instead of resetting odometry. Resetting
+        # forces an IMU re-calibration on the next update (FusedOdometry blocks
+        # up to imu_ready_timeout_ms waiting for the IMU and assumes the robot
+        # is stationary), which stalls the Wombat and clobbers the global
+        # heading origin other steps depend on. Distance is projected into the
+        # snapshot's body frame instead.
+        self._start_pose = PoseSnapshot.capture(robot)
 
         self._pid = PidController(
             PidConfig(
@@ -641,7 +650,7 @@ class DirectionalLineFollow(MotionStep):
 
         # Heading hold PID for translation-correction modes.
         if cfg.lateral_correction or cfg.forward_correction:
-            self._initial_heading = robot.odometry.get_heading()
+            self._initial_heading = self._start_pose.heading
             h = pid_cfg.heading
             self._heading_pid = PidController(
                 PidConfig(
@@ -681,10 +690,11 @@ class DirectionalLineFollow(MotionStep):
 
         # Check distance stop condition
         if self._target_distance_m is not None:
-            dist = robot.odometry.get_distance_from_origin()
-            if dist.straight_line >= self._target_distance_m:
+            assert self._start_pose is not None
+            _f, _l, straight = self._start_pose.project(robot)
+            if straight >= self._target_distance_m:
                 self.debug(
-                    f"stop: distance reached ({dist.straight_line:.3f}m >= "
+                    f"stop: distance reached ({straight:.3f}m >= "
                     f"{self._target_distance_m:.3f}m)"
                 )
                 return True
@@ -772,6 +782,7 @@ class DirectionalSingleLineFollow(MotionStep):
         self._max_lateral: float = 0.0
         self._initial_heading: float = 0.0
         self._target_distance_m: float | None = None
+        self._start_pose: PoseSnapshot | None = None
 
     def _generate_signature(self) -> str:
         parts = []
@@ -816,7 +827,13 @@ class DirectionalSingleLineFollow(MotionStep):
         if cfg.distance_cm is not None:
             self._target_distance_m = cfg.distance_cm / 100.0
 
-        robot.odometry.reset()
+        # Snapshot the absolute pose instead of resetting odometry. Resetting
+        # forces an IMU re-calibration on the next update (FusedOdometry blocks
+        # up to imu_ready_timeout_ms waiting for the IMU and assumes the robot
+        # is stationary), which stalls the Wombat and clobbers the global
+        # heading origin other steps depend on. Distance is projected into the
+        # snapshot's body frame instead.
+        self._start_pose = PoseSnapshot.capture(robot)
 
         self._pid = PidController(
             PidConfig(
@@ -831,7 +848,7 @@ class DirectionalSingleLineFollow(MotionStep):
 
         # Heading hold PID for translation-correction modes.
         if (cfg.lateral_correction or cfg.forward_correction) and cfg.heading_hold:
-            self._initial_heading = robot.odometry.get_heading()
+            self._initial_heading = self._start_pose.heading
             h = pid_cfg.heading
             self._heading_pid = PidController(
                 PidConfig(
@@ -862,10 +879,11 @@ class DirectionalSingleLineFollow(MotionStep):
 
         # Check distance
         if self._target_distance_m is not None:
-            dist = robot.odometry.get_distance_from_origin()
-            if dist.straight_line >= self._target_distance_m:
+            assert self._start_pose is not None
+            _f, _l, straight = self._start_pose.project(robot)
+            if straight >= self._target_distance_m:
                 self.debug(
-                    f"stop: distance reached ({dist.straight_line:.3f}m >= "
+                    f"stop: distance reached ({straight:.3f}m >= "
                     f"{self._target_distance_m:.3f}m)"
                 )
                 return True
