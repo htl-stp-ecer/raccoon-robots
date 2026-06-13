@@ -4,6 +4,7 @@ import time
 from raccoon import *
 
 from src.hardware.defs import Defs
+from src.steps.drum_collector import rotate_to_eject_start
 from src.steps.drum_lifting_step import drum_eject_position
 
 
@@ -66,5 +67,8 @@ def lineup_drum_with_pipe():
         ),
         _drive_to_drum_button(),
         drive_backward(7, speed=0.2),
+        # Park one pocket before the group BEFORE lifting — this rotation drops
+        # nothing because the eject mechanism is still disengaged.
+        rotate_to_eject_start(),
         drum_eject_position(),
     ])

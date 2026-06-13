@@ -37,6 +37,7 @@ from src.service.sorting_service import SortingService
 from src.steps.drum_collector.sort_into_slot_step import (
     EJECT_HOLE_SLOT,
     EjectNearestColorStep,
+    RotateToEjectStartStep,
     SortIntoSlotStep,
 )
 
@@ -138,17 +139,32 @@ def run(coro):
 def run_eject(
     sorting: SortingService, motor: FakeDrumMotor
 ) -> tuple[set[int], str | None, int]:
-    """Run one EjectNearestColorStep call.
+    """Run one eject cycle: pre-position (before lift) then sweep.
+
+    Mirrors the real mission order in ``lineup_drum_with_pipe``:
+    ``rotate_to_eject_start()`` parks the revolver one pocket before the group
+    *before* the drum is lifted (so it drops nothing), then
+    ``eject_nearest_color()`` performs the single-direction sweep that does the
+    actual dropping.
 
     Returns `(claimed_ejected, color, sweep_start_idx)` where:
       - claimed_ejected is the set of slot indices the step marked as
         emptied in `sorting.slots` (i.e., what the code believes it
         ejected — this is what we have to physically verify).
       - color is 'blue' or 'pink' (or None if there was nothing to do).
-      - sweep_start_idx is the length of motor.visited *before* the
-        step ran, so callers can slice to see only the new motion.
+      - sweep_start_idx is the length of motor.visited *after the prep move*
+        and before the sweep, so callers can slice to see only the drops.
+        The prep rotation happens before the lift and never drops, so it is
+        excluded from the ejection accounting.
     """
     before = [c for c in sorting.slots]
+
+    # Prep BEFORE lift — drops nothing; excluded from the sweep slice.
+    prep = RotateToEjectStartStep()
+    prep.info = lambda msg: None
+    prep.warn = lambda msg: None
+    run(prep._execute_step(make_robot(sorting, motor)))
+
     sweep_start_idx = len(motor.visited)
 
     step = EjectNearestColorStep()
@@ -586,51 +602,62 @@ class TestSortingServiceEdge:
 # ── Sweep length: exactly len(slots) - 1 ─────────────────────────
 
 
-class TestSweepCountIsSlotsMinus1:
-    """Enforce that the ejection sweep advances exactly len(slots) - 1 times.
+class TestSweepCountIsSlots:
+    """Enforce that the ejection sweep advances exactly len(slots) times.
 
-    Physical model: the revolver starts one pocket *before* the first drum
-    in the group. As it advances into the group, the first drum drops
-    through the eject hole immediately. By the time the sweep has moved
-    len(slots) - 1 more pockets, the last drum is positioned over the hole
-    and drops — so all drums are ejected without an extra step.
+    Physical model: ``rotate_to_eject_start`` parks the revolver one pocket
+    *before* the first drum in the group, BEFORE the lift — so that prep move
+    drops nothing. Then the lifted sweep advances exactly len(slots) steps:
+    each step brings the next group pocket across the eject hole, so all N
+    drums drop in one single-direction pass.
 
-    If someone changes `pockets_to_eject` to `len(slots)`, the revolver
-    would overshoot into the other color group and eject a wrong drum.
+    If someone reverts `pockets_to_eject` to `len(slots) - 1`, the drum at the
+    far end of the group is never brought over the hole and stays stranded in
+    the revolver — the original 'only 3 of 4 ejected' bug.
+
+    The sweep counter ignores ``go_to_pocket`` (the prep / no-op alignment),
+    so it measures only the actual advance/retreat drop steps.
     """
 
     def _count_sweep_steps(self, motor: FakeDrumMotor) -> int:
         """Count only the advance/retreat calls (the actual sweep), not go_to_pocket."""
         return sum(1 for name, *_ in motor.calls if name in ("advance", "retreat"))
 
-    def test_four_drums_sweep_three(self):
-        """4 drums in a group → exactly 3 advance/retreat steps."""
+    def test_four_drums_sweep_four(self):
+        """4 drums in the ejected group → exactly 4 advance/retreat steps."""
         sorting = perfect()
         motor = FakeDrumMotor(current_pocket=0)
-        run_eject(sorting, motor)
-        assert self._count_sweep_steps(motor) == 3
-
-    def test_five_drums_sweep_four(self):
-        """5 drums of one color → exactly 4 advance/retreat steps."""
-        sorting = fill(*(["blue"] * 5), *(["pink"] * 3))
-        motor = FakeDrumMotor(current_pocket=0)
-        run_eject(sorting, motor)
+        claimed, _, _ = run_eject(sorting, motor)
+        assert len(claimed) == 4
         assert self._count_sweep_steps(motor) == 4
 
-    def test_single_drum_sweep_zero(self):
-        """1 drum → 0 sweep steps (go_to_pocket places it over the hole)."""
+    def test_five_drums_sweep_five(self):
+        """5 drums in the ejected group → exactly 5 advance/retreat steps.
+
+        3 blue / 5 pink → pink fills the hi side [3,4,5,6,7], so the 5-pink
+        group sits over the hole and is ejected first.
+        """
+        sorting = fill(*(["blue"] * 3), *(["pink"] * 5))
+        assert sorted(sorting.pink_slots) == [3, 4, 5, 6, 7]
+        motor = FakeDrumMotor(current_pocket=0)
+        claimed, color, _ = run_eject(sorting, motor)
+        assert color == "pink" and len(claimed) == 5
+        assert self._count_sweep_steps(motor) == 5
+
+    def test_single_drum_sweep_one(self):
+        """1 drum → 1 sweep step (prep parks one before, sweep brings it over)."""
         sorting = fill("blue")
         motor = FakeDrumMotor(current_pocket=5)
         run_eject(sorting, motor)
-        assert self._count_sweep_steps(motor) == 0
+        assert self._count_sweep_steps(motor) == 1
 
     @pytest.mark.parametrize("n_drums", [2, 3, 4, 5, 6, 7, 8])
-    def test_n_drums_sweep_n_minus_1(self, n_drums):
-        """For any group of N drums, sweep must be exactly N-1 steps."""
+    def test_n_drums_sweep_n(self, n_drums):
+        """For any group of N drums, sweep must be exactly N steps."""
         sorting = fill(*(["blue"] * n_drums))
         motor = FakeDrumMotor(current_pocket=EJECT_HOLE_SLOT)
         run_eject(sorting, motor)
-        assert self._count_sweep_steps(motor) == n_drums - 1, (
-            f"{n_drums} drums should produce {n_drums - 1} sweep steps, "
+        assert self._count_sweep_steps(motor) == n_drums, (
+            f"{n_drums} drums should produce {n_drums} sweep steps, "
             f"got {self._count_sweep_steps(motor)}. calls={motor.calls}"
         )

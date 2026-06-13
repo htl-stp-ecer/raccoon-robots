@@ -5,5 +5,10 @@ from .calibration_step import (
     sample_drum_collector,
 )
 from .retreat_step import drum_retreat
-from .sort_into_slot_step import eject_nearest_color, rotate_to_next_empty_pocket, sort_into_slot
+from .sort_into_slot_step import (
+    eject_nearest_color,
+    rotate_to_eject_start,
+    rotate_to_next_empty_pocket,
+    sort_into_slot,
+)
 from .advance_step import drum_advance

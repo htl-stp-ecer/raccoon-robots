@@ -1,7 +1,6 @@
-import asyncio
 import time
 
-from raccoon import GenericRobot, dsl, turn_left, turn_right
+from raccoon import GenericRobot, dsl
 from raccoon.step import Step
 
 from src.service.color_detection_service import ColorDetectionService
@@ -138,6 +137,74 @@ def sort_into_slot() -> SortIntoSlotStep:
     return SortIntoSlotStep()
 
 
+def _nearest_color_group(sorting_service: "SortingService"):
+    """Pick the color group whose nearest slot is closest to the eject hole.
+
+    Returns ``(sorted_slots, color)`` or ``(None, None)`` when there is
+    nothing to eject. The group nearest the hole is ejected first because it
+    is already sitting over the 5→6 transition.
+    """
+    blue = sorting_service.blue_slots
+    pink = sorting_service.pink_slots
+    if not blue and not pink:
+        return None, None
+
+    def nearest_dist(slots):
+        return min(
+            min(abs(EJECT_HOLE_SLOT - s), NUM_POCKETS - abs(EJECT_HOLE_SLOT - s))
+            for s in slots
+        ) if slots else float("inf")
+
+    if not pink or nearest_dist(blue) <= nearest_dist(pink):
+        return sorted(blue), "blue"
+    return sorted(pink), "pink"
+
+
+def _eject_start(slots, cur: int):
+    """Compute ``(start_slot, forward)`` for a single-direction eject sweep.
+
+    Start one pocket *before* the group so a sweep of exactly ``len(slots)``
+    steps in one direction brings every group pocket — and only those —
+    across the eject hole. The closer end is chosen to minimise travel.
+    """
+    def ring_dist(a: int, b: int) -> int:
+        d = abs(a - b)
+        return min(d, NUM_POCKETS - d)
+
+    lo, hi = min(slots), max(slots)
+    if ring_dist(cur, lo) <= ring_dist(cur, hi):
+        return (lo - 1) % NUM_POCKETS, True  # one before lo; advance through lo..hi
+    return (hi + 1) % NUM_POCKETS, False  # one after hi; retreat through hi..lo
+
+
+@dsl(hidden=True)
+class RotateToEjectStartStep(Step):
+    """Pre-position the revolver one pocket before the nearest color group.
+
+    This MUST run *before* the drum is lifted to eject position. With the
+    eject mechanism still disengaged, this rotation drops nothing — it merely
+    parks the revolver so the subsequent lift + single-direction sweep ejects
+    the whole group cleanly. Moving here while lifted would drop a wrong-color
+    drum, because the prep move crosses a pocket of the other group.
+    """
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        sorting_service = robot.get_service(SortingService)
+        drum_service = robot.get_service(DrumMotorService)
+
+        slots, color = _nearest_color_group(sorting_service)
+        if slots is None:
+            drum_service.warn("No drums to eject — skipping eject pre-position")
+            return
+
+        if drum_service.at_midpoint:
+            await drum_service.move_from_midpoint()
+
+        start_slot, _ = _eject_start(slots, drum_service.current_pocket)
+        drum_service.info(f"Pre-positioning for {color} eject: go to slot {start_slot}")
+        await drum_service.go_to_pocket(start_slot, precise=False)
+
+
 @dsl(hidden=True)
 class EjectNearestColorStep(Step):
     """Sweep through all slots of the nearest color group in one continuous motion."""
@@ -146,22 +213,10 @@ class EjectNearestColorStep(Step):
         sorting_service = robot.get_service(SortingService)
         drum_service = robot.get_service(DrumMotorService)
 
-        blue = sorting_service.blue_slots
-        pink = sorting_service.pink_slots
-
-        if not blue and not pink:
+        slots, color = _nearest_color_group(sorting_service)
+        if slots is None:
             drum_service.warn("No drums assigned yet — nothing to eject")
             return
-
-        def nearest_dist(slots):
-            return min(min(abs(EJECT_HOLE_SLOT - s), NUM_POCKETS - abs(EJECT_HOLE_SLOT - s)) for s in slots) if slots else float("inf")
-
-        if not pink or nearest_dist(blue) <= nearest_dist(pink):
-            slots = blue
-            color = "blue"
-        else:
-            slots = pink
-            color = "pink"
 
         try:
             # Retreat from midpoint first to get clean slot alignment.
@@ -169,48 +224,27 @@ class EjectNearestColorStep(Step):
                 drum_service.info("Retreating from midpoint before ejection")
                 await drum_service.move_from_midpoint()
 
-            # Choose the closer end of the group as the starting point, then sweep
-            # toward the other end — minimises total travel before ejection begins.
-            def ring_dist(a: int, b: int) -> int:
-                d = abs(a - b)
-                return min(d, NUM_POCKETS - d)
+            start_slot, forward = _eject_start(slots, drum_service.current_pocket)
 
-            cur = drum_service.current_pocket
-            lo, hi = min(slots), max(slots)
-
-            if ring_dist(cur, lo) <= ring_dist(cur, hi):
-                start_slot = lo - 1  # one before lo; advance through lo..hi
-                forward = True
-            else:
-                start_slot = hi + 1  # one after hi; retreat through hi..lo
-                forward = False
-
-
-            pockets_to_eject = len(slots) - 1 # YOU SHALL DROP 4 - BUT BY THE TIME HITTING IT; THE FIRST ALREADY DROPPED; DONT CHANGE
+            # One clean drop per group pocket. We start one pocket before the
+            # group (parked there by RotateToEjectStartStep before the lift), so
+            # a sweep of exactly len(slots) steps brings every group pocket —
+            # and only those — across the eject hole.
+            pockets_to_eject = len(slots)
             drum_service.info(
-                f"Ejecting {color}: go to slot {start_slot}, "
+                f"Ejecting {color}: ensure slot {start_slot}, "
                 f"then sweep {'forward' if forward else 'backward'} "
                 f"{pockets_to_eject} pocket(s)"
             )
+            # No-op in the real flow (RotateToEjectStartStep already parked us
+            # here before the lift); kept so bench use without the prep step
+            # still positions correctly.
             await drum_service.go_to_pocket(start_slot, precise=False)
-            # Drop all but the last drum (1 implicit from go_to_pocket + (pockets_to_eject - 1) advances = 3 drops for 4 slots).
-            for _ in range(pockets_to_eject - 1):
+            for _ in range(pockets_to_eject):
                 if forward:
                     await drum_service.advance(1)
                 else:
                     await drum_service.retreat(1)
-
-            # TODO: probably remove
-            # # Small left turn before the final drop to spread the last drum off the pile.
-            # drum_service.info("Turning 2deg left before dropping the last drum")
-            # await turn_left(3).run_step(robot)
-            # await asyncio.sleep(0.5)
-            # await turn_right(3).run_step(robot)
-
-            if forward:
-                await drum_service.advance(1)
-            else:
-                await drum_service.retreat(1)
 
             # Mark ejected slots as empty so the next eject call picks the other color.
             for s in slots:
@@ -224,6 +258,12 @@ class EjectNearestColorStep(Step):
             drum_service.warn(
                 f"Eject ({color}) FAILED after retries — marking attempt as flawed and continuing: {e}"
             )
+
+
+@dsl()
+def rotate_to_eject_start() -> RotateToEjectStartStep:
+    """Pre-position before the nearest color group, BEFORE lifting (drops nothing)."""
+    return RotateToEjectStartStep()
 
 
 @dsl()
