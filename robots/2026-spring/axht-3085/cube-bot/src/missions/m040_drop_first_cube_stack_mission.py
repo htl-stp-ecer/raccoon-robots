@@ -1,29 +1,27 @@
 from raccoon import *
 
-from src.steps.line_follow_dsl import strafe_follow_line_single_free, strafe_follow_line_single
+from src.steps.line_follow_builder import line_follow
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 
 
-def line_follow():
-    return strafe_follow_line_single(
-        sensor=Defs.rear.left,
-        speed=1,
-        side=LineSide.LEFT,
-        kp=0.6,
-        ki=0.5,
-        kd=0.05,
+def _follow():
+    return (
+        line_follow()
+        .single(Defs.rear.left, side=LineSide.LEFT)
+        .move(heading=1)
+        .correct_lateral()
+        .pid(kp=0.6, ki=0.5, kd=0.05)
     )
 
 
 def align_line_follow():
-    return strafe_follow_line_single_free(
-        sensor=Defs.rear.left,
-        speed=0.4,
-        side=LineSide.LEFT,
-        kp=0.6,
-        ki=0.3,
-        kd=0.0,
+    return (
+        line_follow()
+        .single(Defs.rear.left, side=LineSide.LEFT)
+        .move(heading=0.4)
+        .correct_lateral(hold_heading=False)
+        .pid(kp=0.6, ki=0.3, kd=0.0)
     )
 
 
@@ -43,7 +41,7 @@ class M040DropFirstCubeStackMission(Mission):
             strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),
-            line_follow().until(
+            _follow().until(
                 after_cm(120)
             ),
             parallel(
