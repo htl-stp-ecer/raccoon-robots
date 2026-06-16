@@ -163,9 +163,12 @@ def _nearest_color_group(sorting_service: "SortingService"):
 def _eject_start(slots, cur: int):
     """Compute ``(start_slot, forward)`` for a single-direction eject sweep.
 
-    Start one pocket *before* the group so a sweep of exactly ``len(slots)``
-    steps in one direction brings every group pocket — and only those —
-    across the eject hole. The closer end is chosen to minimise travel.
+    Start two pockets *before* the group (in the sweep direction) so a sweep
+    of exactly ``len(slots)`` steps brings every group pocket — and only
+    those — across the eject hole. The closer end is chosen to minimise
+    travel. The extra one-pocket lead-in compensates for the lift-engagement
+    geometry: without it, the first sweep step crosses too late and the last
+    crosses one pocket past the group.
     """
     def ring_dist(a: int, b: int) -> int:
         d = abs(a - b)
@@ -173,8 +176,8 @@ def _eject_start(slots, cur: int):
 
     lo, hi = min(slots), max(slots)
     if ring_dist(cur, lo) <= ring_dist(cur, hi):
-        return (lo - 1) % NUM_POCKETS, True  # one before lo; advance through lo..hi
-    return (hi + 1) % NUM_POCKETS, False  # one after hi; retreat through hi..lo
+        return (lo - 2) % NUM_POCKETS, True  # two before lo; advance through lo..hi
+    return (hi + 2) % NUM_POCKETS, False  # two after hi; retreat through hi..lo
 
 
 @dsl(hidden=True)
