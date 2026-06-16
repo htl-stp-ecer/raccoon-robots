@@ -39,7 +39,7 @@ class M050DriveToOtherPipeMission(Mission):
                 ki=0.1,
                 kd=0.1,
             ).until(
-                after_cm(65),
+                after_cm(60),
             ),
 
             # turn away and drive angled to avoid hitting wall
@@ -65,7 +65,7 @@ class M050DriveToOtherPipeMission(Mission):
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
-                + after_cm(14)
+                + after_cm(12)
             ),
 
             # fahre 15 cm auf der rechten Seite des Cubes vorbei

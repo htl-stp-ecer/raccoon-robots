@@ -26,7 +26,7 @@ def close_pusher_if_not_in_safe_mode():
             return seq([])
 
         return seq([
-            Defs.drum_pusher_servo.close(),
+            Defs.drum_pusher_servo.hold(),
         ])
 
     return defer(_build)
@@ -52,9 +52,8 @@ class M030DriveToPipeMission(Mission):
             # drive to pipe
             parallel(
                 drive_forward().until(
-                    after_cm(15) +
-                    over_line(Defs.rear_left_ir_sensor) +
-                    after_cm(1.5)
+                    after_cm(15)
+                    + over_line(Defs.rear_left_ir_sensor)
                 ),
                 Defs.lift_drums_servo.seek_position(30),
             ),

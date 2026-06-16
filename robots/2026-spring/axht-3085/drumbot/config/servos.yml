@@ -4,6 +4,7 @@ drum_pusher_servo:
   offset: 0
   positions:
     close: 18
+    hold: 26
     open: 180
     block_angle: 55
     

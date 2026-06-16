@@ -66,7 +66,7 @@ def lineup_drum_with_pipe():
         ),
         _drive_to_drum_button(),
         parallel(
-            drive_backward(7, speed=0.2),
+            drive_backward(5, speed=0.2),
 
             # Park one pocket before the group BEFORE lifting — this rotation drops
             # nothing because the eject mechanism is still disengaged.

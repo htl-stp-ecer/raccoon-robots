@@ -20,7 +20,7 @@ def after_collect():
             ])
 
         return seq([
-            Defs.drum_pusher_servo.close(),
+            Defs.drum_pusher_servo.hold(),
             rotate_to_eject_start(),
         ])
 
