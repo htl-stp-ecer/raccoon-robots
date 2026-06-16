@@ -1,7 +1,6 @@
 from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
-from src.steps.calibrate_analog_drive import calibrate_analog_drive, on_analog_flank
 from src.steps.setup_calibration import CalibrationAxis, calibration_gate, collect_drive, collect_ir_set
 
 
@@ -54,27 +53,26 @@ class M000SetupMission(SetupMission):
                     drive_forward(cm=50),
                     set_name="default",
                 ),
-                axis=CalibrationAxis.FORWARD,
             ),
-
-            servo(Defs.arm_elbow, -28),
-            servo(Defs.arm_sholder, 25),
-
-            wait_for_button("calibrate upper cube"),
-            collect_drive(
-                collect_ir_set(
-                    drive_forward(50, heading=0, speed=0.4),
-                    set_name="upper_cube",
-                )
-            ),
-
-            wait_for_button("calibrate cube stack"),
-            collect_drive(
-                collect_ir_set(
-                    drive_forward(50, heading=0, speed=0.4),
-                    set_name="cube_stack",
-                )
-            ),
+            #
+            # servo(Defs.arm_elbow, -28),
+            # servo(Defs.arm_sholder, 25),
+            #
+            # wait_for_button("calibrate upper cube"),
+            # collect_drive(
+            #     collect_ir_set(
+            #         drive_forward(50, heading=0, speed=0.4),
+            #         set_name="upper_cube",
+            #     )
+            # ),
+            #
+            # wait_for_button("calibrate cube stack"),
+            # collect_drive(
+            #     collect_ir_set(
+            #         drive_forward(50, heading=0, speed=0.4),
+            #         set_name="cube_stack",
+            #     )
+            # ),
 
             calibration_gate(
                 require_axes=[CalibrationAxis.FORWARD],
