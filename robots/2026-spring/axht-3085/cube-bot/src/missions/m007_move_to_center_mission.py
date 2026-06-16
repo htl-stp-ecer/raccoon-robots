@@ -29,7 +29,7 @@ class M007MoveToCenterMission(Mission):
                 name="prep_arm"
             ),
 
-            drive_forward().until(
+            drive_forward(heading=-90).until(
                 on_black(Defs.rear.left)
             ),
 

@@ -19,7 +19,6 @@ def line_follow():
 class M020SecondBrownCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            wait_for_button(),
             parallel(
                 # start moving arm by 90° as soon as black line was crossed
                 seq([
