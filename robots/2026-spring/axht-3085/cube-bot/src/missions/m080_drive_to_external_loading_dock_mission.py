@@ -2,14 +2,13 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.calibrate_analog_drive import on_analog_flank
-from src.steps.line_follow_builder import line_follow
 
 
 def _follow():
     return (
         line_follow()
         .single(Defs.front.left, side=LineSide.RIGHT)
-        .move(heading=1)
+        .move(forward=1)
         .correct_lateral()
         .pid(kp=0.5, ki=0.3, kd=0.0)
     )
@@ -19,7 +18,7 @@ def wall_align():
     return (
         line_follow()
         .single(Defs.rear.left, side=LineSide.RIGHT)
-        .move(heading=1)
+        .move(forward=1)
         .correct_lateral(hold_heading=False)
         .pid(kp=0.6, ki=0.6, kd=0.05)
     )

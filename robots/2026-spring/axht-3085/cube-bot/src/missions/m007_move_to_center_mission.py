@@ -4,7 +4,6 @@ from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.arm_steps import grab_brown_cube_start_pos
 from src.steps.drive_to_analog_target_bidirectional import drive_to_analog_target_bidirectional
-from src.steps.line_follow_builder import line_follow
 
 
 def left_lateral_line_follow():
@@ -13,7 +12,6 @@ def left_lateral_line_follow():
         .single(Defs.rear.left, side=LineSide.RIGHT)
         .move(strafe=1)
         .correct_forward()
-        .relative_to_travel()
         .pid(kp=0.4, ki=0.05, kd=0.0)
     )
 

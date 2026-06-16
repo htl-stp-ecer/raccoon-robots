@@ -2,14 +2,13 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.arm_steps import grab_cube_from_container
-from src.steps.line_follow_builder import line_follow
 
 
 def backward_line_follow():
     return (
         line_follow()
         .single(Defs.rear.left, side=LineSide.LEFT)
-        .move(heading=-1)
+        .move(forward=-1)
         .correct_lateral()
         .pid(kp=0.6, ki=0.2, kd=0.0)
     )
@@ -19,7 +18,7 @@ def forward_line_follow():
     return (
         line_follow()
         .single(Defs.rear.left, side=LineSide.RIGHT)
-        .move(heading=1)
+        .move(forward=1)
         .correct_lateral()
         .pid(kp=0.6, ki=0.3, kd=0.05)
     )

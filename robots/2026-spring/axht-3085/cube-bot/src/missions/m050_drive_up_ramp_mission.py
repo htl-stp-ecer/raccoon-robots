@@ -1,7 +1,6 @@
 from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
-from src.steps.line_follow_builder import line_follow
 
 
 def left_lateral_line_follow():
@@ -10,7 +9,6 @@ def left_lateral_line_follow():
         .single(Defs.rear.left, side=LineSide.LEFT)
         .move(strafe=-1)
         .correct_forward()
-        .relative_to_travel()
         .pid(kp=0.4, ki=0.05, kd=0.0)
     )
 
@@ -21,7 +19,6 @@ def left_lateral_align_line_follow():
         .single(Defs.rear.left, side=LineSide.LEFT)
         .move(strafe=-0.4)
         .correct_forward(hold_heading=False)
-        .relative_to_travel()
         .pid(kp=0.5, ki=0.1, kd=0.0)
     )
 
