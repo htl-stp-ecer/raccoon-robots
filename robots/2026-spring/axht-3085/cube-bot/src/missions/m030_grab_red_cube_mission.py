@@ -3,17 +3,16 @@ from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 from src.steps.calibrate_analog_drive import on_analog_flank
-from src.steps.line_follow_dsl import strafe_follow_line_single
+from src.steps.line_follow_builder import line_follow
 
 
 def forward_line_follow():
-    return strafe_follow_line_single(
-        sensor=Defs.front.left,
-        speed=1,
-        side=LineSide.RIGHT,
-        kp=0.6,
-        ki=0.3,
-        kd=0.05,
+    return (
+        line_follow()
+        .single(Defs.front.left, side=LineSide.RIGHT)
+        .move(heading=1)
+        .correct_lateral()
+        .pid(kp=0.6, ki=0.3, kd=0.05)
     )
 
 
