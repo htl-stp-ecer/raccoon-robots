@@ -35,6 +35,7 @@ from raccoon.sensor_ir import IRSensor
 
 from raccoon import *
 
+from ._heading_utils import get_world_heading_rad
 from ._odometry_snapshot import PoseSnapshot
 
 if TYPE_CHECKING:
@@ -124,8 +125,6 @@ class LineFollow(MotionStep):
         return base
 
     def on_start(self, robot: "GenericRobot") -> None:
-        from ._heading_utils import get_world_heading_rad
-
         cfg = self.config
 
         motion_config = LinearMotionConfig()
@@ -239,8 +238,6 @@ class SingleSensorLineFollow(MotionStep):
         return base
 
     def on_start(self, robot: "GenericRobot") -> None:
-        from ._heading_utils import get_world_heading_rad
-
         cfg = self.config
 
         motion_config = LinearMotionConfig()
@@ -706,13 +703,13 @@ class DirectionalLineFollow(MotionStep):
         if cfg.forward_correction:
             # Correct forward/backward while gyro PID holds heading.
             vx = self._vx + correction * self._max_linear
-            heading_error = self._initial_heading - robot.odometry.get_heading()
+            heading_error = self._initial_heading - get_world_heading_rad(robot)
             wz = self._heading_pid.update(heading_error, dt)
             robot.drive.set_velocity(ChassisVelocity(vx, self._vy, wz))
         elif cfg.lateral_correction:
             # Correct by strafing left/right; gyro PID holds heading
             vy = self._vy + correction * self._max_lateral
-            heading_error = self._initial_heading - robot.odometry.get_heading()
+            heading_error = self._initial_heading - get_world_heading_rad(robot)
             wz = self._heading_pid.update(heading_error, dt)
             robot.drive.set_velocity(ChassisVelocity(self._vx, vy, wz))
         else:
@@ -867,7 +864,8 @@ class DirectionalSingleLineFollow(MotionStep):
         corr_str = _correction_mode_name(cfg)
         self.debug(
             f"on_start: side={cfg.side.value}, vx={self._vx:.3f}m/s, vy={self._vy:.3f}m/s, "
-            f"correction={corr_str}, heading_hold={cfg.heading_hold}, PID({cfg.kp}, {cfg.ki}, {cfg.kd})"
+            f"correction={corr_str}, heading_hold={cfg.heading_hold}, "
+            f"initial_heading={self._initial_heading:.4f}rad, PID({cfg.kp}, {cfg.ki}, {cfg.kd})"
         )
 
     def on_update(self, robot: "GenericRobot", dt: float) -> bool:
@@ -899,7 +897,7 @@ class DirectionalSingleLineFollow(MotionStep):
         if cfg.forward_correction:
             vx = self._vx + correction * self._max_linear
             if cfg.heading_hold:
-                heading_error = self._initial_heading - robot.odometry.get_heading()
+                heading_error = self._initial_heading - get_world_heading_rad(robot)
                 wz = self._heading_pid.update(heading_error, dt)
             else:
                 wz = 0.0
@@ -908,7 +906,7 @@ class DirectionalSingleLineFollow(MotionStep):
             # Correct by strafing left/right; optionally gyro PID holds heading
             vy = self._vy + correction * self._max_lateral
             if cfg.heading_hold:
-                heading_error = self._initial_heading - robot.odometry.get_heading()
+                heading_error = self._initial_heading - get_world_heading_rad(robot)
                 wz = self._heading_pid.update(heading_error, dt)
             else:
                 wz = 0.0

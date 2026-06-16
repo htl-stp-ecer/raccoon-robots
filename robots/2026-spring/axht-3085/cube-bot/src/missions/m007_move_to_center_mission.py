@@ -17,7 +17,7 @@ def left_lateral_line_follow():
         kd=0.0,
     )
 
-class M007MoveToCenter(Mission):
+class M007MoveToCenterMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             mark_heading_reference(origin_offset_deg=90),
@@ -40,8 +40,8 @@ class M007MoveToCenter(Mission):
 
             turn_to_heading_left(0),
 
-            drive_backward().until(
+            drive_backward(heading=0).until(
                 on_black(Defs.rear.left)
-            )
+            ),
 
         ])

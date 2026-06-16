@@ -2,6 +2,7 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.arm_steps import *
+from src.steps.line_follow_dsl import strafe_follow_line_single
 
 def forward_line_follow():
     return strafe_follow_line_single(
@@ -27,7 +28,7 @@ class M010FirstBrownCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # line follow backwards to retrieve spot
-            drive_forward().until(
+            drive_forward(heading=0).until(
                 over_line(Defs.rear.left) #if we ever are over the line this conditio will fix it
                 + after_cm(7)
             ),

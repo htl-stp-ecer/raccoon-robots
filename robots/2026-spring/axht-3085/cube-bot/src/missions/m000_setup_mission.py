@@ -1,17 +1,26 @@
 from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
+from src.missions.m007_move_to_center_mission import left_lateral_line_follow
 from src.steps.calibrate_analog_drive import calibrate_analog_drive, on_analog_flank
-from src.steps.line_follow_dsl import lateral_follow_line_single, lateral_follow_line_single_free
+from src.steps.line_follow_dsl import lateral_follow_line_single, lateral_follow_line_single_free, strafe_follow_line_single
 from src.steps.sample_analog_between_lines import sample_analog_between_lines
 
+def line_follow():
+    return strafe_follow_line_single(
+        sensor=Defs.front.left,
+        speed=-1,
+        side=LineSide.RIGHT,
+        kp=0.6,
+        ki=0.3,
+        kd=0.05,
+    )
 
 class M000SetupMission(SetupMission):
-    setup_time = 120
+    setup_time = 90
 
     def sequence(self) -> Sequential:
         return seq([
-            fully_disable_servos(),
 
             pause_setup_timer(),
             fully_disable_servos(),
@@ -38,6 +47,34 @@ class M000SetupMission(SetupMission):
                 distance_cm=70,
                 calibration_sets=["default", "upper"],
             ),
+            #---
+            #line_follow().until(
+            #    (over_line(Defs.front.right)
+            #     + after_cm(20))
+            #    | after_seconds(6)
+            #),
+            # drive to line
+            #mark_heading_reference(origin_offset_deg=90),
+            #left_lateral_line_follow().until(
+            #    after_cm(40)
+            #),
+
+            #turn_to_heading_left(0),
+
+            #drive_backward().until(
+            #    on_black(Defs.rear.left)
+            #),
+
+            ## line follow backwards to retrieve spot
+            #drive_forward().until(
+            #    over_line(Defs.rear.left)  # if we ever are over the line this conditio will fix it
+            #    + after_cm(7)
+            #),
+            ## go into correct lateral position for pickup
+            #strafe_right(heading=0).until(
+            #    on_black(Defs.rear.left),
+            #),
+            #---
 
             servo(Defs.arm_elbow, -28),
             servo(Defs.arm_sholder, 25),
@@ -50,14 +87,13 @@ class M000SetupMission(SetupMission):
                 drive_duration_s=2
             ),
 
-            #wait_for_button("calibrate cube stack"),
-            #calibrate_analog_drive(
-            #    Defs.et_sensor,
-            #    set_name="cube_stack",
-            #    speed=-0.4,
-            #    drive_duration_s=2
-            #),
-
+            wait_for_button("calibrate cube stack"),
+            calibrate_analog_drive(
+                Defs.et_sensor,
+                set_name="cube_stack",
+                speed=-0.4,
+                drive_duration_s=2
+            ),
 
             wait_for_button("go to strart possiont"),
             mark_heading_reference(),

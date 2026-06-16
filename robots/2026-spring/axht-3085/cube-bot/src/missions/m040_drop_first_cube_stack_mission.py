@@ -27,7 +27,7 @@ def align_line_follow():
     )
 
 
-class M040DropFirstCubeStack(Mission):
+class M040DropFirstCubeStackMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             background(

@@ -3,7 +3,7 @@ from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.calibrate_analog_drive import on_analog_flank
 from src.steps.line_follow_dsl import lateral_follow_line_single, lateral_follow_line_single_free, \
-    strafe_follow_line_single_free
+    strafe_follow_line_single_free, strafe_follow_line_single
 
 
 def line_follow():
@@ -28,7 +28,7 @@ def wall_align():
     )
 
 
-class M080DriveToExternalLoadingDock(Mission):
+class M080DriveToExternalLoadingDockMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             timeout_or(

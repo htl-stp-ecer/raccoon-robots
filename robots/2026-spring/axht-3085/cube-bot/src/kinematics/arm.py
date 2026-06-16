@@ -468,7 +468,7 @@ class AngleMoveBuilder(StepBuilder):
             steps.append(_one(Defs.arm_elbow, self._elbow_deg, _elbow_cal,
                               Defs.arm_elbow.max_minus.value, Defs.arm_elbow.max_max.value, elbow_s))
 
-        print(
+        self.debug(
             f"[arm] move_angles({self._base_deg}, {self._sholder_deg}, {self._elbow_deg})"
         )
         if not steps:

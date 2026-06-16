@@ -3,6 +3,7 @@ from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 from src.steps.calibrate_analog_drive import on_analog_flank
+from src.steps.line_follow_dsl import strafe_follow_line_single
 
 
 def forward_line_follow():
@@ -32,8 +33,8 @@ class M030GrabRedCubeMission(Mission):
             # drive to red cube
             forward_line_follow().until(
                 over_line(Defs.front.right)
-                #+ on_analog_flank(Defs.et_sensor, set_name="cube_stack")
-                + after_cm(3)
+                + on_analog_flank(Defs.et_sensor, set_name="cube_stack")
+                + after_cm(1)
             ),
 
             # place down cube
