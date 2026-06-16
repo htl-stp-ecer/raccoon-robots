@@ -6,6 +6,7 @@ from src.service.drum_motor_service import DrumMotorService
 from src.steps.collect_drums_step import collect_drums
 from src.steps.drum_lifting_step import drum_lifting_up
 from src.steps.drum_collector import rotate_to_eject_start
+from src.steps.drum_nudge_step import drum_nudge_backward
 
 
 @dsl
@@ -22,6 +23,7 @@ def after_collect():
         return seq([
             Defs.drum_pusher_servo.hold(),
             rotate_to_eject_start(),
+            drum_nudge_backward(),
         ])
 
     return defer(_build)
