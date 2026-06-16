@@ -1,28 +1,28 @@
 from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
-from src.steps.line_follow_dsl import lateral_follow_line_single, lateral_follow_line_single_free
+from src.steps.line_follow_builder import line_follow
 
 
 def left_lateral_line_follow():
-    return lateral_follow_line_single(
-        sensor=Defs.rear.left,
-        speed=-1,
-        side=LineSide.LEFT,
-        kp=0.4,
-        ki=0.05,
-        kd=0.0,
+    return (
+        line_follow()
+        .single(Defs.rear.left, side=LineSide.LEFT)
+        .move(strafe=-1)
+        .correct_forward()
+        .relative_to_travel()
+        .pid(kp=0.4, ki=0.05, kd=0.0)
     )
 
 
 def left_lateral_align_line_follow():
-    return lateral_follow_line_single_free(
-        sensor=Defs.rear.left,
-        speed=-0.4,
-        side=LineSide.LEFT,
-        kp=0.5,
-        ki=0.1,
-        kd=0.0,
+    return (
+        line_follow()
+        .single(Defs.rear.left, side=LineSide.LEFT)
+        .move(strafe=-0.4)
+        .correct_forward(hold_heading=False)
+        .relative_to_travel()
+        .pid(kp=0.5, ki=0.1, kd=0.0)
     )
 
 
