@@ -15,7 +15,10 @@ class M010DriveToDrumsMission(Mission):
 
             # turn drive turn
             turn_right(45),
-            drive_forward(cm=21, speed=1),
+            drive_forward().until(
+                over_line(Defs.rear_left_ir_sensor)
+                + after_cm(4),
+            ),
             background(
                 Defs.pom_remover_servo.right()
             ),

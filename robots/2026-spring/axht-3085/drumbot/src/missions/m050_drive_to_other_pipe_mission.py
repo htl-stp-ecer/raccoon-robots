@@ -8,21 +8,19 @@ class M050DriveToOtherPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # drive backward a bit so we can lift the drum
-            parallel(
-                drive_backward(cm=7),
-                Defs.pom_remover_servo.center(),
+            drive_backward(cm=10),
+
+            # start lifting up drum
+            background(
+                Defs.lift_drums_servo.up(50),
             ),
-            Defs.lift_drums_servo.up(50),
 
             # turn straight
-            turn_to_heading_right(185),  # turning a bit more to not hit the raised loading dock
+            turn_to_heading_right(185),  # in order to not hit the raised loading dock
 
             # drive to the seconds black line
-            parallel(
-                drive_backward().until(
-                    over_line(Defs.front_right_ir_sensor) +
-                    on_black(Defs.front_right_ir_sensor)
-                ),
+            drive_backward().until(
+                on_black(Defs.front_right_ir_sensor)
             ),
 
             turn_to_heading_right(90),
@@ -32,45 +30,53 @@ class M050DriveToOtherPipeMission(Mission):
             #    on_black(Defs.front_right_ir_sensor)
             # ),
 
-            # wait for the other bot to finish
-            wait_for_checkpoint(60 + 25),
-
-            parallel(
-                follow_line_single(Defs.front_right_ir_sensor,
-                                   kp=1,
-                                   ki=0.1,
-                                   kd=0.1,
-                                   side=LineSide.LEFT,
-                                   speed=1.0
-                                   ).until(
-                    after_cm(65),
-                ),
-                # Defs.pom_remover_servo.r_cube(),
+            # line follow forward
+            follow_line_single(
+                sensor=Defs.front_right_ir_sensor,
+                speed=1.0,
+                side=LineSide.LEFT,
+                kp=1,
+                ki=0.1,
+                kd=0.1,
+            ).until(
+                after_cm(65),
             ),
 
-            turn_to_heading_right(90 + 25),  # turn 25deg to the right
-            drive_forward(10, 1),
-            turn_to_heading_right(90),
+            # turn away and drive angled to avoid hitting wall
+            turn_to_heading_right(90 - 35),
+            drive_forward().until(
+                over_line(Defs.rear_left_ir_sensor)
+                + over_line(Defs.rear_left_ir_sensor)
+                + after_cm(2)
+            ),
 
-            # background(Defs.pom_remover_servo.left()),
+            # turn onto black line
+            turn_right().until(
+                on_black(Defs.front_right_ir_sensor)
+            ),
+
+            # follow line until before drum pole
             follow_line_single(
                 Defs.front_right_ir_sensor,
                 speed=1.0,
-                kp=0.7,
-                ki=0.2,
+                side=LineSide.LEFT,
+                kp=2.0,
+                ki=0.5,
                 kd=0.1,
-                side=LineSide.RIGHT,
             ).until(
-                over_line(Defs.rear_left_ir_sensor) +
-                over_line(Defs.rear_left_ir_sensor) +
-                after_cm(14)
-            ),  # fahre 15 cm auf der rechten Seite des Cubes vorbei
+                over_line(Defs.rear_left_ir_sensor)
+                + after_cm(14)
+            ),
+
+            # fahre 15 cm auf der rechten Seite des Cubes vorbei
             # smooth_path(
             #    turn_to_heading_right(90 - 25),
             #    drive_forward(8, 1),
             #    turn_to_heading_right(90),
             # ),
-            drive_to_second_pipe(),
+            # drive_to_second_pipe(),
+
+            # Defs.lift_drums_servo.up(),
 
             lineup_drum_with_pipe(),
             eject_nearest_color(),
