@@ -1,3 +1,7 @@
+from src.patches.heading_frame import apply as _apply_heading_patch
+
+_apply_heading_patch()
+
 import os
 
 from src.hardware.robot import Robot
