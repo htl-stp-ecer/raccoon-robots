@@ -59,7 +59,7 @@ class M050DriveUpRampMission(Mission):
 
             # magical drive up ramp
             drive_backward(heading=0).until(
-                on_black(Defs.front.right)
+                on_black(Defs.front.left)
                 + after_cm(80)
                 + on_black(Defs.front.right)
             ),

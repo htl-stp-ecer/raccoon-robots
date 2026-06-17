@@ -27,7 +27,7 @@ class M010FirstBrownCubeMission(Mission):
             # line follow backwards to retrieve spot
             drive_forward(heading=0).until(
                 over_line(Defs.rear.left) #if we ever are over the line this conditio will fix it
-                + after_cm(7)
+                + after_cm(8)
             ),
             # go into correct lateral position for pickup
             strafe_right(heading=0).until(
@@ -38,7 +38,9 @@ class M010FirstBrownCubeMission(Mission):
             ),
 
             grab_brown_cube(LineSide.LEFT, heading=0),
-            turn_to_heading_right(0),
+            #wait_for_button(),
+            #turn_to_heading_right(0),
+            #wait_for_button(),
 
             # move away from shared warehouse
             strafe_left(heading=0).until(

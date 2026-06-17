@@ -11,11 +11,11 @@ arm_base:
 arm_sholder:
   type: Servo
   port: 1
-  offset: 22.4
+  offset: 0
   positions:
-    max_down: 195.3
-    _0deg: 169.2
-    p90deg: 69
+    max_down: 211
+    _0deg: 191.9
+    p90deg: 95
     max_up: 25
 arm_elbow:
   type: Servo

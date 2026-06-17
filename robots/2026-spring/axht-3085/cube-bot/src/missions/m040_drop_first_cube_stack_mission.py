@@ -10,7 +10,7 @@ def _follow():
         .single(Defs.rear.left, side=LineSide.LEFT)
         .move(forward=1)
         .correct_lateral()
-        .pid(kp=0.6, ki=0.5, kd=0.05)
+        .pid(kp=0.3, ki=0.1, kd=0.0)
     )
 
 
@@ -20,7 +20,7 @@ def align_line_follow():
         .single(Defs.rear.left, side=LineSide.LEFT)
         .move(forward=0.4)
         .correct_lateral(hold_heading=False)
-        .pid(kp=0.6, ki=0.3, kd=0.0)
+        .pid(kp=0.4, ki=0.2, kd=0.0)
     )
 
 
@@ -41,7 +41,7 @@ class M040DropFirstCubeStackMission(Mission):
                 on_black(Defs.rear.left)
             ),
             _follow().until(
-                after_cm(120)
+                after_cm(125)
             ),
             parallel(
                 align_line_follow().until(
@@ -61,6 +61,5 @@ class M040DropFirstCubeStackMission(Mission):
             arm.move_angles(91,elbow_deg=-63, speed=150),
             arm.move_angles(sholder_deg=80, speed=200),
             wait_for_seconds(0.5),
-            wait_for_button(),
             Defs.arm_claw.open(),
         ])

@@ -11,7 +11,7 @@ def forward_line_follow():
         .single(Defs.front.left, side=LineSide.RIGHT)
         .move(forward=1)
         .correct_lateral()
-        .pid(kp=0.6, ki=0.3, kd=0.05)
+        .pid(kp=0.6, ki=0.1, kd=0.05)
     )
 
 
@@ -31,9 +31,8 @@ class M030GrabRedCubeMission(Mission):
             # drive to red cube
             forward_line_follow().until(
                 over_line(Defs.front.right)
-                + on_analog_flank(Defs.et_sensor, set_name="cube_stack")
-                + after_cm(1)
             ),
+            drive_forward(cm=1, speed=0.5),
 
             # place down cube
             arm.move_angles(90, 100, -85).arm_speeds(sholder=90),
@@ -49,8 +48,11 @@ class M030GrabRedCubeMission(Mission):
                 after_cm(6)
             ),
             Defs.arm_claw.grab(),
-            arm.move_angles(90, 110, -90).arm_speeds(sholder=150, elbow=100),
-            arm.move_angles(90, 50, -40),
+            #arm.move_angles(90, 110, -90).arm_speeds(sholder=150, elbow=100),
+            arm.move_angles(sholder_deg=80),
+            wait_for_seconds(0.2),
+            arm.move_angles(90, 50, -40).arm_speeds(sholder=150),
+            wait_for_seconds(0.2),
             Defs.arm_claw.open(speed=100),
             Defs.arm_claw.strong_grab(),
 

@@ -14,6 +14,8 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
+            wait_for_button(),
+            drive_forward(cm=50),
             # auto_tune(
             #     tune_bemf_velocity=True,
             #     tune_vel_lpf=False,
@@ -39,11 +41,11 @@ class M000SetupMission(SetupMission):
             # arm start position
             background(
                 seq([
-                    # TODO: Im sorry but me don't care about raccoon not letting me do my servo shit (fix it some day) LG Matthias
-                    # ok :) 👍
 
                     Defs.arm_claw.idle(),
                     arm.move_angles(0, 110, -90),
+                    # TODO: Im sorry but me don't care about raccoon not letting me do my servo shit (fix it some day) LG Matthias
+                    # ok :) 👍
                     servo(Defs.arm_elbow, -28),
                     servo(Defs.arm_sholder, 25),
 
@@ -60,7 +62,7 @@ class M000SetupMission(SetupMission):
             ),
             collect_ir_set( #calibrate upper deck ir sensor
                 seq([
-                    drive_backward(cm=50),
+                    drive_backward(cm=20),
                     #make sure we have turned over all sneosrs on upper deck
                     turn_right(10),
                     turn_left(70),
@@ -68,43 +70,34 @@ class M000SetupMission(SetupMission):
                 set_name="upper"
             ),
 
-            wait_for_button("calibrate cube stack"),
-            collect_drive(
+            wait_for_button("starting box align"),
+            mark_heading_reference(),
+            #collect_drive(
                 collect_ir_set(
                     seq([
-                        calibrate_analog_drive(
-                            Defs.et_sensor,
-                            set_name="cube_stack",
-                            speed=0.5,
-                            drive_duration_s=3
+                        strafe_right().until(
+                            on_black(Defs.front.right)
                         ),
                         drive_forward().until(
                             over_line(Defs.rear.left)
                         ),
-                        strafe_right().until(
+                        drive_backward().until(
                             over_line(Defs.front.left)
-                        ),
+                        )
                     ]),
                     set_name="default",
                 ),
-            ),
+            #),
 
 
 
         calibration_gate(
-            require_axes=[CalibrationAxis.FORWARD],
+            #require_axes=[CalibrationAxis.FORWARD],
             require_ir_sets=["default", "upper"],
         ),
 
-        wait_for_button("cal test"),
-        drive_forward(cm=50),
-
         wait_for_button("go to strart possiont"),
-        mark_heading_reference(),
             # align on the black line on the right
-        strafe_right().until(
-            on_black(Defs.front.right)
-        ),
         strafe_left().until(
             on_white(Defs.front.right)
             + after_cm(1)

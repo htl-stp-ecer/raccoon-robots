@@ -12,7 +12,8 @@ class M070GrabUpperCubeMission(Mission):
                 on_black(Defs.front.left)
             ),
             drive_forward(heading=0).until(
-                on_analog_flank(Defs.et_sensor, "upper_cube")
+                after_cm(65)
+                + on_analog_flank(Defs.et_sensor, "upper_cube")
             ),
             drive_backward(heading=0).until(
                 on_analog_flank(Defs.et_sensor, "upper_cube")
@@ -43,7 +44,7 @@ class M070GrabUpperCubeMission(Mission):
             drive_backward(cm=15, heading=0),
 
             #put arm down
-            arm.move_angles(0, 10, 0, speed=120),
+            arm.move_angles(0, 0, 0, speed=120),
 
             #drive back to cube
             drive_forward(cm=12, heading=0),
