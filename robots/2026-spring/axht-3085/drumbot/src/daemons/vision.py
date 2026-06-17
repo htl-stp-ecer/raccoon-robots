@@ -43,7 +43,7 @@ from src.service.color_detection_service import (
 import src.transport_wire_patch  # noqa: F401
 
 PRESENCE_THRESHOLD = 0.9
-ANALYSIS_FRAMES = 2
+ANALYSIS_FRAMES = 1
 
 
 class VisionDaemon:
