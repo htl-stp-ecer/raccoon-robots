@@ -43,8 +43,8 @@ def _analog_store_key(sensor: "AnalogSensor", set_name: str) -> str:
 
 
 # Edge-detection tunables (see _analyze_flank / on_analog_flank).
-_DRAWUP_FRAC = 0.05  # Trigger margin sits this fraction up from the noise floor
-#                      toward the full edge — small => earlier trigger.
+_FLANK_TRIGGER_FRAC = 2.0 / 3.0  # Live flank must reach this fraction of the
+#                                  calibrated edge amplitude before it fires.
 _NOISE_BAND_FRAC = 0.10  # Samples within this fraction of the baseline define the
 #                          "off" cluster whose wobble is the noise floor.
 _DEFAULT_CONFIRM_SAMPLES = 2  # Consecutive confirming reads before stopping.
@@ -52,7 +52,7 @@ _DEFAULT_CONFIRM_SAMPLES = 2  # Consecutive confirming reads before stopping.
 
 def _analyze_flank(
     samples: list[float],
-    drawup_frac: float = _DRAWUP_FRAC,
+    trigger_frac: float = _FLANK_TRIGGER_FRAC,
     noise_band_frac: float = _NOISE_BAND_FRAC,
 ) -> dict | None:
     """Characterise the edge in a calibration sample run, on **raw** samples.
@@ -61,22 +61,26 @@ def _analyze_flank(
     back to the legacy midpoint threshold.
 
     Worked in *signal space* ``sig = sign * value`` where ``sign`` is the edge
-    direction (later-half mean vs earlier-half mean), so ``drawup_margin`` /
+    direction (later-half mean vs earlier-half mean), so ``flank_threshold`` /
     ``amplitude`` / ``noise`` are sign-independent magnitudes that serve both a
     rising and a falling live flank. The noise floor is the wobble of the
     *baseline cluster* — samples within ``noise_band_frac`` of the off-state
-    extremum — so a gradual (multi-sample) edge does not inflate it.
+    extremum — kept around as a diagnostic for the confirm screen.
 
     No smoothing: the live detector compares raw reads against a running valley,
     so the calibration statistics are derived the same way for consistency.
 
-    * ``baseline``     — off-state level (raw units), diagnostic only.
-    * ``amplitude``    — full size of the edge.
-    * ``noise``        — baseline-cluster wobble.
-    * ``drawup_margin``— ``noise + drawup_frac*(amplitude - noise)``: how far a
-                          live reading must lift off its local baseline to fire —
-                          above noise, far below the midpoint => earlier trigger.
-    * ``edge_sign``    — +1 if the edge rose over the run, -1 if it fell.
+    * ``baseline``        — off-state level (raw units), diagnostic only.
+    * ``amplitude``       — full size of the edge seen during calibration.
+    * ``noise``           — baseline-cluster wobble, diagnostic only.
+    * ``flank_threshold`` — ``trigger_frac*amplitude``: how far a live reading
+                             must lift off its local baseline to fire. Default
+                             fires once the live flank reaches 2/3 of the edge
+                             seen during calibration.
+    * ``trigger_level``   — ``flank_threshold`` expressed as an absolute raw
+                             reading (``baseline + edge_sign*flank_threshold``),
+                             for plotting alongside the raw samples.
+    * ``edge_sign``       — +1 if the edge rose over the run, -1 if it fell.
     """
     n = len(samples)
     if n < 5:
@@ -96,26 +100,30 @@ def _analyze_flank(
     noise = max((s - sig_min for s in sig if s <= band), default=0.0)
     noise = max(0.0, min(noise, amplitude))
 
-    drawup_margin = noise + drawup_frac * (amplitude - noise)
+    flank_threshold = trigger_frac * amplitude
+    baseline = sign * sig_min
     return {
         "edge_sign": sign,
-        "baseline": sign * sig_min,
+        "baseline": baseline,
         "amplitude": amplitude,
         "noise": noise,
-        "drawup_margin": drawup_margin,
+        "flank_threshold": flank_threshold,
+        "trigger_level": baseline + sign * flank_threshold,
     }
 
 
 def _flank_decision(
     current: float,
     extremum: float,
-    drawup_margin: float,
+    flank_threshold: float,
     rising: bool,
 ) -> tuple[float, bool]:
     """One live edge-mode step. Returns ``(updated_extremum, is_candidate)``.
 
     Pure so the trigger logic can be replay-tested off-robot. ``extremum`` is the
     running local baseline: the valley for a rising flank, the peak for falling.
+    Fires once the live flank (``drawup``) reaches ``flank_threshold`` — by
+    default 2/3 of the edge amplitude seen during calibration.
     """
     if rising:
         extremum = min(extremum, current)
@@ -123,7 +131,7 @@ def _flank_decision(
     else:
         extremum = max(extremum, current)
         drawup = extremum - current
-    return extremum, drawup >= drawup_margin
+    return extremum, drawup >= flank_threshold
 
 
 # ---------------------------------------------------------------------------
@@ -200,6 +208,7 @@ class AnalogDriveConfirmScreen(UIScreen[AnalogDriveConfirmResult]):
         filtered_min: float,
         filtered_max: float,
         sample_count: int,
+        samples: list[float],
         analysis: dict | None = None,
     ) -> None:
         super().__init__()
@@ -209,6 +218,7 @@ class AnalogDriveConfirmScreen(UIScreen[AnalogDriveConfirmResult]):
         self.filtered_min = filtered_min
         self.filtered_max = filtered_max
         self.sample_count = sample_count
+        self.samples = samples
         self.analysis = analysis
 
     @property
@@ -245,9 +255,17 @@ class AnalogDriveConfirmScreen(UIScreen[AnalogDriveConfirmResult]):
             rows += [
                 ("Edge amplitude", f"{a['amplitude']:.0f}", "blue"),
                 ("Pre-edge noise", f"{a['noise']:.0f}", "blue"),
-                ("Draw-up margin", f"{a['drawup_margin']:.0f}", "cyan"),
+                ("Flank threshold", f"{a['flank_threshold']:.0f}", "cyan"),
             ]
         rows.append(("Samples", str(self.sample_count), None))
+
+        chart_thresholds = [
+            (self.filtered_min, "Min", "blue"),
+            (self.filtered_max, "Max", "blue"),
+            (self.threshold, "Midpoint", "grey"),
+        ]
+        if self.analysis is not None:
+            chart_thresholds.append((self.analysis["trigger_level"], "Flank Threshold", "cyan"))
 
         return Split(
             left=[
@@ -268,6 +286,16 @@ class AnalogDriveConfirmScreen(UIScreen[AnalogDriveConfirmResult]):
                 Spacer(16),
                 Text(status, size="medium", color=color),
                 Spacer(24),
+                Card(
+                    children=[
+                        CalibrationChart(
+                            samples=self.samples,
+                            thresholds=chart_thresholds,
+                            height=180,
+                        )
+                    ]
+                ),
+                Spacer(16),
                 Card(children=[ResultsTable(rows=rows)]),
             ],
             right=[
@@ -414,6 +442,15 @@ class CalibrateAnalogDrive(UIStep):
             )
 
         while True:
+            # Phase 0: wait for the operator to position the robot and confirm
+            set_label = f" [{self._set_name}]" if self._set_name != "default" else ""
+            await self.show(
+                WaitForButtonScreen(
+                    f"Position the robot for port {self._sensor.port}{set_label}, "
+                    "then press the button to start calibration."
+                )
+            )
+
             # Phase 1: drive + sample; sampling screen is shown while driving
             samples: list[float] = await self.run_with_ui(
                 AnalogDriveSamplingScreen(
@@ -453,6 +490,7 @@ class CalibrateAnalogDrive(UIStep):
                     filtered_min=filtered_min,
                     filtered_max=filtered_max,
                     sample_count=n,
+                    samples=samples,
                     analysis=analysis,
                 )
             )
@@ -471,7 +509,7 @@ class CalibrateAnalogDrive(UIStep):
                     # uses them for edge mode.
                     data.update(
                         {
-                            "drawup_margin": analysis["drawup_margin"],
+                            "flank_threshold": analysis["flank_threshold"],
                             "baseline": analysis["baseline"],
                             "amplitude": analysis["amplitude"],
                             "noise": analysis["noise"],
@@ -480,7 +518,7 @@ class CalibrateAnalogDrive(UIStep):
                     )
                 store.store(ANALOG_DRIVE_THRESHOLD_SECTION, data, key)
                 margin_txt = (
-                    f" drawup_margin={analysis['drawup_margin']:.0f}"
+                    f" flank_threshold={analysis['flank_threshold']:.0f}"
                     f" amplitude={analysis['amplitude']:.0f}"
                     f" noise={analysis['noise']:.0f}"
                     if analysis is not None
@@ -531,13 +569,12 @@ class on_analog_flank(StopCondition):
     above it -> wait for a *falling* flank.
 
     **Edge mode (preferred).** When the calibration carries edge metrics
-    (``drawup_margin``, produced by the current :func:`calibrate_analog_drive`),
+    (``flank_threshold``, produced by the current :func:`calibrate_analog_drive`),
     the condition tracks the *live local baseline* — the running valley for a
     rising flank, the running peak for a falling one — and fires as soon as the
-    reading lifts off that baseline by the calibrated draw-up margin. This
-    triggers **earlier** than the old midpoint crossing (the margin sits just
-    above the pre-edge noise, not halfway up the edge) and the live baseline
-    makes it robust to slow lighting/surface drift.
+    reading's lift-off from that baseline reaches ``flank_threshold``, which is
+    2/3 of the edge amplitude seen during calibration. The live baseline makes
+    it robust to slow lighting/surface drift.
 
     **Legacy mode (fallback).** When only an old midpoint ``threshold`` is
     stored, it falls back to the original crossing test.
@@ -585,7 +622,7 @@ class on_analog_flank(StopCondition):
         self._threshold: float = 0.0
         self._rising: bool = True
         # Edge mode state
-        self._drawup_margin: float | None = None
+        self._flank_threshold: float | None = None
         self._extremum: float = 0.0  # live local baseline (valley/peak)
         self._streak: int = 0
 
@@ -605,16 +642,16 @@ class on_analog_flank(StopCondition):
         self._rising = initial < self._threshold
         self._streak = 0
         self._extremum = initial
-        margin = data.get("drawup_margin")
-        self._drawup_margin = float(margin) if margin is not None else None
+        margin = data.get("flank_threshold")
+        self._flank_threshold = float(margin) if margin is not None else None
 
     def check(self, robot: "GenericRobot") -> bool:
         current = float(self._sensor.read())
 
-        if self._drawup_margin is not None:
+        if self._flank_threshold is not None:
             # Edge mode: trigger on lift-off from the live local baseline.
             self._extremum, candidate = _flank_decision(
-                current, self._extremum, self._drawup_margin, self._rising
+                current, self._extremum, self._flank_threshold, self._rising
             )
         elif self._rising:
             candidate = current >= self._threshold

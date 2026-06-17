@@ -30,7 +30,7 @@ class M020SecondBrownCubeMission(Mission):
                 seq([
                     _follow().until(
                         (over_line(Defs.front.right)
-                        + after_cm(23))
+                        + after_cm(21))
                         | after_seconds(6)
                     ),
                 ]),

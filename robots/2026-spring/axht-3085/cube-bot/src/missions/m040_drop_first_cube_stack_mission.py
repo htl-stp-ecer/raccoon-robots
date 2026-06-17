@@ -37,15 +37,12 @@ class M040DropFirstCubeStackMission(Mission):
             ),
 
             # drive to external loading dock while rotating arm
-            strafe_left(heading=0).until(
-                on_black(Defs.rear.left)
-            ),
             _follow().until(
                 after_cm(125)
             ),
             parallel(
                 align_line_follow().until(
-                    after_seconds(0.4),
+                    after_seconds(0.6),
                 ),
                 arm.move_angles(
                     base_deg=91, speed=80

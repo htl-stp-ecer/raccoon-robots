@@ -14,8 +14,6 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
-            wait_for_button(),
-            drive_forward(cm=50),
             # auto_tune(
             #     tune_bemf_velocity=True,
             #     tune_vel_lpf=False,
@@ -53,19 +51,20 @@ class M000SetupMission(SetupMission):
                 ])
             ),
             # --- sensor calibration ---
-            wait_for_button("calibrate upper cube"),
             calibrate_analog_drive(
                 Defs.et_sensor,
                 set_name="upper_cube",
                 speed=-0.5,
                 drive_duration_s=2
             ),
+            mark_heading_reference(),
             collect_ir_set( #calibrate upper deck ir sensor
                 seq([
                     drive_backward(cm=20),
                     #make sure we have turned over all sneosrs on upper deck
                     turn_right(10),
                     turn_left(70),
+                    turn_to_heading_right(0),
                 ]),
                 set_name="upper"
             ),

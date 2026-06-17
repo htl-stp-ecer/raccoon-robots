@@ -30,19 +30,22 @@ class M030GrabRedCubeMission(Mission):
 
             # drive to red cube
             forward_line_follow().until(
-                over_line(Defs.front.right)
+                on_black(Defs.front.right)
             ),
-            drive_forward(cm=1, speed=0.5),
+            drive_forward(speed=0.4).until(
+                over_line(Defs.front.right)
+                + after_cm(1),
+            ),
 
             # place down cube
             arm.move_angles(90, 100, -85).arm_speeds(sholder=90),
-            Defs.arm_claw.open(speed=70),
+            Defs.arm_claw.full_open(speed=70),
 
             # drive to side and grab both cubes
             strafe_left(heading=0).until(
                 after_cm(12)
             ),
-            arm.move_angles(90, 50, -40),
+            arm.move_angles(90, 50, -45),
 
             strafe_right(heading=0).until(
                 after_cm(6)
@@ -50,10 +53,15 @@ class M030GrabRedCubeMission(Mission):
             Defs.arm_claw.grab(),
             #arm.move_angles(90, 110, -90).arm_speeds(sholder=150, elbow=100),
             arm.move_angles(sholder_deg=80),
+            #drive to the side so we dont hit thing when we place cube back town for regreab
+            strafe_left(heading=0).until(
+                on_black(Defs.rear.left)
+            ),
+            #place cube down and regrab
+            arm.move_angles(90, 50, -45).arm_speeds(sholder=150),
             wait_for_seconds(0.2),
-            arm.move_angles(90, 50, -40).arm_speeds(sholder=150),
-            wait_for_seconds(0.2),
-            Defs.arm_claw.open(speed=100),
+            Defs.arm_claw.full_open(speed=100),
+            wait_for_seconds(0.3),
             Defs.arm_claw.strong_grab(),
 
             # lift cubes
