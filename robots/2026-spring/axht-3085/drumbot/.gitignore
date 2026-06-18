@@ -33,3 +33,7 @@ drum_detections/
 logs/
 *.log
 calibration_samples
+
+# Debug-Artefakte
+sat_debug.png
+*_debug.png
