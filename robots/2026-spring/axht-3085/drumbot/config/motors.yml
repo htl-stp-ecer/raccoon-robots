@@ -3,15 +3,19 @@ front_left_motor:
   port: 0
   inverted: false
   calibration:
-    ticks_to_rad: 1.7940195389897225e-05
-    vel_lpf_alpha: 1.0
+    ticks_to_rad: 0.00387913
+    vel_lpf_alpha: 0.05
+    bemf_offset: 7.5657
+    static_friction_pct: 9
 front_right_motor:
   type: Motor
   port: 1
   inverted: true
   calibration:
-    ticks_to_rad: 1.862862507688266e-05
-    vel_lpf_alpha: 1.0
+    ticks_to_rad: 0.00385191
+    vel_lpf_alpha: 0.05
+    bemf_offset: -20.2116
+    static_friction_pct: 11
 drum_motor:
   type: Motor
   port: 2

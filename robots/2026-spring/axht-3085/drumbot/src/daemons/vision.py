@@ -76,7 +76,12 @@ class VisionDaemon:
         self._calibration_session_dir: str | None = None
         self._calibration_sample_count = int(os.environ.get("DRUMBOT_CALIBRATION_SAMPLE_COUNT", "30"))
         self._calibration_settle_seconds = float(os.environ.get("DRUMBOT_CALIBRATION_SETTLE_SECONDS", "0.25"))
-        self._detection_debug_enabled = os.environ.get("DRUMBOT_DETECTION_DEBUG", "1") != "0"
+        # Off by default: capturing detection debug frames is heavy SD-card
+        # I/O. Only enable it when DRUMBOT_DETECTION_DEBUG is explicitly set to
+        # a truthy value ("1"/"true"/"yes"/"on").
+        self._detection_debug_enabled = os.environ.get(
+            "DRUMBOT_DETECTION_DEBUG", "0"
+        ).strip().lower() in ("1", "true", "yes", "on")
         self._detection_debug_root = os.environ.get("DRUMBOT_DETECTION_DEBUG_DIR", "detection_debug")
         self._detection_debug_dir: str | None = None
         self._detection_debug_seq = 0
@@ -485,7 +490,11 @@ class VisionDaemon:
             stamp = time.strftime("%Y%m%d-%H%M%S")
             self._detection_debug_dir = os.path.join(self._detection_debug_root, stamp)
             os.makedirs(self._detection_debug_dir, exist_ok=True)
-            info(f"Detection debug frames will be written to {self._detection_debug_dir}")
+            warn(
+                "Detection debug capture is ENABLED — writing raw+annotated PNGs "
+                f"and JSON to {self._detection_debug_dir}. This is heavy SD-card "
+                "I/O and can fill the disk; unset DRUMBOT_DETECTION_DEBUG to stop."
+            )
         return self._detection_debug_dir
 
     def _save_detection_debug_frames(self, detections: list[dict[str, Any]], frame_id: int) -> None:
@@ -500,6 +509,11 @@ class VisionDaemon:
         out_dir = self._ensure_detection_debug_dir()
         labels = "-".join(sorted({str(det["label"]) for det in detections}))
         self._detection_debug_seq += 1
+        if self._detection_debug_seq % 50 == 0:
+            warn(
+                f"Detection debug still writing: {self._detection_debug_seq} frame "
+                f"sets saved to {out_dir} (SD-card filling up)."
+            )
         prefix = f"{self._detection_debug_seq:05d}_frame{frame_id}_{labels}"
         metadata = {
             "frame_id": frame_id,

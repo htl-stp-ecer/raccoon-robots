@@ -45,16 +45,6 @@ class M000SetupMission(SetupMission):
 
             # lift up for calibration
             Defs.lift_drums_servo.up(),
-
-            calibrate(
-                distance_cm=50,
-                speed=0.5,
-                exclude_ir_sensors=[
-                    Defs.wait_for_light_sensor,
-                    Defs.drum_light_sensor,
-                ],
-            ),
-
             Defs.drum_pusher_servo.block_angle(),
             Defs.lift_drums_servo.over_limit(),
         ])

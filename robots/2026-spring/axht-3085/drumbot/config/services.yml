@@ -4,9 +4,8 @@ vision:
   restart_sec: 1
   after_sync: restart_if_changed
   required_for_run: true
-  env:
-    # Disable on-disk detection debug frames (heavy SD-card I/O during runs).
-    DRUMBOT_DETECTION_DEBUG: "0"
+  # Detection debug frames are OFF by default (heavy SD-card I/O). To capture
+  # them for a session, add: env: { DRUMBOT_DETECTION_DEBUG: "1" }
   watch:
     - src/daemons/vision.py
     - src/hardware/usb_camera.py
