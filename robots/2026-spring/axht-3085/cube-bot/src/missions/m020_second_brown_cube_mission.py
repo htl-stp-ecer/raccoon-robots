@@ -26,11 +26,11 @@ class M020SecondBrownCubeMission(Mission):
                     grab_brown_cube_start_pos()
                 ]),
 
-                # drive forward to 2nd cube pickup
+                # drive backwards to 2nd cube pickup
                 seq([
                     _follow().until(
                         (over_line(Defs.front.right)
-                        + after_cm(21))
+                        + after_cm(20))
                         | after_seconds(6)
                     ),
                 ]),
