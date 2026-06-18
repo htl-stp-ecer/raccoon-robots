@@ -45,9 +45,9 @@ class M050DriveToOtherPipeMission(Mission):
             # turn away and drive angled to avoid hitting wall
             turn_to_heading_right(90 - 35),
             drive_forward().until(
-                over_line(Defs.rear_left_ir_sensor)
-                + over_line(Defs.rear_left_ir_sensor)
-                + after_cm(2)
+                over_line(Defs.front_right_ir_sensor)
+                + after_cm(13),
+
             ),
 
             # turn onto black line
