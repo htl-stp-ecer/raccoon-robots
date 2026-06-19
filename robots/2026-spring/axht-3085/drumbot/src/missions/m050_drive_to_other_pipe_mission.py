@@ -43,39 +43,30 @@ class M050DriveToOtherPipeMission(Mission):
             ),
 
             # turn away and drive angled to avoid hitting wall
-            turn_to_heading_right(90 - 25),
+            turn_to_heading_right(90 - 30),
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
+                + after_cm(5)
             ),
 
-            # # turn onto black line
-            # turn_right().until(
-            #     on_black(Defs.front_right_ir_sensor)
-            # ),
+            # turn onto black line
+            turn_right().until(
+                on_black(Defs.front_right_ir_sensor)
+            ),
 
             # follow line until before drum pole
             follow_line_single(
                 Defs.front_right_ir_sensor,
                 speed=1.0,
                 side=LineSide.LEFT,
-                kp=1.0,
-                ki=0.3,
+                kp=1.5,
+                ki=0.5,
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
                 + after_cm(13)
             ),
-
-            # fahre 15 cm auf der rechten Seite des Cubes vorbei
-            # smooth_path(
-            #    turn_to_heading_right(90 - 25),
-            #    drive_forward(8, 1),
-            #    turn_to_heading_right(90),
-            # ),
-            # drive_to_second_pipe(),
-
-            # Defs.lift_drums_servo.up(),
 
             lineup_drum_with_pipe(),
             eject_nearest_color(),
