@@ -8,8 +8,8 @@ def grab_brown_cube_start_pos():
 
 def grab_brown_cube(side: LineSide, heading: int | None):
     def drive():
-        return drive_forward(cm=1, heading=heading, speed=0.5) if (LineSide.LEFT == side) \
-            else drive_backward(cm=1)
+        return drive_forward(cm=3, heading=heading, speed=0.5) if (LineSide.LEFT == side) \
+            else drive_backward(cm=3)
             # else run(lambda robot: None)
 
     return seq([
@@ -19,7 +19,7 @@ def grab_brown_cube(side: LineSide, heading: int | None):
         arm.move_angles(90, 60, -30)
             .arm_speeds(base=999, sholder=100, elbow=200),        # move further into shared area
 
-        Defs.arm_claw.open(),                 # open claw
+        Defs.arm_claw.full_open(),                 # open claw
         drive(),
 
         arm.move_angles(90, 20, -25),        # move down

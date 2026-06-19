@@ -38,7 +38,7 @@ class M040DropFirstCubeStackMission(Mission):
 
             # drive to external loading dock while rotating arm
             _follow().until(
-                after_cm(125)
+                after_cm(135)
             ),
             parallel(
                 align_line_follow().until(
@@ -55,8 +55,8 @@ class M040DropFirstCubeStackMission(Mission):
             turn_to_heading_right(0),
 
             # place cube tower
-            arm.move_angles(91,elbow_deg=-63, speed=150),
-            arm.move_angles(sholder_deg=80, speed=200),
+            arm.move_angles(sholder_deg=105, speed=200),
+            arm.move_angles(elbow_deg=-95, speed=150),
             wait_for_seconds(0.5),
             Defs.arm_claw.open(),
         ])

@@ -10,7 +10,7 @@ def _follow():
         .single(Defs.front.left, side=LineSide.RIGHT)
         .move(forward=-1)
         .correct_lateral()
-        .pid(kp=0.6, ki=0.3, kd=0.05)
+        .pid(kp=0.5, ki=0.1, kd=0.0)
     )
 
 
@@ -30,7 +30,7 @@ class M020SecondBrownCubeMission(Mission):
                 seq([
                     _follow().until(
                         (over_line(Defs.front.right)
-                        + after_cm(20))
+                        + after_cm(19))
                         | after_seconds(6)
                     ),
                 ]),

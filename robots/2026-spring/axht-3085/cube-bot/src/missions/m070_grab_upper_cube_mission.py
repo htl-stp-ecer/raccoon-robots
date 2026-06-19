@@ -24,7 +24,7 @@ class M070GrabUpperCubeMission(Mission):
             ),
 
             # put claw on cube
-            arm.move_angles(30, 62, -50, speed=150),
+            arm.move_angles(30, 62, -53, speed=150),
 
             # push cube back
             drive_angle(-130).until(
@@ -37,7 +37,9 @@ class M070GrabUpperCubeMission(Mission):
             ),
 
             # drive back befor grabing cube to habe some space for the arm
-            drive_backward(cm=15, heading=0),
+            drive_backward(heading=0).until(
+                after_cm(25) #don't increas this distance otherwise we may stand on the black line with the sensor (bad for nex trafe)
+            ),
 
             parallel(
                 #align claw and cube
@@ -50,7 +52,7 @@ class M070GrabUpperCubeMission(Mission):
             ),
 
             #drive back to cube
-            drive_forward(cm=12, heading=0),
+            drive_forward(cm=22, heading=0),
 
             #close claw
             Defs.arm_claw.strong_grab(speed=100),

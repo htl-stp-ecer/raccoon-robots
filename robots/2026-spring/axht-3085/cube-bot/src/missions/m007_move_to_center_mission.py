@@ -3,32 +3,34 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.arm_steps import grab_brown_cube_start_pos
-from src.steps.drive_to_analog_target_bidirectional import drive_to_analog_target_bidirectional
 
 
 def left_lateral_line_follow():
     return (
         line_follow()
-        .single(Defs.rear.left, side=LineSide.RIGHT)
+        .single(Defs.front.left, side=LineSide.RIGHT)
         .move(strafe=1)
         .correct_forward()
         .pid(kp=0.4, ki=0.05, kd=0.0)
     )
+
 
 class M007MoveToCenterMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             mark_heading_reference(origin_offset_deg=90),
             background(
-                step=parallel(
+                step=seq([
+                    arm.move_angles(sholder_deg=90, elbow_deg=-70), #make sure sholder and arm are enable before enabeling base so we dont get stuck with the claw
                     grab_brown_cube_start_pos(),
-                    Defs.arm_claw.idle(),# make sure claw is closed
-                ),
+                    Defs.arm_claw.idle(),  # make sure claw is closed
+                ]),
                 name="prep_arm"
             ),
 
             drive_forward(heading=-90).until(
-                on_black(Defs.rear.left)
+                over_line(Defs.front.left)
+                + on_black(Defs.front.left)
             ),
 
             # drive to line

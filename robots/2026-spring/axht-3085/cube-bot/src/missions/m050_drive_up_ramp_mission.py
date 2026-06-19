@@ -30,7 +30,8 @@ class M050DriveUpRampMission(Mission):
             arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
             drive_backward(cm=10),
             strafe_left().until(
-                after_cm(35)
+                over_line(Defs.front.right)
+                + after_cm(5)
             ),
 
             # drive to black line where palette with two yellow cubes is
@@ -47,10 +48,10 @@ class M050DriveUpRampMission(Mission):
 
             # drive to the right to the pipe
             left_lateral_line_follow().until(
-                after_cm(30)
+                after_cm(25)
             ),
             left_lateral_align_line_follow().until(
-                after_seconds(0.5)
+                after_seconds(1)
             ),
             mark_heading_reference(origin_offset_deg=2),  # magic offset because hardware
 

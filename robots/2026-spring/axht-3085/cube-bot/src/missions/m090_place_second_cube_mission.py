@@ -28,19 +28,16 @@ class M090PlaceSecondCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # move away from wall to avoid hitting already present cube stack
-            backward_line_follow().until(
-                after_cm(33)
+            drive_backward(heading=0).until(
+                after_cm(30)
             ),
 
-            arm.move_angles(28, 60, -50, speed=100),  # transport
-            strafe_right(heading=0).until(
-                after_seconds(1.5)
-            ),
-            drive_forward(cm=21, heading=0),
+            arm.move_angles(26, 60, -50, speed=100),  # transport
+            drive_forward(cm=18, heading=0),
             # place cube
-            arm.move_angles(28, 40, -40),  # place
+            arm.move_angles(26, 40, -40),  # place
             Defs.arm_claw.open(),
-            arm.move_angles(28, 60, -50, speed=100),  # transport
+            arm.move_angles(26, 60, -50, speed=100),  # transport
 
             #drive back to get space to place the second cube
             drive_backward(cm=20, heading=0),
@@ -48,18 +45,22 @@ class M090PlaceSecondCubeMission(Mission):
             grab_cube_from_container(),
 
             #move to the cube
-            arm.move_angles(28, 80, -50)
-            .arm_speeds(
-                base=60, sholder=100, elbow=200
-            ),
-            drive_forward(heading=0).until(
-                after_cm(20)
+            parallel(
+                arm.move_angles(26, 80, -50)
+                .arm_speeds(
+                    base=60, sholder=100, elbow=200
+                ),
+                drive_forward(heading=0).until(
+                    after_cm(19)
+                ),
             ),
 
             # place brown cube
-            arm.move_angles(elbow_deg=-60, speed=80),
+            arm.move_angles(elbow_deg=-55, speed=80),
 
             Defs.arm_claw.open(),
             arm.move_angles(elbow_deg=-50),
-            drive_backward(cm=20, heading=0),
+            drive_backward(cm=30, heading=0),
+            arm.move_angles(-90, 90, 0),
+
         ])

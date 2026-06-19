@@ -10,9 +10,6 @@ dev:
   record_localization: false
   record_hz:
   args: []
-  env:
-    DRUMBOT_NO_POSITION_HOLD: '1'
-    DRUMBOT_DETECTION_DEBUG: '0'
 dev-nc:
   name: dev-nc
   description: 'Fast iteration: --dev --no-calibrate --no-checkpoints'
@@ -25,38 +22,3 @@ dev-nc:
   record_localization: false
   record_hz:
   args: [ ]
-  env:
-    DRUMBOT_NO_POSITION_HOLD: '1'
-    DRUMBOT_DETECTION_DEBUG: '0'
-dev-fake:
-  name: dev-fake
-  description: 'Fast iteration: --dev --no-checkpoints; uses fake cam service'
-  target: auto
-  dev: true
-  no_calibrate: false
-  no_checkpoints: true
-  no_codegen: false
-  no_sync: false
-  record_localization: false
-  record_hz:
-  args: []
-  env:
-    DRUMBOT_NO_POSITION_HOLD: '1'
-    DRUMBOT_DETECTION_DEBUG: '0'
-    DRUMBOT_FAKE_CAMERA: '1'
-dev-nc-fake:
-  name: dev-nc-fake
-  description: 'Fast iteration: --dev --no-calibrate --no-checkpoints; uses fake cam service'
-  target: auto
-  dev: true
-  no_calibrate: true
-  no_checkpoints: true
-  no_codegen: false
-  no_sync: false
-  record_localization: false
-  record_hz:
-  args: []
-  env:
-    DRUMBOT_NO_POSITION_HOLD: '1'
-    DRUMBOT_DETECTION_DEBUG: '0'
-    DRUMBOT_FAKE_CAMERA: '1'
