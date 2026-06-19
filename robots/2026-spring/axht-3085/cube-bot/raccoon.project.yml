@@ -7,3 +7,4 @@ robot: !include config/robot.yml
 definitions: !include config/hardware.yml
 missions: !include config/missions.yml
 connection: !include config/connection.yml
+run_configurations: !include config/run-configurations.yml

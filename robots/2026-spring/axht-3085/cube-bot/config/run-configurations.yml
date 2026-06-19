@@ -36,4 +36,4 @@ profile:
     record_hz:
     args: []
     env:
-      RACCOON_PROFILE: /tmp/cube.json
+      RACCOON_PROFILE: 1
