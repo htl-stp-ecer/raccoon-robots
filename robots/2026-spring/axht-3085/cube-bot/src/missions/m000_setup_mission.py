@@ -2,7 +2,6 @@ from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 from src.steps.calibrate_analog_drive import calibrate_analog_drive
-from src.steps.setup_calibration import CalibrationAxis, calibration_gate, collect_drive, collect_ir_set
 
 
 class M000SetupMission(SetupMission):
