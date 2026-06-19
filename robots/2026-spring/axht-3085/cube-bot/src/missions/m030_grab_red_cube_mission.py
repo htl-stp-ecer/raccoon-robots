@@ -55,7 +55,7 @@ class M030GrabRedCubeMission(Mission):
             # lift cubes
             background(
 
-                arm.move_angles(90, 110, -90).arm_speeds(sholder=150, elbow=100),
+                arm.move_angles(90, 110, -90).arm_speeds(base=70, sholder=150, elbow=100),
                 name="arm_up"
             ),
         ])

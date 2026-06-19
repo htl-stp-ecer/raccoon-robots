@@ -32,7 +32,7 @@ class M040DropFirstCubeStackMission(Mission):
                     wait_for_background("arm_up"),
                     arm.move_angles( #move servo forward
                         0, 110, -60, speed=150
-                    ),
+                    ).arm_speeds(base=70),
                 ])
             ),
 

@@ -72,23 +72,19 @@ def warehouse_floor_calibration():
                 wait_for_button(
                     "lower calibration \n"
                     + "place the Bot in the lower Startingbox"
+                    + "(on the right black line)"
                 ),
                 mark_heading_reference(),
                 collect_ir_set(
                     seq([
                         collect_drive(
-                            strafe_right().until(
-                                on_black(Defs.front.right)
-                            ),
-                        ),
-                        collect_drive(
                             drive_forward().until(
-                                over_line(Defs.rear.left)
+                                after_cm(55)
                             ),
                         ),
                         collect_drive(
                             drive_backward().until(
-                                over_line(Defs.front.left)
+                                after_cm(40)
                             )
                         ),
                     ]),
