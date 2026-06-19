@@ -47,7 +47,7 @@ class M050DriveToOtherPipeMission(Mission):
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
-                + after_cm(13),
+                + after_cm(11),
 
             ),
 
@@ -66,7 +66,7 @@ class M050DriveToOtherPipeMission(Mission):
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
-                + after_cm(12)
+                + after_cm(13)
             ),
 
             # fahre 15 cm auf der rechten Seite des Cubes vorbei
