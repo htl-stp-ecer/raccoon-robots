@@ -27,7 +27,7 @@ lift_drums_servo:
     up: 180
     over_limit: 210
     align_on_back: 70
-    eject_position: 133
+    eject_position: 126
     seek_position: 180
     down: -5
     remove_D: 38

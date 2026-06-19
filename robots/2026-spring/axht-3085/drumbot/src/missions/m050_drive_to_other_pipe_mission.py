@@ -43,9 +43,10 @@ class M050DriveToOtherPipeMission(Mission):
             ),
 
             # turn away and drive angled to avoid hitting wall
-            turn_to_heading_right(90 - 35),
+            turn_to_heading_right(90 - 25),
             drive_forward().until(
-                over_line(Defs.front_right_ir_sensor)
+                after_cm(20)
+                + over_line(Defs.front_right_ir_sensor)
                 + after_cm(13),
 
             ),
@@ -80,4 +81,7 @@ class M050DriveToOtherPipeMission(Mission):
 
             lineup_drum_with_pipe(),
             eject_nearest_color(),
+
+            turn_left(30),
+            Defs.lift_drums_servo.up(),
         ])
