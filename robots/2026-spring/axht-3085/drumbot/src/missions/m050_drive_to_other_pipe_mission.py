@@ -47,22 +47,20 @@ class M050DriveToOtherPipeMission(Mission):
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
-                + after_cm(11),
-
             ),
 
-            # turn onto black line
-            turn_right().until(
-                on_black(Defs.front_right_ir_sensor)
-            ),
+            # # turn onto black line
+            # turn_right().until(
+            #     on_black(Defs.front_right_ir_sensor)
+            # ),
 
             # follow line until before drum pole
             follow_line_single(
                 Defs.front_right_ir_sensor,
                 speed=1.0,
                 side=LineSide.LEFT,
-                kp=2.0,
-                ki=0.5,
+                kp=1.0,
+                ki=0.3,
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)

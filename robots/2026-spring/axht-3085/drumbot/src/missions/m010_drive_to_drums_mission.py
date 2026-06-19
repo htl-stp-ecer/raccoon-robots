@@ -9,15 +9,15 @@ class M010DriveToDrumsMission(Mission):
             mark_heading_reference(),
 
             # drive out of starting box
-            drive_forward(heading=0).until(
-                over_line(Defs.front_right_ir_sensor)
+            drive_forward(heading=0, speed=0.9).until(
+                on_black(Defs.rear_left_ir_sensor)
             ),
 
             # turn drive turn
             turn_right(40),
             drive_forward().until(
-                over_line(Defs.rear_left_ir_sensor)
-                + after_cm(8),
+                over_line(Defs.front_right_ir_sensor)
+                + after_cm(6),
             ),
             background(
                 Defs.pom_remover_servo.right()
@@ -32,23 +32,20 @@ class M010DriveToDrumsMission(Mission):
                 ]),
             ),
 
-            drive_forward(heading=0).until(
-                over_line(Defs.front_right_ir_sensor)
-                + after_cm(15)
-            ),
-            turn_to_heading_left(0),
-
             background(
-                parallel(
-                    Defs.lift_drums_servo.down(),
-                    Defs.drum_pusher_servo.open(),
-                ),
+                seq([
+                    wait_for_seconds(0.5),
+                    parallel(
+                        Defs.lift_drums_servo.down(),
+                        Defs.drum_pusher_servo.open(),
+                    ),
+                ]),
                 name="lower_drum",
             ),
 
             wall_align_forward(
                 accel_threshold=0.3,
-                grace_period=0.2,
+                grace_period=0.3
             ),
             mark_heading_reference(),
         ])

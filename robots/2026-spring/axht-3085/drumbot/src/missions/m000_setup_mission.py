@@ -9,6 +9,7 @@ from src.steps.drum_collector import (
 )
 from src.steps.drum_lifting_step import *
 from src.hardware.defs import Defs
+from src.steps import wait_for_drum_step
 
 
 class M000SetupMission(SetupMission):

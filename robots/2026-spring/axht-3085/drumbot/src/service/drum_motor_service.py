@@ -14,7 +14,7 @@ NUM_POCKETS = 8
 CREEP_VELOCITY = 500   # creep speed for precise edge measurement
 STALL_RETRIES = 3      # default total attempts before giving up (per-instance overridable via .stall_retries)
 STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
-STALL_MIN_NET_TICKS = 75  # minimum net ticks in commanded direction over the window
+STALL_MIN_NET_TICKS = 50  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 COAST_SETTLE_SECONDS = 0.20  # post-stop pause so the tracker can absorb any coast-through
 
