@@ -1,3 +1,17 @@
+profile:
+  name: profile
+  description: 'Profile the robot code'
+  target: auto
+  dev: true
+  no_calibrate: false
+  no_checkpoints: false
+  no_codegen: false
+  no_sync: false
+  record_localization: false
+  record_hz:
+  args: []
+  env:
+    RACCOON_PROFILE: 1
 dev:
   name: dev
   description: 'Fast iteration: --dev --no-checkpoints'
