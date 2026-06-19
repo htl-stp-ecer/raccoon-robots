@@ -47,4 +47,8 @@ class M000SetupMission(SetupMission):
             Defs.lift_drums_servo.up(),
             Defs.drum_pusher_servo.block_angle(),
             Defs.lift_drums_servo.over_limit(),
+            calibration_gate(
+                require_axes=[CalibrationAxis.FORWARD],
+                require_ir_sets=["default"],
+            ),
         ])
