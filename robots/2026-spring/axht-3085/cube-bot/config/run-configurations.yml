@@ -22,3 +22,18 @@ dev-nc:
   record_localization: false
   record_hz:
   args: [ ]
+
+profile:
+    name: profile
+    description: 'Profile the robot code'
+    target: auto
+    dev: false
+    no_calibrate: false
+    no_checkpoints: false
+    no_codegen: false
+    no_sync: false
+    record_localization: false
+    record_hz:
+    args: []
+    env:
+      RACCOON_PROFILE: /tmp/cube.json
