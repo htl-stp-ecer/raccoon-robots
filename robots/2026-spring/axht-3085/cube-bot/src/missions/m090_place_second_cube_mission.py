@@ -51,7 +51,7 @@ class M090PlaceSecondCubeMission(Mission):
                     base=60, sholder=100, elbow=200
                 ),
                 drive_forward(heading=0).until(
-                    after_cm(19)
+                    after_cm(20)
                 ),
             ),
 
