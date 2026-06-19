@@ -51,7 +51,7 @@ class M050DriveUpRampMission(Mission):
                 after_cm(25)
             ),
             left_lateral_align_line_follow().until(
-                after_seconds(1)
+                after_seconds(2)
             ),
             mark_heading_reference(origin_offset_deg=2),  # magic offset because hardware
 

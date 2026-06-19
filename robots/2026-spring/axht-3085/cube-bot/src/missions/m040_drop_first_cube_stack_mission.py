@@ -45,7 +45,7 @@ class M040DropFirstCubeStackMission(Mission):
                     after_seconds(0.6),
                 ),
                 arm.move_angles(
-                    base_deg=91, speed=80
+                    base_deg=90, speed=80
                 ),
             ),
             mark_heading_reference(),

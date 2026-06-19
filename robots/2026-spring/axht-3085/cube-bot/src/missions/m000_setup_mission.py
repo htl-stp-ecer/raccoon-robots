@@ -85,7 +85,8 @@ def warehouse_floor_calibration():
                         collect_drive(
                             drive_backward().until(
                                 after_cm(40)
-                            )
+                            ),
+                            manual_measurement=False
                         ),
                     ]),
                     set_name="default",

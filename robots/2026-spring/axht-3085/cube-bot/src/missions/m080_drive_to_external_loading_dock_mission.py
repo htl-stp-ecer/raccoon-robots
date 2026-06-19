@@ -24,6 +24,16 @@ def wall_align():
     )
 
 
+def left_lateral_align_line_follow():
+    return (
+        line_follow()
+        .single(Defs.rear.left, side=LineSide.LEFT)
+        .move(strafe=-0.4)
+        .correct_forward(hold_heading=False)
+        .pid(kp=0.5, ki=0.1, kd=0.0)
+    )
+
+
 class M080DriveToExternalLoadingDockMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
@@ -32,7 +42,6 @@ class M080DriveToExternalLoadingDockMission(Mission):
                     over_line(Defs.rear.left)
                     + after_cm(140)
                     + over_line(Defs.rear.left)
-                    + after_cm(5)
                 ),
                 seconds=11,
                 # fallback if we miss the black line on the bottom, so we still try to finish the run
@@ -44,6 +53,12 @@ class M080DriveToExternalLoadingDockMission(Mission):
                     drive_forward(cm=10),
                 ])
             ),
+
+            left_lateral_align_line_follow().until(
+                after_seconds(2),
+            ),
+            mark_heading_reference(origin_offset_deg=2), #magic 2 deg, so the heading is correctt, bot is a bit shief wegen metal peace
+            drive_forward(cm=5),
 
             # .on_anomaly(
             #    callback_or_step=seq([
