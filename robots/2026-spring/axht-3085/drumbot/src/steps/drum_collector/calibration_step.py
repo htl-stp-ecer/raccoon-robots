@@ -12,6 +12,12 @@ from .screens import DrumConfirmScreen
 
 DEFAULT_REVIEW_DELTA = 300.0
 
+# Below this many net encoder ticks over a full sample, the drum motor never
+# actually turned — the samples are a flat reading from one fixed spot and
+# clustering/stripe analysis would only produce misleading "low contrast"
+# noise. Treat it as a distinct, actionable hardware fault instead.
+MIN_SAMPLE_TICKS = 100
+
 
 @dataclass
 class DrumCalibration:
@@ -41,6 +47,29 @@ def _analyse(service: DrumMotorService, samples: list[float]) -> _PendingDrumCal
         return _PendingDrumCalibration(None, samples, 0, 1.0, "too few samples")
 
     pocket, blocked = service.cluster(samples)
+
+    # The drum motor never moved → the readings are a flat snapshot of one
+    # fixed spot, not a sweep across the stripes. Report this as the real
+    # cause instead of the confusing "stripe spacing not uniform" downstream.
+    total_ticks = getattr(service, "_sample_total_ticks", 0)
+    if total_ticks < MIN_SAMPLE_TICKS:
+        return _PendingDrumCalibration(
+            DrumCalibration(blocked=blocked, pocket=pocket),
+            samples, 0, 1.0,
+            f"drum motor did not spin ({total_ticks} encoder ticks) — "
+            f"check motor power/wiring or a mechanical jam",
+        )
+
+    # Motor moved, but the sensor saw no light/dark swing across the drum.
+    signal_range = max(samples) - min(samples)
+    if signal_range < MIN_DELTA:
+        return _PendingDrumCalibration(
+            DrumCalibration(blocked=blocked, pocket=pocket),
+            samples, 0, 1.0,
+            f"no optical contrast (signal range {signal_range:.0f} < {MIN_DELTA:.0f}) "
+            f"— check light-sensor aim/distance or the drum stripes",
+        )
+
     stripe_count, spacings, _ = service.analyse_stripe_spacing(samples, blocked, pocket)
 
     if stripe_count < NUM_POCKETS:

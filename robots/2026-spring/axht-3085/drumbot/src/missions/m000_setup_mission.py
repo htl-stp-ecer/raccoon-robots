@@ -52,4 +52,6 @@ class M000SetupMission(SetupMission):
                 require_axes=[CalibrationAxis.FORWARD],
                 require_ir_sets=["default"],
             ),
+
+            fully_disable_servos(),
         ])

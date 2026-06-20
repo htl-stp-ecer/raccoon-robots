@@ -19,19 +19,21 @@ class M010DriveToDrumsMission(Mission):
                 over_line(Defs.front_right_ir_sensor)
                 + after_cm(6),
             ),
-            background(
-                Defs.pom_remover_servo.right()
-            ),
-            turn_to_heading_right(0),
 
             # wait a little and then remove the blue pom
             background(
                 seq([
-                    Defs.pom_remover_servo.yeet_blue_pom(),
+                    Defs.pom_remover_servo.right(),
+                    # Defs.pom_remover_servo.yeet_blue_pom(),
                     Defs.pom_remover_servo.drum_moving_pos(),
                 ]),
+                name="yeet_blue_pom",
             ),
 
+            # turn back to original heading
+            turn_to_heading_right(0),
+
+            # wait and lower drum
             background(
                 seq([
                     wait_for_seconds(0.5),
@@ -42,6 +44,8 @@ class M010DriveToDrumsMission(Mission):
                 ]),
                 name="lower_drum",
             ),
+
+            wait_for_background("yeet_blue_pom"),
 
             wall_align_forward(
                 accel_threshold=0.3,
