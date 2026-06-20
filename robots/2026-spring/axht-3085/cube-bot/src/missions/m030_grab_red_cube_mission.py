@@ -40,7 +40,7 @@ class M030GrabRedCubeMission(Mission):
             arm.move_angles(75, 75, -80),
             Defs.arm_claw.strong_grab(),
             background(
-                arm.move_angles(base_deg=91,elbow_deg=-45).arm_speeds(base=70),
+                arm.move_angles(elbow_deg=-45).arm_speeds(base=70, elbow=130),
             ),
 
             #drive to the side so we dont hit thing when we place cube back town for regreab
@@ -51,11 +51,4 @@ class M030GrabRedCubeMission(Mission):
             #Defs.arm_claw.full_open(speed=100),
             #wait_for_seconds(0.3),
             #Defs.arm_claw.strong_grab(),
-
-            # lift cubes
-            background(
-
-                arm.move_angles(90, 110, -90).arm_speeds(base=70, sholder=150, elbow=100),
-                name="arm_up"
-            ),
         ])

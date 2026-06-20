@@ -39,20 +39,19 @@ class M090PlaceSecondCubeMission(Mission):
             Defs.arm_claw.open(),
             arm.move_angles(26, 60, -50, speed=100),  # transport
 
-            #drive back to get space to place the second cube
+            # drive back to get space to place the second cube
             drive_backward(cm=20, heading=0),
 
             grab_cube_from_container(),
 
-            #move to the cube
-            parallel(
-                arm.move_angles(26, 80, -50)
-                .arm_speeds(
-                    base=60, sholder=100, elbow=200
-                ),
-                drive_forward(heading=0).until(
-                    after_cm(20)
-                ),
+            arm.move_angles(26, 80, -50) #dont to in parralel with drive_forward (we might hit the other cube stack
+            .arm_speeds(
+                base=60, sholder=100, elbow=200
+            ),
+
+            # move to the cube
+            drive_forward(heading=0).until(
+                after_cm(20)
             ),
 
             # place brown cube

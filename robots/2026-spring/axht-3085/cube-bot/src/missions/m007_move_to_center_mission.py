@@ -21,7 +21,9 @@ class M007MoveToCenterMission(Mission):
             mark_heading_reference(origin_offset_deg=90),
             background(
                 step=seq([
-                    arm.move_angles(sholder_deg=90, elbow_deg=-70), #make sure sholder and arm are enable before enabeling base so we dont get stuck with the claw
+                    # make sure sholder and arm are enable before enabeling base so we dont get stuck with the claw
+                    arm.move_angles(elbow_deg=-70),
+                    arm.move_angles(sholder_deg=90),
                     grab_brown_cube_start_pos(),
                     Defs.arm_claw.idle(),  # make sure claw is closed
                 ]),

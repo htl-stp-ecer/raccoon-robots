@@ -28,7 +28,7 @@ class M050DriveUpRampMission(Mission):
         return seq([
             # move away from cube stack
             arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
-            drive_backward(cm=10),
+            drive_backward(cm=5),
             strafe_left().until(
                 over_line(Defs.front.right)
                 + after_cm(5)

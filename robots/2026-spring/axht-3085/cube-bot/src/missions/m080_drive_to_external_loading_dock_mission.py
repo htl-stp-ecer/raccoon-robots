@@ -88,10 +88,11 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 + over_line(Defs.front.right)
                 + over_line(Defs.rear.left)
             ),
-            strafe_right(cm=10, speed=0.5),
+            strafe_right(cm=10, speed=0.5, heading=0),
 
             # align on wall
             wall_align().until(
                 after_seconds(2.5),
             ),
+            strafe_right(cm=15, speed=0.5, heading=0), #make sure we are accectly on the pipe
         ])

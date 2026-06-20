@@ -30,9 +30,8 @@ class M040DropFirstCubeStackMission(Mission):
             background(
                 step=seq([
                     wait_for_background("arm_up"),
-                    arm.move_angles( #move servo forward
-                        0, 110, -60, speed=150
-                    ).arm_speeds(base=70),
+                    # move servo forward
+                    arm.move_angles(base_deg=0, sholder_deg=110).arm_speeds(base=70, sholder=70),
                 ])
             ),
 
@@ -48,14 +47,18 @@ class M040DropFirstCubeStackMission(Mission):
                     base_deg=90, speed=80
                 ),
             ),
-            mark_heading_reference(),
-            strafe_left(heading=0).until(
+            #mark_heading_reference(), commented the mark heading referenc since we usually are on a pom and dont are accact
+            strafe_right(heading=0, speed=0.5).until(
+                on_white(Defs.rear.left)
+            ),
+            strafe_left(heading=0, speed=0.5).until(
                 on_black(Defs.rear.left)
             ),
             turn_to_heading_right(0),
 
             # place cube tower
             arm.move_angles(sholder_deg=105, speed=200),
+            wait_for_seconds(0.2), #a samll delay so the sholder servo is definatly on his right posission
             arm.move_angles(elbow_deg=-95, speed=150),
             wait_for_seconds(0.5),
             Defs.arm_claw.open(),

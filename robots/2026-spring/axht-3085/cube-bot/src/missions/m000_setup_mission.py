@@ -9,7 +9,9 @@ def move_arm_to_calibration_pos():
         seq([
 
             Defs.arm_claw.idle(),
-            arm.move_angles(0, 110, -90),
+            arm.move_angles(elbow_deg=-90),
+            arm.move_angles(sholder_deg=110),
+            arm.move_angles(base_deg=0),
             # TODO: Im sorry but me don't care about raccoon not letting me do my servo shit (fix it some day) LG Matthias
             # ok :) 👍
             servo(Defs.arm_elbow, -28),
@@ -79,15 +81,15 @@ def warehouse_floor_calibration():
                     seq([
                         collect_drive(
                             drive_forward().until(
-                                after_cm(55)
+                                after_cm(50)
                             ),
                         ),
-                        collect_drive(
-                            drive_backward().until(
-                                after_cm(40)
-                            ),
-                            manual_measurement=False
-                        ),
+                        #collect_drive(
+                        #    drive_backward().until(
+                        #        after_cm(40)
+                        #    ),
+                        #    manual_measurement=False
+                        #),
                     ]),
                     set_name="default",
                 ),
@@ -148,16 +150,6 @@ class M000SetupMission(SetupMission):
                 require_axes=[CalibrationAxis.FORWARD],
                 require_ir_sets=["default", "upper"],
             ),
-            wait_for_button("test cal"),
-            drive_forward(cm=50),
-
-
-            # wait_for_button("check distance"),
-            # drive_forward(cm=10),
-            # wait_for_button("check distance"),
-            # drive_forward(cm=40),
-            # wait_for_button("check distance"),
-            # drive_forward(cm=70),
 
             move_into_starting_position(),
         ])

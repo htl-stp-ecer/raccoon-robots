@@ -29,6 +29,7 @@ class M070GrabUpperCubeMission(Mission):
             # push cube back
             drive_angle(-130).until(
                 over_line(Defs.front.left)
+                + after_cm(0.5)
             ),
 
             arm.move_angles(elbow_deg=0),
@@ -45,6 +46,7 @@ class M070GrabUpperCubeMission(Mission):
                 #align claw and cube
                 strafe_right(heading=0).until(
                     on_black(Defs.rear.left)
+                    + after_cm(0.5)
                 ),
 
                 #put arm down
