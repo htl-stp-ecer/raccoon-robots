@@ -101,6 +101,24 @@ aber mit der **echten** Ursache statt "stripe spacing not uniform".
   Fluchtweg bleibt: die `NumericInput`-Felder sind editierbar, `on_change` ruft
   `refresh()`, der Button re-aktiviert sich live.
 
+### D) `src/service/drum_motor_service.py` — Navigation (gleiche Ursache)
+
+**Nachgezogen, nachdem im Collection-Log ein Stall auftrat**
+(`EMERGENCY SHUTDOWN: Motor stalled during drum #2`). Das ist **dieselbe** Ursache:
+die Navigation trieb die Trommel ebenfalls mit `set_velocity` an → kein PWM gegen die
+Haftreibung → 0 Net-Ticks → `_make_stall_checker` löst `MotorStalledError` aus.
+
+- Neuer Helper `_drive(velocity)`: mappt die BEMF-Einheiten-Ziele der Navigation auf
+  PWM-Prozent (`FULL_VELOCITY == 100 %`) und treibt via `set_speed`. Encoder-Reads
+  bleiben unberührt → Stall-Checker und IR-Tracker funktionieren weiter.
+- Alle Dauerfahrten gehen jetzt durch `_drive()` bzw. `set_speed(0)` zum Stoppen:
+  `_do_move`, `_retry_on_stall` (Backup), `_center_on_stripe` (Creep),
+  `move_to_midpoint`, `move_from_midpoint`.
+- **Offen:** die zwei `move_to_position()`-Aufrufe in `_center_on_stripe` nutzen
+  Firmware-**Position-Mode** (anderer Pfad als set_velocity/set_speed). Unklar, ob der
+  dort dieselbe Stiction hat — mit `TODO(drum-cal)` im Code markiert. Nur bei
+  `precise=True` relevant.
+
 ---
 
 ## 3. TODO — am realen Robot zu prüfen
@@ -111,13 +129,19 @@ aber mit der **echten** Ursache statt "stripe spacing not uniform".
 - [ ] **`MIN_SAMPLE_TICKS = 100` validieren.** Bei einer normalen 5-s-Probe sollten es
       tausende Ticks sein; 100 ist ein konservativer Boden. Bei sehr langsamer Trommel
       ggf. nachschärfen.
-- [ ] **Navigation prüfen (offene Folgefrage).** `_do_move`, `advance`, `retreat`,
-      `move_to_midpoint`, `_center_on_stripe` nutzen weiterhin **`set_velocity`**. Wenn
-      die Trommel auch beim echten Sortieren nicht dreht, ist es dieselbe Ursache.
-      Dann entweder:
-      - `drum_motor`-`MotorCalibration` in `src/hardware/defs.py` mit `bemf_offset` +
-        `static_friction_pct` tunen (wie der Antriebsmotor), **oder**
-      - diese Moves ebenfalls auf `set_speed` umstellen (verliert closed-loop-Präzision).
+- [ ] **Navigation mit dem `_drive()`/`set_speed`-Umbau prüfen.** Drum #1..#8
+      collecten + sorten ohne `Motor stalled`-Emergency. Erwartung: die Trommel dreht
+      bei `advance`/`retreat`/`go_to_pocket`, Stall-Checker schlägt nicht mehr fälschlich
+      an. Falls doch Stalls: PWM-Mapping in `_drive()` (`velocity / FULL_VELOCITY * 100`)
+      ggf. anheben oder eine Mindest-PWM einziehen.
+- [ ] **`_center_on_stripe` bei `precise=True` prüfen.** Die zwei
+      `move_to_position()`-Aufrufe (Position-Mode) sind **nicht** umgestellt. Wenn das
+      Zentrieren nicht greift / der Motor dort steht: auf `set_speed`-Creep zur
+      Ziel-Encoder-Position umbauen.
+- [ ] **Dauerhafter Fix (optional, sauberer):** `drum_motor`-`MotorCalibration` in
+      `src/hardware/defs.py` mit echtem `bemf_offset` + `static_friction_pct` tunen (wie
+      der Antriebsmotor). Dann könnte man `_drive()` wieder auf `set_velocity`
+      zurückdrehen und die closed-loop-Präzision zurückgewinnen.
 - [ ] **Retry/Confirm am Touchscreen + physischem Knopf gegenprüfen** nachdem die
       Kalibrierung echten Kontrast liefert (is_good=True): Confirm muss aktiv/klickbar
       werden, physischer Knopf löst Retry aus.
@@ -129,3 +153,4 @@ aber mit der **echten** Ursache statt "stripe spacing not uniform".
 - `src/service/drum_motor_calibration_mixin.py` — `sample()` Antrieb `set_velocity` → `set_speed`.
 - `src/steps/drum_collector/calibration_step.py` — `MIN_SAMPLE_TICKS` + zwei `_analyse()`-Guards.
 - `src/steps/drum_collector/screens/confirm_screen.py` — Retry primär, Confirm disabled bei zu wenig Kontrast.
+- `src/service/drum_motor_service.py` — `_drive()`-Helper; Navigation von `set_velocity` auf open-loop `set_speed` umgestellt (`move_to_position` in `_center_on_stripe` offen, mit TODO).

@@ -261,10 +261,30 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     self.warn(f"Motor stalled after {retries} attempts — giving up")
                     raise
                 self.warn(f"Motor stalled (attempt {attempt}/{retries}) — backing up to retry")
-                self.motor.set_velocity(int(FULL_VELOCITY * 0.7) * backup_sign)
+                self._drive(int(FULL_VELOCITY * 0.7) * backup_sign)
                 await asyncio.sleep(0.7)
                 self.motor.set_speed(0)  # stop before retry so stall checker starts clean
                 await asyncio.sleep(0.05)
+
+    # ── motor drive ──────────────────────────────────────────────
+
+    def _drive(self, velocity: int) -> None:
+        """Open-loop PWM drive for the drum motor.
+
+        The drum_motor has no BEMF/static-friction calibration, so the
+        closed-loop set_velocity PID never overcomes stiction and the drum
+        won't turn — the same root cause as the calibration sampler (see
+        DRUM_KALIBRIERUNG_FIX.md). We drive open-loop instead, mapping the
+        BEMF-unit velocity targets used throughout navigation onto a PWM
+        percent (FULL_VELOCITY == 100%). The encoder still feeds the stall
+        checker and the IR tracker, so all position logic is unaffected.
+
+        TODO(drum-cal): verify on hardware. If drum_motor ever gets a real
+        MotorCalibration (bemf_offset + static_friction_pct), revert these
+        navigation drives to set_velocity for closed-loop precision.
+        """
+        pct = int(max(-100, min(100, velocity / FULL_VELOCITY * 100)))
+        self.motor.set_speed(pct)
 
     # ── navigation ───────────────────────────────────────────────
 
@@ -381,7 +401,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             f"IR_raw={raw_at_start:.0f} thresholds=[{low:.0f},{high:.0f}] "
             f"velocity={velocity * sign}"
         )
-        self.motor.set_velocity(velocity * sign)
+        self._drive(velocity * sign)
 
         while self._current_pocket != target_pocket:
             stall_check()
@@ -390,7 +410,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         pos_at_stop = self.motor.get_position()
         actual_ticks = abs(pos_at_stop - self._move_start_pos)
         raw_at_stop = float(self.light_sensor.read())
-        self.motor.set_velocity(0)
+        self.motor.set_speed(0)
         self.debug(
             f"[MOVE-STOP] pos={pos_at_stop} pocket={self._current_pocket} "
             f"actual_ticks={actual_ticks} expected_ticks={expected_ticks} "
@@ -430,24 +450,32 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         self.debug(f"[MOVE-DONE] pocket={self._current_pocket} target={target_pocket}")
 
     async def _center_on_stripe(self, entry_pos: int) -> None:
-        """Creep back and forth to find the center of the current stripe."""
+        """Creep back and forth to find the center of the current stripe.
+
+        NOTE: the two move_to_position() calls below use firmware position-
+        control mode, a different path than set_velocity/set_speed. It is
+        unknown whether it suffers the same stiction problem on the untuned
+        drum_motor. TODO(drum-cal): verify on hardware; if it also fails to
+        move, replace these with a set_speed creep toward the target encoder
+        position (see DRUM_KALIBRIERUNG_FIX.md). Only runs when precise=True.
+        """
         self.motor.move_to_position(FULL_VELOCITY, entry_pos)
         while not self.motor.is_done():
             await asyncio.sleep(SAMPLE_INTERVAL)
 
-        self.motor.set_velocity(-CREEP_VELOCITY)
+        self._drive(-CREEP_VELOCITY)
         while self._is_black():
             await asyncio.sleep(SAMPLE_INTERVAL)
-        self.motor.set_velocity(0)
+        self.motor.set_speed(0)
 
-        self.motor.set_velocity(CREEP_VELOCITY)
+        self._drive(CREEP_VELOCITY)
         while not self._is_black():
             await asyncio.sleep(SAMPLE_INTERVAL)
         edge1 = self.motor.get_position()
         while self._is_black():
             await asyncio.sleep(SAMPLE_INTERVAL)
         edge2 = self.motor.get_position()
-        self.motor.set_velocity(0)
+        self.motor.set_speed(0)
 
         self.motor.move_to_position(FULL_VELOCITY, (edge1 + edge2) // 2)
         while not self.motor.is_done():
@@ -461,11 +489,11 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             ticks = self._ticks_per_pocket // 3
             stall_check = self._make_stall_checker(direction=1)
             start = self.motor.get_position()
-            self.motor.set_velocity(FULL_VELOCITY)
+            self._drive(FULL_VELOCITY)
             while abs(self.motor.get_position() - start) < ticks:
                 stall_check()
                 await asyncio.sleep(SAMPLE_INTERVAL)
-            self.motor.set_velocity(0)
+            self.motor.set_speed(0)
 
         await self._retry_on_stall(_do, backup_sign=-1)
         self._at_midpoint = True
@@ -478,11 +506,11 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             ticks = self._ticks_per_pocket // 2
             stall_check = self._make_stall_checker(direction=-1)
             start = self.motor.get_position()
-            self.motor.set_velocity(-FULL_VELOCITY)
+            self._drive(-FULL_VELOCITY)
             while abs(self.motor.get_position() - start) < ticks:
                 stall_check()
                 await asyncio.sleep(SAMPLE_INTERVAL)
-            self.motor.set_velocity(0)
+            self.motor.set_speed(0)
 
         await self._retry_on_stall(_do, backup_sign=1)
         self._at_midpoint = False
