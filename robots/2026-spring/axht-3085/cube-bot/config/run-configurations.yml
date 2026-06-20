@@ -37,3 +37,4 @@ profile:
     args: []
     env:
       RACCOON_PROFILE: 1
+      RACCOON_CMD_TRACE: "/tmp/send.jsonl"

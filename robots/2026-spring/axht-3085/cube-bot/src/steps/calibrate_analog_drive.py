@@ -23,6 +23,8 @@ normally and stores a new value.
 from __future__ import annotations
 
 import asyncio
+import os
+import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -36,6 +38,25 @@ if TYPE_CHECKING:
     from raccoon.robot.api import GenericRobot
 
 ANALOG_DRIVE_THRESHOLD_SECTION = "analog-drive-threshold"
+
+# Default time the flank "fires" under simulation. on_analog_flank detects a
+# physical game piece via the ET sensor's reflection — which the headless
+# simulator cannot model — so under sim it falls back to a SHORT settle instead
+# of reading the (unsimulatable) sensor. Kept small on purpose: the flank only
+# needs to "tick through" in sim, and every step after it re-references the
+# world via real sensors (lines / ET-bounded strafes), so a long fallback only
+# perturbs the endpoint without adding fidelity. See _sim_fallback_active().
+_SIM_FLANK_FALLBACK_S = 0.1
+
+
+def _sim_fallback_active() -> bool:
+    """True only when running under the headless simulator (RACCOON_SIM=1).
+
+    Never true on the real robot, so on_analog_flank's runtime behaviour there
+    is completely unchanged — the simulator harness opts in by setting the env
+    var; mission code stays simulation-agnostic.
+    """
+    return os.environ.get("RACCOON_SIM") == "1"
 
 
 def _analog_store_key(sensor: "AnalogSensor", set_name: str) -> str:
@@ -609,6 +630,7 @@ class on_analog_flank(StopCondition):
         sensor: "AnalogSensor",
         set_name: str = "default",
         confirm_samples: int = _DEFAULT_CONFIRM_SAMPLES,
+        sim_fallback_s: float = _SIM_FLANK_FALLBACK_S,
     ) -> None:
         if not hasattr(sensor, "read"):
             msg = f"Expected an AnalogSensor with read(), got {type(sensor).__name__}"
@@ -625,8 +647,18 @@ class on_analog_flank(StopCondition):
         self._flank_threshold: float | None = None
         self._extremum: float = 0.0  # live local baseline (valley/peak)
         self._streak: int = 0
+        # Sim-only fallback: seconds to elapse before "firing" under the
+        # headless simulator (the game piece this detects can't be simulated).
+        self._sim_fallback_s = sim_fallback_s
+        self._sim_deadline: float = 0.0
 
     def start(self, robot: "GenericRobot") -> None:
+        if _sim_fallback_active():
+            # No real-world game piece in the sim — skip the (unsimulatable)
+            # calibration read entirely and arm a time fallback instead.
+            self._sim_deadline = time.monotonic() + self._sim_fallback_s
+            return
+
         store = CalibrationStore()
         key = _analog_store_key(self._sensor, self._set_name)
         data = store.load(ANALOG_DRIVE_THRESHOLD_SECTION, key)
@@ -646,6 +678,11 @@ class on_analog_flank(StopCondition):
         self._flank_threshold = float(margin) if margin is not None else None
 
     def check(self, robot: "GenericRobot") -> bool:
+        if _sim_fallback_active():
+            # Under sim: fire once the fallback time has elapsed (the inner
+            # sensor/calibration path is never touched).
+            return time.monotonic() >= self._sim_deadline
+
         current = float(self._sensor.read())
 
         if self._flank_threshold is not None:
