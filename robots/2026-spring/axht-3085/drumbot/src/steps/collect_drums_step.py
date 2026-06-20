@@ -1,5 +1,4 @@
 import asyncio
-import os
 import time
 
 from raccoon import GenericRobot, dsl, parallel, seq, wait_for_seconds, wait_for_button
@@ -47,13 +46,12 @@ LIFT_STOP_TIMEOUT = 2.0
 # wall_align is the one motion that stops at full velocity right before a long
 # non-driving phase.
 #
-# We always clear that residual at the start of collection (the fix), then —
-# unless DRUMBOT_NO_POSITION_HOLD is set — deliberately re-apply a gentle
-# forward push for the duration of collection so the robot stays pressed flush
-# against the wall (the feature).
-POSITION_HOLD_VX = 0.12  # m/s forward push to hold the robot against the wall
-POSITION_HOLD_HZ = 50
-POSITION_HOLD_ENV = "DRUMBOT_NO_POSITION_HOLD"
+# We always clear that residual at the start of collection (via _stop_drive).
+# The deliberate forward push ("position hold") that keeps the robot pressed
+# against the wall now lives in src/steps/position_hold_step.py and is applied
+# at the mission level (m020) via do_while_active, so it can be controlled
+# independently of this step.
+POSITION_HOLD_HZ = 50  # still used by _stop_drive() below
 
 
 @dsl(hidden=True)
@@ -88,13 +86,10 @@ class CollectDrumsStep(UIStep):
             self._stuck_drum_monitor(color_service, drum_service, robot),
         )
 
-        # Re-introduce the forward drive as an intentional feature: keep the
-        # robot pressed against the wall while collecting, unless disabled.
-        hold_task = None
-        if os.getenv(POSITION_HOLD_ENV) is None:
-            hold_task = asyncio.create_task(self._position_hold_loop(robot))
-        else:
-            self.info(f"{POSITION_HOLD_ENV} set — position hold disabled")
+        # Position hold (forward push against the wall) is now driven at the
+        # mission level via do_while_active(collect_drums(), position_hold())
+        # in m020, so it can be cancelled/paused independently of this step.
+        # See src/steps/position_hold_step.py.
 
         # Collection is stricter: one retry, then emergency shutdown.
         # Restored in finally so ejection keeps the default 3-attempt budget.
@@ -231,8 +226,6 @@ class CollectDrumsStep(UIStep):
             else:
                 drum_service.stall_retries = prior_stall_retries
             tasks = [ui_task, stuck_task]
-            if hold_task is not None:
-                tasks.append(hold_task)
             for task in tasks:
                 task.cancel()
                 try:
@@ -254,30 +247,6 @@ class CollectDrumsStep(UIStep):
         robot.drive.set_velocity(ChassisVelocity(0.0, 0.0, 0.0))
         robot.drive.update(1.0 / POSITION_HOLD_HZ)
         robot.drive.hard_stop()
-
-    async def _position_hold_loop(self, robot: "GenericRobot") -> None:
-        """Continuously command a gentle forward velocity during collection.
-
-        Keeps the robot pressed flush against the wall for the duration of
-        collection. Re-pushes the velocity target every cycle (the velocity
-        controller is pure feedforward with ki=0, so pushing against the wall
-        causes no integral windup) and stops cleanly on cancellation.
-        """
-        update_rate = 1.0 / POSITION_HOLD_HZ
-        vel = ChassisVelocity(POSITION_HOLD_VX, 0.0, 0.0)
-        loop = asyncio.get_event_loop()
-        last = loop.time()
-        try:
-            while True:
-                now = loop.time()
-                dt = now - last
-                last = now
-                robot.drive.set_velocity(vel)
-                if dt > 0:
-                    robot.drive.update(dt)
-                await asyncio.sleep(update_rate)
-        finally:
-            self._stop_drive(robot)
 
     async def _wait_for_lift_motor_stopped(self) -> None:
         """Block until servo_help_motor encoder has been stable for a full window."""
