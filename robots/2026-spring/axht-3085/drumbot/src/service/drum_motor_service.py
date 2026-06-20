@@ -407,6 +407,19 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             stall_check()
             await asyncio.sleep(SAMPLE_INTERVAL)
 
+        # Stripes have non-zero width: the tracker counts the rising edge
+        # (white→black), which a forward move hits at the stripe's leading
+        # (lower-position) edge but a backward move hits at the trailing
+        # (upper-position) edge — one stripe-width apart. For backward moves,
+        # keep creeping to the next edge (the falling edge at the lower side)
+        # so both directions settle on the same physical edge.
+        # In precise mode _center_on_stripe re-centers symmetrically, so the
+        # discrepancy only matters in fast mode.
+        if not forward and not precise:
+            while self._is_black():
+                stall_check()
+                await asyncio.sleep(SAMPLE_INTERVAL)
+
         pos_at_stop = self.motor.get_position()
         actual_ticks = abs(pos_at_stop - self._move_start_pos)
         raw_at_stop = float(self.light_sensor.read())
