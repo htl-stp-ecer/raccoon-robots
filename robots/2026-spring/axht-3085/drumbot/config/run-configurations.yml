@@ -25,6 +25,7 @@ no-pos-hold:
   record_hz:
   args: [ ]
   env:
+    DRUMBOT_NO_POSITION_HOLD: '1'
     DRUMBOT_DETECTION_DEBUG: '0'
 dev:
   name: dev

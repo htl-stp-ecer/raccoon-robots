@@ -34,26 +34,6 @@ LIFT_STOP_STABLE_WINDOW = 0.15  # motor is "stopped" when encoder hasn't moved f
 LIFT_STOP_TICK_TOLERANCE = 3    # ignore sub-3-tick encoder jitter
 LIFT_STOP_TIMEOUT = 2.0
 
-# Position hold during collection.
-#
-# The previous mission ends with wall_align_forward, which finishes its motion
-# while STILL commanding full forward chassis velocity and then only brakes
-# (PASSIVE_BRAKE). On the wombat, brake() does not clear the firmware's
-# velocity-PID target — velocity commands and mode commands live on separate
-# transport channels — so the STM32 keeps driving forward at the leftover
-# target through the whole collection. Distance/angle-targeted motions don't
-# leak like this because their velocity profile decays to ~0 before braking;
-# wall_align is the one motion that stops at full velocity right before a long
-# non-driving phase.
-#
-# We always clear that residual at the start of collection (via _stop_drive).
-# The deliberate forward push ("position hold") that keeps the robot pressed
-# against the wall now lives in src/steps/position_hold_step.py and is applied
-# at the mission level (m020) via do_while_active, so it can be controlled
-# independently of this step.
-POSITION_HOLD_HZ = 50  # still used by _stop_drive() below
-
-
 @dsl(hidden=True)
 class CollectDrumsStep(UIStep):
     """Run drum collection with live UI overlay."""
@@ -61,11 +41,6 @@ class CollectDrumsStep(UIStep):
     async def _execute_step(self, robot: "GenericRobot") -> None:
         color_service = robot.get_service(ColorDetectionService)
         drum_service = robot.get_service(DrumMotorService)
-
-        # Clear any residual chassis velocity left by the previous mission's
-        # wall_align (see POSITION_HOLD_* notes above). Without this the robot
-        # keeps driving forward through the entire collection.
-        self._stop_drive(robot)
 
         # Wait for the drum-lift motor (servo_help_motor) to fully stop before
         # we start color detection — if it's still moving the camera picks up
@@ -85,11 +60,6 @@ class CollectDrumsStep(UIStep):
         stuck_task = asyncio.create_task(
             self._stuck_drum_monitor(color_service, drum_service, robot),
         )
-
-        # Position hold (forward push against the wall) is now driven at the
-        # mission level via do_while_active(collect_drums(), position_hold())
-        # in m020, so it can be cancelled/paused independently of this step.
-        # See src/steps/position_hold_step.py.
 
         # Collection is stricter: one retry, then emergency shutdown.
         # Restored in finally so ejection keeps the default 3-attempt budget.
@@ -232,21 +202,6 @@ class CollectDrumsStep(UIStep):
                     await task
                 except asyncio.CancelledError:
                     pass
-            # Guarantee the chassis is stopped on exit even if position hold
-            # was active (and regardless of how the loop above terminated).
-            self._stop_drive(robot)
-
-    def _stop_drive(self, robot: "GenericRobot") -> None:
-        """Actually halt the chassis, clearing the firmware velocity target.
-
-        ``hard_stop()`` alone only sends a PASSIVE_BRAKE mode command; it never
-        sends a zero velocity, so the STM32 keeps the last commanded
-        velocity-PID target. Push an explicit zero velocity through the drive
-        first (same path motion steps use), then brake.
-        """
-        robot.drive.set_velocity(ChassisVelocity(0.0, 0.0, 0.0))
-        robot.drive.update(1.0 / POSITION_HOLD_HZ)
-        robot.drive.hard_stop()
 
     async def _wait_for_lift_motor_stopped(self) -> None:
         """Block until servo_help_motor encoder has been stable for a full window."""

@@ -1,13 +1,12 @@
-
 from raccoon import *
 
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.steps.collect_drums_step import collect_drums
-from src.steps.position_hold_step import position_hold
 from src.steps.drum_lifting_step import drum_lifting_up
 from src.steps.drum_collector import rotate_to_eject_start
-
+from src.steps.terminate_leftover_velocity import terminate_leftover_velocity
+from src.steps.set_position_hold_velocity_step import set_position_hold_velocity
 
 @dsl
 def after_collect():
@@ -32,10 +31,12 @@ class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             wait_for_background("lower_drum"),
-            do_while_active(
-                reference_step=collect_drums(),
-                task=position_hold(),
-            ),
+            terminate_leftover_velocity(),
+
+            set_position_hold_velocity(),
+            collect_drums(),
+            terminate_leftover_velocity(),
+
             mark_heading_reference(),
             after_collect(),
         ])
