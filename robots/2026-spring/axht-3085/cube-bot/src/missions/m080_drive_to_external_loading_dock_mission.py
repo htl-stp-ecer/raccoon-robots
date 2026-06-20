@@ -28,9 +28,9 @@ def left_lateral_align_line_follow():
     return (
         line_follow()
         .single(Defs.rear.left, side=LineSide.LEFT)
-        .move(strafe=-0.4)
+        .move(strafe=-0.6)
         .correct_forward(hold_heading=False)
-        .pid(kp=0.5, ki=0.1, kd=0.0)
+        .pid(kp=0.4, ki=0.1, kd=0.0)
     )
 
 
@@ -54,33 +54,17 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 ])
             ),
 
+            #wall_align_strafe_left(speed=0.2,
+            #                       accel_threshold=10,
+            #                       settle_duration=0,
+            #                       max_duration=4, #make sure we have a stupid wall align without accel reading
+            #                       grace_period=4
+            #                       ),
             left_lateral_align_line_follow().until(
-                after_seconds(2),
+                after_seconds(4),
             ),
-            mark_heading_reference(origin_offset_deg=2), #magic 2 deg, so the heading is correctt, bot is a bit shief wegen metal peace
+            mark_heading_reference(), #magic 2 deg, so the heading is correctt, bot is a bit shief wegen metal peace
             drive_forward(cm=5),
-
-            # .on_anomaly(
-            #    callback_or_step=seq([
-            #        strafe_right().until(  # try to move pallet out of the way, if we stuck on it
-            #            on_black(Defs.rear.left) | after_seconds(1)
-            #        ),
-            #        drive_backward(cm=10),  # get free
-            #        # move back in position to drive down the ram
-            #        strafe_left().until(
-            #            on_black(Defs.front.left)
-            #            + after_cm(10),
-            #        ),
-            #        # magic deg so we hit the right eghe of
-            #        drive_forward(cm=40, heading=0),  # go on ramp befor starting to linfollow again
-
-            #        _follow().until(
-            #            after_cm(10)
-            #            + over_line(Defs.rear.left)
-            #            + after_cm(5)
-            #        )
-            #    ])
-            # ),
 
             switch_calibration_set("default"),
             strafe_right(heading=0).until(

@@ -48,11 +48,12 @@ class M040DropFirstCubeStackMission(Mission):
                 ),
             ),
             #mark_heading_reference(), commented the mark heading referenc since we usually are on a pom and dont are accact
-            strafe_right(heading=0, speed=0.5).until(
-                on_white(Defs.rear.left)
-            ),
+            turn_to_heading_right(0),
             strafe_left(heading=0, speed=0.5).until(
                 on_black(Defs.rear.left)
+            ),
+            strafe_right(heading=0, speed=0.5).until(
+                on_white(Defs.rear.left)
             ),
             turn_to_heading_right(0),
 

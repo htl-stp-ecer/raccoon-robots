@@ -3,6 +3,14 @@ from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 from src.steps.calibrate_analog_drive import on_analog_flank
 
+def follow_line():
+    return (
+        line_follow()
+        .single(Defs.front.left, side=LineSide.RIGHT)
+        .move(forward=1)
+        .correct_lateral()
+        .pid(kp=0.4, ki=0.05, kd=0)
+    )
 
 class M070GrabUpperCubeMission(Mission):
     def sequence(self) -> Sequential:
@@ -11,7 +19,7 @@ class M070GrabUpperCubeMission(Mission):
             strafe_right(heading=0).until(
                 on_black(Defs.front.left)
             ),
-            drive_forward(heading=0).until(
+            follow_line().until(
                 after_cm(65)
                 + on_analog_flank(Defs.et_sensor, "upper_cube")
             ),
@@ -44,13 +52,12 @@ class M070GrabUpperCubeMission(Mission):
 
             parallel(
                 #align claw and cube
-                strafe_right(heading=0).until(
+                strafe_right(heading=0, speed=0.4).until(
                     on_black(Defs.rear.left)
-                    + after_cm(0.5)
                 ),
 
                 #put arm down
-                arm.move_angles(0, 0, 0, speed=120),
+                arm.move_angles(1.5, 0, 0, speed=120),
             ),
 
             #drive back to cube

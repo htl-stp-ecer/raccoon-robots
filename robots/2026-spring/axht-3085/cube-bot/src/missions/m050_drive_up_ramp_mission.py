@@ -23,6 +23,15 @@ def left_lateral_align_line_follow():
     )
 
 
+def follow_line():
+    return (
+        line_follow()
+        .single(Defs.front.left, side=LineSide.RIGHT)
+        .move(forward=-1)
+        .correct_lateral()
+        .pid(kp=0.4, ki=0.05, kd=0)
+    )
+
 class M050DriveUpRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
@@ -34,6 +43,15 @@ class M050DriveUpRampMission(Mission):
                 + after_cm(5)
             ),
 
+            #align on front pipe
+            wall_align_forward(speed=0.6,
+                               accel_threshold=10,
+                               settle_duration=0,
+                               max_duration=3,
+                               grace_period=3
+                               ),
+            mark_heading_reference(),
+
             # drive to black line where palette with two yellow cubes is
             background(
                 seq([
@@ -42,18 +60,15 @@ class M050DriveUpRampMission(Mission):
                     Defs.arm_claw.grab(),
                 ]),
             ),
-            drive_backward().until(
+            drive_backward(heading=0).until(
                 on_black(Defs.rear.left)
             ),
 
             # drive to the right to the pipe
+            turn_to_heading_left(0),
             left_lateral_line_follow().until(
-                after_cm(25)
+                after_cm(30)
             ),
-            left_lateral_align_line_follow().until(
-                after_seconds(2)
-            ),
-            mark_heading_reference(origin_offset_deg=2),  # magic offset because hardware
 
             # align and switch calibration set
             switch_calibration_set("upper"),
@@ -61,7 +76,9 @@ class M050DriveUpRampMission(Mission):
             # magical drive up ramp
             drive_backward(heading=0).until(
                 on_black(Defs.front.left)
-                + after_cm(80)
-                + on_black(Defs.front.right)
+                + after_cm(90)
             ),
+            follow_line().until(
+                on_black(Defs.front.right)
+            )
         ])
