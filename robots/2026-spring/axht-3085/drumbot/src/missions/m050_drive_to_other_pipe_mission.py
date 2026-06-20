@@ -65,12 +65,14 @@ class M050DriveToOtherPipeMission(Mission):
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
-                + after_cm(13)
+                + after_cm(15)
             ),
 
             lineup_drum_with_pipe(),
             eject_nearest_color(),
 
-            turn_left(30),
-            Defs.lift_drums_servo.up(),
+            parallel(
+                turn_left(30),
+                Defs.lift_drums_servo.up(),
+            ),
         ])
