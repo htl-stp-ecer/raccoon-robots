@@ -17,6 +17,7 @@ STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 50  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 COAST_SETTLE_SECONDS = 0.20  # post-stop pause so the tracker can absorb any coast-through
+CENTER_OFFSET_TICKS = 50  # TEST: after centering, back off this many ticks (backward) to tune resting offset
 
 
 class MotorStalledError(Exception):
@@ -407,15 +408,6 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             stall_check()
             await asyncio.sleep(SAMPLE_INTERVAL)
 
-        # TEST: stop on the upper edge of the stripe instead of the center.
-        # The tracker counts the rising edge (white→black) at the stripe's
-        # lower edge. For a forward move, keep driving to the next edge — the
-        # falling edge (black→white) at the upper side of the stripe.
-        if forward:
-            while self._is_black():
-                stall_check()
-                await asyncio.sleep(SAMPLE_INTERVAL)
-
         pos_at_stop = self.motor.get_position()
         actual_ticks = abs(pos_at_stop - self._move_start_pos)
         raw_at_stop = float(self.light_sensor.read())
@@ -452,9 +444,19 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                 f"({drift:+d} pockets) — tracker index is authoritative"
             )
 
-        # TEST: centering disabled — we want to settle on the upper edge.
-        # if precise:
-        #     await self._center_on_stripe(self._last_entry_pos)
+        if precise:
+            await self._center_on_stripe(self._last_entry_pos)
+            # TEST: after centering, back off a hardcoded tick count using a
+            # relative move — ONLY for the backward command, not forward — so
+            # we can fix the resting offset by tuning CENTER_OFFSET_TICKS.
+            if not forward and CENTER_OFFSET_TICKS:
+                self.motor.move_relative(FULL_VELOCITY, -CENTER_OFFSET_TICKS)
+                while not self.motor.is_done():
+                    await asyncio.sleep(SAMPLE_INTERVAL)
+                self.debug(
+                    f"[CENTER-OFFSET] backed off {CENTER_OFFSET_TICKS} ticks "
+                    f"(relative) → pos={self.motor.get_position()}"
+                )
 
         self._at_midpoint = False
         self.debug(f"[MOVE-DONE] pocket={self._current_pocket} target={target_pocket}")
