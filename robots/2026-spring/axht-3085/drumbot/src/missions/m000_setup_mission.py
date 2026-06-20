@@ -9,7 +9,7 @@ from src.steps.drum_collector import (
 )
 from src.steps.drum_lifting_step import *
 from src.hardware.defs import Defs
-from src.steps import wait_for_drum_step
+from src.steps.drum_collector.pocket_jog_step import pocket_jog
 
 
 class M000SetupMission(SetupMission):
@@ -54,4 +54,6 @@ class M000SetupMission(SetupMission):
             ),
 
             fully_disable_servos(),
+
+            pocket_jog(),
         ])
