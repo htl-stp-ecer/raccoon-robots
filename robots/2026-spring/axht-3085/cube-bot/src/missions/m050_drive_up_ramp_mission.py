@@ -47,8 +47,8 @@ class M050DriveUpRampMission(Mission):
             wall_align_forward(speed=0.6,
                                accel_threshold=10,
                                settle_duration=0,
-                               max_duration=3,
-                               grace_period=3
+                               max_duration=2,
+                               grace_period=2
                                ),
             mark_heading_reference(),
 

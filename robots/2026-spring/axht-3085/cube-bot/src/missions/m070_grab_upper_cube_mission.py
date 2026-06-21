@@ -54,6 +54,7 @@ class M070GrabUpperCubeMission(Mission):
                 #align claw and cube
                 strafe_right(heading=0, speed=0.4).until(
                     on_black(Defs.rear.left)
+                    + after_cm(3)
                 ),
 
                 #put arm down

@@ -27,13 +27,13 @@ class M020SecondBrownCubeMission(Mission):
                 ]),
 
                 # drive backwards to 2nd cube pickup
-                seq([
-                    _follow().until(
+                timeout_or(
+                    step= _follow().until(
                         (over_line(Defs.front.right)
-                        + after_cm(19))
-                        | after_seconds(6)
+                         + after_cm(19))
                     ),
-                ]),
+                    seconds=5
+                )
             ),
             # go into correct lateral position for pickup
             strafe_right(heading=0).until(
