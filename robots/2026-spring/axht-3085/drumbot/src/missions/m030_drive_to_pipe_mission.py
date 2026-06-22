@@ -47,7 +47,7 @@ class M030DriveToPipeMission(Mission):
                 after_cm(5)
                 + over_line(Defs.front_right_ir_sensor)
             ),
-            turn_to_heading_left(180),
+            turn_to_heading_left(180, force_direction='right'),
 
             # drive to pipe
             parallel(
