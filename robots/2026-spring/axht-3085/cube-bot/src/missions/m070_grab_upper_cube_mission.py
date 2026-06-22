@@ -20,8 +20,7 @@ class M070GrabUpperCubeMission(Mission):
                 on_black(Defs.front.left)
             ),
             follow_line().until(
-                after_cm(65)
-                + on_analog_flank(Defs.et_sensor, "upper_cube")
+                on_analog_flank(Defs.et_sensor, "upper_cube")
             ),
             drive_backward(heading=0).until(
                 on_analog_flank(Defs.et_sensor, "upper_cube")
@@ -32,7 +31,7 @@ class M070GrabUpperCubeMission(Mission):
             ),
 
             # put claw on cube
-            arm.move_angles(30, 62, -53, speed=150),
+            arm.move_angles(30, 62, -58, speed=150),
 
             # push cube back
             drive_angle(-130).until(

@@ -77,21 +77,13 @@ def warehouse_floor_calibration():
                     + "(on the right black line)"
                 ),
                 mark_heading_reference(),
-                collect_ir_set(
-                    seq([
-                        collect_drive(
-                            drive_forward().until(
-                                after_cm(50)
-                            ),
+                collect_drive(
+                    collect_ir_set(
+                        drive_forward().until(
+                            after_cm(50)
                         ),
-                        #collect_drive(
-                        #    drive_backward().until(
-                        #        after_cm(40)
-                        #    ),
-                        #    manual_measurement=False
-                        #),
-                    ]),
-                    set_name="default",
+                        set_name="default",
+                    ),
                 ),
             ]),
         ),
@@ -103,25 +95,25 @@ def move_into_starting_position():
         wait_for_button("go to strart possiont"),
         mark_heading_reference(),
         # align on the black line on the right
-        strafe_right().until(
+        strafe_right(heading=0).until(
             on_black(Defs.front.right)
         ),
-        strafe_left().until(
+        strafe_left(heading=0).until(
             on_white(Defs.front.right)
-            + after_cm(1)
+            + after_cm(3)
         ),
         # aling witht the black line in front
-        drive_forward().until(
+        drive_forward(heading=0).until(
             on_black(Defs.front.left)
         ),
-        drive_backward(speed=0.6).until(
+        drive_backward(speed=0.6, heading=0).until(
             on_white(Defs.front.left)
             + after_cm(2)
         ),
         wait_for_seconds(0.5),
         turn_to_heading_right(0),
 
-        arm.move_angles(-55, 130, -110),
+        arm.move_angles(-60, 130, -110),
         fully_disable_servos(),
     ])
 

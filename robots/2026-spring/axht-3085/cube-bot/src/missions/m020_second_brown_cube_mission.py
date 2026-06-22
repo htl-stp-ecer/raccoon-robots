@@ -32,11 +32,23 @@ class M020SecondBrownCubeMission(Mission):
                         (over_line(Defs.front.right)
                          + after_cm(19))
                     ),
-                    seconds=5
+                    seconds=5,
+                    fallback=seq([
+                        timeout(
+                            step= drive_forward().until(
+                                on_black(Defs.front.right)
+                            ),
+                            seconds=6,
+                        ),
+                        _follow().until(
+                            (over_line(Defs.front.right)
+                             + after_cm(19))
+                        ),
+                    ])
                 )
             ),
             # go into correct lateral position for pickup
-            strafe_right(heading=0).until(
+            strafe_right(heading=0, speed=0.5).until(
                 on_black(Defs.rear.left),
             ),
 

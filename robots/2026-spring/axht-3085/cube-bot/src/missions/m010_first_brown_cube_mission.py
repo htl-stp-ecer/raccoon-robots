@@ -30,7 +30,7 @@ class M010FirstBrownCubeMission(Mission):
                 + after_cm(10)
             ),
             # go into correct lateral position for pickup
-            strafe_right(heading=0).until(
+            strafe_right(heading=0, speed=0.5).until(
                 on_black(Defs.rear.left),
             ),
             wait_for_background(

@@ -34,17 +34,20 @@ def follow_line():
 
 class M050DriveUpRampMission(Mission):
     def sequence(self) -> Sequential:
-        return seq([
+        return optimize([
             # move away from cube stack
             arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
-            drive_backward(cm=2),
+            strafe_left().until(
+                over_line(Defs.rear.left)
+            ),
+            drive_backward(cm=15),
             strafe_left().until(
                 over_line(Defs.front.right)
-                + after_cm(2)
+                + after_cm(11)
             ),
 
             #align on front pipe
-            wall_align_forward(speed=0.6,
+            wall_align_forward(speed=0.4,
                                accel_threshold=10,
                                settle_duration=0,
                                max_duration=2,

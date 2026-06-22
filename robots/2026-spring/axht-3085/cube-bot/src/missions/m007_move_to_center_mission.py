@@ -17,7 +17,7 @@ def left_lateral_line_follow():
 
 class M007MoveToCenterMission(Mission):
     def sequence(self) -> Sequential:
-        return seq([
+        return optimize([
             mark_heading_reference(origin_offset_deg=90),
             background(
                 step=seq([

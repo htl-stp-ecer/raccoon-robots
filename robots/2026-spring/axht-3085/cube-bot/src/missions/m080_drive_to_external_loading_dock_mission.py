@@ -28,7 +28,7 @@ def left_lateral_align_line_follow():
     return (
         line_follow()
         .single(Defs.rear.left, side=LineSide.LEFT)
-        .move(strafe=-0.6)
+        .move(strafe=-0.3)
         .correct_forward(hold_heading=False)
         .pid(kp=0.4, ki=0.1, kd=0.0)
     )
@@ -61,10 +61,10 @@ class M080DriveToExternalLoadingDockMission(Mission):
             #                       grace_period=4
             #                       ),
             left_lateral_align_line_follow().until(
-                after_seconds(4),
+                after_seconds(2),
             ),
             mark_heading_reference(), #magic 2 deg, so the heading is correctt, bot is a bit shief wegen metal peace
-            drive_forward(cm=5),
+            drive_forward(cm=5, heading=0),
 
             switch_calibration_set("default"),
             strafe_right(heading=0).until(
@@ -75,7 +75,7 @@ class M080DriveToExternalLoadingDockMission(Mission):
             strafe_right(cm=10, speed=0.5, heading=0),
 
             # align on wall
-            wall_align().until(
+            drive_forward(heading=0).until(
                 after_seconds(2.5),
             ),
             strafe_right(cm=15, speed=0.5, heading=0), #make sure we are accectly on the pipe

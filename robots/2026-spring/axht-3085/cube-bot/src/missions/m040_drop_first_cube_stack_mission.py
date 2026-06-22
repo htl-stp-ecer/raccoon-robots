@@ -26,12 +26,12 @@ def align_line_follow():
 
 class M040DropFirstCubeStackMission(Mission):
     def sequence(self) -> Sequential:
-        return seq([
+        return optimize([
             background(
                 step=seq([
                     wait_for_background("arm_up"),
                     # move servo forward
-                    arm.move_angles(base_deg=0, sholder_deg=110).arm_speeds(base=70, sholder=70),
+                    arm.move_angles(base_deg=0, sholder_deg=113).arm_speeds(base=70),
                 ])
             ),
 
@@ -58,9 +58,9 @@ class M040DropFirstCubeStackMission(Mission):
             turn_to_heading_right(0),
 
             # place cube tower
-            arm.move_angles(sholder_deg=105, speed=200),
+            arm.move_angles(sholder_deg=113),
             wait_for_seconds(0.2), #a samll delay so the sholder servo is definatly on his right posission
-            arm.move_angles(elbow_deg=-95, speed=150),
+            arm.move_angles(elbow_deg=-98, speed=150),
             wait_for_seconds(0.5),
             Defs.arm_claw.open(),
         ])
