@@ -17,7 +17,7 @@ STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 50  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 COAST_SETTLE_SECONDS = 0.20  # post-stop pause so the tracker can absorb any coast-through
-CENTER_OFFSET_TICKS = 500  # TEST: after centering, back off this many ticks (backward) to tune resting offset
+CENTER_OFFSET_TICKS = 100  # TEST: after centering, back off this many ticks (backward) to tune resting offset
 
 
 class MotorStalledError(Exception):
