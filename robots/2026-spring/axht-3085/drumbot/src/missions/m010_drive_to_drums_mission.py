@@ -36,12 +36,14 @@ class M010DriveToDrumsMission(Mission):
                 over_line(Defs.front_right_ir_sensor)
                 + after_cm(15)
             ),
-            turn_to_heading_left(0),
+            parallel(
+                turn_to_heading_left(0),
+                Defs.drum_pusher_servo.open(),
+            ),
 
             background(
                 parallel(
                     Defs.lift_drums_servo.down(),
-                    Defs.drum_pusher_servo.open(),
                 ),
                 name="lower_drum",
             ),
@@ -50,5 +52,5 @@ class M010DriveToDrumsMission(Mission):
                 accel_threshold=0.3,
                 grace_period=0.2,
             ),
-            mark_heading_reference(),
+
         ])
