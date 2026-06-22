@@ -113,10 +113,30 @@ class RotateToNextEmptyPocketStep(Step):
         await drum_service.go_to_pocket(target, precise=False, occupied=occupied)
 
 
+@dsl(hidden=True)
+class ApplyCenterOffsetStep(Step):
+    """Apply the tuned resting offset before waiting for the next drum.
+
+    Runs after the revolver has been positioned on the receiving pocket and
+    before wait_for_drum, so the empty pocket rests at the tuned receiving
+    position regardless of which direction the positioning move came from.
+    """
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        drum_service = robot.get_service(DrumMotorService)
+        await drum_service.apply_center_offset()
+
+
 @dsl()
 def rotate_to_next_empty_pocket() -> RotateToNextEmptyPocketStep:
     """Rotate to nearest empty pocket so opening the pusher doesn't drop a sorted drum."""
     return RotateToNextEmptyPocketStep()
+
+
+@dsl()
+def apply_center_offset() -> ApplyCenterOffsetStep:
+    """Back off the tuned resting offset before waiting for the next drum."""
+    return ApplyCenterOffsetStep()
 
 
 @dsl()

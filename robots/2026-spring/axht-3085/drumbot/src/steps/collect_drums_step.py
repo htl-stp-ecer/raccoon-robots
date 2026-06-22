@@ -12,6 +12,7 @@ from src.steps.drum_collector.screens.drum_collection_screen import DrumCollecti
 from src.steps.drum_collector.screens.emergency_screen import EmergencyScreen
 from src.steps.drum_collector.sort_into_slot_step import (
     advance_to_midpoint,
+    apply_center_offset,
     block_timer_check,
     block_timer_start,
     rotate_to_next_empty_pocket,
@@ -95,6 +96,7 @@ class CollectDrumsStep(UIStep):
                     # the loading hole there would let the sorted drum fall out.
                     phase1a = seq([
                         rotate_to_next_empty_pocket(),
+                        apply_center_offset(),
                         Defs.drum_pusher_servo.open(),
                         wait_for_drum(checkpoint=checkpoint),
                         block_timer_start(),

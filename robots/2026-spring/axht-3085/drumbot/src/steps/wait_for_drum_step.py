@@ -1,4 +1,4 @@
-"""Wait until the camera detects a drum (any color), then settle briefly."""
+"""Wait until the camera detects a drum (any color), then close after a short delay."""
 
 import asyncio
 import time
@@ -6,6 +6,7 @@ import time
 from raccoon import GenericRobot, dsl
 from raccoon.step import Step
 
+from src.hardware.defs import Defs
 from src.service.color_detection_service import ColorDetectionService
 from src.service.sorting_service import SortingService
 
@@ -20,10 +21,8 @@ class WaitForDrumStep(Step):
     as it sees a color, and we await that event with the learned timeout.
     No polling, no pausing the detection loop.
 
-    Detection only: locks the color, waits CLOSE_DELAY for the drum to roll
-    fully into position, then returns. The caller drives the pusher to its
-    block angle and rotates the revolver back onto the slot (in parallel)
-    the instant this step returns.
+    Closes the pusher servo after CLOSE_DELAY seconds to let the drum
+    roll fully into position before blocking.
     """
 
     def __init__(
@@ -83,14 +82,16 @@ class WaitForDrumStep(Step):
             else:
                 sorting_service.record_detection_delta(wall_delta)
             color_service.lock_color()
-            self.info(f"Drum detected at {wall_delta:.3f}s — settling for {self.close_delay:.3f}s")
+            self.info(f"Drum detected at {wall_delta:.3f}s — closing servo in {self.close_delay:.3f}s")
             await asyncio.sleep(self.close_delay)
         else:
             self.warn(
                 f"Timeout ({learned_timeout:.3f}s) waiting for drum — "
-                f"proceeding anyway based on learned timing"
+                f"closing anyway based on learned timing"
             )
             color_service.lock_color()
+
+        Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.block_angle.value)
 
 
 @dsl()

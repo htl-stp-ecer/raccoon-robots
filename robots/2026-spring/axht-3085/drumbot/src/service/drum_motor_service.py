@@ -368,6 +368,25 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             backup_sign=backup_sign,
         )
 
+    async def apply_center_offset(self) -> None:
+        """Back off CENTER_OFFSET_TICKS to set the resting position for receiving a drum.
+
+        Run ONCE before waiting for the next drum to arrive — after the revolver
+        has been positioned on the receiving pocket — rather than at the end of
+        every move. This keeps the resting offset independent of which direction
+        the positioning move came from, and stops the offset from being applied
+        on intermediate sort/eject moves where it isn't wanted.
+        """
+        if not CENTER_OFFSET_TICKS:
+            return
+        self.motor.move_relative(FULL_VELOCITY, CENTER_OFFSET_TICKS)
+        while not self.motor.is_done():
+            await asyncio.sleep(SAMPLE_INTERVAL)
+        self.info(
+            f"[CENTER-OFFSET] backed off {CENTER_OFFSET_TICKS} ticks "
+            f"(relative) → pos={self.motor.get_position()}"
+        )
+
     async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
         """Move N pockets, trusting the continuous IR tracker for position.
 
@@ -446,17 +465,6 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
 
         if precise:
             await self._center_on_stripe(self._last_entry_pos)
-            # TEST: after centering, back off a hardcoded tick count using a
-            # relative move — ONLY for the backward command, not forward — so
-            # we can fix the resting offset by tuning CENTER_OFFSET_TICKS.
-        if not forward and CENTER_OFFSET_TICKS:
-            self.motor.move_relative(FULL_VELOCITY, CENTER_OFFSET_TICKS)
-            while not self.motor.is_done():
-                await asyncio.sleep(SAMPLE_INTERVAL)
-            self.info(
-                f"[CENTER-OFFSET] backed off {CENTER_OFFSET_TICKS} ticks "
-                f"(relative) → pos={self.motor.get_position()}"
-            )
 
         self._at_midpoint = False
         self.debug(f"[MOVE-DONE] pocket={self._current_pocket} target={target_pocket}")
