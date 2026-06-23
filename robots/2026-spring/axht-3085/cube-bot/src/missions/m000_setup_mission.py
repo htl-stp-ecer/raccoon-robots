@@ -57,9 +57,8 @@ def upper_warehouse_calibrate():
                     seq([
                         drive_backward(cm=10),
                         # make sure we have turned over all sneosrs on upper deck
-                        turn_right(10),
                         turn_left(70),
-                        turn_to_heading_right(0),
+                        turn_to_heading_right(10),
                     ]),
                     set_name="upper"
                 ),
@@ -144,6 +143,5 @@ class M000SetupMission(SetupMission):
                 require_ir_sets=["default", "upper"],
             ),
 
-            PlotDriveVelocity(),
             move_into_starting_position(),
         ])

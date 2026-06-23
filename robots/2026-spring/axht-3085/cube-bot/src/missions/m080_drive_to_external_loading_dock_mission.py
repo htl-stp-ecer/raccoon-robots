@@ -75,5 +75,5 @@ class M080DriveToExternalLoadingDockMission(Mission):
             drive_forward(heading=0).until(
                 after_seconds(2.5),
             ),
-            strafe_right(cm=15, speed=0.5, heading=0), #make sure we are accectly on the pipe
+            #strafe_right(cm=15, speed=0.5, heading=0), #make sure we are accectly on the pipe
         ])

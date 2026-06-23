@@ -27,15 +27,20 @@ class M070GrabUpperCubeMission(Mission):
                 + after_cm(20)
             ),
             strafe_right(heading=0).until(
-                over_line(Defs.rear.left)
+                on_black(Defs.rear.left)
+                + after_cm(3) #make sure we avoid seeing the white dot
+                + on_white(Defs.rear.left)
             ),
 
             # put claw on cube
-            arm.move_angles(30, 62, -58, speed=150),
+            arm.move_angles(33, speed=150),
+            arm.move_angles(33, 62, -60, speed=150),
 
             # push cube back
             drive_angle(-130).until(
-                over_line(Defs.front.left)
+                on_black(Defs.front.left)
+                + after_cm(3) #make sure we avoid seeing the white dot
+                + on_white(Defs.front.left)
                 + after_cm(0.5)
             ),
 
