@@ -171,14 +171,11 @@ def _eject_start(slots, cur: int):
     across two calls: the group nearest the hole goes first, and the second group
     sits immediately behind it in the same backward direction.
 
-    The lead-in therefore is NOT a single constant:
-      - First group (nearest the hole) starts cold, with the lift engaging, so it
-        needs the full 2-pocket lead-in to bring its far pocket across the hole.
-      - Second group is a continuation of that same sweep. Re-deriving an
-        independent 2-pocket lead-in adds the lift-engagement allowance a second
-        time, so the start lands one pocket too far advanced and the sweep stops
-        one short of the second group's far (lo) end — under-ejecting by one
-        (observed: blue ejected 3 of 4 with lead=2). It needs one LESS lead-in.
+    The lead-in is NOT a single constant. The second group is a continuation of
+    the same backward sweep, so it needs one LESS lead-in than the first; with an
+    equal lead-in it lands one pocket too far advanced. The two values below are
+    hardware-calibrated: with lead = 2/1 both groups started one pocket too far
+    BACKWARD (and the second over-ejected one extra), so both were bumped by one.
 
     The first group is, by construction, the one nearest the hole, so a group
     whose nearest pocket is >=2 away from the hole is the second one. Groups are
@@ -192,7 +189,7 @@ def _eject_start(slots, cur: int):
 
     lo, hi = min(slots), max(slots)
     is_second_group = min(ring_dist(s, EJECT_HOLE_SLOT) for s in slots) >= 2
-    lead = 1 if is_second_group else 2
+    lead = 2 if is_second_group else 3
     return (hi + lead) % NUM_POCKETS, False  # advance-side lead-in; retreat hi..lo
 
 
