@@ -13,7 +13,6 @@ pom_remover_servo:
   port: 3
   positions:
     right: 0
-    yeet_blue_pom: 130
     drum_moving_pos: 200
     r_cube: 50  # TODO: remove unless needed  # position to not touch the cube
     left: 190  # TODO: remove unless needed
