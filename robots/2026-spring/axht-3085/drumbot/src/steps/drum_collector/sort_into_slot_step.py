@@ -163,19 +163,37 @@ def _nearest_color_group(sorting_service: "SortingService"):
 def _eject_start(slots, cur: int):
     """Compute ``(start_slot, forward)`` for a single-direction eject sweep.
 
-    Direction is always forward (advance). Start two pockets *before* ``lo`` so
-    a sweep of exactly ``len(slots)`` steps brings every group pocket — and only
-    those — across the eject hole. The extra one-pocket lead-in compensates for
-    the lift-engagement geometry: without it, the first sweep step crosses too
-    late and the last crosses one pocket past the group.
+    Direction is forced to backward (retreat through ``hi``..``lo``). Start a few
+    pockets *after* ``hi`` so a sweep of exactly ``len(slots)`` steps brings every
+    group pocket — and only those — across the eject hole.
+
+    The two color groups are ejected as one continuous backward sweep, split
+    across two calls: the group nearest the hole goes first, and the second group
+    sits immediately behind it in the same backward direction.
+
+    The lead-in therefore is NOT a single constant:
+      - First group (nearest the hole) starts cold, with the lift engaging, so it
+        needs the full 2-pocket lead-in to bring its far pocket across the hole.
+      - Second group is a continuation of that same sweep. Re-deriving an
+        independent 2-pocket lead-in adds the lift-engagement allowance a second
+        time, so the start lands one pocket too far advanced and the sweep stops
+        one short of the second group's far (lo) end — under-ejecting by one
+        (observed: blue ejected 3 of 4 with lead=2). It needs one LESS lead-in.
+
+    The first group is, by construction, the one nearest the hole, so a group
+    whose nearest pocket is >=2 away from the hole is the second one. Groups are
+    always contiguous, non-wrapping blocks (0-3 and 4-7) with the hole at slot
+    ``EJECT_HOLE_SLOT``. `cur` is intentionally unused now that direction is
+    fixed; both the pre-position step and the sweep re-derive the same start.
     """
-    # Direction is forced to forward (advance): groups are always allocated as
-    # contiguous, non-wrapping blocks (0-3 and 4-7), so a forward sweep starting
-    # two pockets before lo always carries every group pocket — and only those —
-    # across the eject hole. `cur` is intentionally unused now that direction is
-    # fixed; both the pre-position step and the sweep re-derive the same start.
-    lo, _hi = min(slots), max(slots)
-    return (lo - 2) % NUM_POCKETS, True  # two before lo; advance through lo..hi
+    def ring_dist(a: int, b: int) -> int:
+        d = abs(a - b)
+        return min(d, NUM_POCKETS - d)
+
+    lo, hi = min(slots), max(slots)
+    is_second_group = min(ring_dist(s, EJECT_HOLE_SLOT) for s in slots) >= 2
+    lead = 1 if is_second_group else 2
+    return (hi + lead) % NUM_POCKETS, False  # advance-side lead-in; retreat hi..lo
 
 
 @dsl(hidden=True)
