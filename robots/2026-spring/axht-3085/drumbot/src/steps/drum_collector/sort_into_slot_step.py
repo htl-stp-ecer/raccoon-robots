@@ -163,21 +163,19 @@ def _nearest_color_group(sorting_service: "SortingService"):
 def _eject_start(slots, cur: int):
     """Compute ``(start_slot, forward)`` for a single-direction eject sweep.
 
-    Start two pockets *before* the group (in the sweep direction) so a sweep
-    of exactly ``len(slots)`` steps brings every group pocket — and only
-    those — across the eject hole. The closer end is chosen to minimise
-    travel. The extra one-pocket lead-in compensates for the lift-engagement
-    geometry: without it, the first sweep step crosses too late and the last
-    crosses one pocket past the group.
+    Direction is always forward (advance). Start two pockets *before* ``lo`` so
+    a sweep of exactly ``len(slots)`` steps brings every group pocket — and only
+    those — across the eject hole. The extra one-pocket lead-in compensates for
+    the lift-engagement geometry: without it, the first sweep step crosses too
+    late and the last crosses one pocket past the group.
     """
-    def ring_dist(a: int, b: int) -> int:
-        d = abs(a - b)
-        return min(d, NUM_POCKETS - d)
-
-    lo, hi = min(slots), max(slots)
-    if ring_dist(cur, lo) <= ring_dist(cur, hi):
-        return (lo - 2) % NUM_POCKETS, True  # two before lo; advance through lo..hi
-    return (hi + 2) % NUM_POCKETS, False  # two after hi; retreat through hi..lo
+    # Direction is forced to forward (advance): groups are always allocated as
+    # contiguous, non-wrapping blocks (0-3 and 4-7), so a forward sweep starting
+    # two pockets before lo always carries every group pocket — and only those —
+    # across the eject hole. `cur` is intentionally unused now that direction is
+    # fixed; both the pre-position step and the sweep re-derive the same start.
+    lo, _hi = min(slots), max(slots)
+    return (lo - 2) % NUM_POCKETS, True  # two before lo; advance through lo..hi
 
 
 @dsl(hidden=True)
