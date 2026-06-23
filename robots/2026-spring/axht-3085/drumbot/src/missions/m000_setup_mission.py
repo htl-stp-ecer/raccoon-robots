@@ -44,11 +44,12 @@ class M000SetupMission(SetupMission):
                             set_name="default"
                         )
                     ),
+
+                    calibration_gate(
+                        require_axes=[CalibrationAxis.FORWARD],
+                        require_ir_sets=["default"],
+                    ),
                 ]),
-            ),
-            calibration_gate(
-                require_axes=[CalibrationAxis.FORWARD],
-                require_ir_sets=["default"],
             ),
 
             # color calibration
@@ -57,7 +58,9 @@ class M000SetupMission(SetupMission):
                 Defs.drum_pusher_servo.open(),
             ),
             parallel(
-                calibrate_colors(),
+                run_unless_no_calibrate(
+                    calibrate_colors(),
+                ),
                 sample_drum_collector(calibration_time=5.0),
             ),
             review_drum_collector(review_delta=750),
