@@ -3,10 +3,10 @@ arm_base:
   port: 0
   offset: 0
   positions:
-    _0deg: 110.3
-    p90deg: 7
+    _0deg: 105.0
+    p90deg: 2.0
     max_left: -30
-    m90deg: 196.2
+    m90deg: 200
     max_right: 207
 arm_sholder:
   type: Servo

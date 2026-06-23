@@ -13,6 +13,9 @@ drive:
     front_right_motor: front_right_motor
     back_left_motor: rear_left_motor
     back_right_motor: rear_right_motor
+    velocity_command_gain:
+      vx: 1.07549
+      vy: 1.04442
   vel_config:
     vx:
       pid:

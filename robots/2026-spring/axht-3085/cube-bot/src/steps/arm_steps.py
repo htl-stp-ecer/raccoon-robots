@@ -33,7 +33,7 @@ def grab_brown_cube(side: LineSide, heading: int | None):
 
 def drop_cube_into_container():
     return seq([
-        arm.move_angles(0, 95, 77),      # move arm to drop cube into container position
+        arm.move_angles(0, 95, 77, speed=100),      # move arm to drop cube into container position
         wait_for_seconds(0.2),
         Defs.arm_claw.full_open(),            # let go of cube
     ])

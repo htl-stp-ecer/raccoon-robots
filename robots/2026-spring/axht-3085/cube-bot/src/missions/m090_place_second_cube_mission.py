@@ -29,7 +29,7 @@ class M090PlaceSecondCubeMission(Mission):
         return seq([
             # move away from wall to avoid hitting already present cube stack
             drive_backward(heading=0).until(
-                after_cm(27)
+                after_cm(25)
             ),
 
             arm.move_angles(26, 60, -50, speed=70),  # transport

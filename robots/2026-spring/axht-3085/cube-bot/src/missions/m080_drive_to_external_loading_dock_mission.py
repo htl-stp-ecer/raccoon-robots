@@ -54,16 +54,13 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 ])
             ),
 
-            #wall_align_strafe_left(speed=0.2,
-            #                       accel_threshold=10,
-            #                       settle_duration=0,
-            #                       max_duration=4, #make sure we have a stupid wall align without accel reading
-            #                       grace_period=4
-            #                       ),
-            left_lateral_align_line_follow().until(
-                after_seconds(2),
-            ),
-            mark_heading_reference(), #magic 2 deg, so the heading is correctt, bot is a bit shief wegen metal peace
+            wall_align_strafe_left(speed=0.15,
+                                   accel_threshold=10,
+                                   settle_duration=0,
+                                   max_duration=2,
+                                   grace_period=2
+                                   ),
+            mark_heading_reference(origin_offset_deg=2), #magic 2 deg, so the heading is correctt, bot is a bit shief wegen metal peace
             drive_forward(cm=5, heading=0),
 
             switch_calibration_set("default"),

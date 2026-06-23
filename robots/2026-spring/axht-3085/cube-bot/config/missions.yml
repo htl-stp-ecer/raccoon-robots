@@ -1,12 +1,12 @@
 - M000SetupMission: setup
-- M999ShutdownMission: shutdown
-- M007MoveToCenterMission
-- M010FirstBrownCubeMission
-- M020SecondBrownCubeMission
-- M030GrabRedCubeMission
-- M040DropFirstCubeStackMission
-- M050DriveUpRampMission
+- M010MoveToCenterMission
+- M020FirstBrownCubeMission
+- M030SecondBrownCubeMission
+- M040GrabRedCubeMission
+- M050DropFirstCubeStackMission
+- M060DriveUpRampMission
 - M070GrabUpperCubeMission
 - M080DriveToExternalLoadingDockMission
 - M090PlaceSecondCubeMission
 - M100GrabYellowCubesMission
+- M999ShutdownMission: shutdown

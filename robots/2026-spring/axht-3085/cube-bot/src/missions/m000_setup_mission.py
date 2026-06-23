@@ -2,6 +2,7 @@ from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 from src.steps.calibrate_analog_drive import calibrate_analog_drive
+from src.steps.velocity_plot import PlotDriveVelocity
 
 
 def move_arm_to_calibration_pos():
@@ -31,7 +32,7 @@ def auto_tune_step():
             tune_firmware_pid=False,
             tune_encoder_cal=True,
             tune_characterize=False,
-            tune_velocity=False,
+            tune_velocity=True,
             tune_motion=False,
             tune_tolerances=False,
             motion_axes=["distance", "lateral", "heading"],
@@ -143,5 +144,6 @@ class M000SetupMission(SetupMission):
                 require_ir_sets=["default", "upper"],
             ),
 
+            PlotDriveVelocity(),
             move_into_starting_position(),
         ])

@@ -39,6 +39,7 @@ class M070GrabUpperCubeMission(Mission):
                 + after_cm(0.5)
             ),
 
+            wait_for_seconds(0.3), #make sure we are still beofre moving the arm
             arm.move_angles(elbow_deg=0),
             background(  # open claw to gab "cube + pallet"
                 Defs.arm_claw.full_open(),
@@ -57,7 +58,7 @@ class M070GrabUpperCubeMission(Mission):
                 ),
 
                 #put arm down
-                arm.move_angles(1.5, 0, 0, speed=120),
+                arm.move_angles(0, 0, 0, speed=120),
             ),
 
             #drive back to cube
