@@ -65,6 +65,17 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
     def at_midpoint(self) -> bool:
         return self._at_midpoint
 
+    @property
+    def motor_locked(self) -> bool:
+        """True once an emergency / safe mode has been entered.
+
+        Every emergency path sets ``collection_failed`` (stall, stuck-drum
+        watchdog, timing-blown). Once that is set, all revolver navigation is
+        suppressed so a faulted big drum is never driven again — protecting the
+        hardware while the rest of the run (chassis, lift, pusher) continues.
+        """
+        return self.collection_failed
+
     def reset_position(self, pocket: int = 0) -> None:
         self.info(f"Reset: pocket {self._current_pocket} → {pocket}")
         self._current_pocket = pocket
@@ -270,17 +281,26 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
 
     async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
         """Move forward N pockets (black stripes)."""
+        if self.motor_locked:
+            self.warn(f"advance({pockets}) ignored — drum motor locked (emergency)")
+            return
         self.debug(f"advance({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
         await self._move(pockets, forward=True, precise=precise)
 
     async def retreat(self, pockets: int = 1, *, precise: bool = False) -> None:
         """Move backward N pockets."""
+        if self.motor_locked:
+            self.warn(f"retreat({pockets}) ignored — drum motor locked (emergency)")
+            return
         self.debug(f"retreat({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
         await self._move(pockets, forward=False, precise=precise)
 
     async def eject(self, pockets: int = 1) -> None:
+        if self.motor_locked:
+            self.warn(f"eject({pockets}) ignored — drum motor locked (emergency)")
+            return
         self.debug(f"eject({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
         await self._move(pockets, forward=False, velocity=int(FULL_VELOCITY * 0.8))
@@ -293,6 +313,9 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         precise: bool = False,
         occupied: "set[int] | frozenset[int] | None" = None,
     ) -> str:
+        if self.motor_locked:
+            self.warn(f"go_to_pocket({pocket}) ignored — drum motor locked (emergency)")
+            return "none"
         delta = (pocket - self._current_pocket) % NUM_POCKETS
         if delta == 0:
             self.debug(f"Already at pocket {pocket}")
@@ -455,6 +478,9 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
 
     async def move_to_midpoint(self) -> None:
         """Move forward half a pocket with stall retry."""
+        if self.motor_locked:
+            self.warn("move_to_midpoint ignored — drum motor locked (emergency)")
+            return
         assert self._ticks_per_pocket is not None
 
         async def _do():
@@ -472,6 +498,9 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
 
     async def move_from_midpoint(self) -> None:
         """Move backward half a pocket with stall retry."""
+        if self.motor_locked:
+            self.warn("move_from_midpoint ignored — drum motor locked (emergency)")
+            return
         assert self._ticks_per_pocket is not None
 
         async def _do():

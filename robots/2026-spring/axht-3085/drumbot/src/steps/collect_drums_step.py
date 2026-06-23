@@ -27,6 +27,14 @@ TIME_BETWEEN_DRUMS = 7
 EXTERNAL_DRIFT_PER_DRUM = 0.25  # external dropper overshoots ~0.25s per cycle
 TIMING_SAFETY_THRESHOLD = 0.5
 
+# On an emergency the program must NOT exit (a dead robot in a competition run
+# gets hit by others). Instead we abandon collection, lock the big drum, show
+# the emergency screen, and hold it until this run-clock mark — then return so
+# the mission sequence proceeds to the post-collection wait_for_checkpoint and
+# the robot drives its path. Drum-motor commands stay locked for the rest of the
+# run (see DrumMotorService.motor_locked).
+EMERGENCY_RELEASE_TIME = 50.0  # robot.synchronizer.get_time() seconds
+
 # Lift-motor-stop wait: the drum lift motor (servo_help_motor) is still moving
 # when the previous mission finishes lowering the collector. Starting color
 # detection before it settles picks up background through a moving camera.
@@ -79,7 +87,7 @@ class CollectDrumsStep(UIStep):
         screen.total_drums = DRUMS
         await self.display(screen)
 
-        self._shutdown_triggered = False
+        self._emergency_reason: str | None = None
 
         ui_task = asyncio.create_task(
             self._ui_updater(screen, color_service, robot),
@@ -87,6 +95,10 @@ class CollectDrumsStep(UIStep):
         stuck_task = asyncio.create_task(
             self._stuck_drum_monitor(color_service, drum_service, robot),
         )
+        # Stored so the emergency handler can stop the collection-screen updater
+        # before showing the emergency screen (otherwise the two screens fight).
+        self._ui_task = ui_task
+        self._stuck_task = stuck_task
 
         # Re-introduce the forward drive as an intentional feature: keep the
         # robot pressed against the wall while collecting, unless disabled.
@@ -107,8 +119,11 @@ class CollectDrumsStep(UIStep):
                 checkpoint = START_OFFSET + i * TIME_BETWEEN_DRUMS + i * EXTERNAL_DRIFT_PER_DRUM
 
                 if drum_service.collection_failed:
-                    self.warn(f"Skipping drum #{drum_number} — safe mode active")
-                    continue
+                    # An emergency was raised (e.g. by the stuck-drum watchdog
+                    # in a background task). Stop collecting and hand off to the
+                    # emergency hold below.
+                    self.warn(f"Emergency active before drum #{drum_number} — abandoning collection")
+                    break
 
                 screen.drum_number = drum_number
                 screen.status = "Waiting for drum..."
@@ -142,22 +157,11 @@ class CollectDrumsStep(UIStep):
                     ])
                     await phase1b.run_step(robot)
                 except MotorStalledError:
-                    if drum_service.collection_failed:
-                        # Already in safe mode (e.g. camera stuck) — skip quietly
-                        continue
-                    drum_service.motor.brake()
-                    if await self._show_emergency_ui(
-                        f"Drum Motor is stuck (drum #{drum_number})",
-                        robot=robot,
-                    ):
+                    if not drum_service.collection_failed:
+                        drum_service.motor.brake()
                         self._enter_safe_mode(drum_service)
-                        continue
-                    await self._emergency_shutdown(
-                        drum_service,
-                        robot,
-                        f"Motor stalled during drum #{drum_number} — user did not continue",
-                    )
-                    return
+                        self._emergency_reason = f"Drum motor stuck (drum #{drum_number})"
+                    break
 
                 if i < DRUMS - 1:
                     next_checkpoint = START_OFFSET + (i + 1) * TIME_BETWEEN_DRUMS
@@ -173,9 +177,9 @@ class CollectDrumsStep(UIStep):
                             f"next drum — entering safe mode to protect hardware"
                         )
                         drum_service.motor.brake()
-                        Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)
-                        drum_service.collection_failed = True
-                        continue
+                        self._enter_safe_mode(drum_service)
+                        self._emergency_reason = "Timing too tight — protecting hardware"
+                        break
 
                 try:
                     elapsed_post = robot.synchronizer.get_time()
@@ -187,8 +191,8 @@ class CollectDrumsStep(UIStep):
                 )
 
                 if drum_service.collection_failed:
-                    # Safe mode — keep pusher open, skip close/move
-                    continue
+                    # Emergency raised during sort — keep pusher open, hand off.
+                    break
 
                 try:
                     phase3 = seq([
@@ -198,21 +202,11 @@ class CollectDrumsStep(UIStep):
                     ])
                     await phase3.run_step(robot)
                 except MotorStalledError:
-                    if drum_service.collection_failed:
-                        continue
-                    drum_service.motor.brake()
-                    if await self._show_emergency_ui(
-                        f"Drum Motor is stuck (closing pusher after drum #{drum_number})",
-                        robot=robot,
-                    ):
+                    if not drum_service.collection_failed:
+                        drum_service.motor.brake()
                         self._enter_safe_mode(drum_service)
-                        continue
-                    await self._emergency_shutdown(
-                        drum_service,
-                        robot,
-                        f"Motor stalled closing pusher after drum #{drum_number} — user did not continue",
-                    )
-                    return
+                        self._emergency_reason = f"Drum motor stuck (closing pusher after drum #{drum_number})"
+                    break
 
                 try:
                     elapsed_done = robot.synchronizer.get_time()
@@ -223,6 +217,13 @@ class CollectDrumsStep(UIStep):
                     f"elapsed={elapsed_done:.2f}s"
                 )
                 screen.status = "Done"
+
+            # If an emergency abandoned collection, hold the emergency screen
+            # (no shutdown — the robot stays alive) until the run clock reaches
+            # the release mark, then return so the mission sequence proceeds to
+            # the post-collection wait_for_checkpoint and the robot drives on.
+            if drum_service.collection_failed:
+                await self._emergency_hold(robot)
         finally:
             if drum_service.collection_failed:
                 # Safe mode: keep retries at 1 (no retry) for rest of run
@@ -324,6 +325,7 @@ class CollectDrumsStep(UIStep):
                     f"Drum stuck — color visible for {duration:.2f}s "
                     f"(threshold {STUCK_THRESHOLD}s) — entering safe mode"
                 )
+                self._emergency_reason = f"Drum stuck in camera for {duration:.1f}s"
                 self._enter_safe_mode(drum_service)
                 return
 
@@ -340,71 +342,67 @@ class CollectDrumsStep(UIStep):
             self.warn(f"Safe mode pusher-open failed: {e}")
         self.warn("Safe mode active — skipping remaining collection, retries disabled")
 
-    async def _show_emergency_ui(self, reason: str, robot: "GenericRobot" = None) -> bool:
-        """Show emergency screen with 15s countdown. Returns True if user clicks continue."""
-        if robot is not None:
-            try:
-                await drum_lifting_up(always_motor_support=True).run_step(robot)
-            except Exception as e:
-                self.warn(f"Emergency drum lift before UI failed: {e}")
+    async def _emergency_hold(self, robot: "GenericRobot") -> None:
+        """Non-fatal emergency: show the emergency screen and wait, never exit.
 
-        screen = EmergencyScreen()
-        screen.reason = reason
+        The robot is autonomous and must keep its slot in the run — a process
+        exit here would leave it dead on the field. So instead of killing the
+        program we:
+          - stop the collection-screen updater (so it doesn't fight this screen),
+          - lift the collector to secure the mechanism (lift motor, NOT the
+            locked big drum),
+          - display the emergency screen and hold it until the run clock reaches
+            EMERGENCY_RELEASE_TIME, then return.
 
-        async def _countdown():
-            for remaining in range(14, -1, -1):
-                await asyncio.sleep(1.0)
-                screen.seconds_left = remaining
-                try:
-                    await screen.refresh()
-                except Exception:
-                    pass
-            screen.close(False)
-
-        countdown_task = asyncio.create_task(_countdown())
-        try:
-            return await self.show(screen)
-        finally:
-            countdown_task.cancel()
-            try:
-                await countdown_task
-            except asyncio.CancelledError:
-                pass
-
-    async def _emergency_shutdown(
-        self,
-        drum_service: DrumMotorService,
-        robot: "GenericRobot",
-        reason: str,
-    ) -> None:
-        """Dead state: open pusher, lift drum up, then kill the program.
-
-        Called when drum collection enters a state where continuing would
-        further harm the hardware. Terminates the process after securing
-        the mechanism so no downstream missions run.
+        On return the mission sequence proceeds normally to the post-collection
+        wait_for_checkpoint and the robot drives its path. The big drum stays
+        locked for the rest of the run (DrumMotorService.motor_locked), so every
+        later revolver command (including ejection) is a no-op.
         """
-        if getattr(self, "_shutdown_triggered", False):
-            return
-        self._shutdown_triggered = True
-        self.warn(f"EMERGENCY SHUTDOWN: {reason}")
-        try:
-            drum_service.motor.brake()
-        except Exception as e:
-            self.warn(f"Emergency brake failed: {e}")
-        try:
-            Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)
-        except Exception as e:
-            self.warn(f"Emergency pusher-open failed: {e}")
+        # Stop the collection-screen updater + stuck watchdog so they don't
+        # refresh the old screen underneath the emergency screen.
+        for task in (getattr(self, "_ui_task", None), getattr(self, "_stuck_task", None)):
+            if task is not None:
+                task.cancel()
+
+        reason = self._emergency_reason or "Drum collection emergency"
+        self.warn(
+            f"EMERGENCY (non-fatal): {reason} — big drum locked, holding screen "
+            f"until run clock {EMERGENCY_RELEASE_TIME:.0f}s, then continuing path"
+        )
+
+        # Secure the mechanism (uses the lift motor, not the locked revolver).
         try:
             await drum_lifting_up(always_motor_support=True).run_step(robot)
         except Exception as e:
             self.warn(f"Emergency drum lift failed: {e}")
-        self.warn("Killing program — drum collection dead state, no further missions")
-        from raccoon.step.watchdog_manager import get_watchdog_manager
-        wdt = get_watchdog_manager(robot)
-        if wdt._main_task is not None and not wdt._main_task.done():
-            wdt._main_task.cancel()
-        raise asyncio.CancelledError()
+
+        screen = EmergencyScreen()
+        screen.reason = reason
+        await self.display(screen)
+
+        while True:
+            try:
+                elapsed = robot.synchronizer.get_time()
+            except (TypeError, AttributeError):
+                elapsed = None
+            if elapsed is None:
+                # No run clock available — show briefly, then release.
+                await asyncio.sleep(5.0)
+                break
+            if elapsed >= EMERGENCY_RELEASE_TIME:
+                break
+            screen.seconds_left = max(0, int(EMERGENCY_RELEASE_TIME - elapsed))
+            try:
+                await screen.refresh()
+            except Exception:
+                pass
+            await asyncio.sleep(0.2)
+
+        self.info(
+            f"Emergency hold released (run clock >= {EMERGENCY_RELEASE_TIME:.0f}s) "
+            f"— returning to mission sequence (post-collection checkpoint)"
+        )
 
     async def _ui_updater(
         self,

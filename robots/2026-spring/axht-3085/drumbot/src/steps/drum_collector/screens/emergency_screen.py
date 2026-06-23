@@ -2,15 +2,18 @@ from raccoon.ui import *
 
 
 class EmergencyScreen(UIScreen[bool]):
-    """Motor stuck: countdown to shutdown with option to continue the run."""
+    """Drum fault: informational only. The robot is autonomous — there is no
+    user input. Collection is abandoned, the big drum is disabled, and the run
+    continues on its path; this screen is held until the post-collection
+    checkpoint releases it.
+    """
 
     title = "EMERGENCY"
-    _primary_button_id = "continue"
 
     def __init__(self):
         super().__init__()
-        self.seconds_left: int = 15
-        self.reason: str = "Drum Motor is stuck."
+        self.seconds_left: int = 0  # seconds until the run continues
+        self.reason: str = "Drum motor fault."
 
     def build(self) -> Widget:
         return Center(children=[
@@ -24,27 +27,17 @@ class EmergencyScreen(UIScreen[bool]):
                 ),
                 Spacer(height=12),
                 Text(
-                    f"Shutting down in {self.seconds_left}s!",
-                    size="large",
+                    "Big drum disabled — continuing run to protect hardware",
+                    size="medium",
                     align="center",
                     color="#FF4444",
                 ),
                 Spacer(height=8),
                 Text(
-                    "Click button to continue run",
+                    f"Resuming path in {self.seconds_left}s",
                     size="medium",
                     align="center",
                     muted=True,
                 ),
-                Spacer(height=24),
-                Button(
-                    id="continue",
-                    label="Continue Run",
-                    style="success",
-                ),
             ]),
         ])
-
-    @on_click("continue")
-    async def _on_continue(self):
-        self.close(True)
