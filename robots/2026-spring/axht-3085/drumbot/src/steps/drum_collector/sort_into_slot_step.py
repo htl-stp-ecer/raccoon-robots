@@ -183,14 +183,14 @@ def _eject_start(slots, cur: int):
     ``EJECT_HOLE_SLOT``. `cur` is intentionally unused now that direction is
     fixed; both the pre-position step and the sweep re-derive the same start.
     """
-    def ring_dist(a: int, b: int) -> int:
-        d = abs(a - b)
-        return min(d, NUM_POCKETS - d)
+    # def ring_dist(a: int, b: int) -> int:
+    #     d = abs(a - b)
+    #     return min(d, NUM_POCKETS - d)
 
     lo, hi = min(slots), max(slots)
-    is_second_group = min(ring_dist(s, EJECT_HOLE_SLOT) for s in slots) >= 2
-    lead = 2 if is_second_group else 3
-    return (hi + lead) % NUM_POCKETS, False  # advance-side lead-in; retreat hi..lo
+    # is_second_group = min(ring_dist(s, EJECT_HOLE_SLOT) for s in slots) >= 2
+    # lead = 2 if is_second_group else 3
+    return (hi + 2) % NUM_POCKETS, False  # advance-side lead-in; retreat hi..lo
 
 
 @dsl(hidden=True)
