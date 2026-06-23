@@ -19,6 +19,7 @@ from src.steps.drum_collector.sort_into_slot_step import (
     sort_into_slot,
 )
 from src.steps.drum_lifting_step import drum_align_on_back, drum_lifting_down, drum_lifting_up
+from src.steps.terminate_leftover_velocity import terminate_leftover_velocity
 from src.steps.wait_for_drum_step import wait_for_drum
 
 START_OFFSET = 9.5
@@ -159,7 +160,7 @@ class CollectDrumsStep(UIStep):
                 except MotorStalledError:
                     if not drum_service.collection_failed:
                         drum_service.motor.brake()
-                        self._enter_safe_mode(drum_service)
+                        await self._enter_safe_mode(robot, drum_service)
                         self._emergency_reason = f"Drum motor stuck (drum #{drum_number})"
                     break
 
@@ -177,7 +178,7 @@ class CollectDrumsStep(UIStep):
                             f"next drum — entering safe mode to protect hardware"
                         )
                         drum_service.motor.brake()
-                        self._enter_safe_mode(drum_service)
+                        await self._enter_safe_mode(robot, drum_service)
                         self._emergency_reason = "Timing too tight — protecting hardware"
                         break
 
@@ -204,7 +205,7 @@ class CollectDrumsStep(UIStep):
                 except MotorStalledError:
                     if not drum_service.collection_failed:
                         drum_service.motor.brake()
-                        self._enter_safe_mode(drum_service)
+                        await self._enter_safe_mode(robot, drum_service)
                         self._emergency_reason = f"Drum motor stuck (closing pusher after drum #{drum_number})"
                     break
 
@@ -326,20 +327,32 @@ class CollectDrumsStep(UIStep):
                     f"(threshold {STUCK_THRESHOLD}s) — entering safe mode"
                 )
                 self._emergency_reason = f"Drum stuck in camera for {duration:.1f}s"
-                self._enter_safe_mode(drum_service)
+                await self._enter_safe_mode(robot, drum_service)
                 return
 
-    def _enter_safe_mode(self, drum_service: DrumMotorService) -> None:
+    async def _enter_safe_mode(self, robot: "GenericRobot", drum_service: DrumMotorService) -> None:
         """Enter safe mode: end collection, keep pusher open, disable retries.
 
-        The run continues so drums can still be ejected.
+        The run continues so drums can still be ejected. Idempotent: if safe
+        mode is already active this returns immediately, so the per-emergency
+        hook below fires exactly once.
         """
+        if drum_service.collection_failed:
+            return
         drum_service.collection_failed = True
         drum_service.stall_retries = 1  # one attempt, zero retries
         try:
             Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)
         except Exception as e:
             self.warn(f"Safe mode pusher-open failed: {e}")
+
+        # Runs on EVERY emergency trigger: kill any residual chassis velocity so
+        # the robot isn't left creeping while the emergency screen is held.
+        try:
+            await terminate_leftover_velocity().run_step(robot)
+        except Exception as e:
+            self.warn(f"Safe mode velocity termination failed: {e}")
+
         self.warn("Safe mode active — skipping remaining collection, retries disabled")
 
     async def _emergency_hold(self, robot: "GenericRobot") -> None:
