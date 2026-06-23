@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 
 from raccoon import GenericRobot, dsl, parallel, seq, wait_for_seconds, wait_for_button
@@ -12,7 +13,6 @@ from src.steps.drum_collector.screens.drum_collection_screen import DrumCollecti
 from src.steps.drum_collector.screens.emergency_screen import EmergencyScreen
 from src.steps.drum_collector.sort_into_slot_step import (
     advance_to_midpoint,
-    apply_center_offset,
     block_timer_check,
     block_timer_start,
     rotate_to_next_empty_pocket,
@@ -35,6 +35,27 @@ LIFT_STOP_STABLE_WINDOW = 0.15  # motor is "stopped" when encoder hasn't moved f
 LIFT_STOP_TICK_TOLERANCE = 3    # ignore sub-3-tick encoder jitter
 LIFT_STOP_TIMEOUT = 2.0
 
+# Position hold during collection.
+#
+# The previous mission ends with wall_align_forward, which finishes its motion
+# while STILL commanding full forward chassis velocity and then only brakes
+# (PASSIVE_BRAKE). On the wombat, brake() does not clear the firmware's
+# velocity-PID target — velocity commands and mode commands live on separate
+# transport channels — so the STM32 keeps driving forward at the leftover
+# target through the whole collection. Distance/angle-targeted motions don't
+# leak like this because their velocity profile decays to ~0 before braking;
+# wall_align is the one motion that stops at full velocity right before a long
+# non-driving phase.
+#
+# We always clear that residual at the start of collection (the fix), then —
+# unless DRUMBOT_NO_POSITION_HOLD is set — deliberately re-apply a gentle
+# forward push for the duration of collection so the robot stays pressed flush
+# against the wall (the feature).
+POSITION_HOLD_VX = 0.12  # m/s forward push to hold the robot against the wall
+POSITION_HOLD_HZ = 50
+POSITION_HOLD_ENV = "DRUMBOT_NO_POSITION_HOLD"
+
+
 @dsl(hidden=True)
 class CollectDrumsStep(UIStep):
     """Run drum collection with live UI overlay."""
@@ -42,6 +63,11 @@ class CollectDrumsStep(UIStep):
     async def _execute_step(self, robot: "GenericRobot") -> None:
         color_service = robot.get_service(ColorDetectionService)
         drum_service = robot.get_service(DrumMotorService)
+
+        # Clear any residual chassis velocity left by the previous mission's
+        # wall_align (see POSITION_HOLD_* notes above). Without this the robot
+        # keeps driving forward through the entire collection.
+        self._stop_drive(robot)
 
         # Wait for the drum-lift motor (servo_help_motor) to fully stop before
         # we start color detection — if it's still moving the camera picks up
@@ -61,6 +87,14 @@ class CollectDrumsStep(UIStep):
         stuck_task = asyncio.create_task(
             self._stuck_drum_monitor(color_service, drum_service, robot),
         )
+
+        # Re-introduce the forward drive as an intentional feature: keep the
+        # robot pressed against the wall while collecting, unless disabled.
+        hold_task = None
+        if os.getenv(POSITION_HOLD_ENV) is None:
+            hold_task = asyncio.create_task(self._position_hold_loop(robot))
+        else:
+            self.info(f"{POSITION_HOLD_ENV} set — position hold disabled")
 
         # Collection is stricter: one retry, then emergency shutdown.
         # Restored in finally so ejection keeps the default 3-attempt budget.
@@ -96,7 +130,6 @@ class CollectDrumsStep(UIStep):
                     # the loading hole there would let the sorted drum fall out.
                     phase1a = seq([
                         rotate_to_next_empty_pocket(),
-                        apply_center_offset(),
                         Defs.drum_pusher_servo.open(),
                         wait_for_drum(checkpoint=checkpoint),
                         block_timer_start(),
@@ -198,12 +231,53 @@ class CollectDrumsStep(UIStep):
             else:
                 drum_service.stall_retries = prior_stall_retries
             tasks = [ui_task, stuck_task]
+            if hold_task is not None:
+                tasks.append(hold_task)
             for task in tasks:
                 task.cancel()
                 try:
                     await task
                 except asyncio.CancelledError:
                     pass
+            # Guarantee the chassis is stopped on exit even if position hold
+            # was active (and regardless of how the loop above terminated).
+            self._stop_drive(robot)
+
+    def _stop_drive(self, robot: "GenericRobot") -> None:
+        """Actually halt the chassis, clearing the firmware velocity target.
+
+        ``hard_stop()`` alone only sends a PASSIVE_BRAKE mode command; it never
+        sends a zero velocity, so the STM32 keeps the last commanded
+        velocity-PID target. Push an explicit zero velocity through the drive
+        first (same path motion steps use), then brake.
+        """
+        robot.drive.set_velocity(ChassisVelocity(0.0, 0.0, 0.0))
+        robot.drive.update(1.0 / POSITION_HOLD_HZ)
+        robot.drive.hard_stop()
+
+    async def _position_hold_loop(self, robot: "GenericRobot") -> None:
+        """Continuously command a gentle forward velocity during collection.
+
+        Keeps the robot pressed flush against the wall for the duration of
+        collection. Re-pushes the velocity target every cycle (the velocity
+        controller is pure feedforward with ki=0, so pushing against the wall
+        causes no integral windup) and stops cleanly on cancellation.
+        """
+        update_rate = 1.0 / POSITION_HOLD_HZ
+        vel = ChassisVelocity(POSITION_HOLD_VX, 0.0, 0.0)
+        loop = asyncio.get_event_loop()
+        last = loop.time()
+        try:
+            while True:
+                now = loop.time()
+                dt = now - last
+                last = now
+                robot.drive.set_velocity(vel)
+                if dt > 0:
+                    robot.drive.update(dt)
+                await asyncio.sleep(update_rate)
+        finally:
+            self._stop_drive(robot)
 
     async def _wait_for_lift_motor_stopped(self) -> None:
         """Block until servo_help_motor encoder has been stable for a full window."""
