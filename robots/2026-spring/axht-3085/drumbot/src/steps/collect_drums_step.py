@@ -332,7 +332,7 @@ class CollectDrumsStep(UIStep):
                 task.cancel()
 
         reason = self._emergency_reason or "Drum collection emergency"
-        self.warn(
+        self.error(
             f"EMERGENCY (non-fatal): {reason} — big drum locked, holding screen "
             f"until run clock {EMERGENCY_RELEASE_TIME:.0f}s, then continuing path"
         )
@@ -341,7 +341,7 @@ class CollectDrumsStep(UIStep):
         try:
             await drum_lifting_up(always_motor_support=True).run_step(robot)
         except Exception as e:
-            self.warn(f"Emergency drum lift failed: {e}")
+            self.error(f"Emergency drum lift failed: {e}")
 
         screen = EmergencyScreen()
         screen.reason = reason
