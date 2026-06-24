@@ -29,9 +29,11 @@ class M000SetupMission(SetupMission):
             start_setup_timer(),
 
             # initial servo positions
-            Defs.lift_drums_servo.up(),
-            Defs.pom_remover_servo.drum_moving_pos(),
-            Defs.drum_pusher_servo.block_angle(),
+            parallel(
+                Defs.lift_drums_servo.up(),
+                Defs.pom_remover_servo.drum_moving_pos(),
+                Defs.drum_pusher_servo.block_angle(),
+            ),
 
             # ir + distance calibration
             run_unless_no_calibrate(
@@ -41,7 +43,8 @@ class M000SetupMission(SetupMission):
                     collect_drive(
                         collect_ir_set(
                             drive_forward(70),
-                            set_name="default"
+                            set_name="default",
+                            sensors=[Defs.front_right_ir_sensor, Defs.rear_left_ir_sensor]
                         )
                     ),
 
