@@ -35,5 +35,6 @@ arm_claw:
     idle: 10
     open: 70
     full_open: 100
+    grab_upper_cube: 120
     grab: 10
     strong_grab: -10

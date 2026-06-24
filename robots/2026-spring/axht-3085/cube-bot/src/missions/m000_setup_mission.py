@@ -79,9 +79,7 @@ def warehouse_floor_calibration():
                 mark_heading_reference(),
                 collect_drive(
                     collect_ir_set(
-                        drive_forward().until(
-                            after_cm(50)
-                        ),
+                        drive_forward(cm=60),
                         set_name="default",
                     ),
                 ),

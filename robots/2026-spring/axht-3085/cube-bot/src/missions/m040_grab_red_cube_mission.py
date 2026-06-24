@@ -25,7 +25,11 @@ class M040GrabRedCubeMission(Mission):
                 ),
                 seconds=1,
                 fallback=seq([
-
+                    drive_backward(cm=5),
+                    drive_forward(cm=5),
+                    strafe_left(heading=0).until(
+                        over_line(Defs.front.left)
+                    ),
                 ])
             ),
 
@@ -35,17 +39,19 @@ class M040GrabRedCubeMission(Mission):
             ),
 
             # drive to red cube
+            turn_to_heading_left(0),
             forward_line_follow().until(
                 on_black(Defs.front.right)
             ),
 
             # place down cube
-            arm.move_angles(elbow_deg=-90),
+            arm.move_angles(elbow_deg=-90, sholder_deg=120),
             wait_for_seconds(0.2),
             arm.move_angles(sholder_deg=101),
             Defs.arm_claw.full_open(),
             wait_for_seconds(0.2),
-            arm.move_angles(75, 77, -78),
+            arm.move_angles(elbow_deg= -78),
+            arm.move_angles(sholder_deg=77),
             Defs.arm_claw.strong_grab(),
             background(
                 arm.move_angles(elbow_deg=-45).arm_speeds(base=70, elbow=130),

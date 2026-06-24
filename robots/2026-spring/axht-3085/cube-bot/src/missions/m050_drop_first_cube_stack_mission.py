@@ -37,7 +37,14 @@ class M050DropFirstCubeStackMission(Mission):
 
             # drive to external loading dock while rotating arm
             _follow().until(
-                after_cm(135)
+                after_cm(67)
+            ),
+            #make sure  we push the poms to the side so we don't move them
+            strafe_left(cm=5, heading=0),
+            strafe_right(cm=6, heading=0),
+
+            _follow().until(
+                after_cm(67)
             ),
             parallel(
                 align_line_follow().until(
@@ -53,7 +60,7 @@ class M050DropFirstCubeStackMission(Mission):
                 on_black(Defs.rear.left)
             ),
             strafe_right(heading=0, speed=0.5).until(
-                on_white(Defs.rear.left)
+                over_line(Defs.rear.left)
             ),
             turn_to_heading_right(0),
 

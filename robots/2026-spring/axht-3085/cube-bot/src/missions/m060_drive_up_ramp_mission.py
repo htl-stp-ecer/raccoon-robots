@@ -43,9 +43,13 @@ class M060DriveUpRampMission(Mission):
                     over_line(Defs.rear.left)
                 ),
                 drive_backward(cm=10),
-                strafe_left().until(
-                    over_line(Defs.front.right)
-                    + after_cm(11)
+                timeout_or(
+                    strafe_left().until(
+                        over_line(Defs.front.right)
+                        + after_cm(5)
+                    ),
+                    seconds=2,
+                    fallback=seq([]),
                 ),
                 drive_forward(cm=6)
             ])

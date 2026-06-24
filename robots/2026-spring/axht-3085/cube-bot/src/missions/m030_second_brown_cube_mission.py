@@ -31,23 +31,25 @@ class M030SecondBrownCubeMission(Mission):
                     step=seq([
                         _follow().until(
                             over_line(Defs.front.right)
-                            + after_cm(15)
+                            + after_cm(17)
                         ),
                     ]),
                     seconds=5,
                     fallback=seq([
-                        timeout(
+                        timeout_or(
                             step=drive_forward().until(
                                 on_black(Defs.front.right)
                             ),
                             seconds=6,
+                            fallback=seq([]),
                         ),
-                        timeout(
+                        timeout_or(
                             step=_follow().until(
                                 (over_line(Defs.front.right)
                                  + after_cm(15))
                             ),
                             seconds=6,
+                            fallback=seq([]),
                         ),
                     ]),
                 ),
@@ -61,11 +63,12 @@ class M030SecondBrownCubeMission(Mission):
                 fallback=seq([  # if we are stuck on the cone, try to drive forward so we get the conde out
                     drive_backward(cm=15),
                     drive_forward(cm=15),
-                    timeout(
+                    timeout_or(
                         step=strafe_right(heading=0, speed=0.5).until(
                             on_black(Defs.rear.left),
                         ),
                         seconds=2,
+                        fallback=seq([]),
                     )
                 ])
             ),
