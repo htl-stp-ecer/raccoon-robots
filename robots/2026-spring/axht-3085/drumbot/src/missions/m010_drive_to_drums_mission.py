@@ -17,14 +17,13 @@ class M010DriveToDrumsMission(Mission):
             turn_right(40),
             drive_forward().until(
                 over_line(Defs.front_right_ir_sensor)
-                + after_cm(6),
+                + after_cm(7),
             ),
 
             # wait a little and then remove the blue pom
             background(
                 seq([
                     Defs.pom_remover_servo.right(),
-                    # Defs.pom_remover_servo.yeet_blue_pom(),
                     Defs.pom_remover_servo.drum_moving_pos(),
                 ]),
                 name="yeet_blue_pom",
@@ -49,7 +48,7 @@ class M010DriveToDrumsMission(Mission):
 
             wall_align_forward(
                 accel_threshold=0.3,
-                grace_period=0.3
+                grace_period=0.35
             ),
             mark_heading_reference(),
         ])
