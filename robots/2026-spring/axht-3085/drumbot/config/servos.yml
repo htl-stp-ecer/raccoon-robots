@@ -5,7 +5,7 @@ drum_pusher_servo:
   positions:
     close: 18
     hold: 26
-    open: 180
+    open: 195
     block_angle: 55
     
 pom_remover_servo:
