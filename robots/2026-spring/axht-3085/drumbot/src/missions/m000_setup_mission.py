@@ -72,6 +72,4 @@ class M000SetupMission(SetupMission):
             ),
 
             fully_disable_servos(),
-
-            pocket_jog(),
         ])
