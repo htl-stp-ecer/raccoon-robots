@@ -42,12 +42,13 @@ class M030DriveToPipeMission(Mission):
             wait_for_checkpoint(60),
 
             # drive to first black line and turn
-            # drive_backward(5, heading=0),
             drive_backward(heading=0).until(
                 after_cm(5)
                 + over_line(Defs.front_right_ir_sensor)
             ),
-            turn_to_heading_left(180, force_direction='right'),
+
+            turn_right(180),
+            turn_to_heading_left(180),
 
             # drive to pipe
             parallel(
