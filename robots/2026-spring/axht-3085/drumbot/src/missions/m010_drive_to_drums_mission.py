@@ -8,35 +8,33 @@ class M010DriveToDrumsMission(Mission):
         return seq([
             mark_heading_reference(),
 
-            optimize([
-                # drive out of starting box
-                drive_forward(heading=0, speed=0.9).until(
-                    on_black(Defs.rear_left_ir_sensor)
-                ),
+            # drive out of starting box
+            drive_forward(heading=0, speed=0.9).until(
+                on_black(Defs.rear_left_ir_sensor)
+            ),
 
-                # turn for driving angle
-                turn_to_heading_right(40),
+            # turn for driving angle
+            turn_to_heading_right(40),
 
-                # wait for over line and then remove the blue pom
-                background(
-                    seq([
-                        wait_for(over_line(Defs.front_right_ir_sensor)),
-                        Defs.pom_remover_servo.left(),
-                        Defs.pom_remover_servo.right(),
-                        Defs.pom_remover_servo.drum_moving_pos(),
-                    ]),
-                    name="yeet_blue_pom",
-                ),
+            # wait for over line and then remove the blue pom
+            background(
+                seq([
+                    wait_for(over_line(Defs.front_right_ir_sensor)),
+                    Defs.pom_remover_servo.left(),
+                    Defs.pom_remover_servo.right(),
+                    Defs.pom_remover_servo.drum_moving_pos(),
+                ]),
+                name="yeet_blue_pom",
+            ),
 
-                # drive
-                drive_forward(heading=320).until(
-                    over_line(Defs.front_right_ir_sensor)
-                    + after_cm(7),
-                ),
+            # drive
+            drive_forward(heading=320).until(
+                over_line(Defs.front_right_ir_sensor)
+                + after_cm(7),
+            ),
 
-                # turn back to original heading
-                turn_to_heading_right(0),
-            ]).cut_corners(3),
+            # turn back to original heading
+            turn_to_heading_right(0),
 
             # wait and lower drum
             background(
