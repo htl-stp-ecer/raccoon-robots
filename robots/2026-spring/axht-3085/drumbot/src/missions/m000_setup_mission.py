@@ -73,6 +73,8 @@ class M000SetupMission(SetupMission):
                 Defs.lift_drums_servo.over_limit(),
                 Defs.drum_pusher_servo.block_angle(),
             ),
+
+            wait_for_button("Set Pom Pusher Servo"),
             Defs.pom_remover_servo.right(),
 
             fully_disable_servos(),
