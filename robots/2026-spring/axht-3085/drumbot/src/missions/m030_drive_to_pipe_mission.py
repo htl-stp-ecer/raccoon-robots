@@ -5,6 +5,7 @@ from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import eject_nearest_color
+from src.steps.drum_collector import drum_retreat
 
 
 def print_debug_info(robot):
@@ -61,5 +62,5 @@ class M030DriveToPipeMission(Mission):
             ),
 
             lineup_drum_with_pipe(),
-            eject_nearest_color(),
+            drum_retreat(5),
         ])

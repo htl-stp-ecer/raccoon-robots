@@ -3,6 +3,8 @@ from src.steps.drive_to_pipe import drive_to_second_pipe
 from src.steps.drum_lifting_step import *
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import eject_nearest_color
+from src.steps.drum_collector import drum_retreat
+
 
 class M050DriveToOtherPipeMission(Mission):
     def sequence(self) -> Sequential:
@@ -69,10 +71,5 @@ class M050DriveToOtherPipeMission(Mission):
             ),
 
             lineup_drum_with_pipe(),
-            eject_nearest_color(),
-
-            parallel(
-                turn_left(30),
-                Defs.lift_drums_servo.up(),
-            ),
+            drum_retreat(4),
         ])
