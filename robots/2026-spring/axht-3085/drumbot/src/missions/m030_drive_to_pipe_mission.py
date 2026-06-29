@@ -5,6 +5,7 @@ from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import eject_nearest_color
+from src.steps.drum_collector import drum_retreat
 
 
 def print_debug_info(robot):
@@ -42,11 +43,12 @@ class M030DriveToPipeMission(Mission):
             wait_for_checkpoint(60),
 
             # drive to first black line and turn
-            # drive_backward(5, heading=0),
             drive_backward(heading=0).until(
                 after_cm(5)
                 + over_line(Defs.front_right_ir_sensor)
             ),
+
+            turn_right(180),
             turn_to_heading_left(180),
 
             # drive to pipe
@@ -54,11 +56,11 @@ class M030DriveToPipeMission(Mission):
                 drive_forward(heading=180).until(
                     after_cm(15)
                     + over_line(Defs.rear_left_ir_sensor)
-                    + after_cm(1.2),
+                    + after_cm(1.4),
                 ),
                 Defs.lift_drums_servo.seek_position(30),
             ),
 
             lineup_drum_with_pipe(),
-            eject_nearest_color(),
+            drum_retreat(5),
         ])

@@ -10,7 +10,7 @@ from src.hardware.defs import Defs
 from src.service.color_detection_service import ColorDetectionService
 from src.service.sorting_service import SortingService
 
-CLOSE_DELAY = 0.0     # seconds to wait after detection before closing servo
+CLOSE_DELAY = 0.1     # seconds to let the drum roll fully into position after detection
 
 
 @dsl(hidden=True)

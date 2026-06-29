@@ -3,6 +3,8 @@ from src.steps.drive_to_pipe import drive_to_second_pipe
 from src.steps.drum_lifting_step import *
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import eject_nearest_color
+from src.steps.drum_collector import drum_retreat
+
 
 class M050DriveToOtherPipeMission(Mission):
     def sequence(self) -> Sequential:
@@ -43,12 +45,11 @@ class M050DriveToOtherPipeMission(Mission):
             ),
 
             # turn away and drive angled to avoid hitting wall
-            turn_to_heading_right(90 - 25),
+            turn_to_heading_right(90 - 30),
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
-                + after_cm(11),
-
+                + after_cm(5)
             ),
 
             # turn onto black line
@@ -62,26 +63,13 @@ class M050DriveToOtherPipeMission(Mission):
                 speed=1.0,
                 side=LineSide.LEFT,
                 kp=2.0,
-                ki=0.5,
+                ki=0.7,
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
-                + after_cm(13)
+                + after_cm(15)
             ),
 
-            # fahre 15 cm auf der rechten Seite des Cubes vorbei
-            # smooth_path(
-            #    turn_to_heading_right(90 - 25),
-            #    drive_forward(8, 1),
-            #    turn_to_heading_right(90),
-            # ),
-            # drive_to_second_pipe(),
-
-            # Defs.lift_drums_servo.up(),
-
             lineup_drum_with_pipe(),
-            eject_nearest_color(),
-
-            turn_left(30),
-            Defs.lift_drums_servo.up(),
+            drum_retreat(4),
         ])

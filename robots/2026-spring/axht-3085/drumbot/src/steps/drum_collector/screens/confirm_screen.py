@@ -8,7 +8,7 @@ class DrumConfirmScreen(UIScreen[DrumCalibrationResult]):
     """Confirm drum calibration thresholds (blocked vs pocket)."""
 
     title = "Drum Calibration"
-    _primary_button_id = "confirm"
+    _primary_button_id = "retry"
 
     def __init__(
         self,
@@ -61,9 +61,10 @@ class DrumConfirmScreen(UIScreen[DrumCalibrationResult]):
                 ]),
                 Spacer(12),
                 Row(children=[
-                    Button("retry", "Retry", style="secondary"),
+                    Button("retry", "Retry", style="primary"),
                     Button("confirm", "Confirm",
-                           style="success" if self.is_good else "warning"),
+                           style="success" if self.is_good else "secondary",
+                           disabled=not self.is_good),
                 ], spacing=8),
             ],
             ratio=(1, 1),

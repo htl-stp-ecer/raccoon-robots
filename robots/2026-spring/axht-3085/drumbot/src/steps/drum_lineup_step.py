@@ -59,11 +59,11 @@ def lineup_drum_with_pipe():
         Defs.lift_drums_servo.seek_position(),
         wait_for_seconds(0.5),
         turn_right().until(
-            _heading_stuck(stuck_duration=0, threshold_deg=4)
+            _heading_stuck(stuck_duration=0.5, threshold_deg=4)
             | on_digital(Defs.drum_found_button)
             | after_degrees(60)
-            | on_digital(Defs.drum_found_button)
         ),
+        wait_for_seconds(0.5),
         _drive_to_drum_button(),
         parallel(
             drive_backward(5.8, speed=0.2),
@@ -71,6 +71,6 @@ def lineup_drum_with_pipe():
             # Park one pocket before the group BEFORE lifting — this rotation drops
             # nothing because the eject mechanism is still disengaged.
             Defs.lift_drums_servo.eject_position(70),
-            # drum_eject_position(25),
         ),
+        wait_for_seconds(0.5),
     ])

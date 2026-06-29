@@ -16,7 +16,8 @@ def drive_to_second_pipe():
             side=LineSide.LEFT,
         )
 
-    return seq([
+    return drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
+    # return seq([
         #line_follower().until(
             # after_cm(20) +
         #    over_line(Defs.rear_left_ir_sensor) +
@@ -24,10 +25,9 @@ def drive_to_second_pipe():
         #),
 
         # make sure we are straight (to drive accurace distance
-        parallel(
-            drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
-            Defs.pom_remover_servo.left(),
-        ),
+        # parallel(
+            # Defs.pom_remover_servo.left(),
+        # ),
 
         #drive_forward(36,0.7),
         # TODO: Try a drive straight and align on pipe
@@ -39,4 +39,4 @@ def drive_to_second_pipe():
         #    drive_backward(cm=16),
         #    drum_recover_from_over_limit(Defs.lift_drums_servo.seek_position),
         #),
-    ])
+    # ])

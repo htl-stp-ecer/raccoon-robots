@@ -54,9 +54,17 @@ class DrumMotorCalibrationMixin:
         self.info(f"Sampling: duration={duration}s, motor_speed={motor_speed}")
         samples: list[float] = []
         self._sample_positions: list[int] = []
-        velocity = int(motor_speed * FULL_VELOCITY)
+        # Open-loop PWM, NOT set_velocity: the drum motor has no BEMF/static-
+        # friction calibration, so the closed-loop velocity PID never overcomes
+        # stiction and the drum won't turn. Sampling only needs a steady sweep
+        # across the stripes, so raw set_speed is both sufficient and reliable.
+        # TODO(drum-cal): verify on hardware (see DRUM_KALIBRIERUNG_FIX.md). The
+        # navigation moves in drum_motor_service.py still use set_velocity — if the
+        # drum also won't turn while sorting, tune drum_motor's MotorCalibration
+        # (bemf_offset + static_friction_pct) or switch those moves to set_speed too.
+        speed_pct = int(motor_speed * 100)
         start_encoder = self.motor.get_position()
-        self.motor.set_velocity(velocity)
+        self.motor.set_speed(speed_pct)
         try:
             loop = asyncio.get_event_loop()
             t_end = loop.time() + duration
@@ -65,7 +73,7 @@ class DrumMotorCalibrationMixin:
                 self._sample_positions.append(self.motor.get_position())
                 await asyncio.sleep(SAMPLE_INTERVAL)
         finally:
-            self.motor.set_velocity(0)
+            self.motor.set_speed(0)
         end_encoder = self.motor.get_position()
         self._sample_total_ticks = abs(end_encoder - start_encoder)
         if samples:

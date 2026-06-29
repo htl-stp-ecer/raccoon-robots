@@ -163,21 +163,34 @@ def _nearest_color_group(sorting_service: "SortingService"):
 def _eject_start(slots, cur: int):
     """Compute ``(start_slot, forward)`` for a single-direction eject sweep.
 
-    Start two pockets *before* the group (in the sweep direction) so a sweep
-    of exactly ``len(slots)`` steps brings every group pocket — and only
-    those — across the eject hole. The closer end is chosen to minimise
-    travel. The extra one-pocket lead-in compensates for the lift-engagement
-    geometry: without it, the first sweep step crosses too late and the last
-    crosses one pocket past the group.
+    Direction is forced to backward (retreat through ``hi``..``lo``). Start a few
+    pockets *after* ``hi`` so a sweep of exactly ``len(slots)`` steps brings every
+    group pocket — and only those — across the eject hole.
+
+    The two color groups are ejected as one continuous backward sweep, split
+    across two calls: the group nearest the hole goes first, and the second group
+    sits immediately behind it in the same backward direction.
+
+    The lead-in is NOT a single constant. The second group is a continuation of
+    the same backward sweep, so it needs one LESS lead-in than the first; with an
+    equal lead-in it lands one pocket too far advanced. The two values below are
+    hardware-calibrated: with lead = 2/1 both groups started one pocket too far
+    BACKWARD (and the second over-ejected one extra), so both were bumped by one.
+
+    The first group is, by construction, the one nearest the hole, so a group
+    whose nearest pocket is >=2 away from the hole is the second one. Groups are
+    always contiguous, non-wrapping blocks (0-3 and 4-7) with the hole at slot
+    ``EJECT_HOLE_SLOT``. `cur` is intentionally unused now that direction is
+    fixed; both the pre-position step and the sweep re-derive the same start.
     """
-    def ring_dist(a: int, b: int) -> int:
-        d = abs(a - b)
-        return min(d, NUM_POCKETS - d)
+    # def ring_dist(a: int, b: int) -> int:
+    #     d = abs(a - b)
+    #     return min(d, NUM_POCKETS - d)
 
     lo, hi = min(slots), max(slots)
-    if ring_dist(cur, lo) <= ring_dist(cur, hi):
-        return (lo - 2) % NUM_POCKETS, True  # two before lo; advance through lo..hi
-    return (hi + 2) % NUM_POCKETS, False  # two after hi; retreat through hi..lo
+    # is_second_group = min(ring_dist(s, EJECT_HOLE_SLOT) for s in slots) >= 2
+    # lead = 2 if is_second_group else 3
+    return (hi + 2) % NUM_POCKETS, False  # advance-side lead-in; retreat hi..lo
 
 
 @dsl(hidden=True)
