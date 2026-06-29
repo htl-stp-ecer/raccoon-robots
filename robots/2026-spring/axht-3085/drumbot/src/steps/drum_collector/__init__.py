@@ -12,4 +12,5 @@ from .sort_into_slot_step import (
     sort_into_slot,
 )
 from .advance_step import drum_advance
+from .go_to_slot_step import go_to_slot
 from .pocket_jog_step import pocket_jog
