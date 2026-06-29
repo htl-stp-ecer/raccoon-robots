@@ -54,5 +54,6 @@ class M010DriveToDrumsMission(Mission):
                 accel_threshold=0.3,
                 grace_period=0.35
             ),
+            background(drive_forward(3,1)),
             mark_heading_reference(),
         ])

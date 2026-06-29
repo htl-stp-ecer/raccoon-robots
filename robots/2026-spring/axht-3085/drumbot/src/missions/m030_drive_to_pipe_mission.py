@@ -62,5 +62,5 @@ class M030DriveToPipeMission(Mission):
             ),
 
             lineup_drum_with_pipe(),
-            drum_retreat(5),
+            drum_retreat(4),
         ])
