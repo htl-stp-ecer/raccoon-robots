@@ -7,7 +7,7 @@ from src.steps.drum_lifting_step import drum_lifting_up
 from src.steps.drum_collector import rotate_to_eject_start, drum_retreat
 from src.steps.terminate_leftover_velocity import terminate_leftover_velocity
 from src.steps.set_position_hold_velocity_step import set_position_hold_velocity
-from steps.drum_collector.go_to_slot_step import go_to_slot
+from src.steps.drum_collector.go_to_slot_step import go_to_slot
 
 
 @dsl
