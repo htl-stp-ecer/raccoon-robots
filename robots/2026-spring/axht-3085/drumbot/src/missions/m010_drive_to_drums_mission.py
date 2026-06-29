@@ -30,7 +30,7 @@ class M010DriveToDrumsMission(Mission):
             # drive
             drive_forward(heading=320).until(
                 over_line(Defs.front_right_ir_sensor)
-                + after_cm(7),
+                + after_cm(3.5),
             ),
 
             # turn back to original heading
