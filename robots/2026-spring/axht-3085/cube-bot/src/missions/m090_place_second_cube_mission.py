@@ -51,7 +51,7 @@ class M090PlaceSecondCubeMission(Mission):
 
             # move to the cube
             drive_forward(heading=0).until(
-                after_cm(19)
+                after_cm(17)
             ),
 
             # place brown cube
