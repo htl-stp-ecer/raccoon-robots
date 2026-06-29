@@ -17,6 +17,7 @@ STALL_WINDOW = 0.2     # rolling window for stall detection (seconds)
 STALL_MIN_NET_TICKS = 75  # minimum net ticks in commanded direction over the window
                            # BEMF when stuck goes in the wrong direction → net < 0 → instant fail
 COAST_SETTLE_SECONDS = 0.20  # post-stop pause so the tracker can absorb any coast-through
+DRIFT_CORRECTION_TIMEOUT = 1.5  # max seconds for a closed-loop coast-drift correction move
 
 
 class MotorStalledError(Exception):
@@ -438,19 +439,66 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         )
 
         if self._current_pocket != target_pocket:
-            drift = (self._current_pocket - target_pocket) % NUM_POCKETS
-            if drift > NUM_POCKETS // 2:
-                drift -= NUM_POCKETS
-            self.warn(
-                f"[COAST-DRIFT] target={target_pocket}, actual={self._current_pocket} "
-                f"({drift:+d} pockets) — tracker index is authoritative"
-            )
+            await self._reconcile_drift(target_pocket)
 
         if precise:
             await self._center_on_stripe(self._last_entry_pos)
 
         self._at_midpoint = False
         self.debug(f"[MOVE-DONE] pocket={self._current_pocket} target={target_pocket}")
+
+    async def _reconcile_drift(self, target_pocket: int) -> None:
+        """Drive the revolver physically back onto ``target_pocket`` after a coast-through.
+
+        The open-loop move in ``_do_move`` stops the motor the instant the
+        tracker reaches target, so the revolver can coast through the next
+        stripe during the settle pause and land one pocket past target.
+        Accepting that drifted index (the old behaviour) silently desynced the
+        physical pocket from the slot bookkeeping: the drum was then loaded one
+        pocket off, and a later drum got routed into the already-occupied
+        pocket. Instead, drive a closed-loop ``move_to_position`` back to the
+        target stripe — it decelerates and holds, so it does not coast — then
+        resync the tracker index. After this the drum lands in exactly the
+        assigned slot, physically and logically.
+        """
+        drift = (self._current_pocket - target_pocket) % NUM_POCKETS
+        if drift > NUM_POCKETS // 2:
+            drift -= NUM_POCKETS
+        self.warn(
+            f"[COAST-DRIFT] target={target_pocket}, actual={self._current_pocket} "
+            f"({drift:+d} pockets) — correcting to land physically on target"
+        )
+        if self.motor_locked or self._ticks_per_pocket is None:
+            self.warn("[COAST-DRIFT] cannot correct (locked/uncalibrated) — tracker authoritative")
+            return
+
+        # Pocket index increases with encoder position (forward = +ticks). The
+        # last counted stripe is the drifted pocket; the target stripe sits
+        # ``signed`` pockets away in encoder space.
+        signed = -drift  # signed pocket delta from current → target
+        target_pos = self._tracker_last_edge_pos + signed * self._ticks_per_pocket
+
+        self.motor.move_to_position(FULL_VELOCITY, target_pos)
+        deadline = time.monotonic() + DRIFT_CORRECTION_TIMEOUT
+        while not self.motor.is_done():
+            if time.monotonic() > deadline:
+                self.warn("[COAST-DRIFT] correction move timed out — braking")
+                break
+            await asyncio.sleep(SAMPLE_INTERVAL)
+        self.motor.set_velocity(0)
+
+        # Brief settle, then resync: we drove a closed-loop move to the target
+        # stripe, so both the physical revolver and the tracker index are now
+        # on target. Force the index (belt-and-suspenders if the tracker missed
+        # the crossing) and reset the edge reference to here.
+        settle_deadline = time.monotonic() + COAST_SETTLE_SECONDS
+        while time.monotonic() < settle_deadline:
+            await asyncio.sleep(SAMPLE_INTERVAL)
+        pos = self.motor.get_position()
+        self._current_pocket = target_pocket
+        self._tracker_last_edge_pos = pos
+        self._last_entry_pos = pos
+        self.info(f"[COAST-DRIFT] corrected → pocket {target_pocket} (pos={pos})")
 
     async def _center_on_stripe(self, entry_pos: int) -> None:
         """Creep back and forth to find the center of the current stripe."""
@@ -514,4 +562,45 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             self.motor.set_velocity(0)
 
         await self._retry_on_stall(_do, backup_sign=1)
+        self._at_midpoint = False
+
+    async def turn_relative(
+        self, slots: float, *, forward: bool, speed: float = 1.0
+    ) -> None:
+        """Turn the drum by a relative number of slots, not snapping to pockets.
+
+        Unlike advance()/retreat() (which target whole stripe positions), this
+        rotates the drum a free relative amount. One slot equals one pocket
+        (_ticks_per_pocket ticks); fractional slots are allowed.
+
+        The background IR tracker stays authoritative for _current_pocket and
+        counts any stripes crossed during the turn, so the pocket index remains
+        correct afterwards.
+        """
+        if self.motor_locked:
+            self.warn(
+                f"turn_relative({slots}) ignored — drum motor locked (emergency)"
+            )
+            return
+        assert self._ticks_per_pocket is not None, "Calibrate first (need ticks_per_pocket)"
+        sign = 1 if forward else -1
+        ticks = round(abs(slots) * self._ticks_per_pocket)
+        velocity = max(1, int(FULL_VELOCITY * speed))
+        self.debug(
+            f"turn_relative({slots:+.2f} slots, {'fwd' if forward else 'bwd'}) "
+            f"= {ticks} ticks @ velocity {velocity * sign}"
+        )
+        if ticks == 0:
+            return
+
+        async def _do():
+            stall_check = self._make_stall_checker(direction=sign)
+            start = self.motor.get_position()
+            self.motor.set_velocity(velocity * sign)
+            while abs(self.motor.get_position() - start) < ticks:
+                stall_check()
+                await asyncio.sleep(SAMPLE_INTERVAL)
+            self.motor.set_velocity(0)
+
+        await self._retry_on_stall(_do, backup_sign=-sign)
         self._at_midpoint = False
