@@ -40,7 +40,7 @@ class M080DriveToExternalLoadingDockMission(Mission):
             timeout_or(
                 step=_follow().until(
                     over_line(Defs.rear.left)
-                    + after_cm(90)
+                    + after_cm(70)
                     + over_line(Defs.rear.left)
                 ),
                 seconds=11,
