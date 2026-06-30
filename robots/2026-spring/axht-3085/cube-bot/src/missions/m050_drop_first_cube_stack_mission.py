@@ -34,8 +34,8 @@ class M050DropFirstCubeStackMission(Mission):
                     arm.move_angles(base_deg=0, sholder_deg=113).arm_speeds(base=70),
                 ])
             ),
-
             # drive to external loading dock while rotating arm
+            turn_to_heading_left(0),
             _follow().until(
                 after_cm(67)
             ),
