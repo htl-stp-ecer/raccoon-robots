@@ -23,7 +23,7 @@ def after_collect():
 
         return seq([
             Defs.drum_pusher_servo.hold(),
-            go_to_slot(5),
+            go_to_slot(4),
             # rotate_to_eject_start(),
         ])
 
@@ -33,6 +33,7 @@ def after_collect():
 class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            drive_forward(3,1),
             wait_for_background("lower_drum"),
             terminate_leftover_velocity(),
 
