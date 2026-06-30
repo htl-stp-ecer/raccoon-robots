@@ -41,6 +41,8 @@ class M020CollectDrumsMission(Mission):
             collect_drums(),
             terminate_leftover_velocity(),
 
+
+            wall_align_forward(1,0.1,0.2,2.2,1.5),
             mark_heading_reference(),
             after_collect(),
         ])
