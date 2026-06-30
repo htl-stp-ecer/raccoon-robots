@@ -33,6 +33,7 @@ def after_collect():
 class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            drive_forward(3,1),
             wait_for_background("lower_drum"),
             terminate_leftover_velocity(),
 
