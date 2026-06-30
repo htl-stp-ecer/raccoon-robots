@@ -3,9 +3,9 @@ drum_pusher_servo:
   port: 0
   offset: 0
   positions:
-    close: 18
-    hold: 26
-    open: 195
+    close: 12
+    hold: 25
+    open: 185
     block_angle: 55
     
 pom_remover_servo:
@@ -25,6 +25,6 @@ lift_drums_servo:
     align_on_back: 70
     eject_position: 126
     seek_position: 180
-    down: -5
+    down: -7
     remove_D: 38
     remove_M: 70
