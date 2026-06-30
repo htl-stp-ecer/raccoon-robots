@@ -176,16 +176,30 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     _black_entry_pos = pos
                     _black_entry_time = now
 
-                    # During an active move: no gate. _tracker_on_black already
-                    # handles "motor was ON a stripe at move start" (no rising edge
-                    # fires if already black), so there are no false positives to block.
-                    # Any gate here risks rejecting the first real stripe when the motor
-                    # coasted close to it on the previous move.
+                    # During an active move we trust every rising edge EXCEPT a
+                    # spurious one fired within the first min_ticks_idle ticks of the
+                    # move: if the sensor was parked right at a stripe boundary,
+                    # starting the motor jiggles it across the edge and it gets
+                    # miscounted as a whole pocket (observed: delta_move_start=-3 →
+                    # revolver under-rotated by one pocket, which corrupted the eject
+                    # sweep and dropped only half the drums). A genuinely-adjacent
+                    # stripe at rest already reads black, so no rising edge fires and
+                    # this gate cannot swallow a real first stripe. The gate is keyed
+                    # off the distance from the move start, NOT the last edge, so it
+                    # never re-introduces the mid-move pocket skips that killed the
+                    # old 35-50% active-move thresholds.
                     #
                     # While idle (coast settle or parked): Gate 1 blocks tiny drift
                     # back into a stripe the motor just coasted past (observed: ~227
                     # ticks = 0.17% of pocket). Threshold = 15% of pocket.
-                    gate_ok = True if in_active_move else abs(delta) >= min_ticks_idle
+                    if in_active_move:
+                        gate_ok = move_start_delta is None or abs(move_start_delta) >= min_ticks_idle
+                        gate_name = "move_start"
+                        gate_delta = move_start_delta if move_start_delta is not None else delta
+                    else:
+                        gate_ok = abs(delta) >= min_ticks_idle
+                        gate_name = "idle"
+                        gate_delta = delta
 
                     if gate_ok:
                         direction = 1 if delta > 0 else -1
@@ -208,7 +222,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                             f"delta_last_edge={delta:+d} "
                             f"delta_move_start={move_start_delta} "
                             f"move_start_pos={self._move_start_pos} "
-                            f"reason=[gate_idle FAILED (|delta|={abs(delta)} < min_idle={min_ticks_idle})]"
+                            f"reason=[gate_{gate_name} FAILED (|delta|={abs(gate_delta)} < min_idle={min_ticks_idle})]"
                         )
 
                 # ── falling edge: black → white ────────────────────
