@@ -23,7 +23,7 @@ def after_collect():
 
         return seq([
             Defs.drum_pusher_servo.hold(),
-            go_to_slot(6),
+            go_to_slot(2),
             # rotate_to_eject_start(),
         ])
 
