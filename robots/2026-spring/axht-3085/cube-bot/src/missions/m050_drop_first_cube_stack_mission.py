@@ -70,4 +70,7 @@ class M050DropFirstCubeStackMission(Mission):
             arm.move_angles(elbow_deg=-98, speed=150),
             wait_for_seconds(0.5),
             Defs.arm_claw.open(),
+            #grab a gain, so if the stack is wonky we stop the momentum
+            Defs.arm_claw.grab(),
+            Defs.arm_claw.open(),
         ])
