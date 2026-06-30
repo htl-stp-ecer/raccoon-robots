@@ -296,8 +296,9 @@ class CollectDrumsStep(UIStep):
         drum_service.stall_retries = 1  # one attempt, zero retries
         try:
             Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.open.value)
+            Defs.drum_pusher_servo.device.disable()
         except Exception as e:
-            self.warn(f"Safe mode pusher-open failed: {e}")
+            self.warn(f"Safe mode pusher-open/disable failed: {e}")
 
         # Runs on EVERY emergency trigger: kill any residual chassis velocity so
         # the robot isn't left creeping while the emergency screen is held.

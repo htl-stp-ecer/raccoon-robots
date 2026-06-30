@@ -13,7 +13,7 @@ from src.steps.drum_collector.pocket_jog_step import pocket_jog
 
 
 class M000SetupMission(SetupMission):
-    setup_time = 120
+    setup_time = 90
 
     def sequence(self) -> Sequential:
         return seq([
