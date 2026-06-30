@@ -13,7 +13,7 @@ from src.steps.drum_collector.pocket_jog_step import pocket_jog
 
 
 class M000SetupMission(SetupMission):
-    setup_time = 120
+    setup_time = 100000000
 
     def sequence(self) -> Sequential:
         return seq([
@@ -60,6 +60,7 @@ class M000SetupMission(SetupMission):
                 Defs.lift_drums_servo.down(),
                 Defs.drum_pusher_servo.open(),
             ),
+            fully_disable_servos(),
             parallel(
                 run_unless_no_calibrate(
                     calibrate_colors(),
