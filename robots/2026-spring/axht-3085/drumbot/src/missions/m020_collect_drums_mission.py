@@ -52,7 +52,6 @@ class M020CollectDrumsMission(Mission):
                 reference_step=collect_drums(),
                 task=collect_position_hold(),
             ),
-            collect_drums(),
             terminate_leftover_velocity(),
 
             mark_heading_reference(),
