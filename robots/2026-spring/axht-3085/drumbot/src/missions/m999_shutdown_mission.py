@@ -9,7 +9,7 @@ class M999ShutdownMission(Mission):
                 turn_left(45),
                 seq([
                     wait_for_seconds(0.2),
-                    Defs.lift_drums_servo.seek_position(120),
+                    Defs.lift_drums_servo.over_limit(120),
                 ]),
             ),
             stop_camera(),
