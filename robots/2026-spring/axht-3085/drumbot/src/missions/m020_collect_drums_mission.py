@@ -1,10 +1,10 @@
 from raccoon import *
+from os import getenv
 
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.steps.collect_drums_step import collect_drums
 from src.steps.drum_lifting_step import drum_lifting_up
-from src.steps.drum_collector import rotate_to_eject_start, drum_retreat
 from src.steps.terminate_leftover_velocity import terminate_leftover_velocity
 from src.steps.set_position_hold_velocity_step import set_position_hold_velocity
 from src.steps.drum_collector.go_to_slot_step import go_to_slot
@@ -29,6 +29,16 @@ def after_collect():
 
     return defer(_build)
 
+def collect_position_hold():
+    if getenv("DRUMBOT_NO_POSITION_HOLD") is not None: return run(lambda robot: None)
+    return wall_align_forward(
+        speed=0.6,
+        accel_threshold=99,
+        settle_duration=0,
+        max_duration=9999,
+        grace_period=9999,
+    )
+
 
 class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
@@ -38,11 +48,13 @@ class M020CollectDrumsMission(Mission):
             terminate_leftover_velocity(),
 
             set_position_hold_velocity(),
+            do_while_active(
+                reference_step=collect_drums(),
+                task=collect_position_hold(),
+            ),
             collect_drums(),
             terminate_leftover_velocity(),
 
-
-            wall_align_forward(1,0.1,0.2,2.2,1.5),
             mark_heading_reference(),
             after_collect(),
         ])
