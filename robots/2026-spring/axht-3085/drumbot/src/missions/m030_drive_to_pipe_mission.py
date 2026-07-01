@@ -56,7 +56,7 @@ class M030DriveToPipeMission(Mission):
                 drive_forward(heading=180).until(
                     after_cm(15)
                     + over_line(Defs.rear_left_ir_sensor)
-                    + after_cm(1.4),
+                    + after_cm(1.2),
                 ),
                 Defs.lift_drums_servo.seek_position(30),
             ),
