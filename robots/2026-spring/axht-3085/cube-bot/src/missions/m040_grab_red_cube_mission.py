@@ -51,6 +51,7 @@ class M040GrabRedCubeMission(Mission):
             Defs.arm_claw.full_open(),
             wait_for_seconds(0.2),
             arm.move_angles(elbow_deg= -78),
+            wait_for_seconds(0.3),
             arm.move_angles(sholder_deg=77),
             Defs.arm_claw.strong_grab(),
             background(

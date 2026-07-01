@@ -51,17 +51,18 @@ class M060DriveUpRampMission(Mission):
                     seconds=2,
                     fallback=seq([]),
                 ),
-                drive_forward(cm=6)
+                drive_forward(cm=6),
+                # align on front pipe
+                wall_align_forward(speed=0.3,
+                                   accel_threshold=10,
+                                   settle_duration=0,
+                                   max_duration=1,
+                                   grace_period=1
+                                   ),
             ])
             .cut_corners(7, cut_until=True),
 
-            # align on front pipe
-            wall_align_forward(speed=0.3,
-                               accel_threshold=10,
-                               settle_duration=0,
-                               max_duration=1,
-                               grace_period=1
-                               ),
+            wait_for_seconds(0.3), #wait a bit so the bot is fully still
             mark_heading_reference(),
 
             # drive to black line where palette with two yellow cubes is

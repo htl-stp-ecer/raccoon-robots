@@ -40,7 +40,7 @@ class M070GrabUpperCubeMission(Mission):
             arm.move_angles(33, 62, -58, speed=150),
 
             # push cube back
-            drive_angle(-130).until(
+            drive_angle(-120).until(
                 on_black(Defs.front.left)
                 + after_cm(3)  # make sure we avoid seeing the white dot
                 + on_white(Defs.front.left)
@@ -86,12 +86,19 @@ class M070GrabUpperCubeMission(Mission):
 
             # move arm up
             arm.move_angles(0, 90, 50, speed=70),
-            drive_backward().until(
-                over_line(Defs.rear.left)
-            ),
-            wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
+            optimize([
+                drive_backward().until( #push back poms
+                    on_black(Defs.front.right)
+                ),
+                drive_forward().until( #go forward so we can use the fornt line sensors
+                    after_cm(15)
+                ),
+                #wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
+                strafe_left(heading=0).until(
+                    after_cm(5) #just so the optimizer can work with it
+                    + on_black(Defs.front.left)
+                ),
+            ])
+            .cut_corners(5, cut_until=True),
             wait_for_checkpoint(60 + 17),  # wait so we don't colide with drum-bot
-            strafe_left(heading=0).until(
-                over_line(Defs.front.left)
-            ),
         ])

@@ -20,7 +20,7 @@ arm_sholder:
 arm_elbow:
   type: Servo
   port: 2
-  offset: 0
+  offset: -4.5
   positions:
     _0deg: 91.2
     p90deg: 188

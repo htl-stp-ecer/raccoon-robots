@@ -41,8 +41,8 @@ def drop_cube_into_container():
 def grab_cube_from_container():
     return seq([
         # move arm away from external loading dock
-        arm.move_angles(elbow_deg=80),
-        arm.move_angles(base_deg=0, sholder_deg=45)
+        #arm.move_angles(elbow_deg=80),
+        arm.move_angles(base_deg=0, sholder_deg=45, elbow_deg=80)
             .arm_speeds(base=100),
 
         # grab

@@ -40,12 +40,12 @@ class M080DriveToExternalLoadingDockMission(Mission):
             timeout_or(
                 step=_follow().until(
                     over_line(Defs.rear.left)
-                    + after_cm(70)
+                    + after_cm(90)
                     + over_line(Defs.rear.left)
                 ),
-                seconds=10,
+                seconds=9,
                 # fallback if we miss the black line on the bottom, so we still try to finish the run
-                # (wont help if we are stuck on the upper loading dock
+                # (won't help if we are stuck on the upper loading dock)
                 fallback=seq([
                     drive_backward(heading=0).until(
                         on_black(Defs.rear.left)
@@ -54,29 +54,21 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 ])
             ),
 
-            wall_align_strafe_left(speed=0.15,
-                                   accel_threshold=10,
-                                   settle_duration=0,
-                                   max_duration=2.5,
-                                   grace_period=2.5,
-                                   ),
-            mark_heading_reference(origin_offset_deg=2),
-            # magic 2 deg, so the heading is correctt, bot is a bit shief wegen metal peace
-            drive_forward(cm=5, heading=0),
-
-            switch_calibration_set("default"),
-            strafe_right(heading=0).until(
-                over_line(Defs.front.right)
-                + over_line(Defs.front.right)
-                + over_line(Defs.rear.left)
-            ),
             optimize([
+                drive_forward(cm=5, heading=0),
+
+                switch_calibration_set("default"),
+                strafe_right(heading=0).until(
+                    over_line(Defs.front.right)
+                    + over_line(Defs.front.right)
+                    + over_line(Defs.rear.left)
+                ),
                 strafe_right(cm=10, speed=0.5, heading=0),
 
                 # align on wall
                 drive_forward(heading=0).until(
                     after_seconds(2.5),
                 ),
-                strafe_right(cm=5, speed=0.5, heading=0), #make sure we are accectly on the pipe
-            ]).cut_corners(5),
+                strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
+            ]).cut_corners(5, cut_until=True),
         ])
