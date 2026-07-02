@@ -377,8 +377,13 @@ class CollectDrumsStep(UIStep):
         color_service: ColorDetectionService,
         robot: "GenericRobot",
     ) -> None:
+        last_miss_time: float | None = None
         while True:
             screen.detected_color = color_service.peek_color
+            miss_time = color_service.last_miss_time
+            if miss_time is not None and miss_time != last_miss_time:
+                last_miss_time = miss_time
+                screen.flag_miss()
             try:
                 elapsed = robot.synchronizer.get_time()
                 drum_idx = screen.drum_number - 1
