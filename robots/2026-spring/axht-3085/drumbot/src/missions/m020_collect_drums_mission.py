@@ -32,11 +32,11 @@ def after_collect():
 def collect_position_hold():
     if getenv("DRUMBOT_NO_POSITION_HOLD") is not None: return run(lambda robot: None)
     return wall_align_forward(
-        speed=0.6,
+        speed=0.2,
         accel_threshold=99,
         settle_duration=0,
-        max_duration=9999,
-        grace_period=9999,
+        max_duration=1,
+        grace_period=99999,
     )
 
 
