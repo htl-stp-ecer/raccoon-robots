@@ -9,7 +9,6 @@ from src.steps.drum_collector import (
 )
 from src.steps.drum_lifting_step import *
 from src.hardware.defs import Defs
-from src.steps.drum_collector.pocket_jog_step import pocket_jog
 from src.steps.position_hold_choice_step import choose_position_hold
 
 
@@ -19,17 +18,16 @@ class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
             pause_setup_timer(),
-
-            # Ask up front whether to use position holding during collection.
-            # Sets/clears DRUMBOT_NO_POSITION_HOLD for the rest of the run.
-            choose_position_hold(),
-
             fully_disable_servos(),
 
             # Camera opens once here and stays open until the shutdown mission.
             # All downstream steps (color calibration, color detection) share
             # this single USBCamera instance.
             start_camera(),
+
+            # Ask up front whether to use position holding during collection.
+            # Sets/clears DRUMBOT_NO_POSITION_HOLD for the rest of the run.
+            choose_position_hold(),
 
             wait_for_button("Move Servos"),
             start_setup_timer(),
