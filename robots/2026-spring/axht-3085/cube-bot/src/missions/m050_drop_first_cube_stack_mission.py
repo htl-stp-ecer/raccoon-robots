@@ -10,6 +10,7 @@ def _follow():
         .single(Defs.rear.left, side=LineSide.LEFT)
         .move(forward=1)
         .correct_lateral()
+        .hold_heading(0)
         .pid(kp=0.3, ki=0.1, kd=0.0)
     )
 
@@ -20,6 +21,7 @@ def align_line_follow():
         .single(Defs.rear.left, side=LineSide.LEFT)
         .move(forward=0.4)
         .correct_lateral(hold_heading=False)
+        .hold_heading(0)
         .pid(kp=0.4, ki=0.2, kd=0.0)
     )
 
@@ -55,10 +57,10 @@ class M050DropFirstCubeStackMission(Mission):
                 ),
             ),
             #mark_heading_reference(), commented the mark heading referenc since we usually are on a pom and dont are accact
-            strafe_left(heading=0, speed=0.5).until(
+            strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),
-            strafe_right(heading=0, speed=0.5).until(
+            strafe_right(heading=0).until(
                 over_line(Defs.rear.left)
             ),
             turn_to_heading_right(0),
@@ -71,5 +73,5 @@ class M050DropFirstCubeStackMission(Mission):
             Defs.arm_claw.open(),
             #grab a gain, so if the stack is wonky we stop the momentum
             Defs.arm_claw.grab(),
-            Defs.arm_claw.open(),
+            Defs.arm_claw.full_open(),
         ])

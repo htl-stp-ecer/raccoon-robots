@@ -10,6 +10,7 @@ def backward_line_follow():
         .single(Defs.rear.left, side=LineSide.LEFT)
         .move(forward=-1)
         .correct_lateral()
+        .hold_heading(0)
         .pid(kp=0.6, ki=0.2, kd=0.0)
     )
 
@@ -20,6 +21,7 @@ def forward_line_follow():
         .single(Defs.rear.left, side=LineSide.RIGHT)
         .move(forward=1)
         .correct_lateral()
+        .hold_heading(0)
         .pid(kp=0.6, ki=0.3, kd=0.05)
     )
 
@@ -64,7 +66,7 @@ class M090PlaceSecondCubeMission(Mission):
 
             Defs.arm_claw.open(),
             arm.move_angles(elbow_deg=-50),
-            drive_backward(cm=27, heading=0),
+            drive_backward(cm=29, heading=0),
             arm.move_angles(-90, 90, 0),
 
         ])

@@ -42,6 +42,7 @@ class M040GrabRedCubeMission(Mission):
             turn_to_heading_left(0),
             forward_line_follow().until(
                 on_black(Defs.front.right)
+                +after_cm(1)
             ),
 
             # place down cube

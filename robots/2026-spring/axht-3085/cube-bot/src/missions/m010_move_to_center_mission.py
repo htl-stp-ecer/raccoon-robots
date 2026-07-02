@@ -11,6 +11,7 @@ def left_lateral_line_follow():
         .single(Defs.front.left, side=LineSide.RIGHT)
         .move(strafe=1)
         .correct_forward()
+        .hold_heading(-90)
         .pid(kp=0.4, ki=0.05, kd=0.0)
     )
 
