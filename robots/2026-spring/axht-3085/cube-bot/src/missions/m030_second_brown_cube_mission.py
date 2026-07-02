@@ -10,6 +10,7 @@ def _follow():
         .single(Defs.front.left, side=LineSide.RIGHT)
         .move(forward=-1)
         .correct_lateral()
+        .hold_heading(0)
         .pid(kp=0.5, ki=0.1, kd=0.0)
     )
 
