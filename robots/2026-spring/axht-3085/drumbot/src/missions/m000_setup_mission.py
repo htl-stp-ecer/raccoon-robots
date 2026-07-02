@@ -33,11 +33,13 @@ class M000SetupMission(SetupMission):
             start_setup_timer(),
 
             # initial servo positions
-            parallel(
-                Defs.lift_drums_servo.up(),
-                Defs.pom_remover_servo.drum_moving_pos(),
-                Defs.drum_pusher_servo.block_angle(),
+            background(
+                seq([
+                    Defs.pom_remover_servo.drum_moving_pos(),
+                    Defs.drum_pusher_servo.block_angle(),
+                ]),
             ),
+            Defs.lift_drums_servo.up(),
 
             # ir + distance calibration
             run_unless_no_calibrate(
