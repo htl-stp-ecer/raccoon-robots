@@ -22,7 +22,6 @@ class M010DriveToDrumsMission(Mission):
                     wait_for(
                         over_line(Defs.front_right_ir_sensor)
                     ),
-                    Defs.pom_remover_servo.left(),
                     Defs.pom_remover_servo.right(),
                     Defs.pom_remover_servo.drum_moving_pos(),
                 ]),
@@ -37,18 +36,6 @@ class M010DriveToDrumsMission(Mission):
 
             # turn back to original heading
             turn_to_heading_right(0),
-
-            # # wait and lower drum
-            # background(
-            #     seq([
-            #         wait_for_seconds(0.6),
-            #         parallel(
-            #             Defs.lift_drums_servo.down(),
-            #             Defs.drum_pusher_servo.open(),
-            #         ),
-            #     ]),
-            #     name="lower_drum",
-            # ),
 
             # in order to avoid damaging pom pusher by sandwiching it between the pipes and the bot
             wait_for_background("yeet_blue_pom"),

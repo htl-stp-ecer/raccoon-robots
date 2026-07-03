@@ -40,6 +40,10 @@ def collect_position_hold():
         ),
     ])
 
+def drum_pipe_heading_mark():
+    # TODO: only mark if angle error is not too great
+    return mark_heading_reference()
+
 
 class M020CollectDrumsMission(Mission):
     def sequence(self) -> Sequential:
@@ -51,31 +55,27 @@ class M020CollectDrumsMission(Mission):
                 seq([
                     wall_align_forward(
                         accel_threshold=0.4,
-                        grace_period=0.5,
-                        max_duration=1.5,
+                        grace_period=1.0,
+                        max_duration=2.0,
                     ),
-                    mark_heading_reference(),
+                    drum_pipe_heading_mark(),
                 ]),
                 name="before_collect_align"
             ),
 
+            # lower drum
             parallel(
                 Defs.lift_drums_servo.down(),
                 Defs.drum_pusher_servo.open(),
             ),
-            # terminate_leftover_velocity(),
 
-            # drive_forward(3,1),
-            # wait_for_background("lower_drum"),
-
-            # set_position_hold_velocity(),
+            # collect drums + position hold
             do_while_active(
                 reference_step=collect_drums(),
                 task=collect_position_hold(),
             ),
-            # terminate_leftover_velocity(),
 
             # re-mark heading reference (because of static imu drift)
-            mark_heading_reference(),
+            drum_pipe_heading_mark(),
             after_collect(),
         ])
