@@ -56,7 +56,6 @@ def drum_pipe_heading_mark():
                 f"exceeds tolerance {HEADING_MARK_TOLERANCE_DEG:.1f}°"
             )
             return run(lambda robot: None)
-
         return mark_heading_reference()
 
     return defer(_build)
