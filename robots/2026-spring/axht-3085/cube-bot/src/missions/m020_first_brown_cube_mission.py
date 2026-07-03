@@ -41,7 +41,8 @@ class M020FirstBrownCubeMission(Mission):
 
             # move away from shared warehouse
             strafe_left(heading=0).until(
-                over_line(Defs.front.left)
+                on_black(Defs.front.left)
+                + after_cm(4)
             ),
 
             background(

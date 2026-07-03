@@ -9,9 +9,9 @@ def _follow():
         line_follow()
         .single(Defs.front.left, side=LineSide.RIGHT)
         .move(forward=-1)
-        .correct_lateral()
+        .correct_lateral(hold_heading=True)
         .hold_heading(0)
-        .pid(kp=0.4, ki=0.05, kd=0.0)
+        .pid(kp=0.4, ki=0.03, kd=0.0)
     )
 
 

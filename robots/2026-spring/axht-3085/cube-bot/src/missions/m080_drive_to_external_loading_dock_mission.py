@@ -36,17 +36,18 @@ def left_lateral_align_line_follow():
 
 def weird_cube_drive():
     approach = DriveUntilImpact(max_cm=50, speed=1,
-                                accel_threshold=0.4)  # ← Klasse, nicht Factory!
+                                accel_threshold=10)  # ← Klasse, nicht Factory!
 
     def drive_backward_if_cube(robot):
-        robot.debug(f"drive_backward_if_cube: approach impact result: {approach.impact_result.forward_cm}")
+        robot.info(f"drive_backward_if_cube: approach impact result: {approach.impact_result}")
         if approach.impact_result.forward_cm >= 45:
             return drive_backward(heading=0).until(
                 after_cm(28)
             )
         else:
+            robot.error(f"cube in the way")
             return drive_backward(heading=0).until(
-                after_cm(16)
+                after_cm(28)
             )
 
     return seq([
@@ -54,12 +55,8 @@ def weird_cube_drive():
         strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
 
         # move away from wall to avoid hitting already present cube stack
-        drive_backward(heading=0).until(
-            after_cm(28)
-        ),
         defer(drive_backward_if_cube),
     ])
-
 
 
 class M080DriveToExternalLoadingDockMission(Mission):
@@ -84,32 +81,36 @@ class M080DriveToExternalLoadingDockMission(Mission):
 
             switch_calibration_set("default"),
 
-            optimize([
-                turn_to_heading_left(90),
+            # optimize([ #TODO: enable teh optimize
+            turn_to_heading_left(90),
 
-                wall_align_forward( #
-                    speed=0.3,
-                    accel_threshold=10,
-                    settle_duration=0,
-                    max_duration=1,
-                    grace_period=1
-                ),
-                mark_heading_reference(origin_offset_deg=-90),
+            wall_align_forward(  #
+                speed=0.3,
+                accel_threshold=10,
+                settle_duration=0,
+                max_duration=1,
+                grace_period=1
+            ),
+            mark_heading_reference(origin_offset_deg=-90),
 
-                timeout(
-                    step=seq([
-                        drive_backward(heading=90).until(
-                            on_black(Defs.front.right)
-                            + after_cm(25)
-                            + on_black(Defs.front.right)
-                        ),
-                    ]),
-                    seconds=7
-                ),
-                turn_to_heading_left(0),
-                strafe_right(cm=20, speed=0.5, heading=0),
+            timeout(
+                step=seq([
+                    drive_backward(heading=90).until(
+                        on_black(Defs.front.right)
+                        + after_cm(25)
+                        + on_black(Defs.front.right)
+                    ),
+                ]),
+                seconds=7
+            ),
+            turn_to_heading_left(0),
+            strafe_right(cm=20, speed=0.5, heading=0),
+            drive_forward(cm=50, heading=0),
+            strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
+            drive_backward(heading=0, cm=28),
+            # ]).cut_corners(5, cut_until=True),
 
-                # align on wall
-                weird_cube_drive(),
-            ]).cut_corners(5, cut_until=True),
+
+            # align on wall
+            # weird_cube_drive(),
         ])
