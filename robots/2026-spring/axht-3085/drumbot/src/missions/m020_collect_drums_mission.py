@@ -21,7 +21,7 @@ def after_collect():
 
         return seq([
             Defs.drum_pusher_servo.hold(),
-            go_to_slot(2),
+            go_to_slot(2, stall_retries=1, tolerate_stall=True),
         ])
 
     return defer(_build)
