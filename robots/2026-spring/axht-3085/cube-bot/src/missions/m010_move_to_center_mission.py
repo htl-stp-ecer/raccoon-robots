@@ -2,7 +2,7 @@ from raccoon import *
 
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
-from src.steps.arm_steps import grab_brown_cube_start_pos
+from src.steps.arm_steps import grab_right_brown_cube_start_pos
 
 
 def left_lateral_line_follow():
@@ -27,7 +27,7 @@ class M010MoveToCenterMission(Mission):
                     arm.move_angles(elbow_deg=-70),
                     arm.move_angles(elbow_deg=-70),
                     arm.move_angles(sholder_deg=90),
-                    grab_brown_cube_start_pos(),
+                    grab_right_brown_cube_start_pos(),
                     Defs.arm_claw.idle(),  # make sure claw is closed
                 ]),
                 name="prep_arm"

@@ -35,7 +35,7 @@ class M040GrabRedCubeMission(Mission):
 
             # move arm into position for placing brown cube on red cube
             background(
-                arm.move_angles(77, 140, -35),
+                arm.move_angles(80, 140, -35),
             ),
 
             # drive to red cube
@@ -46,12 +46,12 @@ class M040GrabRedCubeMission(Mission):
             ),
 
             # place down cube
-            arm.move_angles(elbow_deg=-90, sholder_deg=120),
+            arm.move_angles(elbow_deg=-80, sholder_deg=120, speed=150),
             wait_for_seconds(0.2),
-            arm.move_angles(sholder_deg=101),
+            arm.move_angles(sholder_deg=98),
             Defs.arm_claw.full_open(),
             wait_for_seconds(0.2),
-            arm.move_angles(elbow_deg= -78),
+            arm.move_angles(elbow_deg= -79),
             wait_for_seconds(0.3),
             arm.move_angles(sholder_deg=77),
             Defs.arm_claw.strong_grab(),
@@ -63,8 +63,4 @@ class M040GrabRedCubeMission(Mission):
             strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),
-            #place cube down and regrab
-            #Defs.arm_claw.full_open(speed=100),
-            #wait_for_seconds(0.3),
-            #Defs.arm_claw.strong_grab(),
         ])

@@ -125,6 +125,7 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
+
             pause_setup_timer(),
             fully_disable_servos(),
 

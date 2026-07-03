@@ -34,12 +34,12 @@ class M090PlaceSecondCubeMission(Mission):
                 after_cm(28)
             ),
 
-            arm.move_angles(30, 60, -40, speed=70),  # transport
+            arm.move_angles(28, 60, -40, speed=70),  # transport
             drive_forward(cm=18, heading=0),
             # place cube
-            arm.move_angles(30, 40, -40),  # place
+            arm.move_angles(28, 40, -40, speed=70),  # place
             Defs.arm_claw.open(),
-            arm.move_angles(30, 60, -50, speed=100),  # transport
+            arm.move_angles(28, 60, -50, speed=100),  # transport
 
             # drive back to get space to place the second cube
             parallel(
@@ -51,22 +51,25 @@ class M090PlaceSecondCubeMission(Mission):
             ),
 
             #move brown cube in possiton
-            arm.move_angles(33, 80, -40) #dont to in parralel with drive_forward (we might hit the other cube stack)
+            arm.move_angles(31, 80, -30) #dont to in parralel with drive_forward (we might hit the other cube stack)
             .arm_speeds(
                 base=60, sholder=100, elbow=200
             ),
 
             # move to the cube
             drive_forward(heading=0).until(
-                after_cm(17)
+                after_cm(19)
             ),
 
             # place brown cube
-            arm.move_angles(elbow_deg=-55, speed=80),
+            arm.move_angles(elbow_deg=-52, speed=70),
+            wait_for_seconds(0.2),
 
             Defs.arm_claw.open(),
+            Defs.arm_claw.grab(), #try to stop there movement of the cubes and catsh them if they are falling
+            Defs.arm_claw.open(),
             arm.move_angles(elbow_deg=-50),
-            drive_backward(cm=29, heading=0),
+            drive_backward(cm=27, heading=0),
             arm.move_angles(-90, 90, 0),
 
         ])

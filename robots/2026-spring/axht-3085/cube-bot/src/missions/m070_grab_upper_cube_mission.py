@@ -38,15 +38,18 @@ class M070GrabUpperCubeMission(Mission):
             # put claw on cube
             turn_to_heading_left(0),
             arm.move_angles(33, speed=150),
-            arm.move_angles(33, 90, -85, speed=150),
+            arm.move_angles(33, 90, -85, speed=80),
 
             # push cube back
-            drive_angle(-120).until(
-                on_black(Defs.front.left)
-                + after_cm(3)  # make sure we avoid seeing the white dot
-                + on_white(Defs.front.left)
-                + after_cm(0.5)
-            ),
+            optimize([
+                drive_angle(-120).until(
+                    on_black(Defs.front.left)
+                    + after_cm(3)  # make sure we avoid seeing the white dot
+                ),
+                drive_angle(-120, speed=0.4).until(
+                    on_white(Defs.front.left)
+                ),
+            ]),
 
             wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
             arm.move_angles(elbow_deg=0, speed=150),
@@ -62,9 +65,9 @@ class M070GrabUpperCubeMission(Mission):
 
             parallel(
                 # align claw and cube
-                strafe_right(heading=0, speed=0.4).until(
+                strafe_right(heading=0).until(
                     on_black(Defs.rear.left)
-                    + after_cm(3)
+                    + after_cm(4)
                     + on_white(Defs.rear.left)
                 ),
                 # put arm down
@@ -93,9 +96,12 @@ class M070GrabUpperCubeMission(Mission):
                 ),
                 # wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
                 strafe_left(heading=0).until(
-                    after_cm(5)  # just so the optimizer can work with it
-                    + on_black(Defs.front.left)
+                    after_cm(7)  # just so the optimizer can work with it
+                    + over_line(Defs.front.left)
                 ),
+                strafe_right().until(
+                    on_black(Defs.front.left)
+                )
             ])
             .cut_corners(5, cut_until=True),
             wait_for_checkpoint(60 + 17),  # wait so we don't colide with drum-bot

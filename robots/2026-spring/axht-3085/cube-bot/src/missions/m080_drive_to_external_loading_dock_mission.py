@@ -46,28 +46,44 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 seconds=9,
                 # fallback if we miss the black line on the bottom, so we still try to finish the run
                 # (won't help if we are stuck on the upper loading dock)
-                fallback=seq([
+                fallback=optimize([
                     drive_backward(heading=0).until(
                         on_black(Defs.rear.left)
                     ),
-                    strafe_left(cm=20, heading=0)
+                    strafe_left(cm=30, heading=0)
                 ])
             ),
 
-            optimize([
-                drive_forward(cm=5, heading=0),
+            switch_calibration_set("default"),
 
-                switch_calibration_set("default"),
-                strafe_right(heading=0).until(
-                    over_line(Defs.front.right)
-                    + over_line(Defs.front.right)
-                    + over_line(Defs.rear.left)
+            optimize([
+                turn_to_heading_left(90),
+
+                wall_align_forward( #
+                    speed=0.3,
+                    accel_threshold=10,
+                    settle_duration=0,
+                    max_duration=1,
+                    grace_period=1
                 ),
-                strafe_right(cm=10, speed=0.5, heading=0),
+                mark_heading_reference(origin_offset_deg=-90),
+
+                timeout(
+                    step=seq([
+                        drive_backward(heading=90).until(
+                            on_black(Defs.front.right)
+                            + after_cm(25)
+                            + on_black(Defs.front.right)
+                        ),
+                    ]),
+                    seconds=7
+                ),
+                turn_to_heading_left(0),
+                strafe_right(cm=20, speed=0.5, heading=0),
 
                 # align on wall
                 drive_forward(heading=0).until(
-                    after_seconds(2.5),
+                    after_cm(50)
                 ),
                 strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
             ]).cut_corners(5, cut_until=True),

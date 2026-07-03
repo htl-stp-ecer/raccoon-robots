@@ -11,7 +11,7 @@ def _follow():
         .move(forward=1)
         .correct_lateral()
         .hold_heading(0)
-        .pid(kp=0.3, ki=0.1, kd=0.0)
+        .pid(kp=0.3, ki=0.2, kd=0.0)
     )
 
 
@@ -43,7 +43,7 @@ class M050DropFirstCubeStackMission(Mission):
             ),
             #make sure  we push the poms to the side so we don't move them
             strafe_left(cm=5, heading=0),
-            strafe_right(cm=6, heading=0),
+            strafe_right(cm=4, heading=0),
 
             _follow().until(
                 after_cm(67)
@@ -56,7 +56,6 @@ class M050DropFirstCubeStackMission(Mission):
                     base_deg=90, speed=80
                 ),
             ),
-            #mark_heading_reference(), commented the mark heading referenc since we usually are on a pom and dont are accact
             strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),

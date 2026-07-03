@@ -2,10 +2,14 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 
-CONTAINER_BASE_OFFSET = 3
 
-def grab_brown_cube_start_pos():
-    return arm.move_angles(90, 90, -70)  # rotate left to face correct direction
+def grab_right_brown_cube_start_pos():
+    return arm.move_angles(85, 90, -70)  # rotate left to face correct direction
+                # (giving base a bit of a turn so we don't hit the dor)
+
+def grab_left_brown_cube_start_pos():
+    return arm.move_angles(95, 90, -70)  # rotate left to face correct direction
+                # (giving base a bit of a turn so we don't hit the dor)
 
 def grab_brown_cube(side: LineSide, heading: int | None):
     def drive():
@@ -14,11 +18,10 @@ def grab_brown_cube(side: LineSide, heading: int | None):
             # else run(lambda robot: None)
 
     return seq([
-        #arm.move_angles(90, 70, -50)
-        #    .arm_speeds(base=999, sholder=100, elbow=200),        # move into shared area
+        arm.move_angles(90),
 
         arm.move_angles(90, 60, -30)
-            .arm_speeds(base=999, sholder=100, elbow=200),        # move further into shared area
+            .arm_speeds(sholder=100, elbow=200),        # move further into shared area
 
         Defs.arm_claw.full_open(),                 # open claw
         drive(),
@@ -31,6 +34,8 @@ def grab_brown_cube(side: LineSide, heading: int | None):
             arm.move_angles(90, 100, -90),  # move out of shared area
         ),
     ])
+
+CONTAINER_BASE_OFFSET = 3
 
 def drop_cube_into_container():
     return seq([

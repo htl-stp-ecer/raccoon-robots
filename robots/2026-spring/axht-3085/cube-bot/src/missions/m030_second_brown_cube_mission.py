@@ -11,7 +11,7 @@ def _follow():
         .move(forward=-1)
         .correct_lateral()
         .hold_heading(0)
-        .pid(kp=0.5, ki=0.1, kd=0.0)
+        .pid(kp=0.4, ki=0.05, kd=0.0)
     )
 
 
@@ -24,7 +24,7 @@ class M030SecondBrownCubeMission(Mission):
                     wait_for_background(name="drop_cube"),
                     arm.move_angles(0, 65, 0, speed=150),
                     Defs.arm_claw.idle(),
-                    grab_brown_cube_start_pos()
+                    grab_left_brown_cube_start_pos()
                 ]),
 
                 # drive backwards to 2nd cube pickup
@@ -47,7 +47,7 @@ class M030SecondBrownCubeMission(Mission):
                         timeout_or(
                             step=_follow().until(
                                 (over_line(Defs.front.right)
-                                 + after_cm(15))
+                                 + after_cm(17))
                             ),
                             seconds=6,
                             fallback=seq([]),
@@ -64,12 +64,11 @@ class M030SecondBrownCubeMission(Mission):
                 fallback=seq([  # if we are stuck on the cone, try to drive forward so we get the conde out
                     drive_backward(cm=15),
                     drive_forward(cm=15),
-                    timeout_or(
+                    timeout(
                         step=strafe_right(heading=0, speed=0.5).until(
                             on_black(Defs.rear.left),
                         ),
                         seconds=2,
-                        fallback=seq([]),
                     )
                 ])
             ),
