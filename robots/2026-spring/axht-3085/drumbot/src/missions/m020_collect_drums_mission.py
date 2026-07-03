@@ -66,10 +66,16 @@ def drum_pipe_heading_mark_one():
 
 
 def drum_pipe_heading_mark_two():
-    global _was_first_heading_valid
-    if not _was_first_heading_valid:
-        return run(lambda robot: None)
-    return mark_heading_reference()
+    def _build(robot: "Robot"):
+        global _was_first_heading_valid
+        if not _was_first_heading_valid:
+            robot.get_service(HeadingReferenceService).warn(
+                "[drum_pipe_heading_mark_two] skipping mark_heading_reference - invalid orientation"
+            )
+            return run(lambda robot: None)
+        return mark_heading_reference()
+
+    return defer(_build)
 
 
 class M020CollectDrumsMission(Mission):
