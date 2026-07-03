@@ -31,13 +31,17 @@ def after_collect():
 
 def collect_position_hold():
     if getenv("DRUMBOT_NO_POSITION_HOLD") is not None: return run(lambda robot: None)
-    return wall_align_forward(
-        speed=0.2,
-        accel_threshold=99,
-        settle_duration=0,
-        max_duration=1,
-        grace_period=99999,
-    )
+    return seq([
+        # wait for aligning while starting collection to avoid the wall aligns conflicting
+        wait_for_background("before_collect_align"),
+        wall_align_forward(
+            speed=0.2,
+            accel_threshold=99,
+            settle_duration=0,
+            max_duration=1,
+            grace_period=99999,
+        ),
+    ])
 
 
 class M020CollectDrumsMission(Mission):

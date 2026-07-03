@@ -30,7 +30,7 @@ class M010DriveToDrumsMission(Mission):
             # drive
             drive_forward(heading=320).until(
                 over_line(Defs.front_right_ir_sensor)
-                + after_cm(3.5),
+                + after_cm(5),
             ),
 
             # turn back to original heading
@@ -50,10 +50,18 @@ class M010DriveToDrumsMission(Mission):
 
             wait_for_background("yeet_blue_pom"),
 
-            wall_align_forward(
-                accel_threshold=0.3,
-                grace_period=0.5,
-                max_duration=3.0,
+            # drive against pipe to align while lowering drum and starting drum collection
+            # position holding waits for this background task to finish to avoid this wall_align and the one in
+            # the position hold step conflicting
+            background(
+                seq([
+                    wall_align_forward(
+                        accel_threshold=0.3,
+                        grace_period=0.5,
+                        max_duration=1.5,
+                    ),
+                    mark_heading_reference(),
+                ]),
+                name="before_collect_align"
             ),
-            mark_heading_reference(),
         ])
