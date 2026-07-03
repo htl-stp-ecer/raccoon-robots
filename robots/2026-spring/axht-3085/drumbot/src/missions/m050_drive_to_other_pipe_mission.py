@@ -1,8 +1,6 @@
 from raccoon import *
-from src.steps.drive_to_pipe import drive_to_second_pipe
 from src.steps.drum_lifting_step import *
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
-from src.steps.drum_collector import eject_nearest_color
 from src.steps.drum_collector import drum_retreat
 from src.steps.remove_rubber_band_from_pom_pusher_step import remove_rubber_band_from_pom_pusher
 
@@ -27,11 +25,6 @@ class M050DriveToOtherPipeMission(Mission):
             ),
 
             turn_to_heading_right(90),
-
-            # turn to black line so we can start linefollowing
-            # turn_right().until(
-            #    on_black(Defs.front_right_ir_sensor)
-            # ),
 
             # line follow forward
             follow_line_single(
