@@ -19,7 +19,9 @@ class M010DriveToDrumsMission(Mission):
             # wait for over line and then remove the blue pom
             background(
                 seq([
-                    wait_for(over_line(Defs.front_right_ir_sensor)),
+                    wait_for(
+                        over_line(Defs.front_right_ir_sensor)
+                    ),
                     Defs.pom_remover_servo.left(),
                     Defs.pom_remover_servo.right(),
                     Defs.pom_remover_servo.drum_moving_pos(),
@@ -36,32 +38,18 @@ class M010DriveToDrumsMission(Mission):
             # turn back to original heading
             turn_to_heading_right(0),
 
-            # wait and lower drum
-            background(
-                seq([
-                    wait_for_seconds(0.6),
-                    parallel(
-                        Defs.lift_drums_servo.down(),
-                        Defs.drum_pusher_servo.open(),
-                    ),
-                ]),
-                name="lower_drum",
-            ),
+            # # wait and lower drum
+            # background(
+            #     seq([
+            #         wait_for_seconds(0.6),
+            #         parallel(
+            #             Defs.lift_drums_servo.down(),
+            #             Defs.drum_pusher_servo.open(),
+            #         ),
+            #     ]),
+            #     name="lower_drum",
+            # ),
 
+            # in order to avoid damaging pom pusher by sandwiching it between the pipes and the bot
             wait_for_background("yeet_blue_pom"),
-
-            # drive against pipe to align while lowering drum and starting drum collection
-            # position holding waits for this background task to finish to avoid this wall_align and the one in
-            # the position hold step conflicting
-            background(
-                seq([
-                    wall_align_forward(
-                        accel_threshold=0.3,
-                        grace_period=0.5,
-                        max_duration=1.5,
-                    ),
-                    mark_heading_reference(),
-                ]),
-                name="before_collect_align"
-            ),
         ])
