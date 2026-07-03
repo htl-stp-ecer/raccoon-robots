@@ -35,7 +35,8 @@ def left_lateral_align_line_follow():
 
 
 def weird_cube_drive():
-    approach = drive_until_impact(max_cm=50, speed=1, accel_threshold=0.4)  # bis 50cm ODER Aufprall
+    approach = DriveUntilImpact(max_cm=50, speed=1,
+                                accel_threshold=0.4)  # ← Klasse, nicht Factory!
 
     def drive_backward_if_cube(robot):
         robot.debug(f"drive_backward_if_cube: approach impact result: {approach.impact_result.forward_cm}")
@@ -56,7 +57,7 @@ def weird_cube_drive():
         drive_backward(heading=0).until(
             after_cm(28)
         ),
-        defer(lambda robot: drive_backward_if_cube),
+        defer(drive_backward_if_cube),
     ])
 
 
