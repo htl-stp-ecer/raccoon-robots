@@ -4,6 +4,7 @@ from src.steps.drum_lifting_step import *
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import eject_nearest_color
 from src.steps.drum_collector import drum_retreat
+from src.steps.remove_rubber_band_from_pom_pusher_step import remove_rubber_band_from_pom_pusher
 
 
 class M050DriveToOtherPipeMission(Mission):
@@ -46,6 +47,9 @@ class M050DriveToOtherPipeMission(Mission):
 
             # turn away and drive angled to avoid hitting wall
             turn_to_heading_right(90 - 30),
+            background(
+                remove_rubber_band_from_pom_pusher()
+            ),
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
