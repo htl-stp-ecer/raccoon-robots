@@ -10,6 +10,7 @@ from src.steps.drum_lifting_step import drum_lifting_up
 from src.steps.drum_collector.go_to_slot_step import go_to_slot
 
 HEADING_MARK_TOLERANCE_DEG = 5.0
+_was_first_heading_valid = True
 
 
 @dsl
@@ -45,8 +46,10 @@ def collect_position_hold():
         ),
     ])
 
-def drum_pipe_heading_mark():
+def drum_pipe_heading_mark_one():
     def _build(robot: "Robot"):
+        global _was_first_heading_valid
+
         heading_service = robot.get_service(HeadingReferenceService)
         error_deg = heading_service.current_relative_deg()
 
@@ -55,10 +58,18 @@ def drum_pipe_heading_mark():
                 f"Skipping heading reference mark — error {error_deg:.1f}° "
                 f"exceeds tolerance {HEADING_MARK_TOLERANCE_DEG:.1f}°"
             )
+            _was_first_heading_valid = False
             return run(lambda robot: None)
         return mark_heading_reference()
 
     return defer(_build)
+
+
+def drum_pipe_heading_mark_two():
+    global _was_first_heading_valid
+    if not _was_first_heading_valid:
+        return run(lambda robot: None)
+    return mark_heading_reference()
 
 
 class M020CollectDrumsMission(Mission):
@@ -74,7 +85,7 @@ class M020CollectDrumsMission(Mission):
                         grace_period=1.0,
                         max_duration=2.0,
                     ),
-                    drum_pipe_heading_mark(),
+                    drum_pipe_heading_mark_one(),
                 ]),
                 name="before_collect_align"
             ),
@@ -92,6 +103,6 @@ class M020CollectDrumsMission(Mission):
             ),
 
             # re-mark heading reference (because of static imu drift)
-            drum_pipe_heading_mark(),
+            drum_pipe_heading_mark_two(),
             after_collect(),
         ])
