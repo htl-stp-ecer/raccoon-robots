@@ -1,11 +1,15 @@
 from raccoon import *
 from os import getenv
 
+from raccoon.robot.heading_reference import HeadingReferenceService
+
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.steps.collect_drums_step import collect_drums
 from src.steps.drum_lifting_step import drum_lifting_up
 from src.steps.drum_collector.go_to_slot_step import go_to_slot
+
+HEADING_MARK_TOLERANCE_DEG = 5.0
 
 
 @dsl
@@ -41,8 +45,20 @@ def collect_position_hold():
     ])
 
 def drum_pipe_heading_mark():
-    # TODO: only mark if angle error is not too great
-    return mark_heading_reference()
+    def _build(robot: "Robot"):
+        heading_service = robot.get_service(HeadingReferenceService)
+        error_deg = heading_service.current_relative_deg()
+
+        if abs(error_deg) > HEADING_MARK_TOLERANCE_DEG:
+            heading_service.warn(
+                f"Skipping heading reference mark — error {error_deg:.1f}° "
+                f"exceeds tolerance {HEADING_MARK_TOLERANCE_DEG:.1f}°"
+            )
+            return run(lambda robot: None)
+
+        return mark_heading_reference()
+
+    return defer(_build)
 
 
 class M020CollectDrumsMission(Mission):
