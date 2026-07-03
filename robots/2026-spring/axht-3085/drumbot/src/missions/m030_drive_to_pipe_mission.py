@@ -5,7 +5,7 @@ from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import drum_retreat
-from src.steps.remove_rubber_band_from_pom_pusher_step import remove_rubber_band_from_pom_pusher
+from src.steps.pom_pusher_servo_moves import *
 
 
 def print_debug_info(robot):
@@ -48,12 +48,11 @@ class M030DriveToPipeMission(Mission):
                 + over_line(Defs.front_right_ir_sensor)
             ),
 
+            pom_pusher_rubber_band_avoid_pos(),
+
+            # turn around and then correct the heading (this instead of force dir cause its broken)
             turn_right(180),
             turn_to_heading_left(180),
-
-            background(
-                remove_rubber_band_from_pom_pusher()
-            ),
 
             # drive to pipe
             parallel(
@@ -64,6 +63,8 @@ class M030DriveToPipeMission(Mission):
                 ),
                 Defs.lift_drums_servo.seek_position(30),
             ),
+
+            pom_pusher_obstacle_avoid_pos(),
 
             lineup_drum_with_pipe(),
             drum_retreat(4),

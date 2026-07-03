@@ -2,7 +2,7 @@ from raccoon import *
 from src.steps.drum_lifting_step import *
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import drum_retreat
-from src.steps.remove_rubber_band_from_pom_pusher_step import remove_rubber_band_from_pom_pusher
+from src.steps.pom_pusher_servo_moves import *
 
 
 class M050DriveToOtherPipeMission(Mission):
@@ -24,7 +24,10 @@ class M050DriveToOtherPipeMission(Mission):
                 on_black(Defs.front_right_ir_sensor)
             ),
 
+            # turn parallel to black line
             turn_to_heading_right(90),
+
+            pom_pusher_rubber_band_avoid_pos(),
 
             # line follow forward
             follow_line_single(
@@ -40,9 +43,6 @@ class M050DriveToOtherPipeMission(Mission):
 
             # turn away and drive angled to avoid hitting wall
             turn_to_heading_right(90 - 30),
-            background(
-                remove_rubber_band_from_pom_pusher()
-            ),
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
@@ -66,6 +66,8 @@ class M050DriveToOtherPipeMission(Mission):
                 over_line(Defs.rear_left_ir_sensor)
                 + after_cm(15)
             ),
+
+            pom_pusher_obstacle_avoid_pos(),
 
             lineup_drum_with_pipe(),
             drum_retreat(4),
