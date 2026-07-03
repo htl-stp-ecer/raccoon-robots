@@ -21,11 +21,12 @@ def after_collect():
             drum_service.warn("Safe mode — lifting drum collector and skipping post-collection steps")
             return seq([
                 drum_lifting_up(always_motor_support=True),
+                go_to_slot(2, stall_retries=1, tolerate_stall=True),
             ])
 
         return seq([
             Defs.drum_pusher_servo.hold(),
-            go_to_slot(2, stall_retries=1, tolerate_stall=True),
+            go_to_slot(2, stall_retries=3, tolerate_stall=True),
         ])
 
     return defer(_build)
