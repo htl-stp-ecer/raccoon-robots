@@ -3,7 +3,7 @@ name = "drumbot"
 version = "0.1.0"
 requires-python = "==3.13.*"
 dependencies = [
-    "raccoon-cli==0.1.157",
+    "raccoon-cli==0.1.160",
     "raccoon-library==1.0.135",
 ]
 
