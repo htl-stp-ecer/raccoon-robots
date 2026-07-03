@@ -12,6 +12,26 @@ from src.service.sorting_service import SortingService
 
 CLOSE_DELAY = 0.1     # seconds to let the drum roll fully into position after detection
 
+# If a drum is "detected" this fast after we start looking, the color was
+# already in view before waiting began — i.e. the previous drum never left the
+# camera and is stuck against the blocker. A genuine fresh drop takes ~0.4-0.5s
+# to roll into view (see run logs), so anything below this is a stuck drum, not
+# a new one.
+INSTANT_STUCK_THRESHOLD = 0.1  # seconds
+
+
+class DrumStuckError(Exception):
+    """Raised when a drum is detected suspiciously fast (color already in view).
+
+    Signals that a previous drum never left the camera and is stuck. Collection
+    should stop, but the revolver motor is mechanically fine — so, unlike
+    ``MotorStalledError``, this does NOT lock or brake the motor.
+    """
+
+    def __init__(self, delta: float) -> None:
+        super().__init__(f"drum detected instantly ({delta * 1000:.0f}ms)")
+        self.delta = delta
+
 
 @dsl(hidden=True)
 class WaitForDrumStep(Step):
@@ -81,6 +101,15 @@ class WaitForDrumStep(Step):
                 sorting_service.record_detection_delta(max(0.0, checkpoint_relative))
             else:
                 sorting_service.record_detection_delta(wall_delta)
+            # Instant "detection" means the color was already in view before we
+            # started waiting — the previous drum is stuck, not a new one. Bail
+            # out so collection stops (motor stays free; caller handles it).
+            if wall_delta < INSTANT_STUCK_THRESHOLD:
+                self.warn(
+                    f"Drum detected instantly at {wall_delta * 1000:.0f}ms "
+                    f"(< {INSTANT_STUCK_THRESHOLD * 1000:.0f}ms) — drum stuck, not a fresh drop"
+                )
+                raise DrumStuckError(wall_delta)
             color_service.lock_color()
             self.info(f"Drum detected at {wall_delta:.3f}s — closing servo in {self.close_delay:.3f}s")
             await asyncio.sleep(self.close_delay)

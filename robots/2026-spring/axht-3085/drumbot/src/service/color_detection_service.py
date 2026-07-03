@@ -258,6 +258,19 @@ class ColorDetectionService(RobotService):
         self._color_first_seen = None
         self._send_command("reset", {})
 
+    async def frame_has_color(self, settle: float = 0.1) -> bool:
+        """Probe whether a color is visible *right now*, on a fresh frame.
+
+        Clears any locked/stale detection, waits ``settle`` seconds for new
+        detection frames to arrive, then reports whether a color is currently
+        in view. Used as an "is the field clear?" check before opening the
+        blocker: with the blocker still closed the camera should see nothing,
+        so a color still visible here means a drum never left the view (stuck).
+        """
+        self.reset()
+        await asyncio.sleep(settle)
+        return self.peek_color is not None
+
     async def wait_for_color(self, timeout: float) -> bool:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self._color_event.wait, timeout)

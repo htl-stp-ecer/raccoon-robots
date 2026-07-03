@@ -19,7 +19,7 @@ from src.steps.drum_collector.sort_into_slot_step import (
 )
 from src.steps.drum_lifting_step import drum_align_on_back, drum_lifting_down, drum_lifting_up
 from src.steps.terminate_leftover_velocity import terminate_leftover_velocity
-from src.steps.wait_for_drum_step import wait_for_drum
+from src.steps.wait_for_drum_step import DrumStuckError, wait_for_drum
 
 START_OFFSET = 9.5
 DRUMS = 8
@@ -124,8 +124,21 @@ class CollectDrumsStep(UIStep):
                     # rotate_to_next_empty_pocket must run before pusher.open():
                     # current_pocket sits on the just-filled slot, so opening
                     # the loading hole there would let the sorted drum fall out.
+                    await rotate_to_next_empty_pocket().run_step(robot)
+
+                    # Clear-frame guard: with the blocker still CLOSED, the
+                    # camera must see an empty field. A color still visible here
+                    # means the previous drum never left the view — it is stuck
+                    # against the blocker. Stop collecting, but leave the
+                    # revolver free (no lock, no brake) so post-collection,
+                    # drive and eject still run.
+                    if await color_service.frame_has_color():
+                        self._soft_stop_collection(
+                            screen, f"field not clear before drum #{drum_number}"
+                        )
+                        break
+
                     phase1a = seq([
-                        rotate_to_next_empty_pocket(),
                         Defs.drum_pusher_servo.open(),
                         wait_for_drum(checkpoint=checkpoint),
                         block_timer_start(),
@@ -137,6 +150,14 @@ class CollectDrumsStep(UIStep):
                         sort_into_slot(),
                     ])
                     await phase1b.run_step(robot)
+                except DrumStuckError as e:
+                    # Instant detection: a stuck drum was re-seen the moment we
+                    # started looking. Same soft handling as the clear-frame
+                    # guard — stop collecting, motor stays free.
+                    self._soft_stop_collection(
+                        screen, f"drum #{drum_number} detected instantly ({e.delta * 1000:.0f}ms)"
+                    )
+                    break
                 except MotorStalledError:
                     if not drum_service.collection_failed:
                         drum_service.motor.brake()
@@ -284,6 +305,26 @@ class CollectDrumsStep(UIStep):
                 self._emergency_reason = f"Drum stuck in camera for {duration:.1f}s"
                 await self._enter_safe_mode(robot, drum_service)
                 return
+
+    def _soft_stop_collection(self, screen: DrumCollectionScreen, reason: str) -> None:
+        """Stop collecting WITHOUT the hard emergency path.
+
+        Unlike ``_enter_safe_mode`` this does NOT set ``collection_failed`` /
+        ``motor_locked`` and does NOT brake the revolver: the motor stays free
+        so post-collection, drive and eject run normally, and no emergency
+        screen is held. It just ends the collection loop (the caller ``break``s
+        after this) and flashes the screen red so the driver sees why.
+
+        Used by the two stuck-drum guards (clear-frame check before opening the
+        blocker, and instant-detection inside wait_for_drum) where the drum is
+        jammed but the motor itself is mechanically fine.
+        """
+        self.warn(
+            f"Drum stuck ({reason}) — stopping collection early; "
+            f"revolver stays free, mission continues"
+        )
+        screen.status = "Drum stuck – collection stopped"
+        screen.flag_miss()  # red background marker
 
     async def _enter_safe_mode(self, robot: "GenericRobot", drum_service: DrumMotorService) -> None:
         """Enter safe mode: end collection, keep pusher open, disable retries.
