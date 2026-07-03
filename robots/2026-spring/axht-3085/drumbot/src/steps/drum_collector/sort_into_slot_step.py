@@ -213,6 +213,10 @@ class RotateToEjectStartStep(Step):
             drum_service.warn("No drums to eject — skipping eject pre-position")
             return
 
+        # Enter the eject phase so an emergency motor-lock is bypassed and the
+        # retry budget is chosen by cause (see DrumMotorService.begin_eject).
+        drum_service.begin_eject()
+
         if drum_service.at_midpoint:
             await drum_service.move_from_midpoint()
 
@@ -233,6 +237,10 @@ class EjectNearestColorStep(Step):
         if slots is None:
             drum_service.warn("No drums assigned yet — nothing to eject")
             return
+
+        # Enter the eject phase so an emergency motor-lock is bypassed and the
+        # retry budget is chosen by cause (see DrumMotorService.begin_eject).
+        drum_service.begin_eject()
 
         try:
             # Retreat from midpoint first to get clean slot alignment.

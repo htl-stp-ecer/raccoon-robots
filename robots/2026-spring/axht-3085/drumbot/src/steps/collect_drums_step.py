@@ -140,6 +140,7 @@ class CollectDrumsStep(UIStep):
                 except MotorStalledError:
                     if not drum_service.collection_failed:
                         drum_service.motor.brake()
+                        drum_service.motor_faulted = True
                         await self._enter_safe_mode(robot, drum_service)
                         self._emergency_reason = f"Drum motor stuck (drum #{drum_number})"
                     break
@@ -185,6 +186,7 @@ class CollectDrumsStep(UIStep):
                 except MotorStalledError:
                     if not drum_service.collection_failed:
                         drum_service.motor.brake()
+                        drum_service.motor_faulted = True
                         await self._enter_safe_mode(robot, drum_service)
                         self._emergency_reason = f"Drum motor stuck (closing pusher after drum #{drum_number})"
                     break

@@ -34,6 +34,16 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         self._current_pocket: int = 0
         self._at_midpoint: bool = False  # True when offset +half pocket from stripe
         self.collection_failed: bool = False
+        # True only when an emergency was caused by a GENUINE motor stall
+        # (MotorStalledError) — as opposed to a camera-stuck watchdog or a
+        # timing-blown abort, where the motor is mechanically fine. Ejection
+        # uses this to pick its retry budget (see begin_eject).
+        self.motor_faulted: bool = False
+        # True once we've entered the post-collection eject phase. While set,
+        # motor_locked is bypassed so drums are still ejected even after an
+        # emergency — the stall_retries budget (not a hard nav lock) is what
+        # protects a faulted big drum.
+        self.eject_mode: bool = False
         # Overridable per-call-site: collection runs with stricter retry budget;
         # ejection keeps the default to tolerate transient jams without killing.
         self.stall_retries: int = STALL_RETRIES
@@ -74,8 +84,41 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         watchdog, timing-blown). Once that is set, all revolver navigation is
         suppressed so a faulted big drum is never driven again — protecting the
         hardware while the rest of the run (chassis, lift, pusher) continues.
+
+        EXCEPTION: during the post-collection eject phase (``eject_mode``) we
+        deliberately drop the lock so the drums are still ejected even after an
+        emergency. A faulted drum is instead protected by the reduced
+        ``stall_retries`` budget (one careful attempt, no retry) that
+        ``begin_eject`` installs.
         """
+        if self.eject_mode:
+            return False
         return self.collection_failed
+
+    def begin_eject(self) -> None:
+        """Enter the eject phase: allow revolver nav even after an emergency.
+
+        Retry budget is chosen by emergency cause:
+          - genuine motor stall  → 1 attempt, no retry (one careful try; if it
+            stalls again the caller brakes and moves on),
+          - camera-stuck / timing / no emergency → normal budget, since the
+            motor is mechanically fine.
+
+        Idempotent: safe to call at the start of every eject step.
+        """
+        self.eject_mode = True
+        if self.motor_faulted:
+            self.stall_retries = 1
+            self.warn(
+                "Eject phase: motor previously faulted — single careful attempt, no retry"
+            )
+        else:
+            self.stall_retries = STALL_RETRIES
+            if self.collection_failed:
+                self.info(
+                    "Eject phase: emergency was non-motor (camera/timing) — "
+                    "attempting eject with normal retry budget"
+                )
 
     def reset_position(self, pocket: int = 0) -> None:
         self.info(f"Reset: pocket {self._current_pocket} → {pocket}")
