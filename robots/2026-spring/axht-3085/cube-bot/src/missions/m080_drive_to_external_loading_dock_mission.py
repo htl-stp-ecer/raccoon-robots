@@ -34,6 +34,33 @@ def left_lateral_align_line_follow():
     )
 
 
+def weird_cube_drive():
+    approach = drive_until_impact(max_cm=50, speed=1, accel_threshold=0.4)  # bis 50cm ODER Aufprall
+
+    def drive_backward_if_cube(robot):
+        robot.debug(f"drive_backward_if_cube: approach impact result: {approach.impact_result.forward_cm}")
+        if approach.impact_result.forward_cm >= 45:
+            return drive_backward(heading=0).until(
+                after_cm(28)
+            )
+        else:
+            return drive_backward(heading=0).until(
+                after_cm(16)
+            )
+
+    return seq([
+        approach,
+        strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
+
+        # move away from wall to avoid hitting already present cube stack
+        drive_backward(heading=0).until(
+            after_cm(28)
+        ),
+        defer(lambda robot: drive_backward_if_cube),
+    ])
+
+
+
 class M080DriveToExternalLoadingDockMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
@@ -82,9 +109,6 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 strafe_right(cm=20, speed=0.5, heading=0),
 
                 # align on wall
-                drive_forward(heading=0).until(
-                    after_cm(50)
-                ),
-                strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
+                weird_cube_drive(),
             ]).cut_corners(5, cut_until=True),
         ])

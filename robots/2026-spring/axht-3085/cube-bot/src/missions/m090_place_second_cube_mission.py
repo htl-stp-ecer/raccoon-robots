@@ -25,15 +25,9 @@ def forward_line_follow():
         .pid(kp=0.6, ki=0.3, kd=0.05)
     )
 
-
 class M090PlaceSecondCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # move away from wall to avoid hitting already present cube stack
-            drive_backward(heading=0).until(
-                after_cm(28)
-            ),
-
             arm.move_angles(28, 60, -40, speed=70),  # transport
             drive_forward(cm=18, heading=0),
             # place cube
