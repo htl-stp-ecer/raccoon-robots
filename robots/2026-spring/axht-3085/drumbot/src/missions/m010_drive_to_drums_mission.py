@@ -39,7 +39,7 @@ class M010DriveToDrumsMission(Mission):
             # wait and lower drum
             background(
                 seq([
-                    wait_for_seconds(0.5),
+                    wait_for_seconds(0.6),
                     parallel(
                         Defs.lift_drums_servo.down(),
                         Defs.drum_pusher_servo.open(),
@@ -52,7 +52,8 @@ class M010DriveToDrumsMission(Mission):
 
             wall_align_forward(
                 accel_threshold=0.3,
-                grace_period=0.35
+                grace_period=0.5,
+                max_duration=3.0,
             ),
             mark_heading_reference(),
         ])
