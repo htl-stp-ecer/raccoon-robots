@@ -4,8 +4,8 @@ from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
-from src.steps.drum_collector import eject_nearest_color
 from src.steps.drum_collector import drum_retreat
+from src.steps.remove_rubber_band_from_pom_pusher_step import remove_rubber_band_from_pom_pusher
 
 
 def print_debug_info(robot):
@@ -51,12 +51,16 @@ class M030DriveToPipeMission(Mission):
             turn_right(180),
             turn_to_heading_left(180),
 
+            background(
+                remove_rubber_band_from_pom_pusher()
+            ),
+
             # drive to pipe
             parallel(
                 drive_forward(heading=180).until(
                     after_cm(15)
                     + over_line(Defs.rear_left_ir_sensor)
-                    + after_cm(1.4),
+                    + after_cm(1.2),
                 ),
                 Defs.lift_drums_servo.seek_position(30),
             ),

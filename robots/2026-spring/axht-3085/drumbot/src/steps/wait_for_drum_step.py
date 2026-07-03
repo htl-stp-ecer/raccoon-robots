@@ -89,6 +89,7 @@ class WaitForDrumStep(Step):
                 f"Timeout ({learned_timeout:.3f}s) waiting for drum — "
                 f"closing anyway based on learned timing"
             )
+            color_service.record_miss()
             color_service.lock_color()
 
         Defs.drum_pusher_servo.device.set_position(Defs.drum_pusher_servo.block_angle.value)

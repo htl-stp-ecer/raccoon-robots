@@ -9,7 +9,7 @@ from src.steps.drum_collector import (
 )
 from src.steps.drum_lifting_step import *
 from src.hardware.defs import Defs
-from src.steps.drum_collector.pocket_jog_step import pocket_jog
+from src.steps.position_hold_choice_step import choose_position_hold
 
 
 class M000SetupMission(SetupMission):
@@ -25,15 +25,21 @@ class M000SetupMission(SetupMission):
             # this single USBCamera instance.
             start_camera(),
 
+            # Ask up front whether to use position holding during collection.
+            # Sets/clears DRUMBOT_NO_POSITION_HOLD for the rest of the run.
+            choose_position_hold(),
+
             wait_for_button("Move Servos"),
             start_setup_timer(),
 
             # initial servo positions
-            parallel(
-                Defs.lift_drums_servo.up(),
-                Defs.pom_remover_servo.drum_moving_pos(),
-                Defs.drum_pusher_servo.block_angle(),
+            background(
+                seq([
+                    Defs.pom_remover_servo.drum_moving_pos(),
+                    Defs.drum_pusher_servo.block_angle(),
+                ]),
             ),
+            Defs.lift_drums_servo.up(),
 
             # ir + distance calibration
             run_unless_no_calibrate(

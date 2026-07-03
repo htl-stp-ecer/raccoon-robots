@@ -65,12 +65,10 @@ def lineup_drum_with_pipe():
         ),
         wait_for_seconds(0.5),
         _drive_to_drum_button(),
-        parallel(
-            drive_backward(5.8, speed=0.2),
+        drive_backward(6.2, speed=0.2),
 
-            # Park one pocket before the group BEFORE lifting — this rotation drops
-            # nothing because the eject mechanism is still disengaged.
-            Defs.lift_drums_servo.eject_position(70),
-        ),
+        # Park one pocket before the group BEFORE lifting — this rotation drops
+        # nothing because the eject mechanism is still disengaged.
+        Defs.lift_drums_servo.eject_position(70),
         wait_for_seconds(0.5),
     ])

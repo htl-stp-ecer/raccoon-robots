@@ -48,6 +48,7 @@ class ColorDetectionService(RobotService):
         self._color_event = threading.Event()
         self._status_event = threading.Event()
         self._color_first_seen: float | None = None
+        self._last_miss_time: float | None = None
         self._last_status: dict[str, Any] = {}
         self._pending: dict[str, tuple[threading.Event, dict[str, Any] | None]] = {}
 
@@ -214,6 +215,14 @@ class ColorDetectionService(RobotService):
                 else:
                     self._latest_color = color
                     self._color_event.set()
+
+    def record_miss(self) -> None:
+        """Mark that a drum was expected but no color was ever detected for it."""
+        self._last_miss_time = time.monotonic()
+
+    @property
+    def last_miss_time(self) -> float | None:
+        return self._last_miss_time
 
     @property
     def continuous_color_seconds(self) -> float | None:
