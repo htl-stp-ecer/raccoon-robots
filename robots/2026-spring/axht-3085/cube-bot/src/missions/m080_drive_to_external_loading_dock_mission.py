@@ -4,6 +4,7 @@ from src.kinematics.arm import arm
 from src.steps.calibrate_analog_drive import on_analog_flank
 
 
+
 def _follow():
     return (
         line_follow()
@@ -12,7 +13,6 @@ def _follow():
         .correct_lateral()
         .pid(kp=0.5, ki=0.3, kd=0.0)
     )
-
 
 def wall_align():
     return (
@@ -23,7 +23,6 @@ def wall_align():
         .pid(kp=0.6, ki=0.6, kd=0.05)
     )
 
-
 def left_lateral_align_line_follow():
     return (
         line_follow()
@@ -32,7 +31,6 @@ def left_lateral_align_line_follow():
         .correct_forward(hold_heading=False)
         .pid(kp=0.4, ki=0.1, kd=0.0)
     )
-
 
 def weird_cube_drive():
     approach = DriveUntilImpact(max_cm=50, speed=1,
@@ -57,7 +55,6 @@ def weird_cube_drive():
         # move away from wall to avoid hitting already present cube stack
         defer(drive_backward_if_cube),
     ])
-
 
 class M080DriveToExternalLoadingDockMission(Mission):
     def sequence(self) -> Sequential:
@@ -88,8 +85,8 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 speed=0.3,
                 accel_threshold=10,
                 settle_duration=0,
-                max_duration=1,
-                grace_period=1
+                max_duration=0.7,
+                grace_period=0.7
             ),
             mark_heading_reference(origin_offset_deg=-90),
 
@@ -103,14 +100,8 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 ]),
                 seconds=7
             ),
-            turn_to_heading_left(0),
-            strafe_right(cm=20, speed=0.5, heading=0),
-            drive_forward(cm=50, heading=0),
-            strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
-            drive_backward(heading=0, cm=28),
+
             # ]).cut_corners(5, cut_until=True),
-
-
             # align on wall
             # weird_cube_drive(),
         ])

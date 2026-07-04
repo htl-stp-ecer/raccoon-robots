@@ -25,11 +25,74 @@ def forward_line_follow():
         .pid(kp=0.6, ki=0.3, kd=0.05)
     )
 
+
+def align_on_pipes():
+    cube_is_there = None
+
+    def is_sensor_in_calibration_range(robot, sensor, set_name="loading_dock", delta=500):
+        """Check if current sensor reading is within delta of the calibrated threshold.
+
+        Args:
+            sensor: The analog sensor to check
+            set_name: Calibration set name (default "loading_dock")
+            delta: Tolerance range around calibrated value (default 500)
+
+        Returns:
+            True if |current_reading - calibrated_value| <= delta, False otherwise
+        """
+        from raccoon.step.calibration import CalibrationStore, ANALOG_SENSOR_STORE_SECTION, analog_sensor_store_key
+
+        store = CalibrationStore()
+        key = analog_sensor_store_key(sensor, set_name)
+        calibration_data = store.load(ANALOG_SENSOR_STORE_SECTION, key)
+
+        if not calibration_data:
+            return False
+
+        calibrated_value = calibration_data["target_value"]
+        current_reading = float(sensor.read())
+        robot.info(
+            F"Checking for Cube: calibration value was {calibrated_value}; current sensor value{current_reading}")
+        return abs(current_reading - calibrated_value) <= delta
+
+    def check_if_cube_there(robot):
+        nonlocal cube_is_there
+        cube_is_there = is_sensor_in_calibration_range(robot, Defs.et_sensor, set_name="loading_dock", delta=500)
+
+    def positon_to_drop_cube(robot, _cm=28):
+        backward_drive = drive_backward(heading=0, cm=_cm) if cube_is_there \
+                else drive_backward(heading=0, cm=3)
+        forward_drive = drive_forward(cm=18, heading=0) if cube_is_there \
+            else seq([])
+
+        return seq([
+           backward_drive,
+           arm.move_angles(28, 60, -40, speed=70),  # transport
+           forward_drive,
+
+        ])
+
+    return seq([
+        run(check_if_cube_there),
+
+        #turn ot external loading dock
+        strafe_left(cm=5, heading=90),
+        turn_to_heading_left(0),
+
+        # alignment on pipes
+        strafe_right(cm=15, speed=0.5, heading=0),
+        drive_forward(cm=50, heading=0),
+        strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
+
+        #position to drop upper cube
+        defer(positon_to_drop_cube),
+    ])
+
+
 class M090PlaceSecondCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            arm.move_angles(28, 60, -40, speed=70),  # transport
-            drive_forward(cm=18, heading=0),
+            align_on_pipes(),
             # place cube
             arm.move_angles(28, 40, -40, speed=70),  # place
             Defs.arm_claw.open(),
@@ -44,8 +107,8 @@ class M090PlaceSecondCubeMission(Mission):
                 ])
             ),
 
-            #move brown cube in possiton
-            arm.move_angles(31, 80, -30) #dont to in parralel with drive_forward (we might hit the other cube stack)
+            # move brown cube in possiton
+            arm.move_angles(31, 80, -30)  # dont to in parralel with drive_forward (we might hit the other cube stack)
             .arm_speeds(
                 base=60, sholder=100, elbow=200
             ),
@@ -60,7 +123,7 @@ class M090PlaceSecondCubeMission(Mission):
             wait_for_seconds(0.2),
 
             Defs.arm_claw.open(),
-            Defs.arm_claw.grab(), #try to stop there movement of the cubes and catsh them if they are falling
+            Defs.arm_claw.grab(),  # try to stop there movement of the cubes and catsh them if they are falling
             Defs.arm_claw.open(),
             arm.move_angles(elbow_deg=-50),
             drive_backward(cm=27, heading=0),
