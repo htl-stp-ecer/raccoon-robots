@@ -4,7 +4,7 @@ from raccoon import *
 from src.hardware.defs import Defs
 
 CONE_PUSHER_MOTOR_MOVE_TIME = 0.4
-CONE_PUSHER_MOTOR_MOVE_VELOCITY = 1300
+CONE_PUSHER_MOTOR_MOVE_VELOCITY = -1300
 
 class LowerConePusherStep(Step):
     def __init__(self):
