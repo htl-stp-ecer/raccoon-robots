@@ -1,11 +1,9 @@
 from raccoon import *
-from src.steps.drum_lifting_step import *
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import drum_retreat
 from src.steps.pom_pusher_servo_moves import *
 
-
-class M050DriveToOtherPipeMission(Mission):
+class M040DriveToOtherPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # drive backward a bit so we can lift the drum
@@ -71,4 +69,13 @@ class M050DriveToOtherPipeMission(Mission):
 
             lineup_drum_with_pipe(),
             drum_retreat(4),
+
+            # turn away and tuck in drum to finish off everything
+            parallel(
+                turn_left(45),
+                seq([
+                    wait_for_seconds(0.2),
+                    Defs.lift_drums_servo.over_limit(120),
+                ]),
+            ),
         ])

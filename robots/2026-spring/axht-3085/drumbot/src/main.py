@@ -1,11 +1,9 @@
 from src.patches.heading_frame import apply as _apply_heading_patch
-
 _apply_heading_patch()
 
 import os
 
 from raccoon.foundation import Level, set_file_level, set_global_level
-
 from src.hardware.robot import Robot
 
 

@@ -1,7 +1,5 @@
 from raccoon import *
 from src.hardware.defs import *
-from src.steps.drum_lifting_step import *
-
 
 class M010DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:

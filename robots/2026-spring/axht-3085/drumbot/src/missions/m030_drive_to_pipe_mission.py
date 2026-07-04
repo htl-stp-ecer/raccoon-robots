@@ -1,5 +1,4 @@
 from raccoon import *
-
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
