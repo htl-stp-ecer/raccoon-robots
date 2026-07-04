@@ -35,7 +35,7 @@ class M040GrabRedCubeMission(Mission):
 
             # move arm into position for placing brown cube on red cube
             background(
-                arm.move_angles(80, 140, -35),
+                arm.move_angles(80, 140, -35, speed=120),
             ),
 
             # drive to red cube
@@ -46,17 +46,17 @@ class M040GrabRedCubeMission(Mission):
             ),
 
             # place down cube
-            arm.move_angles(elbow_deg=-85, sholder_deg=120, speed=100),
+            arm.move_angles(elbow_deg=-85, sholder_deg=120, speed=150),
             wait_for_seconds(0.2),
-            arm.move_angles(sholder_deg=104, speed=100),
+            arm.move_angles(sholder_deg=104, speed=150),
 
             #let cube go
-            Defs.arm_claw.full_open(150),
+            Defs.arm_claw.full_open(180),
 
             #grab both cubes
-            arm.move_angles(elbow_deg= -79, speed=150),
+            arm.move_angles(elbow_deg= -79, speed=180),
             wait_for_seconds(0.3),
-            arm.move_angles(sholder_deg=77, speed=150),
+            arm.move_angles(sholder_deg=77, speed=180),
             Defs.arm_claw.strong_grab(),
             background(
                 arm.move_angles(elbow_deg=-45).arm_speeds(base=70, elbow=130),
