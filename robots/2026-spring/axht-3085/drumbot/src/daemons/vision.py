@@ -40,7 +40,7 @@ from src.service.color_detection_service import (
 # Bring encode/decode of cam_blob_t, cam_frame_t, cam_detections_t in line
 # with the C++/Dart wire format (no LCM fingerprint, raw-length strings).
 # See src/transport_wire_patch.py for details.
-import patches.transport_wire_patch  # noqa: F401
+import src.patches.transport_wire_patch  # noqa: F401
 
 PRESENCE_THRESHOLD = 0.9
 ANALYSIS_FRAMES = 1

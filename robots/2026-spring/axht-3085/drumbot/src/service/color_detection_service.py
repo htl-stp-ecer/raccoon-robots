@@ -10,7 +10,7 @@ from raccoon import GenericRobot, RobotService, get_transport
 # Aligns Python encode/decode for cam_* with the C++/Dart wire format used
 # by the vision daemon and botui. Import for side-effect; safe to import
 # multiple times.
-import patches.transport_wire_patch  # noqa: F401
+import src.patches.transport_wire_patch  # noqa: F401
 from raccoon_transport.types.raccoon.cam_detections_t import cam_detections_t
 from raccoon_transport.types.raccoon.string_t import string_t
 
