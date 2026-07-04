@@ -9,7 +9,7 @@ from src.steps.collect_drums_step import collect_drums
 from src.steps.drum_collector.go_to_slot_step import go_to_slot
 
 POSITION_HOLD_ENV = "DRUMBOT_NO_POSITION_HOLD"
-HEADING_MARK_TOLERANCE_DEG = 5.0
+HEADING_MARK_TOLERANCE_DEG = 3.0
 _was_first_heading_valid = True
 
 
@@ -21,7 +21,7 @@ def after_collect():
         if drum_service.collection_failed:
             drum_service.warn("Safe mode — lifting drum collector and skipping post-collection steps")
             return seq([
-                drum_lifting_up(always_motor_support=True),
+                Defs.lift_drums_servo.up(),
                 go_to_slot(2, stall_retries=1, tolerate_stall=True),
             ])
 
