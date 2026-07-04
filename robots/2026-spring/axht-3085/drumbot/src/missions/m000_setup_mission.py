@@ -88,23 +88,4 @@ class M000SetupMission(SetupMission):
             Defs.pom_remover_servo.right(),
 
             fully_disable_servos(),
-
-            wait_for_button("[DEBUG]\n\nSet heading reference"),
-            mark_heading_reference(),
-
-            # wait_for_button("[DEBUG]\n\nPress the button to start calibration (distance + ir sensor, 70cm)"),
-            # collect_ir_set(
-            #     drive_forward(70),
-            #     set_name="default",
-            #     sensors=[Defs.front_right_ir_sensor, Defs.rear_left_ir_sensor]
-            # ),
-            # calibration_gate(
-            #     require_axes=[CalibrationAxis.FORWARD],
-            #     require_ir_sets=["default"],
-            # ),
-
-            wait_for_button("[DEBUG]\n\nSet all Servos"),
-            Defs.lift_drums_servo.seek_position(),
-            Defs.drum_pusher_servo.hold(),
-            Defs.pom_remover_servo.right(),
         ])
