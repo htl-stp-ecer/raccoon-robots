@@ -23,10 +23,10 @@ drum_motor:
   calibration:
     ticks_to_rad: 1.0
     vel_lpf_alpha: 1.0
-servo_help_motor:
+cone_pusher_motor:
   type: Motor
   port: 3
   inverted: false
   calibration:
-    ticks_to_rad: 1e-05
+    ticks_to_rad: 1.0
     vel_lpf_alpha: 1.0

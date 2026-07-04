@@ -18,6 +18,7 @@ class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
             pause_setup_timer(),
+            motor_off(Defs.cone_pusher_motor),
             fully_disable_servos(),
 
             # Camera opens once here and stays open until the shutdown mission.
@@ -80,8 +81,30 @@ class M000SetupMission(SetupMission):
                 Defs.drum_pusher_servo.block_angle(),
             ),
 
+            wait_for_button("Manually move cone cage motor to resting position\n(facing straight upwards)"),
+            motor_passive_brake(Defs.cone_pusher_motor),
+
             wait_for_button("Set Pom Pusher Servo"),
             Defs.pom_remover_servo.right(),
 
             fully_disable_servos(),
+
+            wait_for_button("[DEBUG]\n\nSet heading reference"),
+            mark_heading_reference(),
+
+            # wait_for_button("[DEBUG]\n\nPress the button to start calibration (distance + ir sensor, 70cm)"),
+            # collect_ir_set(
+            #     drive_forward(70),
+            #     set_name="default",
+            #     sensors=[Defs.front_right_ir_sensor, Defs.rear_left_ir_sensor]
+            # ),
+            # calibration_gate(
+            #     require_axes=[CalibrationAxis.FORWARD],
+            #     require_ir_sets=["default"],
+            # ),
+
+            wait_for_button("[DEBUG]\n\nSet all Servos"),
+            Defs.lift_drums_servo.seek_position(),
+            Defs.drum_pusher_servo.hold(),
+            Defs.pom_remover_servo.right(),
         ])

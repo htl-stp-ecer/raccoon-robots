@@ -9,7 +9,7 @@ def _lift_drum_servo(
         servo_speed: int,
         base_motor_speed=100,
         servo_ref=Defs.lift_drums_servo.device,
-        motor_ref=Defs.servo_help_motor,
+        motor_ref=None,
         slow_mode=True,
         always_motor_support=False,
 ) -> Defer:
