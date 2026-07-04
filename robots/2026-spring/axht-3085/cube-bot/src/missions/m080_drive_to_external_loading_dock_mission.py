@@ -72,7 +72,7 @@ class M080DriveToExternalLoadingDockMission(Mission):
                     drive_backward(heading=0).until(
                         on_black(Defs.rear.left)
                     ),
-                    strafe_left(cm=30, heading=0)
+                    strafe_left(cm=20, heading=0)
                 ])
             ),
 
@@ -85,8 +85,8 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 speed=0.3,
                 accel_threshold=10,
                 settle_duration=0,
-                max_duration=0.7,
-                grace_period=0.7
+                max_duration=0.6,
+                grace_period=0.6
             ),
             mark_heading_reference(origin_offset_deg=-90),
 
