@@ -56,8 +56,8 @@ class M060DriveUpRampMission(Mission):
                 wall_align_forward(speed=0.3,
                                    accel_threshold=10,
                                    settle_duration=0,
-                                   max_duration=1,
-                                   grace_period=1
+                                   max_duration=0.6,
+                                   grace_period=0.6
                                    ),
             ])
             .cut_corners(7, cut_until=True),
@@ -81,7 +81,7 @@ class M060DriveUpRampMission(Mission):
                 # drive to the right to the pipe
                 turn_to_heading_left(0),
                 left_lateral_line_follow().until(
-                    after_cm(30)
+                    after_cm(27)
                 ),
 
                 # align and switch calibration set
