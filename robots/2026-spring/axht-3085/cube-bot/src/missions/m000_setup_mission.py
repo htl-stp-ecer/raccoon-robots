@@ -55,7 +55,6 @@ def upper_warehouse_calibrate():
                 mark_heading_reference(),
                 collect_ir_set(  # calibrate upper deck ir sensor
                     seq([
-                        drive_backward(cm=10),
                         # make sure we have turned over all sneosrs on upper deck
                         turn_left(70),
                         turn_to_heading_right(10),
@@ -79,7 +78,7 @@ def warehouse_floor_calibration():
                 mark_heading_reference(),
                 collect_drive(
                     collect_ir_set(
-                        drive_forward(cm=60),
+                        drive_backward(cm=60),
                         set_name="default",
                     ),
                 ),
@@ -140,6 +139,12 @@ class M000SetupMission(SetupMission):
             calibration_gate(
                 require_axes=[CalibrationAxis.FORWARD],
                 require_ir_sets=["default", "upper"],
+            ),
+
+            calibrate_analog_sensor(
+                sensor=Defs.et_sensor,
+                set_name="loading_dock",
+                sample_duration=2.0
             ),
 
             move_into_starting_position(),
