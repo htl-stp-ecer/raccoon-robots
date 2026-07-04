@@ -41,15 +41,16 @@ class M070GrabUpperCubeMission(Mission):
             arm.move_angles(33, 90, -85, speed=80),
 
             # push cube back
-            optimize([
-                drive_angle(-120).until(
-                    on_black(Defs.front.left)
-                    + after_cm(3)  # make sure we avoid seeing the white dot
-                ),
-                drive_angle(-120, speed=0.4).until(
-                    on_white(Defs.front.left)
-                ),
-            ]),
+            # optimize( TODO: enable if optimize works again
+            turn_to_heading_left(0),
+            drive_angle(-120).until(
+                on_black(Defs.front.left)
+                + after_cm(3)  # make sure we avoid seeing the white dot
+            ),
+            drive_angle(-120, speed=0.4).until(
+                on_white(Defs.front.left)
+            ),
+            # ]),
 
             wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
             arm.move_angles(elbow_deg=0, speed=150),
@@ -88,10 +89,10 @@ class M070GrabUpperCubeMission(Mission):
             # move arm up
             arm.move_angles(0, 90, 50, speed=70),
             optimize([
-                drive_backward().until(  # push back poms
+                drive_backward(heading=0).until(  # push back poms
                     on_black(Defs.front.right)
                 ),
-                drive_forward().until(  # go forward so we can use the fornt line sensors
+                drive_forward(heading=0).until(  # go forward so we can use the fornt line sensors
                     after_cm(15)
                 ),
                 # wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
@@ -99,7 +100,7 @@ class M070GrabUpperCubeMission(Mission):
                     after_cm(7)  # just so the optimizer can work with it
                     + over_line(Defs.front.left)
                 ),
-                strafe_right().until(
+                strafe_right(heading=0).until(
                     on_black(Defs.front.left)
                 )
             ])
