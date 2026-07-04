@@ -15,6 +15,7 @@ pom_remover_servo:
     right: 0
     left: 110
     drum_moving_pos: 200
+    knock_cone_pos: -20
 
 lift_drums_servo:
   type: Servo

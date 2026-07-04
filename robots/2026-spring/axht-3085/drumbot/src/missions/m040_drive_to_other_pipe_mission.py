@@ -1,4 +1,5 @@
 from raccoon import *
+from src.hardware.defs import Defs
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import drum_retreat
 from src.steps.pom_pusher_servo_moves import *
@@ -45,6 +46,18 @@ class M040DriveToOtherPipeMission(Mission):
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
                 + after_cm(5)
+            ),
+
+            # attempt to knock any cones infront of the robot to the side
+            background(
+                seq([
+                    Defs.pom_remover_servo.left(),
+                    wait_for(
+                        on_black(Defs.front_right_ir_sensor)
+                    ),
+                    Defs.pom_remover_servo.knock_cone_pos(),
+                    Defs.pom_remover_servo.right(),
+                ])
             ),
 
             # turn onto black line
