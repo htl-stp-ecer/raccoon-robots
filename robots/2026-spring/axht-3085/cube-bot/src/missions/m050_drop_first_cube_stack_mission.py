@@ -27,7 +27,7 @@ def align_line_follow():
 
 
 class M050DropFirstCubeStackMission(Mission):
-    def sequence(self) -> Sequential:
+    def sequence(self) -> Step:
         return optimize([
             background(
                 step=seq([
@@ -46,11 +46,12 @@ class M050DropFirstCubeStackMission(Mission):
             strafe_right(cm=4, heading=0),
 
             _follow().until(
-                after_cm(67)
+                after_cm(60)
             ),
+            mark_heading_reference(),
             parallel(
                 align_line_follow().until(
-                    after_seconds(0.6),
+                    after_seconds(0.4),
                 ),
                 arm.move_angles(
                     base_deg=90, speed=80
