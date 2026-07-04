@@ -65,7 +65,7 @@ class M050DropFirstCubeStackMission(Mission):
             turn_to_heading_right(0),
 
             # place cube tower
-            arm.move_angles(sholder_deg=113),
+            arm.move_angles(sholder_deg=110),
             wait_for_seconds(0.2), #a samll delay so the sholder servo is definatly on his right posission
             arm.move_angles(elbow_deg=-98, speed=150),
             wait_for_seconds(0.5),
