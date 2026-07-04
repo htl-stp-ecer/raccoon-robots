@@ -7,7 +7,6 @@ from src.steps.drum_collector import (
     review_drum_collector,
     sample_drum_collector,
 )
-from src.steps.drum_lifting_step import *
 from src.hardware.defs import Defs
 from src.steps.position_hold_choice_step import choose_position_hold
 

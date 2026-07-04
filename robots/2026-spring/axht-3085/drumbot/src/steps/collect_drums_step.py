@@ -17,7 +17,6 @@ from src.steps.drum_collector.sort_into_slot_step import (
     rotate_to_next_empty_pocket,
     sort_into_slot,
 )
-from src.steps.drum_lifting_step import drum_align_on_back, drum_lifting_down, drum_lifting_up
 from src.steps.terminate_leftover_velocity import terminate_leftover_velocity
 from src.steps.wait_for_drum_step import DrumStuckError, wait_for_drum
 
@@ -259,28 +258,29 @@ class CollectDrumsStep(UIStep):
 
     async def _wait_for_lift_motor_stopped(self) -> None:
         """Block until servo_help_motor encoder has been stable for a full window."""
-        motor = Defs.servo_help_motor
-        start = time.monotonic()
-        last_pos = motor.get_position()
-        stable_since = start
-        while True:
-            await asyncio.sleep(LIFT_STOP_POLL)
-            cur_pos = motor.get_position()
-            if abs(cur_pos - last_pos) > LIFT_STOP_TICK_TOLERANCE:
-                last_pos = cur_pos
-                stable_since = time.monotonic()
-            elif time.monotonic() - stable_since >= LIFT_STOP_STABLE_WINDOW:
-                self.info(
-                    f"Lift motor settled (waited {time.monotonic() - start:.2f}s "
-                    f"before starting drum collection)"
-                )
-                return
-            if time.monotonic() - start > LIFT_STOP_TIMEOUT:
-                self.warn(
-                    f"Lift motor did not fully stop after {LIFT_STOP_TIMEOUT}s — "
-                    f"proceeding with drum collection anyway"
-                )
-                return
+        # motor = Defs.servo_help_motor
+        # start = time.monotonic()
+        # last_pos = motor.get_position()
+        # stable_since = start
+        # while True:
+        #     await asyncio.sleep(LIFT_STOP_POLL)
+        #     cur_pos = motor.get_position()
+        #     if abs(cur_pos - last_pos) > LIFT_STOP_TICK_TOLERANCE:
+        #         last_pos = cur_pos
+        #         stable_since = time.monotonic()
+        #     elif time.monotonic() - stable_since >= LIFT_STOP_STABLE_WINDOW:
+        #         self.info(
+        #             f"Lift motor settled (waited {time.monotonic() - start:.2f}s "
+        #             f"before starting drum collection)"
+        #         )
+        #         return
+        #     if time.monotonic() - start > LIFT_STOP_TIMEOUT:
+        #         self.warn(
+        #             f"Lift motor did not fully stop after {LIFT_STOP_TIMEOUT}s — "
+        #             f"proceeding with drum collection anyway"
+        #         )
+        #         return
+        return
 
     async def _stuck_drum_monitor(
         self,

@@ -3,7 +3,7 @@ import os
 from raccoon import GenericRobot, UIStep, dsl
 from src.ui.position_hold_choice_screen import PositionHoldChoiceScreen
 
-from src.steps.set_position_hold_velocity_step import POSITION_HOLD_ENV
+from src.missions.m020_collect_drums_mission import POSITION_HOLD_ENV
 
 
 @dsl(hidden=True)

@@ -4,7 +4,6 @@ import time
 from raccoon import *
 
 from src.hardware.defs import Defs
-from src.steps.drum_lifting_step import drum_eject_position
 
 
 def _heading_stuck(grace_seconds: float = 0.3, threshold_deg: float = 5.0, stuck_duration: float = 0.2):

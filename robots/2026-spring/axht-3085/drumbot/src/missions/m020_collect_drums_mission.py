@@ -6,9 +6,9 @@ from raccoon.robot.heading_reference import HeadingReferenceService
 from src.hardware.defs import Defs
 from src.service.drum_motor_service import DrumMotorService
 from src.steps.collect_drums_step import collect_drums
-from src.steps.drum_lifting_step import drum_lifting_up
 from src.steps.drum_collector.go_to_slot_step import go_to_slot
 
+POSITION_HOLD_ENV = "DRUMBOT_NO_POSITION_HOLD"
 HEADING_MARK_TOLERANCE_DEG = 5.0
 _was_first_heading_valid = True
 
@@ -33,7 +33,7 @@ def after_collect():
     return defer(_build)
 
 def collect_position_hold():
-    if getenv("DRUMBOT_NO_POSITION_HOLD") is not None: return run(lambda robot: None)
+    if getenv(POSITION_HOLD_ENV) is not None: return run(lambda robot: None)
     return seq([
         # wait for aligning while starting collection to avoid the wall aligns conflicting
         wait_for_background("before_collect_align"),
