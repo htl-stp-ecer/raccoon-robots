@@ -78,7 +78,7 @@ class M070GrabUpperCubeMission(Mission):
             ),
 
             # drive back to cube
-            drive_forward(cm=11, heading=0),
+            drive_forward(cm=13, heading=0),
 
             # close claw
             Defs.arm_claw.strong_grab(speed=100),
