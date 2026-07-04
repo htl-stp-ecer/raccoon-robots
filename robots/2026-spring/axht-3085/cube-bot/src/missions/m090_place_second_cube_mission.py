@@ -76,13 +76,11 @@ def align_on_pipes():
         run(check_if_cube_there),
 
         #turn ot external loading dock
-        strafe_left(cm=5, heading=90),
         turn_to_heading_left(0),
 
         # alignment on pipes
-        strafe_right(cm=15, speed=0.5, heading=0),
         drive_forward(cm=50, heading=0),
-        strafe_right(cm=5, speed=0.5, heading=0),  # make sure we are accectly on the pipe
+        strafe_right(cm=15, speed=0.5, heading=0),
 
         #position to drop upper cube
         defer(positon_to_drop_cube),
