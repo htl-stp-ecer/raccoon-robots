@@ -37,20 +37,19 @@ class M070GrabUpperCubeMission(Mission):
 
             # put claw on cube
             turn_to_heading_left(0),
-            arm.move_angles(33, speed=150),
-            arm.move_angles(33, 90, -85, speed=80),
+            arm.move_angles(41, speed=150),
+            arm.move_angles(sholder_deg=90, elbow_deg=-85, speed=80),
 
             # push cube back
-            # optimize( TODO: enable if optimize works again
-            turn_to_heading_left(0),
-            drive_angle(-120).until(
-                on_black(Defs.front.left)
-                + after_cm(3)  # make sure we avoid seeing the white dot
-            ),
-            drive_angle(-120, speed=0.4).until(
-                on_white(Defs.front.left)
-            ),
-            # ]),
+            optimize([
+                drive_angle(-120, heading=0).until(
+                    on_black(Defs.front.left)
+                    + after_cm(3)  # make sure we avoid seeing the white dot
+                ),
+                drive_angle(-120, heading=0, speed=0.4).until(
+                    on_white(Defs.front.left)
+                ),
+            ]),
 
             wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
             arm.move_angles(elbow_deg=0, speed=150),
@@ -87,7 +86,7 @@ class M070GrabUpperCubeMission(Mission):
             Defs.arm_claw.strong_grab(speed=100),
 
             # move arm up
-            arm.move_angles(0, 90, 50, speed=70),
+            arm.move_angles(0, 90, 40, speed=70),
             optimize([
                 drive_backward(heading=0).until(  # push back poms
                     on_black(Defs.front.right)
