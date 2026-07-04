@@ -96,11 +96,15 @@ class M070GrabUpperCubeMission(Mission):
                 ),
                 # wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
                 strafe_left(heading=0).until(
-                    after_cm(7)  # just so the optimizer can work with it
-                    + over_line(Defs.front.left)
+                    (on_black(Defs.front.left) + after_cm(7)) #overshoot the line
+                    | after_seconds(0.8)  # indirect timeout
                 ),
-                strafe_right(heading=0).until(
-                    on_black(Defs.front.left)
+                timeout_or(
+                    step=strafe_right(heading=0).until(
+                        on_black(Defs.front.left)
+                    ),
+                    seconds=1.3,
+                    fallback=strafe_left(cm=30)
                 )
             ])
             .cut_corners(5, cut_until=True),
