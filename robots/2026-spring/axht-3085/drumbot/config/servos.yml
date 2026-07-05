@@ -3,10 +3,10 @@ drum_pusher_servo:
   port: 0
   offset: 0
   positions:
-    close: 12
-    hold: 25
+    close: 17
+    hold: 30
     open: 185
-    block_angle: 55
+    block_angle: 60
     
 pom_remover_servo:
   type: Servo
