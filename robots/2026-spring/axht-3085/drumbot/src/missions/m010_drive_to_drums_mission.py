@@ -14,17 +14,23 @@ class M010DriveToDrumsMission(Mission):
             # turn for driving angle
             turn_to_heading_right(40),
 
-            # drive
-            drive_forward(heading=320).until(
-                over_line(Defs.front_right_ir_sensor)
-                + after_cm(5),
+            parallel(
+                # drive
+                drive_forward(heading=320).until(
+                    over_line(Defs.front_right_ir_sensor)
+                    + after_cm(5),
+                ),
+                seq([
+                    wait_for_seconds(0.1),
+                    Defs.pom_remover_servo.drum_moving_pos(),
+                    Defs.pom_remover_servo.right(),
+                ]),
             ),
 
             # remove any poms that might be in front of the robot
             background(
                 seq([
-                    wait_for_seconds(0.3),
-                    Defs.pom_remover_servo.right(),
+                    wait_for_seconds(0.6),
                     Defs.pom_remover_servo.drum_moving_pos(),
                 ]),
                 name="yeet_blue_pom",
