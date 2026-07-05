@@ -32,7 +32,7 @@ TIMING_SAFETY_THRESHOLD = 0.5
 # the mission sequence proceeds to the post-collection wait_for_checkpoint and
 # the robot drives its path. Drum-motor commands stay locked for the rest of the
 # run (see DrumMotorService.motor_locked).
-EMERGENCY_RELEASE_TIME = 50.0  # robot.synchronizer.get_time() seconds
+EMERGENCY_RELEASE_TIME = 60.0  # robot.synchronizer.get_time() seconds
 
 # Lift-motor-stop wait: the drum lift motor (servo_help_motor) is still moving
 # when the previous mission finishes lowering the collector. Starting color
@@ -359,7 +359,7 @@ class CollectDrumsStep(UIStep):
         exit here would leave it dead on the field. So instead of killing the
         program we:
           - stop the collection-screen updater (so it doesn't fight this screen),
-          - lift the collector to secure the mechanism (lift motor, NOT the
+          - lift the collector to secure the mechanism (lift servo, NOT the
             locked big drum),
           - display the emergency screen and hold it until the run clock reaches
             EMERGENCY_RELEASE_TIME, then return.
@@ -381,9 +381,9 @@ class CollectDrumsStep(UIStep):
             f"until run clock {EMERGENCY_RELEASE_TIME:.0f}s, then continuing path"
         )
 
-        # Secure the mechanism (uses the lift motor, not the locked revolver).
+        # Secure the mechanism (pure servo move, not the locked revolver).
         try:
-            await drum_lifting_up(always_motor_support=True).run_step(robot)
+            await Defs.lift_drums_servo.up().run_step(robot)
         except Exception as e:
             self.error(f"Emergency drum lift failed: {e}")
 
