@@ -39,13 +39,13 @@ def _drive_to_drum_button():
     def _build(_):
         if Defs.drum_found_button.read():
             return seq([
-                drive_backward(speed=0.2).until(on_digital(Defs.drum_found_button, pressed=False)),
-                drive_backward(2, speed=0.2),
-                drive_forward(speed=0.2).until(on_digital(Defs.drum_found_button) | after_cm(8)),
+                drive_backward(speed=0.4).until(on_digital(Defs.drum_found_button, pressed=False)),
+                drive_backward(2, speed=0.4),
+                drive_forward(speed=0.3).until(on_digital(Defs.drum_found_button) | after_cm(8)),
             ])
         else:
             return seq([
-                drive_forward(speed=0.2).until(on_digital(Defs.drum_found_button) | after_cm(15)),
+                drive_forward(speed=0.3).until(on_digital(Defs.drum_found_button) | after_cm(15)),
             ])
 
     return defer(_build)
@@ -58,13 +58,13 @@ def lineup_drum_with_pipe():
         Defs.lift_drums_servo.seek_position(),
         wait_for_seconds(0.5),
         turn_right().until(
-            _heading_stuck(stuck_duration=0.5, threshold_deg=4)
+            _heading_stuck(stuck_duration=0.3, threshold_deg=4)
             | on_digital(Defs.drum_found_button)
             | after_degrees(60)
         ),
         wait_for_seconds(0.5),
         _drive_to_drum_button(),
-        drive_backward(6.2, speed=0.2),
+        drive_backward(6.2, speed=0.4),
 
         # Park one pocket before the group BEFORE lifting — this rotation drops
         # nothing because the eject mechanism is still disengaged.
