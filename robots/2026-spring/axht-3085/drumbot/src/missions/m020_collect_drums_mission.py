@@ -17,17 +17,18 @@ _was_first_heading_valid = True
 def after_collect():
     def _build(robot: "Robot"):
         drum_service = robot.get_service(DrumMotorService)
+        stall_retries = 3
 
         if drum_service.collection_failed:
             drum_service.warn("Safe mode — lifting drum collector and skipping post-collection steps")
-            return seq([
-                Defs.lift_drums_servo.up(),
-                go_to_slot(2, stall_retries=1, tolerate_stall=True),
-            ])
+            stall_retries = 1
 
         return seq([
-            Defs.drum_pusher_servo.hold(),
-            go_to_slot(2, stall_retries=3, tolerate_stall=True),
+            parallel(
+                Defs.lift_drums_servo.up(),
+                Defs.drum_pusher_servo.hold(),
+            ),
+            go_to_slot(2, stall_retries=stall_retries, tolerate_stall=True),
         ])
 
     return defer(_build)
