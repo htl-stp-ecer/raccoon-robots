@@ -1,4 +1,4 @@
-shutdown_in: 120
+shutdown_in: 119
 drive:
   kinematics:
     type: differential

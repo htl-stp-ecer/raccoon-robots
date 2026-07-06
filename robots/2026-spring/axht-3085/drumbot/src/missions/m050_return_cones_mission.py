@@ -2,9 +2,11 @@ from raccoon import *
 from src.hardware.defs import Defs
 from src.steps.cone_pusher_steps import lower_cone_pusher
 
+
 class M050ReturnConesMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+
             # turn away and tuck in drum while lowering cone pusher
             parallel(
                 turn_left(53),
@@ -32,9 +34,9 @@ class M050ReturnConesMission(Mission):
             .pid(1.5, 0.3, 0.1)
             .until(
                 over_line(Defs.front_right_ir_sensor)
-                + over_line(Defs.front_right_ir_sensor)
+                + on_black(Defs.front_right_ir_sensor)
             ),
 
-            drive_arc_left(radius_cm=55, degrees=45, speed=-1),
-            drive_backward(cm=30),
+            drive_backward(cm=40, heading=-70),
+            drive_backward(cm=40, heading=-45),
         ])
