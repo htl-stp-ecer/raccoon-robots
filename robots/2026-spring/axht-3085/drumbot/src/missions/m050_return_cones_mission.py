@@ -35,9 +35,6 @@ class M050ReturnConesMission(Mission):
                 + over_line(Defs.front_right_ir_sensor)
             ),
 
-            spline(
-                (-50, 20),
-                (-80, 50),
-                speed=-1
-            ),
+            drive_arc_left(radius_cm=55, degrees=45, speed=-1),
+            drive_backward(cm=30),
         ])
