@@ -29,10 +29,13 @@ class M070GrabUpperCubeMission(Mission):
                 on_analog_flank(Defs.et_sensor, "upper_cube")
                 + after_cm(15)
             ),
-            strafe_right(heading=0).until(
-                on_black(Defs.rear.left)
-                + after_cm(3)  # make sure we avoid seeing the white dot
-                + on_white(Defs.rear.left)
+            timeout(
+                strafe_right(heading=0).until(
+                    on_black(Defs.rear.left)
+                    + after_cm(3)  # make sure we avoid seeing the white dot
+                    + on_white(Defs.rear.left)
+                ),
+                seconds=2
             ),
 
             # put claw on cube
@@ -81,32 +84,34 @@ class M070GrabUpperCubeMission(Mission):
             drive_forward(cm=13, heading=0),
 
             # close claw
-            Defs.arm_claw.strong_grab(speed=100),
-            Defs.arm_claw.open(speed=100),
-            Defs.arm_claw.strong_grab(speed=100),
+            Defs.arm_claw.strong_grab(speed=130),
+            Defs.arm_claw.open(speed=150),
+            Defs.arm_claw.strong_grab(speed=180),
 
             # move arm up
-            arm.move_angles(0, 90, 40, speed=70),
-            optimize([
-                drive_backward(heading=0).until(  # push back poms
-                    on_black(Defs.front.right)
-                ),
-                drive_forward(heading=0).until(  # go forward so we can use the fornt line sensors
-                    after_cm(15)
-                ),
-                # wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
+            background(
+                arm.move_angles(0, 90, 40, speed=70),
+            ),
+            wait_for_seconds(0.3),  # wait a bit so the cube has lifted a bit before starting to move
+            drive_backward(heading=0).until(  # push back poms
+                on_black(Defs.front.right)
+            ),
+            drive_forward(heading=0).until(  # go forward so we can use the fornt line sensors
+                after_cm(15)
+            ),
+            wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
+            timeout(
                 strafe_left(heading=0).until(
-                    (on_black(Defs.front.left) + after_cm(7)) #overshoot the line
-                    | after_seconds(0.8)  # indirect timeout
+                    (on_black(Defs.front.left) + after_cm(7))  # overshoot the line
                 ),
-                timeout_or(
-                    step=strafe_right(heading=0).until(
-                        on_black(Defs.front.left)
-                    ),
-                    seconds=1.3,
-                    fallback=strafe_left(cm=30)
-                )
-            ])
-            .cut_corners(5, cut_until=True),
+                seconds=1,
+            ),
+            timeout_or(
+                step=strafe_right(heading=0).until(
+                    on_black(Defs.front.left)
+                ),
+                seconds=1.3,
+                fallback=strafe_left(cm=30)
+            ),
             wait_for_checkpoint(60 + 17),  # wait so we don't colide with drum-bot
         ])
