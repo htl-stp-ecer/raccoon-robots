@@ -33,7 +33,7 @@ arm_claw:
   offset: 0
   positions:
     idle: 10
-    open: 70
+    open: 65
     full_open: 100
     grab_upper_cube: 120
     grab: 10
