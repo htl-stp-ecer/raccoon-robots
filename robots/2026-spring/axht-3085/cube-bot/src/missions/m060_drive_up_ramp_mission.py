@@ -62,7 +62,7 @@ class M060DriveUpRampMission(Mission):
             ])
             .cut_corners(7, cut_until=True),
 
-            wait_for_seconds(0.3), #wait a bit so the bot is fully still
+            wait_for_seconds(0.1), #wait a bit so the bot is fully still
             mark_heading_reference(),
 
             # drive to black line where palette with two yellow cubes is
