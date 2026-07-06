@@ -50,6 +50,9 @@ def grab_cube_from_container():
         #arm.move_angles(elbow_deg=80),
         arm.move_angles(base_deg=CONTAINER_BASE_OFFSET, sholder_deg=45, elbow_deg=80)
             .arm_speeds(base=100),
+        background(
+            Defs.arm_claw.full_open(),
+        ),
         wait_for_seconds(0.2),
 
         # grab
@@ -59,5 +62,5 @@ def grab_cube_from_container():
         wait_for_seconds(0.2),
 
         # move out of grab position
-        arm.move_angles(elbow_deg=0),
+        arm.move_angles(elbow_deg=-30),
     ])
