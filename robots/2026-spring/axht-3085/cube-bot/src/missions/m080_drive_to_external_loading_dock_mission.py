@@ -79,6 +79,11 @@ class M080DriveToExternalLoadingDockMission(Mission):
             switch_calibration_set("default"),
 
             # optimize([ #TODO: enable teh optimize
+
+            #make sure we have no game peaces in front of the pipe
+            drive_forward(cm=5, heading=5),
+            drive_backward(cm=5, heading=0),
+
             turn_to_heading_left(90),
 
             wall_align_forward(  #
@@ -102,6 +107,4 @@ class M080DriveToExternalLoadingDockMission(Mission):
             ),
 
             # ]).cut_corners(5, cut_until=True),
-            # align on wall
-            # weird_cube_drive(),
         ])
