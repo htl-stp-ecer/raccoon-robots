@@ -27,8 +27,23 @@ class M040GrabRedCubeMission(Mission):
                 fallback=seq([
                     drive_backward(cm=5),
                     drive_forward(cm=5),
-                    strafe_left(heading=0).until(
-                        over_line(Defs.front.left)
+                    timeout_or(
+                        strafe_left(heading=0).until(
+                            over_line(Defs.front.left)
+                        ),
+                        seconds=5,
+                        fallback=seq([
+                            Defs.arm_claw.open(),
+                            timeout(
+                                seq([
+                                    turn_to_heading_right(0),
+                                    strafe_left(heading=0).until(
+                                        over_line(Defs.front.left)
+                                    ),
+                                ]),
+                                seconds=2,
+                            )
+                        ])
                     ),
                 ])
             ),
@@ -48,10 +63,11 @@ class M040GrabRedCubeMission(Mission):
             # place down cube
             arm.move_angles(elbow_deg=-85, sholder_deg=120, speed=150),
             wait_for_seconds(0.2),
-            arm.move_angles(sholder_deg=104, speed=150),
+            arm.move_angles(sholder_deg=100, speed=150),
 
             #let cube go
             Defs.arm_claw.full_open(180),
+            arm.move_angles(sholder_deg=120, speed=250), #make sure we move claw a bit back so we dont hit the lower cube
 
             #grab both cubes
             arm.move_angles(elbow_deg= -79, speed=180),
@@ -63,7 +79,16 @@ class M040GrabRedCubeMission(Mission):
             ),
 
             #drive to the side so we dont hit thing when we place cube back town for regreab
-            strafe_left(heading=0).until(
-                on_black(Defs.rear.left)
+            timeout_or(
+                strafe_left(heading=0).until(
+                    on_black(Defs.rear.left)
+                ),
+                seconds=2,
+                fallback=seq([
+                   Defs.arm_claw.full_open(),
+                   strafe_left(heading=0).until(
+                       on_black(Defs.rear.left)
+                   ),
+                ]),
             ),
         ])

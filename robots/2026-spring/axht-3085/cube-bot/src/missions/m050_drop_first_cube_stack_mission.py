@@ -62,6 +62,7 @@ class M050DropFirstCubeStackMission(Mission):
             ),
             strafe_right(heading=0).until(
                 over_line(Defs.rear.left)
+                | after_cm(3) #if we miss the lien somehow just stop and try to drop the cube stack
             ),
             turn_to_heading_right(0),
 
