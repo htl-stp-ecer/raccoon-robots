@@ -50,7 +50,7 @@ def upper_warehouse_calibrate():
                     Defs.et_sensor,
                     set_name="upper_cube",
                     speed=-0.5,
-                    drive_duration_s=2
+                    drive_duration_s=1.5
                 ),
                 mark_heading_reference(),
                 collect_ir_set(  # calibrate upper deck ir sensor
