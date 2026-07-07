@@ -27,9 +27,9 @@ def auto_tune_step():
     return seq([
         auto_tune(
             tune_bemf_velocity=True,
-            tune_vel_lpf=False,
-            tune_static_friction=False,
-            tune_firmware_pid=False,
+            tune_vel_lpf=True,
+            tune_static_friction=True,
+            tune_firmware_pid=True,
             tune_encoder_cal=True,
             tune_characterize=False,
             tune_velocity=True,
@@ -92,25 +92,17 @@ def move_into_starting_position():
         wait_for_button("go to strart possiont"),
         mark_heading_reference(),
         # align on the black line on the right
-        strafe_right(heading=0).until(
-            on_black(Defs.front.right)
-        ),
+        drive_backward(cm=1, speed=0.4, heading=0),
         strafe_left(heading=0).until(
-            on_white(Defs.front.right)
-            + after_cm(3)
+            on_black(Defs.rear.left)
         ),
-        # aling witht the black line in front
-        drive_forward(heading=0).until(
-            on_black(Defs.front.left)
-        ),
-        drive_backward(speed=0.6, heading=0).until(
-            on_white(Defs.front.left)
+        strafe_right(heading=0).until(
+            on_white(Defs.rear.left)
             + after_cm(2)
         ),
-        wait_for_seconds(0.5),
+        # aling witht the black line in front
         turn_to_heading_right(0),
 
-        arm.move_angles(-60, 130, -110),
         fully_disable_servos(),
     ])
 
