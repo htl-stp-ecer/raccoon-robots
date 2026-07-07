@@ -33,11 +33,9 @@ def after_collect():
             drum_service.begin_eject()
 
         return seq([
-            parallel(
-                Defs.lift_drums_servo.up(),
-                Defs.drum_pusher_servo.hold(),
-            ),
+            Defs.drum_pusher_servo.hold(),
             go_to_slot(2, stall_retries=stall_retries, tolerate_stall=True),
+            Defs.lift_drums_servo.up(),
         ])
 
     return defer(_build)
