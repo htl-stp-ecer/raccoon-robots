@@ -47,11 +47,11 @@ class M070GrabUpperCubeMission(Mission):
             optimize([
                 drive_angle(-120, heading=0).until(
                     on_black(Defs.front.left)
-                    + after_cm(3)  # make sure we avoid seeing the white dot
+                    #+ after_cm(3)  # make sure we avoid seeing the white dot
                 ),
-                drive_angle(-120, heading=0, speed=0.4).until(
-                    on_white(Defs.front.left)
-                ),
+                #drive_angle(-120, heading=0, speed=0.4).until(
+                #    on_white(Defs.front.left)
+                #),
             ]),
 
             wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
@@ -76,9 +76,9 @@ class M070GrabUpperCubeMission(Mission):
                 # put arm down
                 arm.move_angles(0, 0, 0, speed=120),
             ),
-            strafe_left(heading=0).until(
-                on_black(Defs.rear.left)
-            ),
+            #strafe_left(heading=0).until(
+            #    on_black(Defs.rear.left)
+            #),
 
             # drive back to cube
             drive_forward(cm=13, heading=0),
