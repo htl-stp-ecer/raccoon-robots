@@ -53,7 +53,7 @@ def align_on_pipes():
         current_reading = float(sensor.read())
         robot.info(
             F"Checking for Cube: calibration value was {calibrated_value}; current sensor value{current_reading}")
-        return abs(current_reading - calibrated_value) <= delta
+        return current_reading - calibrated_value <= delta
 
     def check_if_cube_there(robot):
         nonlocal cube_is_there
