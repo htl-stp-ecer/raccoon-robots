@@ -37,10 +37,12 @@ class M060DriveUpRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # move away from cube stack
-            arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
             optimize([
                 strafe_left().until(
                     over_line(Defs.rear.left)
+                ),
+                background(
+                    arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
                 ),
                 drive_backward(cm=10),
                 timeout_or(
