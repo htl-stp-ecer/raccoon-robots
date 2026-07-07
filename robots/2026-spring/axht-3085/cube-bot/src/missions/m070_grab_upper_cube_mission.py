@@ -88,6 +88,8 @@ class M070GrabUpperCubeMission(Mission):
             Defs.arm_claw.open(speed=150),
             Defs.arm_claw.strong_grab(speed=180),
 
+            drive_backward(cm=5),
+
             # move arm up
             background(
                 arm.move_angles(0, 90, 40, speed=70),
