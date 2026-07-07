@@ -2,7 +2,6 @@
 .github
 .gitlab
 .idea
-.raccoon
 .venv
 logs
 drum_detections

@@ -22,6 +22,15 @@ def after_collect():
         if drum_service.collection_failed:
             drum_service.warn("Safe mode — lifting drum collector and skipping post-collection steps")
             stall_retries = 1
+            # Enter the eject phase now so the emergency nav-lock is dropped
+            # *before* the slot-2 alignment runs. Without this, motor_locked
+            # makes go_to_pocket early-return and the revolver never even
+            # attempts to reach slot 2 — the eject then starts from wherever
+            # the emergency left it (2 pockets off), so nothing lands on the
+            # pipe. begin_eject picks the retry budget by cause; combined with
+            # go_to_slot's tolerate_stall=True below, a genuinely faulted motor
+            # still gets exactly one careful attempt, then brakes and continues.
+            drum_service.begin_eject()
 
         return seq([
             parallel(
