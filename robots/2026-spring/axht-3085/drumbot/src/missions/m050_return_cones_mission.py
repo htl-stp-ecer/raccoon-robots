@@ -37,6 +37,8 @@ class M050ReturnConesMission(Mission):
                 + on_black(Defs.front_right_ir_sensor)
             ),
 
-            drive_backward(cm=40, heading=-70),
-            drive_backward(cm=40, heading=-45),
+            optimize([
+                drive_backward(cm=40, heading=-70),
+                drive_backward(cm=40, heading=-45),
+            ])
         ])
