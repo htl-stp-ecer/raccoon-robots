@@ -38,7 +38,9 @@ class M050ReturnConesMission(Mission):
             ),
 
             optimize([
+                turn_to_heading_left(70),
                 drive_backward(cm=40, heading=-70),
+                turn_to_heading_left(45),
                 drive_backward(cm=40, heading=-45),
             ])
         ])
