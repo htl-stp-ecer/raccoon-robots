@@ -67,7 +67,7 @@ def _search_turn():
     """Sweep-turn to find the pipe. Stops early when the drum hits the pipe
     (heading stuck / button pressed); otherwise runs out to the full sweep."""
     return turn_right().until(
-        _heading_stuck(stuck_duration=0.5, threshold_deg=4)
+        _heading_stuck(stuck_duration=0.2, threshold_deg=4)
         | on_digital(Defs.drum_found_button)
         | after_degrees(MAX_SEARCH_TURN_DEG)
     )
