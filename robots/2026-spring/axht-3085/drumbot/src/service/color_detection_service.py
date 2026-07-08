@@ -160,7 +160,7 @@ class ColorDetectionService(RobotService):
         try:
             msg = string_t.decode(data)
             self._last_status = json.loads(msg.value)
-            self.info(f"Vision status received: {self._last_status}")
+            self.debug(f"Vision status received: {self._last_status}")
             self._status_event.set()
         except Exception:
             self.warn("Ignoring malformed vision status message")
