@@ -54,7 +54,7 @@ class M050DropFirstCubeStackMission(Mission):
                     after_seconds(0.4),
                 ),
                 arm.move_angles(
-                    base_deg=90, speed=80
+                    base_deg=93, speed=80
                 ),
             ),
             strafe_left(heading=0).until(
