@@ -128,18 +128,18 @@ class M090PlaceSecondCubeMission(Mission):
             arm.move_angles(elbow_deg=-50),
             drive_backward(cm=20, heading=0),
             arm.move_angles(sholder_deg=90, elbow_deg=0),
-            background(
-                step=seq([
-                    loop_for(
-                        step=seq([
-                            Defs.arm_claw.grab(),
-                            Defs.arm_claw.full_open(),
-                        ]),
-                        iterations=10
-                    )
-                ]),
-                name="clap"
-            ),
+            #background(
+            #    step=seq([
+            #        loop_for(
+            #            step=seq([
+            #                Defs.arm_claw.grab(),
+            #                Defs.arm_claw.full_open(),
+            #            ]),
+            #            iterations=10
+            #        )
+            #    ]),
+            #    name="clap"
+            #),
             background(
                 arm.move_angles(base_deg=-90),
                 name="move base"
