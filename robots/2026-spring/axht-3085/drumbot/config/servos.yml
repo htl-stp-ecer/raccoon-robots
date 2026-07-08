@@ -14,7 +14,7 @@ pom_remover_servo:
   positions:
     right: 0
     left: 110
-    drum_moving_pos: 200
+    drum_moving_pos: 195
     knock_cone_pos: -20
 
 lift_drums_servo:
@@ -22,10 +22,10 @@ lift_drums_servo:
   port: 1
   positions:
     up: 180
-    over_limit: 210
+    over_limit: 215
     align_on_back: 70
-    eject_position: 126
-    seek_position: 180
-    down: -7
+    eject_position: 117
+    seek_position: 170
+    down: -18
     remove_D: 38
     remove_M: 70
