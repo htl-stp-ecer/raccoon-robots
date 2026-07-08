@@ -100,7 +100,11 @@ def lineup_drum_with_pipe():
         # Right after the turn we already know whether the pipe was missed: a
         # successful hit stops the turn early, a miss sweeps the full range.
         svc = robot.get_service(HeadingReferenceService)
-        turned = abs(svc.current_relative_deg() - state["start_heading_deg"])
+        # Normalize to [-180, 180]: both headings are already wrapped to that
+        # range, so a raw subtraction wraps around (e.g. -175° -> +163° reads
+        # as 338° instead of the real 22°) and would flag a hit as a miss.
+        delta = (svc.current_relative_deg() - state["start_heading_deg"] + 180) % 360 - 180
+        turned = abs(delta)
         state["missed"] = turned >= PIPE_MISS_TURN_DEG
         if state["missed"]:
             svc.warn(
@@ -141,19 +145,22 @@ def lineup_drum_with_pipe():
         return _restore_heading()
 
     def _finish(_):
-        # If we skipped, don't drive onto / eject at a pipe we never found.
-        if state["skipped"]:
-            return run(lambda _: None)
-        return seq([
-            wait_for_seconds(0.5),
-            _drive_to_drum_button(),
-            drive_backward(6.2, speed=0.2),
-
-            # Park one pocket before the group BEFORE lifting — this rotation
-            # drops nothing because the eject mechanism is still disengaged.
+        steps = []
+        # Only drive onto / against the pipe if we actually found it.
+        if not state["skipped"]:
+            steps += [
+                wait_for_seconds(0.5),
+                _drive_to_drum_button(),
+                drive_backward(6.2, speed=0.2),
+            ]
+        # ALWAYS park the servo in the drop position — even when we skipped this
+        # pipe — so downstream missions find it where they expect. This rotation
+        # drops nothing because the eject mechanism is still disengaged.
+        steps += [
             Defs.lift_drums_servo.eject_position(70),
             wait_for_seconds(0.5),
-        ])
+        ]
+        return seq(steps)
 
     return seq([
         # drum_servo_step,

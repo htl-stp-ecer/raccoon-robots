@@ -2,7 +2,7 @@ profile:
   name: profile
   description: 'Profile the robot code'
   target: auto
-  dev: true
+  dev: false
   no_calibrate: false
   no_checkpoints: false
   no_codegen: false
@@ -11,7 +11,8 @@ profile:
   record_hz:
   args: []
   env:
-    RACCOON_PROFILE: 1
+    #RACCOON_PROFILE: 1
+    RACCOON_CMD_TRACE: 1
 no-pos-hold:
   name: no-pos-hold
   description: 'Disabled the position holding'
