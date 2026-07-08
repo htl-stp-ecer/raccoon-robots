@@ -41,11 +41,13 @@ class M070GrabUpperCubeMission(Mission):
             # put claw on cube
             turn_to_heading_left(0),
             arm.move_angles(41, speed=150),
-            arm.move_angles(sholder_deg=90, elbow_deg=-85, speed=80),
+            arm.move_angles(sholder_deg=90, elbow_deg=-88, speed=80),
+            wait_for_seconds(0.1), #make sure the serov movement is done
+            fully_disable_servos(), #make sure we don't press down on the cube to hard
 
             # push cube back
             optimize([
-                drive_angle(-120, heading=0).until(
+                drive_angle(-150, heading=0).until(
                     on_black(Defs.front.left)
                     #+ after_cm(3)  # make sure we avoid seeing the white dot
                 ),
@@ -81,7 +83,7 @@ class M070GrabUpperCubeMission(Mission):
             #),
 
             # drive back to cube
-            drive_forward(cm=13, heading=0),
+            drive_forward(cm=12, heading=0),
 
             # close claw
             Defs.arm_claw.strong_grab(speed=130),
