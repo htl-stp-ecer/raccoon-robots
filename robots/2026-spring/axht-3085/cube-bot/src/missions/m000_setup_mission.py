@@ -31,10 +31,10 @@ def auto_tune_step():
             tune_static_friction=True,
             tune_firmware_pid=True,
             tune_encoder_cal=True,
-            tune_characterize=False,
+            tune_characterize=True,
             tune_velocity=True,
-            tune_motion=False,
-            tune_tolerances=False,
+            tune_motion=True,
+            tune_tolerances=True,
             motion_axes=["distance", "lateral", "heading"],
             step_confirm=True,
             persist=True,
@@ -124,7 +124,6 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
-
             pause_setup_timer(),
             fully_disable_servos(),
 
