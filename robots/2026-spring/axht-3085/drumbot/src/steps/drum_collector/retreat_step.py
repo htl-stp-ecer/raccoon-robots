@@ -6,9 +6,10 @@ from src.service.drum_motor_service import DrumMotorService, MotorStalledError
 
 @dsl(hidden=True)
 class DrumRetreatStep(Step):
-    def __init__(self, count: int = 1):
+    def __init__(self, count: int = 1, velocity_factor: float = 1.0):
         super().__init__()
         self.count = count
+        self.velocity_factor = velocity_factor
 
     async def _execute_step(self, robot: "GenericRobot") -> None:
         service = robot.get_service(DrumMotorService)
@@ -18,7 +19,7 @@ class DrumRetreatStep(Step):
         # faulted motor, normal otherwise).
         service.begin_eject()
         try:
-            await service.retreat(self.count)
+            await service.retreat(self.count, velocity_factor=self.velocity_factor)
         except MotorStalledError as e:
             # Eject must never kill the run — brake and continue. Retries are
             # already exhausted (per begin_eject's budget) by the time we land here.
@@ -30,7 +31,6 @@ class DrumRetreatStep(Step):
 
 
 @dsl()
-def drum_retreat(count: int = 1) -> DrumRetreatStep:
+def drum_retreat(count: int = 1, velocity_factor: float = 1.0) -> DrumRetreatStep:
     """Retreat the drum backward by count pockets."""
-    return DrumRetreatStep(count=count)
-
+    return DrumRetreatStep(count=count, velocity_factor=velocity_factor)

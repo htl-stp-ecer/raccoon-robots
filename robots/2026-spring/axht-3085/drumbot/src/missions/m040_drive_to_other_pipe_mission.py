@@ -85,5 +85,8 @@ class M040DriveToOtherPipeMission(Mission):
             ),
 
             lineup_drum_with_pipe(),
-            drum_retreat(4),
+            drum_retreat(
+                count=4,
+                velocity_factor=0.7
+            ),
         ])

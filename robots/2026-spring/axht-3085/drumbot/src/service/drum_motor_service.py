@@ -337,23 +337,23 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
 
     # ── navigation ───────────────────────────────────────────────
 
-    async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
+    async def advance(self, pockets: int = 1, *, precise: bool = False, velocity_factor: float = 1.0) -> None:
         """Move forward N pockets (black stripes)."""
         if self.motor_locked:
             self.warn(f"advance({pockets}) ignored — drum motor locked (emergency)")
             return
         self.debug(f"advance({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
-        await self._move(pockets, forward=True, precise=precise)
+        await self._move(pockets, forward=True, precise=precise, velocity=int(FULL_VELOCITY * velocity_factor))
 
-    async def retreat(self, pockets: int = 1, *, precise: bool = False) -> None:
+    async def retreat(self, pockets: int = 1, *, precise: bool = False, velocity_factor: float = 1.0) -> None:
         """Move backward N pockets."""
         if self.motor_locked:
             self.warn(f"retreat({pockets}) ignored — drum motor locked (emergency)")
             return
         self.debug(f"retreat({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
-        await self._move(pockets, forward=False, precise=precise)
+        await self._move(pockets, forward=False, precise=precise, velocity=int(FULL_VELOCITY * velocity_factor))
 
     async def eject(self, pockets: int = 1) -> None:
         if self.motor_locked:
