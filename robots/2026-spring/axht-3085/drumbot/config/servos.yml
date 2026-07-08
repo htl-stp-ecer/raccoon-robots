@@ -22,9 +22,9 @@ lift_drums_servo:
   port: 1
   positions:
     up: 180
-    over_limit: 215
+    over_limit: 210
     align_on_back: 70
-    eject_position: 117
+    eject_position: 113
     seek_position: 170
     down: -18
     remove_D: 38
