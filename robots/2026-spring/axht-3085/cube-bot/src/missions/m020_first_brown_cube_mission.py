@@ -27,7 +27,7 @@ class M020FirstBrownCubeMission(Mission):
             # line follow backwards to retrieve spot
             drive_forward(heading=0).until(
                 over_line(Defs.rear.left) #if we ever are over the line this conditio will fix it
-                + after_cm(7)
+                + after_cm(5)
             ),
             # go into correct lateral position for pickup
             strafe_right(heading=0, speed=0.5).until(
