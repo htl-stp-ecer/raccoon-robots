@@ -26,7 +26,9 @@ class M040DriveToOtherPipeMission(Mission):
             # turn parallel to black line
             turn_to_heading_right(90),
 
-            pom_pusher_rubber_band_avoid_pos(),
+            background(
+                pom_pusher_rubber_band_avoid_pos(),
+            ),
 
             # line follow forward
             follow_line_single(
@@ -78,7 +80,9 @@ class M040DriveToOtherPipeMission(Mission):
                 + after_cm(15)
             ),
 
-            pom_pusher_obstacle_avoid_pos(),
+            background(
+                pom_pusher_obstacle_avoid_pos(),
+            ),
 
             lineup_drum_with_pipe(),
             drum_retreat(4),

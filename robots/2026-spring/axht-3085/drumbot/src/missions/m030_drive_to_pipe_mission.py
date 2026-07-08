@@ -63,7 +63,9 @@ class M030DriveToPipeMission(Mission):
                 Defs.lift_drums_servo.seek_position(30),
             ),
 
-            pom_pusher_obstacle_avoid_pos(),
+            background(
+                pom_pusher_obstacle_avoid_pos(),
+            ),
 
             lineup_drum_with_pipe(),
             drum_retreat(4),
