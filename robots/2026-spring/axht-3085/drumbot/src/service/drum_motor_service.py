@@ -421,12 +421,29 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         return await self.go_to_pocket(target_edge // 2)
 
     async def _move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
-        """Move N pockets with stall detection and automatic retry."""
-        backup_sign = -1 if forward else 1
-        await self._retry_on_stall(
-            lambda: self._do_move(pockets, forward=forward, precise=precise, velocity=velocity),
-            backup_sign=backup_sign,
-        )
+        """Move N pockets with stall detection and automatic retry.
+
+        The target pocket is anchored ONCE, up front. A stall (and the back-up
+        it triggers) can move the tracker index off where the move started, so
+        each retry re-derives how many pockets still separate us from that fixed
+        target and drives only those — never the full ``pockets`` again from the
+        drifted position. Otherwise a retry after partial progress (or after the
+        back-up) would over-rotate past the intended slot.
+        """
+        assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
+        sign = 1 if forward else -1
+        backup_sign = -sign
+        target_pocket = (self._current_pocket + pockets * sign) % NUM_POCKETS
+
+        async def _attempt():
+            # Pockets still to travel in the commanded direction to reach the
+            # fixed target. 0 means a prior attempt already landed us there.
+            remaining = ((target_pocket - self._current_pocket) * sign) % NUM_POCKETS
+            if remaining == 0:
+                return
+            await self._do_move(remaining, forward=forward, precise=precise, velocity=velocity)
+
+        await self._retry_on_stall(_attempt, backup_sign=backup_sign)
 
     async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
         """Move N pockets, trusting the continuous IR tracker for position.
