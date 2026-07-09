@@ -9,7 +9,7 @@ class M050ReturnConesMission(Mission):
 
             # turn away and tuck in drum while lowering cone pusher
             parallel(
-                turn_left(70),
+                turn_left(53),
                 seq([
                     wait_for_seconds(0.2),
                     Defs.lift_drums_servo.over_limit(120),
