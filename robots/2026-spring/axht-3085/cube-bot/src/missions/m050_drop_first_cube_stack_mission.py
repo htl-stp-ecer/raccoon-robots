@@ -66,7 +66,7 @@ class M050DropFirstCubeStackMission(Mission):
             ),
             defer(lambda _: strafe_right(heading=0).until(
                 (over_line(Defs.rear.left) + after_cm(strafe_right_offset()))
-                | after_cm(6 + strafe_right_offset())  # if we miss the lien somehow just stop and try to drop the cube stack
+                | after_cm(6 + strafe_right_offset())  # if we miss the line somehow just stop and try to drop the cube stack
             )),
             turn_to_heading_right(0),
 
@@ -75,8 +75,8 @@ class M050DropFirstCubeStackMission(Mission):
             wait_for_seconds(0.2),  # a samll delay so the sholder servo is definatly on his right posission
             arm.move_angles(elbow_deg=-98, speed=150),
             wait_for_seconds(0.5),
-            Defs.arm_claw.open(),
-            # grab a gain, so if the stack is wonky we stop the momentum
+            Defs.arm_claw.cube_stack_regrab_open(),
+            #grab a gain, so if the stack is wonky we stop the momentum
             Defs.arm_claw.grab(),
             Defs.arm_claw.full_open(),
         ])
