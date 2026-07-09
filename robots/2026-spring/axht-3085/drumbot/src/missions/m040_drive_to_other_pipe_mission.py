@@ -73,7 +73,7 @@ class M040DriveToOtherPipeMission(Mission):
                 speed=1.0,
                 side=LineSide.LEFT,
                 kp=2.0,
-                ki=0.7,
+                ki=0.4,
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
