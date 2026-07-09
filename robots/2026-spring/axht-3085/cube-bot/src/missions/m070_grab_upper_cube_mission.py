@@ -40,14 +40,14 @@ class M070GrabUpperCubeMission(Mission):
 
             # put claw on cube
             turn_to_heading_left(0),
-            arm.move_angles(41, speed=150),
+            arm.move_angles(base_deg=41, speed=150),
             arm.move_angles(sholder_deg=90, elbow_deg=-88, speed=80),
             wait_for_seconds(0.1), #make sure the serov movement is done
             fully_disable_servos(), #make sure we don't press down on the cube to hard
 
             # push cube back
             optimize([
-                drive_angle(-150, heading=0).until(
+                drive_angle(-140, heading=0).until(
                     on_black(Defs.front.left)
                     #+ after_cm(3)  # make sure we avoid seeing the white dot
                 ),
@@ -57,7 +57,7 @@ class M070GrabUpperCubeMission(Mission):
             ]),
 
             wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
-            arm.move_angles(elbow_deg=0, speed=150),
+            arm.move_angles(base_deg=41, sholder_deg=90, elbow_deg=0, speed=150), #enable al lservos again and move elbow up
             background(  # open claw to gab "cube + pallet"
                 Defs.arm_claw.grab_upper_cube(),
             ),
@@ -88,9 +88,9 @@ class M070GrabUpperCubeMission(Mission):
             # close claw
             Defs.arm_claw.strong_grab(speed=130),
             Defs.arm_claw.open(speed=150),
+            drive_forward(cm=3, heading=0),
             Defs.arm_claw.strong_grab(speed=180),
-
-            drive_backward(cm=5),
+            drive_backward(cm=5, heading=0),
 
             # move arm up
             background(
@@ -115,7 +115,7 @@ class M070GrabUpperCubeMission(Mission):
                     on_black(Defs.front.left)
                 ),
                 seconds=1.3,
-                fallback=strafe_left(cm=30)
+                fallback=strafe_left(cm=30, heading=0)
             ),
-            wait_for_checkpoint(60 + 17),  # wait so we don't colide with drum-bot
+            wait_for_checkpoint(60 + 18),  # wait so we don't colide with drum-bot
         ])
