@@ -17,8 +17,10 @@ class M000SetupMission(SetupMission):
     def sequence(self) -> Sequential:
         return seq([
             pause_setup_timer(),
-            motor_off(Defs.cone_pusher_motor),
-            fully_disable_servos(),
+            parallel(
+                fully_disable_servos(),
+                motor_passive_brake(Defs.cone_pusher_motor),
+            ),
 
             # Camera opens once here and stays open until the shutdown mission.
             # All downstream steps (color calibration, color detection) share
@@ -79,9 +81,6 @@ class M000SetupMission(SetupMission):
                 Defs.lift_drums_servo.over_limit(),
                 Defs.drum_pusher_servo.block_angle(),
             ),
-
-            wait_for_button("Manually move cone cage motor to resting position\n(facing straight upwards)"),
-            motor_passive_brake(Defs.cone_pusher_motor),
 
             wait_for_button("Set Pom Pusher Servo"),
             Defs.pom_remover_servo.right(),
