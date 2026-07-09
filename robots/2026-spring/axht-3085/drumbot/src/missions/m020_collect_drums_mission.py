@@ -32,11 +32,13 @@ def after_collect():
             # still gets exactly one careful attempt, then brakes and continues.
             drum_service.begin_eject()
 
-        return parallel(
-            Defs.drum_pusher_servo.hold(),
-            go_to_slot(2, stall_retries=stall_retries, tolerate_stall=True),
+        return seq([
+            parallel(
+                Defs.drum_pusher_servo.hold(),
+                go_to_slot(2, stall_retries=stall_retries, tolerate_stall=True),
+            ),
             Defs.lift_drums_servo.up(),
-        )
+        ])
 
     return defer(_build)
 
