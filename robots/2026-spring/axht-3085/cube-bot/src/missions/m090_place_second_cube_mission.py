@@ -119,12 +119,12 @@ class M090PlaceSecondCubeMission(Mission):
             ),
 
             # place brown cube
-            arm.move_angles(elbow_deg=-52, speed=70),
+            arm.move_angles(elbow_deg=-56, speed=70),
             wait_for_seconds(0.1),
 
             Defs.arm_claw.open(),
             Defs.arm_claw.grab(),  # try to stop there movement of the cubes and catsh them if they are falling
-            Defs.arm_claw.open(),
+            Defs.arm_claw.open(speed=100),
             arm.move_angles(elbow_deg=-50),
             drive_backward(cm=20, heading=0),
             arm.move_angles(sholder_deg=90, elbow_deg=0),
