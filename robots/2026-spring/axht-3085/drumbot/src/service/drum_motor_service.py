@@ -169,15 +169,24 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         the same as deliberate motion.
         """
         assert self._ticks_per_pocket is not None
-        # Gate 1 (idle only): prevents a false count from tiny motor drift back into
-        # a stripe it just coasted past. Set to 15% — enough to swallow sub-1%
-        # drift (observed: 227 ticks = 0.17%) while still allowing genuine
-        # coast-through counts when the motor drifts 15%+ past a stripe.
-        # Only applied when _move_start_pos is None (motor idle or in coast settle).
-        # Gate 2 (active move): removed entirely — _tracker_on_black already handles
-        # the "motor starts on a stripe" case (no rising edge fires if already black),
-        # and the 35-50% thresholds we tried were the direct cause of pocket skips.
-        min_ticks_idle = max(1, self._ticks_per_pocket * 15 // 100)
+        # Minimum separation from the last COUNTED stripe before a rising edge is
+        # accepted as a new pocket crossing. Real stripes are exactly one pocket
+        # (100%) apart, so a genuine crossing always clears this comfortably; any
+        # edge much closer is a spurious re-trigger of the SAME stripe — the sensor
+        # jiggling across a stripe edge while the motor stalls or creeps right on it.
+        #
+        # Observed failure (run1_20260709, 2nd eject): during a stall-retry a
+        # 183-tick edge (32% of a pocket) was counted as a full 6→5 crossing, so the
+        # tracker over-counted by one; the sweep stopped one pocket short (physically
+        # 3 pockets moved, tracker believed 4) and dropped a drum. A 15% gate let it
+        # through.
+        #
+        # Set to 50%: safely above the largest spurious edge we've seen (32%) and
+        # well below a real crossing (100%). Keyed off the last EDGE, not move_start,
+        # so — unlike the old 35-50% move_start thresholds that caused mid-move
+        # pocket skips — it never rejects a genuine adjacent stripe (those are always
+        # ~100% away from the previous counted one). Applied in idle AND active move.
+        min_ticks_sep = max(1, self._ticks_per_pocket * 50 // 100)
         # ── diagnostic state ──────────────────────────────────────
         _sample_count: int = 0
         _black_entry_pos: int | None = None   # encoder pos when stripe started
@@ -219,30 +228,14 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                     _black_entry_pos = pos
                     _black_entry_time = now
 
-                    # During an active move we trust every rising edge EXCEPT a
-                    # spurious one fired within the first min_ticks_idle ticks of the
-                    # move: if the sensor was parked right at a stripe boundary,
-                    # starting the motor jiggles it across the edge and it gets
-                    # miscounted as a whole pocket (observed: delta_move_start=-3 →
-                    # revolver under-rotated by one pocket, which corrupted the eject
-                    # sweep and dropped only half the drums). A genuinely-adjacent
-                    # stripe at rest already reads black, so no rising edge fires and
-                    # this gate cannot swallow a real first stripe. The gate is keyed
-                    # off the distance from the move start, NOT the last edge, so it
-                    # never re-introduces the mid-move pocket skips that killed the
-                    # old 35-50% active-move thresholds.
-                    #
-                    # While idle (coast settle or parked): Gate 1 blocks tiny drift
-                    # back into a stripe the motor just coasted past (observed: ~227
-                    # ticks = 0.17% of pocket). Threshold = 15% of pocket.
-                    if in_active_move:
-                        gate_ok = move_start_delta is None or abs(move_start_delta) >= min_ticks_idle
-                        gate_name = "move_start"
-                        gate_delta = move_start_delta if move_start_delta is not None else delta
-                    else:
-                        gate_ok = abs(delta) >= min_ticks_idle
-                        gate_name = "idle"
-                        gate_delta = delta
+                    # Accept the edge only if it is at least half a pocket from the
+                    # last counted stripe. Applied in BOTH idle and active move: a
+                    # real crossing is ~one full pocket away and always passes, while
+                    # a sub-pocket jiggle on the same stripe (a stall/creep near a
+                    # boundary, or a start-jiggle when parked on a stripe) is rejected
+                    # before it can over-count. Direction still comes from the encoder
+                    # delta, so coast-through after stop is tracked the same way.
+                    gate_ok = abs(delta) >= min_ticks_sep
 
                     if gate_ok:
                         direction = 1 if delta > 0 else -1
@@ -255,8 +248,8 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                             f"[IR-EDGE] COUNTED pocket {old} → {self._current_pocket} "
                             f"pos={pos} delta_last_edge={delta:+d} "
                             f"delta_move_start={move_start_delta} "
-                            f"min_idle={min_ticks_idle} raw={raw:.0f} "
-                            f"gate={'none(active)' if in_active_move else 'idle'}"
+                            f"min_sep={min_ticks_sep} raw={raw:.0f} "
+                            f"gate={'active' if in_active_move else 'idle'}"
                         )
                     else:
                         self.warn(
@@ -265,7 +258,7 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
                             f"delta_last_edge={delta:+d} "
                             f"delta_move_start={move_start_delta} "
                             f"move_start_pos={self._move_start_pos} "
-                            f"reason=[gate_{gate_name} FAILED (|delta|={abs(gate_delta)} < min_idle={min_ticks_idle})]"
+                            f"reason=[|delta_last_edge|={abs(delta)} < min_sep={min_ticks_sep}]"
                         )
 
                 # ── falling edge: black → white ────────────────────
