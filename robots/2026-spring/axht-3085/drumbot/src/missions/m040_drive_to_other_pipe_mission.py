@@ -43,7 +43,7 @@ class M040DriveToOtherPipeMission(Mission):
             ),
 
             # turn away and drive angled to avoid hitting wall
-            turn_to_heading_right(90 - 35),
+            turn_to_heading_right(90 - 33),
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
