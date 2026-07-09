@@ -17,15 +17,16 @@ class M050ReturnConesMission(Mission):
             ),
 
             lower_cone_pusher(),
-            turn_right(17),
 
-            # scoop cones into pusher
-            drive_backward().until(
-                over_line(Defs.front_right_ir_sensor)
-                + after_cm(4)
-            ),
+            optimize([
+                # scoop cones into pusher
+                drive_backward().until(
+                    over_line(Defs.front_right_ir_sensor)
+                    + after_cm(4)
+                ),
 
-            turn_to_heading_right(90),
+                turn_to_heading_right(90),
+            ]).cut_corners(10),
 
             # start driving to lower starting box
             line_follow()
@@ -40,8 +41,8 @@ class M050ReturnConesMission(Mission):
 
             optimize([
                 turn_to_heading_right(70),
-                drive_backward(cm=40, heading=-70),
+                drive_backward(cm=45, heading=-70),
                 turn_to_heading_right(45),
                 drive_backward(cm=40, heading=-45),
-            ])
+            ]).cut_corners(10),
         ])
