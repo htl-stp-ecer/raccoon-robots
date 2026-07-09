@@ -39,7 +39,7 @@ class M030DriveToPipeMission(Mission):
             Defs.lift_drums_servo.up(),
 
             # only continue if all drums where dispensed (failsafe)
-            wait_for_checkpoint(60),
+            wait_for_checkpoint(64),
 
             # drive to first black line and turn
             drive_backward(heading=0).until(
