@@ -18,7 +18,7 @@ class M010DriveToDrumsMission(Mission):
                 # drive
                 drive_forward(heading=320).until(
                     over_line(Defs.front_right_ir_sensor)
-                    + after_cm(5),
+                    + after_cm(4),
                 ),
                 seq([
                     wait_for_seconds(0.1),
