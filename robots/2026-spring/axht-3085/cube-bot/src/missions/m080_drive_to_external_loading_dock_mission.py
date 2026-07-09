@@ -4,7 +4,6 @@ from src.kinematics.arm import arm
 from src.steps.calibrate_analog_drive import on_analog_flank
 
 
-
 def _follow():
     return (
         line_follow()
@@ -13,6 +12,7 @@ def _follow():
         .correct_lateral()
         .pid(kp=0.5, ki=0.3, kd=0.0)
     )
+
 
 def wall_align():
     return (
@@ -23,6 +23,7 @@ def wall_align():
         .pid(kp=0.6, ki=0.6, kd=0.05)
     )
 
+
 def left_lateral_align_line_follow():
     return (
         line_follow()
@@ -31,6 +32,7 @@ def left_lateral_align_line_follow():
         .correct_forward(hold_heading=False)
         .pid(kp=0.4, ki=0.1, kd=0.0)
     )
+
 
 def weird_cube_drive():
     approach = DriveUntilImpact(max_cm=50, speed=1,
@@ -56,6 +58,7 @@ def weird_cube_drive():
         defer(drive_backward_if_cube),
     ])
 
+
 class M080DriveToExternalLoadingDockMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
@@ -69,10 +72,33 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 # fallback if we miss the black line on the bottom, so we still try to finish the run
                 # (won't help if we are stuck on the upper loading dock)
                 fallback=optimize([
-                    drive_backward(heading=0).until(
-                        on_black(Defs.rear.left)
-                    ),
-                    strafe_left(cm=20, heading=0)
+                    timeout_or(
+                        step=drive_backward(heading=0).until(
+                            on_black(Defs.rear.left)
+                        ),
+                        seconds=2,
+                        fallback=seq([
+                            timeout_or(
+                                step=_follow().until(
+                                    over_line(Defs.rear.left)
+                                    + after_cm(90)
+                                    + over_line(Defs.rear.left)
+                                ),
+                                seconds=4,
+                                # fallback if we miss the black line on the bottom, so we still try to finish the run
+                                # (won't help if we are stuck on the upper loading dock)
+                                fallback=optimize([
+                                    timeout(
+                                        step=drive_backward(heading=0).until(
+                                            on_black(Defs.rear.left)
+                                        ),
+                                        seconds=1,
+                                    )
+                                ]),
+                            ),
+                            strafe_left(cm=20, heading=0)
+                        ])
+                    )
                 ])
             ),
 
@@ -80,7 +106,7 @@ class M080DriveToExternalLoadingDockMission(Mission):
 
             # optimize([ #TODO: enable teh optimize
 
-            #make sure we have no game peaces in front of the pipe
+            # make sure we have no game peaces in front of the pipe
             drive_forward(cm=5, heading=5),
             drive_backward(cm=5, heading=0),
 
