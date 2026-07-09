@@ -337,23 +337,23 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
 
     # ── navigation ───────────────────────────────────────────────
 
-    async def advance(self, pockets: int = 1, *, precise: bool = False) -> None:
+    async def advance(self, pockets: int = 1, *, precise: bool = False, velocity_factor: float = 1.0) -> None:
         """Move forward N pockets (black stripes)."""
         if self.motor_locked:
             self.warn(f"advance({pockets}) ignored — drum motor locked (emergency)")
             return
         self.debug(f"advance({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
-        await self._move(pockets, forward=True, precise=precise)
+        await self._move(pockets, forward=True, precise=precise, velocity=int(FULL_VELOCITY * velocity_factor))
 
-    async def retreat(self, pockets: int = 1, *, precise: bool = False) -> None:
+    async def retreat(self, pockets: int = 1, *, precise: bool = False, velocity_factor: float = 1.0) -> None:
         """Move backward N pockets."""
         if self.motor_locked:
             self.warn(f"retreat({pockets}) ignored — drum motor locked (emergency)")
             return
         self.debug(f"retreat({pockets}) from pocket {self._current_pocket}")
         assert self.is_calibrated
-        await self._move(pockets, forward=False, precise=precise)
+        await self._move(pockets, forward=False, precise=precise, velocity=int(FULL_VELOCITY * velocity_factor))
 
     async def eject(self, pockets: int = 1) -> None:
         if self.motor_locked:
@@ -423,38 +423,35 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
     async def _move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
         """Move N pockets with stall detection and automatic retry.
 
-        The target pocket is anchored ONCE, up front. A stall (and the back-up
-        it triggers) can move the tracker index off where the move started, so
-        each retry re-derives how many pockets still separate us from that fixed
-        target and drives only those — never the full ``pockets`` again from the
-        drifted position. Otherwise a retry after partial progress (or after the
-        back-up) would over-rotate past the intended slot.
+        The target pocket is anchored ONCE, up front, from the pocket we're
+        currently at. ``_do_move`` then re-derives the *remaining* distance to
+        that fixed target from the (tracker-updated) current pocket on every
+        retry attempt, so pockets already crossed before a stall are not
+        re-walked — and the retry never over-rotates past the intended slot.
         """
         assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
         sign = 1 if forward else -1
         backup_sign = -sign
         target_pocket = (self._current_pocket + pockets * sign) % NUM_POCKETS
+        await self._retry_on_stall(
+            lambda: self._do_move(target_pocket, forward=forward, precise=precise, velocity=velocity),
+            backup_sign=backup_sign,
+        )
 
-        async def _attempt():
-            # Pockets still to travel in the commanded direction to reach the
-            # fixed target. 0 means a prior attempt already landed us there.
-            remaining = ((target_pocket - self._current_pocket) * sign) % NUM_POCKETS
-            if remaining == 0:
-                return
-            await self._do_move(remaining, forward=forward, precise=precise, velocity=velocity)
-
-        await self._retry_on_stall(_attempt, backup_sign=backup_sign)
-
-    async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
-        """Move N pockets, trusting the continuous IR tracker for position.
+    async def _do_move(self, target_pocket: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
+        """Move to target_pocket, trusting the continuous IR tracker for position.
 
         The background tracker owns _current_pocket. This method commands
         the motor and waits for the index to reach target, so coast-through
         after stop is handled for free — it simply updates the index while
         we're in the settling pause.
+
+        Called fresh on every stall-retry attempt with the same fixed
+        target_pocket; the remaining distance is recomputed from whatever
+        _current_pocket the tracker landed on, so only the pockets not yet
+        covered are retried.
         """
         assert self._ticks_per_pocket is not None, "Calibrate first (need ticks_per_pocket)"
-        assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
         sign = 1 if forward else -1
         stall_check = self._make_stall_checker(direction=sign)
 
@@ -462,9 +459,12 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             self.start_position_tracking()
 
         start_pocket = self._current_pocket
-        target_pocket = (start_pocket + pockets * sign) % NUM_POCKETS
+        if start_pocket == target_pocket:
+            self.debug(f"_do_move: already at target pocket {target_pocket}, nothing to retry")
+            return
+        pockets = (target_pocket - start_pocket) % NUM_POCKETS if forward else (start_pocket - target_pocket) % NUM_POCKETS
         self.debug(
-            f"{'fwd' if forward else 'bwd'} {pockets} pockets "
+            f"{'fwd' if forward else 'bwd'} {pockets} pockets remaining "
             f"{'precise' if precise else 'fast'} "
             f"(from {start_pocket} → {target_pocket}, midpoint={self._at_midpoint})"
         )
@@ -481,9 +481,18 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         )
         self.motor.set_velocity(velocity * sign)
 
-        while self._current_pocket != target_pocket:
-            stall_check()
-            await asyncio.sleep(SAMPLE_INTERVAL)
+        try:
+            while self._current_pocket != target_pocket:
+                stall_check()
+                await asyncio.sleep(SAMPLE_INTERVAL)
+        except MotorStalledError:
+            # Lift the move-start gate BEFORE the stall propagates. Otherwise the
+            # back-up in _retry_on_stall runs with a stale _move_start_pos still
+            # set, so the tracker stays in its active-move gate and mis-counts the
+            # back-up crossings — which corrupts the remaining distance the next
+            # retry attempt recomputes from _current_pocket.
+            self._move_start_pos = None
+            raise
 
         pos_at_stop = self.motor.get_position()
         actual_ticks = abs(pos_at_stop - self._move_start_pos)

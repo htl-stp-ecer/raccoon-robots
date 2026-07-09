@@ -26,7 +26,9 @@ class M040DriveToOtherPipeMission(Mission):
             # turn parallel to black line
             turn_to_heading_right(90),
 
-            pom_pusher_rubber_band_avoid_pos(),
+            background(
+                pom_pusher_rubber_band_avoid_pos(),
+            ),
 
             # line follow forward
             follow_line_single(
@@ -41,7 +43,7 @@ class M040DriveToOtherPipeMission(Mission):
             ),
 
             # turn away and drive angled to avoid hitting wall
-            turn_to_heading_right(90 - 30),
+            turn_to_heading_right(90 - 33),
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor)
@@ -71,15 +73,20 @@ class M040DriveToOtherPipeMission(Mission):
                 speed=1.0,
                 side=LineSide.LEFT,
                 kp=2.0,
-                ki=0.7,
+                ki=0.4,
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
-                + after_cm(15)
+                + after_cm(13)
             ),
 
-            pom_pusher_obstacle_avoid_pos(),
+            background(
+                pom_pusher_obstacle_avoid_pos(),
+            ),
 
             lineup_drum_with_pipe(),
-            drum_retreat(4),
+            drum_retreat(
+                count=4,
+                velocity_factor=0.8
+            ),
         ])
