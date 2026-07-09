@@ -8,5 +8,6 @@ class M999ShutdownMission(Mission):
             parallel(
                 stop_camera(),
                 fully_disable_servos(),
+                motor_off(Defs.cone_pusher_motor)
             ),
         ])
