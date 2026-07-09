@@ -421,23 +421,35 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
         return await self.go_to_pocket(target_edge // 2)
 
     async def _move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
-        """Move N pockets with stall detection and automatic retry."""
+        """Move N pockets with stall detection and automatic retry.
+
+        The target pocket is computed once, up front, from the pocket we're
+        currently at. Every retry attempt then re-derives the *remaining*
+        distance to that fixed target from the (tracker-updated) current
+        pocket, so pockets already crossed before a stall are not re-walked.
+        """
+        sign = 1 if forward else -1
         backup_sign = -1 if forward else 1
+        target_pocket = (self._current_pocket + pockets * sign) % NUM_POCKETS
         await self._retry_on_stall(
-            lambda: self._do_move(pockets, forward=forward, precise=precise, velocity=velocity),
+            lambda: self._do_move(target_pocket, forward=forward, precise=precise, velocity=velocity),
             backup_sign=backup_sign,
         )
 
-    async def _do_move(self, pockets: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
-        """Move N pockets, trusting the continuous IR tracker for position.
+    async def _do_move(self, target_pocket: int, *, forward: bool, precise: bool = True, velocity: int = FULL_VELOCITY) -> None:
+        """Move to target_pocket, trusting the continuous IR tracker for position.
 
         The background tracker owns _current_pocket. This method commands
         the motor and waits for the index to reach target, so coast-through
         after stop is handled for free — it simply updates the index while
         we're in the settling pause.
+
+        Called fresh on every stall-retry attempt with the same fixed
+        target_pocket; the remaining distance is recomputed from whatever
+        _current_pocket the tracker landed on, so only the pockets not yet
+        covered are retried.
         """
         assert self._ticks_per_pocket is not None, "Calibrate first (need ticks_per_pocket)"
-        assert 0 < pockets < NUM_POCKETS, f"pockets must be 1..{NUM_POCKETS - 1}"
         sign = 1 if forward else -1
         stall_check = self._make_stall_checker(direction=sign)
 
@@ -445,9 +457,12 @@ class DrumMotorService(DrumMotorCalibrationMixin, RobotService):
             self.start_position_tracking()
 
         start_pocket = self._current_pocket
-        target_pocket = (start_pocket + pockets * sign) % NUM_POCKETS
+        if start_pocket == target_pocket:
+            self.debug(f"_do_move: already at target pocket {target_pocket}, nothing to retry")
+            return
+        pockets = (target_pocket - start_pocket) % NUM_POCKETS if forward else (start_pocket - target_pocket) % NUM_POCKETS
         self.debug(
-            f"{'fwd' if forward else 'bwd'} {pockets} pockets "
+            f"{'fwd' if forward else 'bwd'} {pockets} pockets remaining "
             f"{'precise' if precise else 'fast'} "
             f"(from {start_pocket} → {target_pocket}, midpoint={self._at_midpoint})"
         )
