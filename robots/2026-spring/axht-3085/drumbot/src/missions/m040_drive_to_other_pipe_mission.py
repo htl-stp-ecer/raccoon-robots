@@ -77,7 +77,7 @@ class M040DriveToOtherPipeMission(Mission):
                 kd=0.1,
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
-                + after_cm(15)
+                + after_cm(13)
             ),
 
             background(
