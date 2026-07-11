@@ -67,7 +67,7 @@ def align_on_pipes():
 
         return seq([
             backward_drive,
-            arm.move_angles(28, 60, -40, speed=70),  # transport
+            arm.move_angles(28, 50, -40, speed=70),  # transport
             forward_drive,
 
         ])

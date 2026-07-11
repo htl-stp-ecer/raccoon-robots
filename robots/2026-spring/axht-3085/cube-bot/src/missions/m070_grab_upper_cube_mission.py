@@ -20,9 +20,6 @@ class M070GrabUpperCubeMission(Mission):
         return seq([
             # find cube and drive magic value backwords so we are the right distance away from the cube
             wait_for_seconds(0.1), #make sure we slow down
-            strafe_right(heading=0).until(
-                on_black(Defs.front.left)
-            ),
             follow_line().until(
                 on_analog_flank(Defs.et_sensor, "upper_cube")
             ),
