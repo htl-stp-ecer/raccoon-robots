@@ -1,7 +1,8 @@
 from raccoon import *
 
-from src.kinematics.arm import arm
+from mission_params import MissionParams
 from src.hardware.defs import Defs
+from src.kinematics.arm import arm
 
 
 def _follow():
@@ -25,6 +26,9 @@ def align_line_follow():
         .pid(kp=0.4, ki=0.2, kd=0.0)
     )
 
+def strafe_right_offset():
+    return max(MissionParams.first_cube_line_gap.get() - 26, 0)
+
 
 class M050DropFirstCubeStackMission(Mission):
     def sequence(self) -> Step:
@@ -41,7 +45,7 @@ class M050DropFirstCubeStackMission(Mission):
             _follow().until(
                 after_cm(72)
             ),
-            #make sure  we push the poms to the side so we don't move them
+            # make sure  we push the poms to the side so we don't move them
             strafe_left(cm=5, heading=0),
             strafe_right(cm=4, heading=0),
 
@@ -60,19 +64,19 @@ class M050DropFirstCubeStackMission(Mission):
             strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),
-            strafe_right(heading=0).until(
-                over_line(Defs.rear.left)
-                | after_cm(6) #if we miss the lien somehow just stop and try to drop the cube stack
-            ),
+            defer(lambda _: strafe_right(heading=0).until(
+                (over_line(Defs.rear.left) + after_cm(strafe_right_offset()))
+                | after_cm(6 + strafe_right_offset())  # if we miss the lien somehow just stop and try to drop the cube stack
+            )),
             turn_to_heading_right(0),
 
             # place cube tower
             arm.move_angles(sholder_deg=110),
-            wait_for_seconds(0.2), #a samll delay so the sholder servo is definatly on his right posission
+            wait_for_seconds(0.2),  # a samll delay so the sholder servo is definatly on his right posission
             arm.move_angles(elbow_deg=-98, speed=150),
             wait_for_seconds(0.5),
             Defs.arm_claw.open(),
-            #grab a gain, so if the stack is wonky we stop the momentum
+            # grab a gain, so if the stack is wonky we stop the momentum
             Defs.arm_claw.grab(),
             Defs.arm_claw.full_open(),
         ])
