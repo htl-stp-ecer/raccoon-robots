@@ -67,6 +67,15 @@ class M040DriveToOtherPipeMission(Mission):
                 on_black(Defs.front_right_ir_sensor)
             ),
 
+            background(
+                seq([
+                    wait_for(
+                        on_black(Defs.rear_left_ir_sensor)
+                    ),
+                    pom_pusher_obstacle_avoid_pos(),
+                ]),
+            ),
+
             # follow line until before drum pole
             follow_line_single(
                 Defs.front_right_ir_sensor,
@@ -78,10 +87,6 @@ class M040DriveToOtherPipeMission(Mission):
             ).until(
                 over_line(Defs.rear_left_ir_sensor)
                 + after_cm(13)
-            ),
-
-            background(
-                pom_pusher_obstacle_avoid_pos(),
             ),
 
             lineup_drum_with_pipe(),
