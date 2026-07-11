@@ -19,6 +19,7 @@ class M070GrabUpperCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # find cube and drive magic value backwords so we are the right distance away from the cube
+            wait_for_seconds(0.1), #make sure we slow down
             strafe_right(heading=0).until(
                 on_black(Defs.front.left)
             ),
@@ -49,11 +50,7 @@ class M070GrabUpperCubeMission(Mission):
             optimize([
                 drive_angle(-140, heading=0).until(
                     on_black(Defs.front.left)
-                    #+ after_cm(3)  # make sure we avoid seeing the white dot
                 ),
-                #drive_angle(-120, heading=0, speed=0.4).until(
-                #    on_white(Defs.front.left)
-                #),
             ]),
 
             wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
@@ -100,6 +97,7 @@ class M070GrabUpperCubeMission(Mission):
             drive_backward(heading=0).until(  # push back poms
                 on_black(Defs.front.right)
             ),
+            wait_for_seconds(0.1), #make sure we dont have a jurky stop and start were bot tilts
             drive_forward(heading=0).until(  # go forward so we can use the fornt line sensors
                 after_cm(15)
             ),
