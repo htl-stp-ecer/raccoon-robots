@@ -62,8 +62,8 @@ class M030SecondBrownCubeMission(Mission):
                 ),
                 seconds=2,
                 fallback=seq([  # if we are stuck on the cone, try to drive forward so we get the conde out
-                    drive_backward(cm=15),
-                    drive_forward(cm=15),
+                    drive_backward(cm=5),
+                    drive_forward(cm=5),
                     timeout(
                         step=strafe_right(heading=0, speed=0.5).until(
                             on_black(Defs.rear.left),

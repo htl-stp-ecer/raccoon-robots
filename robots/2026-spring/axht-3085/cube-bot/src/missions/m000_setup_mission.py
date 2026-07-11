@@ -28,14 +28,14 @@ def auto_tune_step():
     return seq([
         auto_tune(
             tune_bemf_velocity=True,
-            tune_vel_lpf=False,
-            tune_static_friction=False,
-            tune_firmware_pid=False,
+            tune_vel_lpf=True,
+            tune_static_friction=True,
+            tune_firmware_pid=True,
             tune_encoder_cal=True,
-            tune_characterize=False,
+            tune_characterize=True,
             tune_velocity=True,
-            tune_motion=False,
-            tune_tolerances=False,
+            tune_motion=True,
+            tune_tolerances=True,
             motion_axes=["distance", "lateral", "heading"],
             step_confirm=True,
             persist=True,
@@ -51,7 +51,7 @@ def upper_warehouse_calibrate():
                     Defs.et_sensor,
                     set_name="upper_cube",
                     speed=-0.5,
-                    drive_duration_s=2
+                    drive_duration_s=1.5
                 ),
                 mark_heading_reference(),
                 collect_ir_set(  # calibrate upper deck ir sensor
@@ -125,7 +125,6 @@ class M000SetupMission(SetupMission):
 
     def sequence(self) -> Sequential:
         return seq([
-
             pause_setup_timer(),
             fully_disable_servos(),
 

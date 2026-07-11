@@ -27,7 +27,7 @@ class M020FirstBrownCubeMission(Mission):
             # line follow backwards to retrieve spot
             drive_forward(heading=0).until(
                 over_line(Defs.rear.left) #if we ever are over the line this conditio will fix it
-                + after_cm(7)
+                + after_cm(5)
             ),
             # go into correct lateral position for pickup
             strafe_right(heading=0, speed=0.5).until(
@@ -40,9 +40,19 @@ class M020FirstBrownCubeMission(Mission):
             grab_brown_cube(LineSide.LEFT, heading=0),
 
             # move away from shared warehouse
-            strafe_left(heading=0).until(
-                on_black(Defs.front.left)
-                + after_cm(4)
+            timeout_or(
+                strafe_left(heading=0).until(
+                    on_black(Defs.front.left)
+                    + after_cm(4)
+                ),
+                seconds=3,
+                fallback=seq([
+                    Defs.arm_claw.open(),
+                    strafe_left(heading=0).until(
+                        on_black(Defs.front.left)
+                        + after_cm(4)
+                    ),
+                ]),
             ),
 
             background(

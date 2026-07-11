@@ -72,21 +72,26 @@ class M080DriveToExternalLoadingDockMission(Mission):
                     drive_backward(heading=0).until(
                         on_black(Defs.rear.left)
                     ),
-                    strafe_left(cm=30, heading=0)
+                    strafe_left(cm=20, heading=0)
                 ])
             ),
 
             switch_calibration_set("default"),
 
             # optimize([ #TODO: enable teh optimize
+
+            #make sure we have no game peaces in front of the pipe
+            drive_forward(cm=5, heading=5),
+            drive_backward(cm=5, heading=0),
+
             turn_to_heading_left(90),
 
             wall_align_forward(  #
                 speed=0.3,
                 accel_threshold=10,
                 settle_duration=0,
-                max_duration=0.7,
-                grace_period=0.7
+                max_duration=0.6,
+                grace_period=0.6
             ),
             mark_heading_reference(origin_offset_deg=-90),
 
@@ -102,6 +107,4 @@ class M080DriveToExternalLoadingDockMission(Mission):
             ),
 
             # ]).cut_corners(5, cut_until=True),
-            # align on wall
-            # weird_cube_drive(),
         ])

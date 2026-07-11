@@ -37,10 +37,12 @@ class M060DriveUpRampMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # move away from cube stack
-            arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
             optimize([
                 strafe_left().until(
                     over_line(Defs.rear.left)
+                ),
+                background(
+                    arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
                 ),
                 drive_backward(cm=10),
                 timeout_or(
@@ -56,13 +58,13 @@ class M060DriveUpRampMission(Mission):
                 wall_align_forward(speed=0.3,
                                    accel_threshold=10,
                                    settle_duration=0,
-                                   max_duration=1,
-                                   grace_period=1
+                                   max_duration=0.6,
+                                   grace_period=0.6
                                    ),
             ])
             .cut_corners(7, cut_until=True),
 
-            wait_for_seconds(0.3), #wait a bit so the bot is fully still
+            wait_for_seconds(0.1), #wait a bit so the bot is fully still
             mark_heading_reference(),
 
             # drive to black line where palette with two yellow cubes is
@@ -81,7 +83,7 @@ class M060DriveUpRampMission(Mission):
                 # drive to the right to the pipe
                 turn_to_heading_left(0),
                 left_lateral_line_follow().until(
-                    after_cm(30)
+                    after_cm(27)
                 ),
 
                 # align and switch calibration set

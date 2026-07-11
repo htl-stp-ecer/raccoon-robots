@@ -27,7 +27,7 @@ def align_line_follow():
 
 
 class M050DropFirstCubeStackMission(Mission):
-    def sequence(self) -> Sequential:
+    def sequence(self) -> Step:
         return optimize([
             background(
                 step=seq([
@@ -39,21 +39,22 @@ class M050DropFirstCubeStackMission(Mission):
             # drive to external loading dock while rotating arm
             turn_to_heading_left(0),
             _follow().until(
-                after_cm(67)
+                after_cm(72)
             ),
             #make sure  we push the poms to the side so we don't move them
             strafe_left(cm=5, heading=0),
             strafe_right(cm=4, heading=0),
 
             _follow().until(
-                after_cm(67)
+                after_cm(55)
             ),
+            mark_heading_reference(),
             parallel(
                 align_line_follow().until(
-                    after_seconds(0.6),
+                    after_seconds(0.4),
                 ),
                 arm.move_angles(
-                    base_deg=90, speed=80
+                    base_deg=93, speed=80
                 ),
             ),
             strafe_left(heading=0).until(
@@ -61,6 +62,7 @@ class M050DropFirstCubeStackMission(Mission):
             ),
             strafe_right(heading=0).until(
                 over_line(Defs.rear.left)
+                | after_cm(6) #if we miss the lien somehow just stop and try to drop the cube stack
             ),
             turn_to_heading_right(0),
 

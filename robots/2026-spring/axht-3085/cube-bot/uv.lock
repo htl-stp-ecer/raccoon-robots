@@ -232,8 +232,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "raccoon-cli", specifier = "==0.1.159" },
-    { name = "raccoon-library", specifier = "==1.0.132" },
+    { name = "raccoon-cli", specifier = "==0.1.164" },
+    { name = "raccoon-library", specifier = "==1.0.138" },
 ]
 
 [[package]]
@@ -825,7 +825,7 @@ wheels = [
 
 [[package]]
 name = "raccoon-cli"
-version = "0.1.159"
+version = "0.1.164"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "black" },
@@ -852,12 +852,12 @@ dependencies = [
     { name = "wheel" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f9/7a/6907631465ae54934bf5dc567d55fd3966541bb1486f6aa94be0b56e0bd5/raccoon_cli-0.1.159-py3-none-any.whl", hash = "sha256:c2a6fac41ea658a051f1db4d332f2dd34634aa5e857eb539132b8e6b27cc8c6e", size = 1980631, upload-time = "2026-06-22T07:22:44.707Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/1e/8fde505429e753482a2efe60ad903f6b97947e4e66a89686c5cbb61dd71b/raccoon_cli-0.1.164-py3-none-any.whl", hash = "sha256:51e3aa9812eb56bb4a7c92f46d00fa5e2b2a2df767bdcac9bd909fff43751d15", size = 2017185, upload-time = "2026-07-06T13:48:44.338Z" },
 ]
 
 [[package]]
 name = "raccoon-library"
-version = "1.0.132"
+version = "1.0.138"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosqlite" },
@@ -865,10 +865,10 @@ dependencies = [
     { name = "raccoon-transport" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/74/27c81905c7189575e463ffc5c3623e9470b0cede2254912d41266a4f509c/raccoon_library-1.0.132-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:ca0584e8e8e3495c8d1cf419e56edac0d5d821bb670a5571b4a54396520f5934", size = 8863156, upload-time = "2026-06-18T14:39:51.604Z" },
-    { url = "https://files.pythonhosted.org/packages/f1/ef/9a11f457afe545a014f37ce9d0da721572810e103a4b50ab2faad727f2e8/raccoon_library-1.0.132-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:99e04aec9a15383939f78d0a39162c695a14215348fcb2f01db3b93ab2bfa129", size = 6683029, upload-time = "2026-06-18T14:39:53.991Z" },
-    { url = "https://files.pythonhosted.org/packages/21/43/793b606baa36cf69d0b4f6e9fb3f93a27ac36e24890ed71d3deeb0c36819/raccoon_library-1.0.132-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:9666c390dde0823cd7ad705045756250b1e3e2515095d1aef1fbac61c5291073", size = 7102540, upload-time = "2026-06-18T14:39:55.571Z" },
-    { url = "https://files.pythonhosted.org/packages/f8/ca/d6a2e8fb68f6bd81fb3bc29fc064d2634cf17d4395ecbb9a7d335c1215df/raccoon_library-1.0.132-cp313-cp313-win_amd64.whl", hash = "sha256:2dc98911a8ffbf4cd4a5c471aa9f2483ad18677e858086afa9808b83b3feb948", size = 5865482, upload-time = "2026-06-18T14:39:57.33Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/c7/45434423a7a489cc8b09a516b6f46f8dbef70134dcd1e10de7829f3653c7/raccoon_library-1.0.138-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:094657165d08c8f692f53b93f7726f62d5831dbdcbb4ee0948c548b39d959016", size = 9255762, upload-time = "2026-07-04T12:17:26.378Z" },
+    { url = "https://files.pythonhosted.org/packages/f9/8e/ba56a5d69619af1209e09149b971e193faaa4f7da62b4fc60e3f5c8a25e5/raccoon_library-1.0.138-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:4ddf52fe167f9dd3d001d6afa3034047adbe8b5eb6929dcfe2243120df85c5cf", size = 6866950, upload-time = "2026-07-04T12:17:29.091Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/5f/db490b259f73cf2968d8834a002f9ffae4837aca9c1e5080957f8305ba8b/raccoon_library-1.0.138-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:eb93aa95568f652c347c1126905a4579dbbdc9c24bae9a39672808946f1029e8", size = 7307129, upload-time = "2026-07-04T12:17:31.169Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/61/39c6ed31b42c49e514120fc1733a381f70b1af1ce7f6c7c92a199563ce7b/raccoon_library-1.0.138-cp313-cp313-win_amd64.whl", hash = "sha256:9e0b39c231348f786672a940855c81508f0a4ae8aa4c09194df615e60e9c410b", size = 6042573, upload-time = "2026-07-04T12:17:32.723Z" },
 ]
 
 [[package]]

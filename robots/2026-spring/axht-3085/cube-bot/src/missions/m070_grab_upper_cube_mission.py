@@ -29,28 +29,32 @@ class M070GrabUpperCubeMission(Mission):
                 on_analog_flank(Defs.et_sensor, "upper_cube")
                 + after_cm(15)
             ),
-            strafe_right(heading=0).until(
-                on_black(Defs.rear.left)
-                + after_cm(3)  # make sure we avoid seeing the white dot
-                + on_white(Defs.rear.left)
+            timeout(
+                strafe_right(heading=0).until(
+                    on_black(Defs.rear.left)
+                    + after_cm(3)  # make sure we avoid seeing the white dot
+                    + on_white(Defs.rear.left)
+                ),
+                seconds=2
             ),
 
             # put claw on cube
             turn_to_heading_left(0),
-            arm.move_angles(33, speed=150),
-            arm.move_angles(33, 90, -85, speed=80),
+            arm.move_angles(41, speed=150),
+            arm.move_angles(sholder_deg=90, elbow_deg=-88, speed=80),
+            wait_for_seconds(0.1), #make sure the serov movement is done
+            fully_disable_servos(), #make sure we don't press down on the cube to hard
 
             # push cube back
-            # optimize( TODO: enable if optimize works again
-            turn_to_heading_left(0),
-            drive_angle(-120).until(
-                on_black(Defs.front.left)
-                + after_cm(3)  # make sure we avoid seeing the white dot
-            ),
-            drive_angle(-120, speed=0.4).until(
-                on_white(Defs.front.left)
-            ),
-            # ]),
+            optimize([
+                drive_angle(-150, heading=0).until(
+                    on_black(Defs.front.left)
+                    #+ after_cm(3)  # make sure we avoid seeing the white dot
+                ),
+                #drive_angle(-120, heading=0, speed=0.4).until(
+                #    on_white(Defs.front.left)
+                #),
+            ]),
 
             wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
             arm.move_angles(elbow_deg=0, speed=150),
@@ -74,36 +78,44 @@ class M070GrabUpperCubeMission(Mission):
                 # put arm down
                 arm.move_angles(0, 0, 0, speed=120),
             ),
-            strafe_left(heading=0).until(
-                on_black(Defs.rear.left)
-            ),
+            #strafe_left(heading=0).until(
+            #    on_black(Defs.rear.left)
+            #),
 
             # drive back to cube
-            drive_forward(cm=13, heading=0),
+            drive_forward(cm=12, heading=0),
 
             # close claw
-            Defs.arm_claw.strong_grab(speed=100),
-            Defs.arm_claw.open(speed=100),
-            Defs.arm_claw.strong_grab(speed=100),
+            Defs.arm_claw.strong_grab(speed=130),
+            Defs.arm_claw.open(speed=150),
+            Defs.arm_claw.strong_grab(speed=180),
+
+            drive_backward(cm=5),
 
             # move arm up
-            arm.move_angles(0, 90, 50, speed=70),
-            optimize([
-                drive_backward(heading=0).until(  # push back poms
-                    on_black(Defs.front.right)
-                ),
-                drive_forward(heading=0).until(  # go forward so we can use the fornt line sensors
-                    after_cm(15)
-                ),
-                # wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
+            background(
+                arm.move_angles(0, 90, 40, speed=70),
+            ),
+            wait_for_seconds(0.3),  # wait a bit so the cube has lifted a bit before starting to move
+            drive_backward(heading=0).until(  # push back poms
+                on_black(Defs.front.right)
+            ),
+            drive_forward(heading=0).until(  # go forward so we can use the fornt line sensors
+                after_cm(15)
+            ),
+            wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
+            timeout(
                 strafe_left(heading=0).until(
-                    after_cm(7)  # just so the optimizer can work with it
-                    + over_line(Defs.front.left)
+                    (on_black(Defs.front.left) + after_cm(7))  # overshoot the line
                 ),
-                strafe_right(heading=0).until(
+                seconds=1,
+            ),
+            timeout_or(
+                step=strafe_right(heading=0).until(
                     on_black(Defs.front.left)
-                )
-            ])
-            .cut_corners(5, cut_until=True),
+                ),
+                seconds=1.3,
+                fallback=strafe_left(cm=30)
+            ),
             wait_for_checkpoint(60 + 17),  # wait so we don't colide with drum-bot
         ])
