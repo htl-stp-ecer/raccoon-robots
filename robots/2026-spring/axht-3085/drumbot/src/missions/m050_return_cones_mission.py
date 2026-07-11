@@ -33,7 +33,7 @@ class M050ReturnConesMission(Mission):
             .single(Defs.rear_left_ir_sensor, LineSide.RIGHT)
             .move(forward=-1)
             .correct_angular()
-            .pid(1.5, 0.3, 0.1)
+            .pid(1.0, 0.2, 0.1)
             .until(
                 over_line(Defs.front_right_ir_sensor)
                 + on_black(Defs.front_right_ir_sensor)
