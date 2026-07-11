@@ -128,9 +128,7 @@ class M000SetupMission(SetupMission):
             pause_setup_timer(),
             fully_disable_servos(),
 
-            MissionParams.first_cube_line_gap.ask(
-                "Abstand zwischen den zwei Linien (First-Cube-Drop)"
-            ),
+            MissionParams.first_cube_line_gap.ask("Linienabstand (First-Cube)"),
 
             wait_for_button("move servos into starting position"),
             start_setup_timer(),
