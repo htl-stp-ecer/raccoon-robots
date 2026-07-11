@@ -14,20 +14,20 @@ def grab_left_brown_cube_start_pos():
 GRAB_OFFSET = 0
 def grab_brown_cube(side: LineSide, heading: int | None):
     def drive():
-        return drive_forward(cm=3, heading=heading, speed=0.5) if (LineSide.LEFT == side) \
-            else drive_backward(cm=3)
+        return drive_forward(heading=heading) if (LineSide.LEFT == side) \
+            else drive_backward()
             # else run(lambda robot: None)
 
     return seq([
         arm.move_angles(90 + GRAB_OFFSET),
 
-        arm.move_angles(90 + GRAB_OFFSET, 60, -30)
+        arm.move_angles(90 + GRAB_OFFSET, 50, -30)
             .arm_speeds(sholder=100, elbow=200),        # move further into shared area
 
         Defs.arm_claw.full_open(),                 # open claw
-        drive(),
+        drive().until(after_seconds(0.2)),
 
-        arm.move_angles(90 + GRAB_OFFSET, 20, -25),        # move down
+        arm.move_angles(90 + GRAB_OFFSET, 20, -30),        # move down
         Defs.arm_claw.grab(),                 # grab cube
         arm.move_angles(90 + GRAB_OFFSET, 60, -50),        # lift cube up
 
@@ -36,7 +36,7 @@ def grab_brown_cube(side: LineSide, heading: int | None):
         ),
     ])
 
-CONTAINER_BASE_OFFSET = 2
+CONTAINER_BASE_OFFSET = 0
 
 def drop_cube_into_container():
     return seq([
@@ -57,11 +57,11 @@ def grab_cube_from_container():
         wait_for_seconds(0.2),
 
         # grab
-        arm.move_angles(sholder_deg=85, elbow_deg=87),
+        arm.move_angles(sholder_deg=83, elbow_deg=90),
         wait_for_seconds(0.2),
         Defs.arm_claw.grab(),
         wait_for_seconds(0.2),
 
         # move out of grab position
-        arm.move_angles(elbow_deg=-30),
+        arm.move_angles(elbow_deg=-40),
     ])

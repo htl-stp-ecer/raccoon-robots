@@ -33,6 +33,7 @@ arm_claw:
   offset: 64
   positions:
     idle: 10
+    cube_stack_regrab_open: 60
     open: 65
     full_open: 100
     grab_upper_cube: 120

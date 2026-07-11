@@ -45,29 +45,28 @@ class M050DropFirstCubeStackMission(Mission):
             _follow().until(
                 after_cm(72)
             ),
-            # make sure  we push the poms to the side so we don't move them
-            strafe_left(cm=5, heading=0),
-            strafe_right(cm=4, heading=0),
+            strafe_left(cm=5, heading=0, speed=0.5),
+            strafe_right(cm=4, heading=0, speed=0.5),
 
             _follow().until(
                 after_cm(55)
             ),
-            mark_heading_reference(),
             parallel(
                 align_line_follow().until(
                     after_seconds(0.4),
                 ),
                 arm.move_angles(
-                    base_deg=93, speed=80
+                    base_deg=96, speed=80
                 ),
             ),
+            mark_heading_reference(),
             strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),
             run(lambda robot: robot.info(f"strafe-right offset = {strafe_right_offset():g} cm")),
             defer(lambda _: strafe_right(heading=0).until(
                 (over_line(Defs.rear.left) + after_cm(strafe_right_offset()))
-                | after_cm(6 + strafe_right_offset())  # if we miss the lien somehow just stop and try to drop the cube stack
+                | after_cm(6 + strafe_right_offset())  # if we miss the line somehow just stop and try to drop the cube stack
             )),
             turn_to_heading_right(0),
 
@@ -76,8 +75,8 @@ class M050DropFirstCubeStackMission(Mission):
             wait_for_seconds(0.2),  # a samll delay so the sholder servo is definatly on his right posission
             arm.move_angles(elbow_deg=-98, speed=150),
             wait_for_seconds(0.5),
-            Defs.arm_claw.open(),
-            # grab a gain, so if the stack is wonky we stop the momentum
+            Defs.arm_claw.cube_stack_regrab_open(),
+            #grab a gain, so if the stack is wonky we stop the momentum
             Defs.arm_claw.grab(),
             Defs.arm_claw.full_open(),
         ])

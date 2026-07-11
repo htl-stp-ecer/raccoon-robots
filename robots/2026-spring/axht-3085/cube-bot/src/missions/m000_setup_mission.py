@@ -148,7 +148,7 @@ class M000SetupMission(SetupMission):
             calibrate_analog_sensor(
                 sensor=Defs.et_sensor,
                 set_name="loading_dock",
-                sample_duration=2.0
+                sample_duration=1.0
             ),
 
             move_into_starting_position(),
