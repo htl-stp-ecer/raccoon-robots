@@ -1,6 +1,6 @@
 from raccoon import *
 
-from mission_params import MissionParams
+from src.mission_params import MissionParams
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
 
@@ -64,6 +64,7 @@ class M050DropFirstCubeStackMission(Mission):
             strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),
+            run(lambda robot: robot.info(f"strafe-right offset = {strafe_right_offset():g} cm")),
             defer(lambda _: strafe_right(heading=0).until(
                 (over_line(Defs.rear.left) + after_cm(strafe_right_offset()))
                 | after_cm(6 + strafe_right_offset())  # if we miss the lien somehow just stop and try to drop the cube stack

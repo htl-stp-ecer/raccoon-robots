@@ -9,7 +9,7 @@ See :mod:`src.params` for the framework.
 
 from __future__ import annotations
 
-from src.params import NumberParam, ParamSet
+from raccoon import NumberParam, ParamSet
 
 
 class MissionParams(ParamSet):
