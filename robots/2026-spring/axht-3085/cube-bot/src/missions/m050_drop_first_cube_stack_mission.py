@@ -45,22 +45,21 @@ class M050DropFirstCubeStackMission(Mission):
             _follow().until(
                 after_cm(72)
             ),
-            # make sure  we push the poms to the side so we don't move them
-            strafe_left(cm=5, heading=0),
-            strafe_right(cm=4, heading=0),
+            strafe_left(cm=5, heading=0, speed=0.5),
+            strafe_right(cm=4, heading=0, speed=0.5),
 
             _follow().until(
                 after_cm(55)
             ),
-            mark_heading_reference(),
             parallel(
                 align_line_follow().until(
                     after_seconds(0.4),
                 ),
                 arm.move_angles(
-                    base_deg=93, speed=80
+                    base_deg=96, speed=80
                 ),
             ),
+            mark_heading_reference(),
             strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),
