@@ -19,7 +19,7 @@ class M070GrabUpperCubeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
             # find cube and drive magic value backwords so we are the right distance away from the cube
-            wait_for_seconds(0.1), #make sure we slow down
+            wait_for_seconds(0.1),  # make sure we slow down
             follow_line().until(
                 on_analog_flank(Defs.et_sensor, "upper_cube")
             ),
@@ -39,9 +39,9 @@ class M070GrabUpperCubeMission(Mission):
             # put claw on cube
             turn_to_heading_left(0),
             arm.move_angles(base_deg=41, speed=150),
-            arm.move_angles(sholder_deg=90, elbow_deg=-88, speed=80),
-            wait_for_seconds(0.1), #make sure the serov movement is done
-            fully_disable_servos(), #make sure we don't press down on the cube to hard
+            arm.move_angles(sholder_deg=90, elbow_deg=-88, speed=100),
+            wait_for_seconds(0.1),  # make sure the serov movement is done
+            fully_disable_servos(),  # make sure we don't press down on the cube to hard
 
             # push cube back
             optimize([
@@ -51,7 +51,8 @@ class M070GrabUpperCubeMission(Mission):
             ]),
 
             wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
-            arm.move_angles(base_deg=41, sholder_deg=90, elbow_deg=0, speed=150), #enable al lservos again and move elbow up
+            arm.move_angles(base_deg=41, sholder_deg=90, elbow_deg=0, speed=150),
+            # enable al lservos again and move elbow up
             background(  # open claw to gab "cube + pallet"
                 Defs.arm_claw.grab_upper_cube(),
             ),
@@ -62,19 +63,14 @@ class M070GrabUpperCubeMission(Mission):
                 after_cm(22)
             ),
 
-            parallel(
-                # align claw and cube
-                strafe_right(heading=0).until(
-                    on_black(Defs.rear.left)
-                    + after_cm(4)
-                    + on_white(Defs.rear.left)
-                ),
-                # put arm down
-                arm.move_angles(0, 0, 0, speed=120),
+            # align claw and cube
+            strafe_right(heading=0).until(
+                on_black(Defs.rear.left)
+                + after_cm(4)
+                + on_white(Defs.rear.left)
             ),
-            #strafe_left(heading=0).until(
-            #    on_black(Defs.rear.left)
-            #),
+            # put arm down
+            arm.move_angles(0, 0, 0, speed=120),
 
             # drive back to cube
             drive_forward(cm=12, heading=0),
@@ -84,33 +80,18 @@ class M070GrabUpperCubeMission(Mission):
             Defs.arm_claw.open(speed=150),
             drive_forward(cm=3, heading=0),
             Defs.arm_claw.strong_grab(speed=180),
-            drive_backward(cm=5, heading=0),
 
             # move arm up
             background(
                 arm.move_angles(0, 90, 40, speed=70),
             ),
             wait_for_seconds(0.3),  # wait a bit so the cube has lifted a bit before starting to move
-            drive_backward(heading=0).until(  # push back poms
-                on_black(Defs.front.left)
-            ),
-            wait_for_seconds(0.1), #make sure we dont have a jurky stop and start were bot tilts
-            drive_forward(heading=0).until(  # go forward so we can use the fornt line sensors
-                after_cm(15)
-            ),
-            wait_for_seconds(0.3),  # make sure we are still when we start driving, so our front doesn't lift
             timeout(
                 strafe_left(heading=0).until(
-                    (on_black(Defs.front.left) + after_cm(7))  # overshoot the line
+                    on_black(Defs.front.left  # ) + after_cm(7))  # overshoot the line
+                             ),
                 ),
                 seconds=1,
-            ),
-            timeout_or(
-                step=strafe_right(heading=0).until(
-                    on_black(Defs.front.left)
-                ),
-                seconds=1.3,
-                fallback=strafe_left(cm=30, heading=0)
             ),
             wait_for_checkpoint(60 + 18),  # wait so we don't colide with drum-bot
         ])

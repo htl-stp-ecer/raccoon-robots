@@ -6,9 +6,10 @@ from src.kinematics.arm import arm
 def left_lateral_line_follow():
     return (
         line_follow()
-        .single(Defs.rear.left, side=LineSide.LEFT)
-        .move(strafe=-1)
+        .single(Defs.front.right, side=LineSide.LEFT)
+        .move(strafe=1)
         .correct_forward()
+        .hold_heading(180)
         .pid(kp=0.4, ki=0.05, kd=0.0)
     )
 
@@ -27,9 +28,10 @@ def follow_line():
     return (
         line_follow()
         .single(Defs.front.left, side=LineSide.RIGHT)
-        .move(forward=-1)
+        .move(forward=1)
+        .hold_heading(180)
         .correct_lateral()
-        .pid(kp=0.4, ki=0.05, kd=0)
+        .pid(kp=0.4, ki=0.1, kd=0)
     )
 
 
@@ -45,6 +47,13 @@ class M060DriveUpRampMission(Mission):
                     arm.move_angles(sholder_deg=110, elbow_deg=-0).arm_speeds(sholder=100, elbow=200),
                 ),
                 drive_backward(cm=10),
+                background(
+                    seq([
+                        arm.move_angles(0, 90, -45, speed=100),
+                        arm.move_angles(0, 140, -40, speed=100),
+                        Defs.arm_claw.grab(),
+                    ]),
+                ),
                 timeout_or(
                     strafe_left().until(
                         over_line(Defs.front.right)
@@ -53,50 +62,71 @@ class M060DriveUpRampMission(Mission):
                     seconds=2,
                     fallback=seq([]),
                 ),
-                drive_forward(cm=6),
                 # align on front pipe
                 wall_align_forward(speed=0.3,
                                    accel_threshold=10,
                                    settle_duration=0,
-                                   max_duration=0.6,
-                                   grace_period=0.6
+                                   max_duration=1,
+                                   grace_period=1
                                    ),
             ])
             .cut_corners(7, cut_until=True),
 
-            wait_for_seconds(0.1), #wait a bit so the bot is fully still
+            wait_for_seconds(0.4),  # wait a bit so the bot is fully still
             mark_heading_reference(),
 
             # drive to black line where palette with two yellow cubes is
             optimize([
-                background(
-                    seq([
-                        arm.move_angles(0, 90, -45),
-                        arm.move_angles(0, 140, -40, speed=150),
-                        Defs.arm_claw.grab(),
-                    ]),
-                ),
-                drive_backward(heading=0).until(
-                    on_black(Defs.rear.left)
+                turn_left(180),
+
+                drive_forward(heading=180).until(
+                    on_black(Defs.front.right)
                 ),
 
                 # drive to the right to the pipe
-                turn_to_heading_left(0),
                 left_lateral_line_follow().until(
-                    after_cm(27)
+                    after_cm(22)
+                ),
+                background(
+                    arm.move_angles(0, 90, -70, speed=100),
                 ),
 
                 # align and switch calibration set
                 switch_calibration_set("upper"),
 
                 # magical drive up ramp
-                drive_backward(heading=0).until(
-                    on_black(Defs.front.left)
-                    + after_cm(90)
+                parallel(
+                    seq([
+                        drive_forward(heading=180).until(
+                            (on_black(Defs.rear.left) | on_incline(13))
+                        ),
+                        follow_line().until(
+                            after_cm(90)
+                            + over_line(Defs.front.right)
+                        )
+                    ]),
+                    seq([
+                        wait_for(
+                            (on_black(Defs.rear.left) | on_incline(13))
+                            + after_cm(35)
+                        ),
+                        parallel(
+                            arm.move_angles(0, 0, 0),
+                            Defs.arm_claw.open(),
+                        ),
+                        fully_disable_servos(),
+                        wait_for(on_level(3) + after_cm(5)),
+                        Defs.arm_claw.full_open(),
+                        arm.move_angles(0, 5, -1),
+                    ]),
                 ),
-                follow_line().until(
-                    on_black(Defs.front.right)
-                )
+                parallel(
+                    arm.move_angles(0,90,0),
+                    Defs.arm_claw.grab(),
+                ),
+                drive_backward(cm=10),
+                turn_to_heading_right(0),
+
             ])
             .cut_corners(5, cut_until=True),
         ])
