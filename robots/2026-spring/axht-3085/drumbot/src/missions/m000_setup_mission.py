@@ -50,7 +50,7 @@ class M000SetupMission(SetupMission):
                     mark_heading_reference(),
                     collect_drive(
                         collect_ir_set(
-                            drive_forward(65),
+                            drive_forward(60),
                             set_name="default",
                             sensors=[Defs.front_right_ir_sensor, Defs.rear_left_ir_sensor]
                         )
@@ -83,7 +83,7 @@ class M000SetupMission(SetupMission):
             ),
 
             wait_for_button("Set Pom Pusher Servo"),
-            Defs.pom_remover_servo.right(),
+            Defs.pom_remover_servo.middle(),
 
             fully_disable_servos(),
         ])

@@ -151,7 +151,7 @@ def lineup_drum_with_pipe():
             steps += [
                 wait_for_seconds(0.5),
                 _drive_to_drum_button(),
-                drive_backward(6.2, speed=0.2),
+                drive_backward(6.5, speed=0.2),
             ]
         # ALWAYS park the servo in the drop position — even when we skipped this
         # pipe — so downstream missions find it where they expect. This rotation
