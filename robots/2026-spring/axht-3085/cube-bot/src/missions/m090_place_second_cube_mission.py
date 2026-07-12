@@ -80,7 +80,7 @@ def align_on_pipes():
 
         # alignment on pipes
         strafe_right(cm=15, speed=0.5, heading=0),
-        drive_forward(cm=50, heading=0),
+        drive_forward(cm=40, heading=0),
         strafe_right(cm=5, speed=0.5, heading=0),
 
         # position to drop upper cube
@@ -98,13 +98,8 @@ class M090PlaceSecondCubeMission(Mission):
             arm.move_angles(28, 60, -50, speed=100),  # transport
 
             # drive back to get space to place the second cube
-            parallel(
                 drive_backward(cm=25, heading=0),
-                seq([
-                    wait_until_distance(15),
-                    grab_cube_from_container(),
-                ])
-            ),
+            grab_cube_from_container(),
 
             # move brown cube in possiton
             arm.move_angles(base_deg=31,
