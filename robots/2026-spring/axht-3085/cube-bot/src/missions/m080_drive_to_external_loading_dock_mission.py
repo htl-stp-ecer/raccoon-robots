@@ -48,7 +48,7 @@ class M080DriveToExternalLoadingDockMission(Mission):
                     + after_cm(90)
                     + over_line(Defs.rear.left)
                 ),
-                seconds=9,
+                seconds=8,
                 # fallback if we miss the black line on the bottom, so we still try to finish the run
                 # (won't help if we are stuck on the upper loading dock)
                 fallback=optimize([
