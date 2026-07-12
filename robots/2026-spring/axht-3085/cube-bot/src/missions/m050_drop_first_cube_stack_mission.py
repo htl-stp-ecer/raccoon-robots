@@ -26,6 +26,7 @@ def align_line_follow():
         .pid(kp=0.4, ki=0.2, kd=0.0)
     )
 
+
 def strafe_right_offset():
     return max(MissionParams.first_cube_line_gap.get() - 26, 1e-19)
 
@@ -64,19 +65,21 @@ class M050DropFirstCubeStackMission(Mission):
                 on_black(Defs.rear.left)
             ),
             run(lambda robot: robot.info(f"strafe-right offset = {strafe_right_offset():g} cm")),
-            defer(lambda _: strafe_right(heading=0).until(
-                (over_line(Defs.rear.left) + after_cm(strafe_right_offset()))
-                | after_cm(6 + strafe_right_offset())  # if we miss the line somehow just stop and try to drop the cube stack
-            )),
-            turn_to_heading_right(0),
+            strafe_right(heading=0).until(
+            over_line(Defs.rear.left)
+            | after_cm(6)  # if we miss the line somehow just stop and try to drop the cube stack
+            ),
+            wait_for_seconds(0.1), #make sure we are not moving before starting to strafe the offest cm
+            defer(lambda _: strafe_right(cm=strafe_right_offset()) ),
+              turn_to_heading_right(0),
 
-            # place cube tower
-            arm.move_angles(sholder_deg=110),
-            wait_for_seconds(0.2),  # a samll delay so the sholder servo is definatly on his right posission
-            arm.move_angles(elbow_deg=-98, speed=150),
-            wait_for_seconds(0.5),
-            Defs.arm_claw.cube_stack_regrab_open(),
-            #grab a gain, so if the stack is wonky we stop the momentum
-            Defs.arm_claw.grab(),
-            Defs.arm_claw.full_open(),
+              # place cube tower
+              arm.move_angles(sholder_deg=110),
+              wait_for_seconds(0.2),  # a samll delay so the sholder servo is definatly on his right posission
+              arm.move_angles(elbow_deg=-98, speed=150),
+              wait_for_seconds(0.5),
+              Defs.arm_claw.cube_stack_regrab_open(),
+              # grab a gain, so if the stack is wonky we stop the momentum
+              Defs.arm_claw.grab(),
+              Defs.arm_claw.full_open(),
         ])
