@@ -1,0 +1,19 @@
+# Normalize line endings: store everything as LF in the repo,
+# check out with LF on all platforms.
+* text=auto eol=lf
+
+# Explicit binary types (never touch line endings)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.mp4 binary
+*.onnx binary
+*.pt binary
+*.pth binary
+*.npy binary
+*.npz binary
