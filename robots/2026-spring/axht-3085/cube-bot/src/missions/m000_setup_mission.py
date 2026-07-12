@@ -141,6 +141,7 @@ class M000SetupMission(SetupMission):
             calibration_gate(
                 require_axes=[CalibrationAxis.FORWARD],
                 require_ir_sets=["default", "upper"],
+                forward_fallback_cm=60,
             ),
 
             calibrate_analog_sensor(
