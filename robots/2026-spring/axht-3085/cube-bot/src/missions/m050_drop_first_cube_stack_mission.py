@@ -27,7 +27,7 @@ def align_line_follow():
     )
 
 def strafe_right_offset():
-    return max(MissionParams.first_cube_line_gap.get() - 26, 0)
+    return max(MissionParams.first_cube_line_gap.get() - 26, 1e-19)
 
 
 class M050DropFirstCubeStackMission(Mission):
