@@ -20,5 +20,5 @@ class MissionParams(ParamSet):
         unit="cm",
         min=20.0,
         max=35.0,
-        persist=True,
+        persist=False,
     )
