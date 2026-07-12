@@ -18,7 +18,5 @@ class MissionParams(ParamSet):
     first_cube_line_gap = NumberParam(
         default=26.0,
         unit="cm",
-        min=20.0,
-        max=35.0,
         persist=False,
     )
