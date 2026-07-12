@@ -27,8 +27,15 @@ def align_line_follow():
     )
 
 
-def strafe_right_offset():
-    return max(MissionParams.first_cube_line_gap.get() - 26, 1e-19)
+def strafe_offset(robot):
+    strafe_correction = MissionParams.first_cube_line_gap.get() - 26
+    robot.info(f"strafe offset = {strafe_correction:g} cm")
+    if strafe_correction > 0:
+        return strafe_right(cm=strafe_correction, heading=0, speed=0.5)
+    elif strafe_correction < 0:
+        return strafe_left(cm=abs(strafe_correction), heading=0, speed=0.5)
+    else:
+        return seq([])
 
 
 class M050DropFirstCubeStackMission(Mission):
@@ -64,13 +71,12 @@ class M050DropFirstCubeStackMission(Mission):
             strafe_left(heading=0).until(
                 on_black(Defs.rear.left)
             ),
-            run(lambda robot: robot.info(f"strafe-right offset = {strafe_right_offset():g} cm")),
             strafe_right(heading=0).until(
             over_line(Defs.rear.left)
             | after_cm(6)  # if we miss the line somehow just stop and try to drop the cube stack
             ),
             wait_for_seconds(0.1), #make sure we are not moving before starting to strafe the offest cm
-            defer(lambda _: strafe_right(cm=strafe_right_offset()) ),
+            defer(strafe_offset),
               turn_to_heading_right(0),
 
               # place cube tower
