@@ -65,7 +65,7 @@ class M040DriveToOtherPipeMission(Mission):
                     wait_for(
                         on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
                     ),
-                    Defs.pom_remover_servo.knock_cone_pos(),
+                    Defs.pom_remover_servo.far_right(),
                     Defs.pom_remover_servo.right(),
                 ])
             ),

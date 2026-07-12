@@ -37,7 +37,7 @@ class M000SetupMission(SetupMission):
             # initial servo positions
             background(
                 seq([
-                    Defs.pom_remover_servo.drum_moving_pos(),
+                    Defs.pom_remover_servo.far_left(),
                     Defs.drum_pusher_servo.block_angle(),
                 ]),
             ),

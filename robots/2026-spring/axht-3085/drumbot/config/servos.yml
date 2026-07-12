@@ -12,11 +12,11 @@ pom_remover_servo:
   type: Servo
   port: 3
   positions:
+    far_right: -20
     right: -10
     middle: 45
     left: 110
-    drum_moving_pos: 195
-    knock_cone_pos: -20
+    far_left: 195
 
 lift_drums_servo:
   type: Servo

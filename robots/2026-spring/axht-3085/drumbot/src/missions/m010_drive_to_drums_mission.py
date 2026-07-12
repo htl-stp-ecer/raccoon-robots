@@ -21,18 +21,17 @@ class M010DriveToDrumsMission(Mission):
                     + after_cm(5),
                 ),
                 seq([
-                    wait_for_seconds(0.1),
+                    wait_for_seconds(0.7),
+                    Defs.pom_remover_servo.left(),
                     Defs.pom_remover_servo.right(),
-                    wait_for_seconds(0.5),
-                    background(
-                        Defs.pom_remover_servo.middle(),
-                    ),
-                ]),
+                    Defs.pom_remover_servo.middle(),
+                ])
             ),
 
             # turn back to original heading
+            Defs.pom_remover_servo.far_right(),
             turn_to_heading_right(0),
 
             # remove poms on other side
-            Defs.pom_remover_servo.drum_moving_pos(),
+            Defs.pom_remover_servo.far_left(),
         ])
