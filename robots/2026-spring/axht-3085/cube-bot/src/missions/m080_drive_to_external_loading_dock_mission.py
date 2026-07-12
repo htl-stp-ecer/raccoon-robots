@@ -10,29 +10,9 @@ def _follow():
         .single(Defs.front.left, side=LineSide.RIGHT)
         .move(forward=1)
         .correct_lateral()
+        .hold_heading(0)
         .pid(kp=0.5, ki=0.3, kd=0.0)
     )
-
-
-def wall_align():
-    return (
-        line_follow()
-        .single(Defs.rear.left, side=LineSide.RIGHT)
-        .move(forward=1)
-        .correct_lateral(hold_heading=False)
-        .pid(kp=0.6, ki=0.6, kd=0.05)
-    )
-
-
-def left_lateral_align_line_follow():
-    return (
-        line_follow()
-        .single(Defs.rear.left, side=LineSide.LEFT)
-        .move(strafe=-0.3)
-        .correct_forward(hold_heading=False)
-        .pid(kp=0.4, ki=0.1, kd=0.0)
-    )
-
 
 def weird_cube_drive():
     approach = DriveUntilImpact(max_cm=50, speed=1,
@@ -96,9 +76,9 @@ class M080DriveToExternalLoadingDockMission(Mission):
                                     )
                                 ]),
                             ),
-                            strafe_left(cm=20, heading=0)
-                        ])
-                    )
+                        ]),
+                    ),
+                    strafe_left(cm=20, heading=0)
                 ])
             ),
 
