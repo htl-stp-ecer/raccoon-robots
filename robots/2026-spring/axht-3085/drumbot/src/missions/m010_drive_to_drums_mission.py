@@ -1,5 +1,6 @@
 from raccoon import *
 from src.hardware.defs import *
+from src.hardware.tuning import LINE_THRESHOLD
 
 class M010DriveToDrumsMission(Mission):
     def sequence(self) -> Sequential:
@@ -8,7 +9,7 @@ class M010DriveToDrumsMission(Mission):
 
             # drive out of starting box
             drive_forward(heading=0, speed=0.9).until(
-                on_black(Defs.rear_left_ir_sensor)
+                on_black(Defs.rear_left_ir_sensor, LINE_THRESHOLD)
             ),
 
             # turn for driving angle
@@ -16,7 +17,7 @@ class M010DriveToDrumsMission(Mission):
 
             parallel(
                 drive_forward(heading=320).until(
-                    over_line(Defs.front_right_ir_sensor)
+                    over_line(Defs.front_right_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
                     + after_cm(5),
                 ),
                 seq([

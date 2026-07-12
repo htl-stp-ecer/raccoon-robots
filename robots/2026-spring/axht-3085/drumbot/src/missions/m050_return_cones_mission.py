@@ -1,5 +1,6 @@
 from raccoon import *
 from src.hardware.defs import Defs
+from src.hardware.tuning import LINE_THRESHOLD
 from src.steps.cone_pusher_steps import lower_cone_pusher
 
 
@@ -21,7 +22,7 @@ class M050ReturnConesMission(Mission):
             optimize([
                 # scoop cones into pusher
                 drive_backward().until(
-                    over_line(Defs.front_right_ir_sensor)
+                    over_line(Defs.front_right_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
                     + after_cm(4)
                 ),
 
@@ -35,8 +36,8 @@ class M050ReturnConesMission(Mission):
             .correct_angular()
             .pid(1.0, 0.2, 0.1)
             .until(
-                over_line(Defs.front_right_ir_sensor)
-                + on_black(Defs.front_right_ir_sensor)
+                over_line(Defs.front_right_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
+                + on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
             ),
 
             optimize([

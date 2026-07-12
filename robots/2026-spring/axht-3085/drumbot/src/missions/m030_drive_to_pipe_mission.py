@@ -1,5 +1,6 @@
 from raccoon import *
 from src.hardware.defs import Defs
+from src.hardware.tuning import LINE_THRESHOLD
 from src.service.drum_motor_service import DrumMotorService
 from src.service.sorting_service import SortingService
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
@@ -44,7 +45,7 @@ class M030DriveToPipeMission(Mission):
             # drive to first black line and turn
             drive_backward(heading=0).until(
                 after_cm(5)
-                + over_line(Defs.front_right_ir_sensor)
+                + over_line(Defs.front_right_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
             ),
 
             pom_pusher_rubber_band_avoid_pos(),
@@ -57,7 +58,7 @@ class M030DriveToPipeMission(Mission):
             parallel(
                 drive_forward(heading=180).until(
                     after_cm(15)
-                    + over_line(Defs.rear_left_ir_sensor)
+                    + over_line(Defs.rear_left_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
                     + after_cm(1.2),
                 ),
                 Defs.lift_drums_servo.seek_position(30),

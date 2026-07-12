@@ -1,5 +1,6 @@
 from raccoon import *
 from src.hardware.defs import Defs
+from src.hardware.tuning import LINE_THRESHOLD
 from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import drum_retreat
 from src.steps.pom_pusher_servo_moves import *
@@ -22,11 +23,11 @@ class M040DriveToOtherPipeMission(Mission):
 
             #drive until we are on the black tape in front of the ramp
             drive_forward(heading=270).until(
-              on_black(Defs.front_right_ir_sensor)
+              on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
             ),
 
             drive_backward().until(
-                on_white(Defs.front_right_ir_sensor)
+                on_white(Defs.front_right_ir_sensor, LINE_THRESHOLD)
                 + after_cm(6)
             ),
             turn_to_heading_right(180),
@@ -37,7 +38,7 @@ class M040DriveToOtherPipeMission(Mission):
 
             # drive to the seconds black line
             drive_backward().until(
-                on_black(Defs.front_right_ir_sensor)
+                on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
             ),
 
             # turn parallel to black line
@@ -63,7 +64,7 @@ class M040DriveToOtherPipeMission(Mission):
             turn_to_heading_right(90 - 33),
             drive_forward().until(
                 after_cm(20)
-                + over_line(Defs.front_right_ir_sensor)
+                + over_line(Defs.front_right_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
                 + after_cm(5)
             ),
 
@@ -72,7 +73,7 @@ class M040DriveToOtherPipeMission(Mission):
                 seq([
                     Defs.pom_remover_servo.left(),
                     wait_for(
-                        on_black(Defs.front_right_ir_sensor)
+                        on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
                     ),
                     Defs.pom_remover_servo.knock_cone_pos(),
                     Defs.pom_remover_servo.right(),
@@ -81,13 +82,13 @@ class M040DriveToOtherPipeMission(Mission):
 
             # turn onto black line
             turn_right().until(
-                on_black(Defs.front_right_ir_sensor)
+                on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
             ),
 
             background(
                 seq([
                     wait_for(
-                        on_black(Defs.rear_left_ir_sensor)
+                        on_black(Defs.rear_left_ir_sensor, LINE_THRESHOLD)
                     ),
                     pom_pusher_obstacle_avoid_pos(),
                 ]),
@@ -102,7 +103,7 @@ class M040DriveToOtherPipeMission(Mission):
                 ki=0.4,
                 kd=0.1,
             ).until(
-                over_line(Defs.rear_left_ir_sensor)
+                over_line(Defs.rear_left_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
                 + after_cm(13)
             ),
 
