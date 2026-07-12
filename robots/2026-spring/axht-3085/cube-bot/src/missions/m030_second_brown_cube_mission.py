@@ -29,7 +29,7 @@ class M030SecondBrownCubeMission(Mission):
 
                 # drive backwards to 2nd cube pickup
                 timeout_or(
-                    step=optimize([
+                    step=seq([
                         _follow().until(
                             on_black(Defs.front.right)
                         ),
