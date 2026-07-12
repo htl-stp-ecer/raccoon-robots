@@ -92,7 +92,7 @@ class M070GrabUpperCubeMission(Mission):
             ),
             wait_for_seconds(0.3),  # wait a bit so the cube has lifted a bit before starting to move
             drive_backward(heading=0).until(  # push back poms
-                on_black(Defs.front.right)
+                on_black(Defs.front.left)
             ),
             wait_for_seconds(0.1), #make sure we dont have a jurky stop and start were bot tilts
             drive_forward(heading=0).until(  # go forward so we can use the fornt line sensors
