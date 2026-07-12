@@ -99,7 +99,7 @@ class M090PlaceSecondCubeMission(Mission):
 
             # drive back to get space to place the second cube
             parallel(
-                drive_backward(cm=20, heading=0),
+                drive_backward(cm=25, heading=0),
                 seq([
                     wait_until_distance(15),
                     grab_cube_from_container(),
@@ -115,7 +115,7 @@ class M090PlaceSecondCubeMission(Mission):
 
             # move to the cube
             drive_forward(heading=0).until(
-                after_cm(19)
+                after_cm(24)
             ),
 
             # place brown cube
