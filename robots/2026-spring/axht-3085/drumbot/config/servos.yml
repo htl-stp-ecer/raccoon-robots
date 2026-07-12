@@ -27,6 +27,6 @@ lift_drums_servo:
     align_on_back: 70
     eject_position: 113
     seek_position: 170
-    down: -18
+    down: -12
     remove_D: 38
     remove_M: 70
