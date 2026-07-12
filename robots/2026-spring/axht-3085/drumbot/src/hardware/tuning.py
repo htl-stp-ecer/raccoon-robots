@@ -8,4 +8,4 @@
 # (blackThreshold=2219, separation=1244 statt ~3800/~2700), wodurch der
 # blanke Boden bereits p_black=0.73 ergab und `on_black` in M010 sofort
 # im Stand ausgelöst hat. Höhere Schwelle = deutlich weniger Fehltrigger.
-LINE_THRESHOLD = 0.80
+LINE_THRESHOLD = 0.70
