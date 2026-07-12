@@ -51,7 +51,7 @@ class M040DriveToOtherPipeMission(Mission):
             ),
 
             # turn away and drive angled to avoid hitting wall
-            turn_to_heading_right(90 - 33),
+            turn_to_heading_right(90 - 30),
             drive_forward().until(
                 after_cm(20)
                 + over_line(Defs.front_right_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
@@ -71,9 +71,10 @@ class M040DriveToOtherPipeMission(Mission):
             ),
 
             # turn onto black line
-            turn_right().until(
-                on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
-            ),
+            turn_to_heading_right(90),
+            # turn_right().until(
+            #     on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
+            # ),
 
             background(
                 seq([
