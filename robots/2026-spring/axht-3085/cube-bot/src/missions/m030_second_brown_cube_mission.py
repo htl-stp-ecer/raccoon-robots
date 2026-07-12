@@ -37,7 +37,7 @@ class M030SecondBrownCubeMission(Mission):
                             on_white(Defs.front.right)
                         ),
                         _follow().until(
-                             after_cm(19)
+                             after_cm(17)
                         ),
                     ]),
                     seconds=5,
