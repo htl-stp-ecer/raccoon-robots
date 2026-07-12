@@ -5,25 +5,19 @@ from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import drum_retreat
 from src.steps.pom_pusher_servo_moves import *
 
+
 class M040DriveToOtherPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
-            # drive backward a bit so we can lift the drum
-            #drive_backward(cm=10),
-
-            # start lifting up drum
-            #background(
-            #    Defs.lift_drums_servo.up(50),
-           # ),
-
-            parallel(
-              turn_to_heading_right(90),
+            background(
                 Defs.lift_drums_servo.up(50),
             ),
 
-            #drive until we are on the black tape in front of the ramp
+            turn_to_heading_right(90),
+
+            # drive until we are on the black tape in front of the ramp
             drive_forward(heading=270).until(
-              on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
+                on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
             ),
 
             drive_backward().until(
@@ -31,10 +25,6 @@ class M040DriveToOtherPipeMission(Mission):
                 + after_cm(6)
             ),
             turn_to_heading_right(180),
-
-
-            # turn straight
-            #turn_to_heading_right(185),  # in order to not hit the raised loading dock
 
             # drive to the seconds black line
             drive_backward().until(
