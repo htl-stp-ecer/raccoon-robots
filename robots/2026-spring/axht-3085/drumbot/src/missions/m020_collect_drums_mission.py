@@ -9,7 +9,7 @@ from src.steps.collect_drums_step import collect_drums
 from src.steps.drum_collector.go_to_slot_step import go_to_slot
 
 POSITION_HOLD_ENV = "DRUMBOT_NO_POSITION_HOLD"
-HEADING_MARK_TOLERANCE_DEG = 3.0
+HEADING_MARK_TOLERANCE_DEG = 2.5
 _was_first_heading_valid = True
 
 

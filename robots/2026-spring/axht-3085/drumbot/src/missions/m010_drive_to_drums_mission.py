@@ -15,30 +15,23 @@ class M010DriveToDrumsMission(Mission):
             turn_to_heading_right(40),
 
             parallel(
-                # drive
                 drive_forward(heading=320).until(
                     over_line(Defs.front_right_ir_sensor)
                     + after_cm(5),
                 ),
                 seq([
                     wait_for_seconds(0.1),
-                    Defs.pom_remover_servo.drum_moving_pos(),
                     Defs.pom_remover_servo.right(),
+                    wait_for_seconds(0.5),
+                    background(
+                        Defs.pom_remover_servo.middle(),
+                    ),
                 ]),
-            ),
-
-            # remove any poms that might be in front of the robot
-            background(
-                seq([
-                    wait_for_seconds(0.6),
-                    Defs.pom_remover_servo.drum_moving_pos(),
-                ]),
-                name="yeet_blue_pom",
             ),
 
             # turn back to original heading
             turn_to_heading_right(0),
 
-            # in order to avoid damaging pom pusher by sandwiching it between the pipes and the bot
-            wait_for_background("yeet_blue_pom"),
+            # remove poms on other side
+            Defs.pom_remover_servo.drum_moving_pos(),
         ])
