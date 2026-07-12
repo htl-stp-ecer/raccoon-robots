@@ -1,6 +1,6 @@
 .git
 .idea
-__pycache_
+__pycache__
 drum_detections
 calibration_samples
 detection_debug
