@@ -1,6 +1,7 @@
 from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
+from src.mission_params import MissionParams
 from src.steps.arm_steps import *
 
 def forward_line_follow():
@@ -27,7 +28,7 @@ class M020FirstBrownCubeMission(Mission):
             # line follow backwards to retrieve spot
             drive_forward(heading=0).until(
                 over_line(Defs.rear.left) #if we ever are over the line this conditio will fix it
-                + after_cm(6)
+                + after_cm(6 + (MissionParams.left_dor_distance.get() - 31))
             ),
             # go into correct lateral position for pickup
             strafe_right(heading=0, speed=0.5).until(

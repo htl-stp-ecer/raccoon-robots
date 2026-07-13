@@ -18,6 +18,18 @@ class MissionParams(ParamSet):
     first_cube_line_gap = NumberParam(
         default=26.0,
         unit="cm",
-        persist=False,
+        persist=True,
+        scoped=True
+    )
+    right_dor_distance = NumberParam(
+        default=30.0,
+        unit="cm",
+        persist=True,
+        scoped=True
+    )
+    left_dor_distance = NumberParam(
+        default=31.0,
+        unit="cm",
+        persist=True,
         scoped=True
     )

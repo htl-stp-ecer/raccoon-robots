@@ -1,6 +1,7 @@
 from raccoon import *
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
+from src.mission_params import MissionParams
 from src.steps.arm_steps import *
 
 
@@ -11,7 +12,7 @@ def _follow():
         .move(forward=-1)
         .correct_lateral(hold_heading=True)
         .hold_heading(0)
-        .pid(kp=0.4, ki=0.03, kd=0.0)
+        .pid(kp=0.6, ki=0.03, kd=0.0)
     )
 
 
@@ -37,7 +38,7 @@ class M030SecondBrownCubeMission(Mission):
                             on_white(Defs.front.right)
                         ),
                         _follow().until(
-                             after_cm(17)
+                             after_cm(17 + (MissionParams.right_dor_distance.get() - 30))
                         ),
                     ]),
                     seconds=5,
@@ -84,4 +85,5 @@ class M030SecondBrownCubeMission(Mission):
 
             grab_brown_cube(LineSide.RIGHT, heading=0),
             turn_to_heading_right(0),
+            drive_forward(cm=4,heading=0)
         ])
