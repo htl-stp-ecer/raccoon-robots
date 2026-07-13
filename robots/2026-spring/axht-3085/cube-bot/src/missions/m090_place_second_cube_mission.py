@@ -62,7 +62,7 @@ def align_on_pipes():
     def positon_to_drop_cube(robot, _cm=28):
         backward_drive = drive_backward(heading=0, cm=_cm) if cube_is_there \
             else drive_backward(heading=0, cm=3)
-        forward_drive = drive_forward(cm=18, heading=0) if cube_is_there \
+        forward_drive = drive_forward(cm=16, heading=0) if cube_is_there \
             else seq([])
 
         return seq([
@@ -79,8 +79,8 @@ def align_on_pipes():
         turn_to_heading_left(0),
 
         # alignment on pipes
-        strafe_right(cm=15, speed=0.5, heading=0),
-        drive_forward(cm=40, heading=0),
+        strafe_right(speed=0.5, heading=0).until(after_cm(10)),
+        drive_forward(heading=0).until(after_cm(30)),
         strafe_right(cm=5, speed=0.5, heading=0),
 
         # position to drop upper cube
@@ -98,7 +98,7 @@ class M090PlaceSecondCubeMission(Mission):
             arm.move_angles(28, 60, -50, speed=100),  # transport
 
             # drive back to get space to place the second cube
-                drive_backward(cm=25, heading=0),
+            drive_backward(cm=25, heading=0),
             grab_cube_from_container(),
 
             # move brown cube in possiton
