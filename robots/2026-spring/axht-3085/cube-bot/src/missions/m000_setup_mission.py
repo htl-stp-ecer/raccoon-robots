@@ -129,9 +129,10 @@ class M000SetupMission(SetupMission):
             fully_disable_servos(),
 
             configure_mission(
-                gametables=["Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6"],
                 params=[
                     (MissionParams.first_cube_line_gap, "Linienabstand (First-Cube)"),
+                    (MissionParams.left_dor_distance, "Left dor distance von T-Connector zu black tape Kannte"),
+                    (MissionParams.right_dor_distance, "Right dor distance von T-Connector zu black tape Kannte"),
                 ],
             ),
 
@@ -162,4 +163,5 @@ class M000SetupMission(SetupMission):
                 text="Bot is driving into the starting position…",
                 done_text="Bot is in the starting position.",
             ),
+            fully_disable_servos(),
         ])
