@@ -71,7 +71,7 @@ class M040GrabRedCubeMission(Mission):
             # make sure we move claw a bit back so we dont hit the lower cube
 
             # grab both cubes
-            arm.move_angles(elbow_deg=-80, speed=180),
+            arm.move_angles(elbow_deg=-82, speed=180),
             wait_for_seconds(0.3),
             arm.move_angles(sholder_deg=76, speed=180),
             Defs.arm_claw.strong_grab(),
