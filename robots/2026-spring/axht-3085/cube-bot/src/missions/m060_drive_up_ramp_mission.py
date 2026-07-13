@@ -31,7 +31,7 @@ def follow_line():
         .move(forward=1)
         .hold_heading(180)
         .correct_lateral()
-        .pid(kp=0.4, ki=0.1, kd=0)
+        .pid(kp=0.6, ki=0.1, kd=0)
     )
 
 
@@ -97,34 +97,35 @@ class M060DriveUpRampMission(Mission):
                 # magical drive up ramp
                 parallel(
                     seq([
-                        drive_forward(heading=180).until(
+                        drive_forward(heading=175).until(
                             (on_black(Defs.rear.left) | on_incline(13))
                         ),
                         follow_line().until(
-                            after_cm(90)
+                            after_cm(110)
                             + over_line(Defs.front.right)
+                            + after_cm(5)
                         )
                     ]),
                     seq([
                         wait_for(
-                            (on_black(Defs.rear.left) | on_incline(13))
-                            + after_cm(35)
+                            on_incline(13)
+                            + after_cm(30)
                         ),
                         parallel(
-                            arm.move_angles(0, 0, 0),
+                            arm.move_angles(7, 0, 0),
                             Defs.arm_claw.open(),
                         ),
                         fully_disable_servos(),
-                        wait_for(on_level(3) + after_cm(5)),
+                        wait_for(on_level(3) + after_cm(15)),
+                        arm.move_angles(7, 5, -1),
                         Defs.arm_claw.full_open(),
-                        arm.move_angles(0, 5, -1),
                     ]),
                 ),
                 parallel(
-                    arm.move_angles(0,90,0),
-                    Defs.arm_claw.grab(),
+                    arm.move_angles(7, 90, -40),
+                    drive_backward(cm=10),
                 ),
-                drive_backward(cm=10),
+                Defs.arm_claw.grab(blocking=False),
                 turn_to_heading_right(0),
 
             ])
