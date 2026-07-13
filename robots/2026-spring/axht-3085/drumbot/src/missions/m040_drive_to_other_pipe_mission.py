@@ -5,26 +5,19 @@ from src.steps.drum_lineup_step import lineup_drum_with_pipe
 from src.steps.drum_collector import drum_retreat
 from src.steps.pom_pusher_servo_moves import *
 
-
 class M040DriveToOtherPipeMission(Mission):
     def sequence(self) -> Sequential:
         return seq([
+            # drive backward a bit so we can lift the drum
+            drive_backward(cm=10),
+
+            # start lifting up drum
             background(
                 Defs.lift_drums_servo.up(50),
             ),
 
-            turn_to_heading_right(90),
-
-            # drive until we are on the black tape in front of the ramp
-            drive_forward(heading=270).until(
-                on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
-            ),
-
-            drive_backward().until(
-                on_white(Defs.front_right_ir_sensor, LINE_THRESHOLD)
-                + after_cm(6)
-            ),
-            turn_to_heading_right(180),
+            # turn straight
+            turn_to_heading_right(185),  # in order to not hit the raised loading dock
 
             # drive to the seconds black line
             drive_backward().until(
@@ -47,14 +40,14 @@ class M040DriveToOtherPipeMission(Mission):
                 ki=0.1,
                 kd=0.1,
             ).until(
-                after_cm(61),
+                after_cm(60),
             ),
 
             # turn away and drive angled to avoid hitting wall
             turn_to_heading_right(90 - 30),
             drive_forward().until(
                 after_cm(20)
-                + over_line(Defs.front_right_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
+                + over_line(Defs.front_right_ir_sensor)
                 + after_cm(5)
             ),
 
@@ -65,16 +58,13 @@ class M040DriveToOtherPipeMission(Mission):
                     wait_for(
                         on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
                     ),
-                    Defs.pom_remover_servo.far_right(),
+                    Defs.pom_remover_servo.far_left(),
                     Defs.pom_remover_servo.right(),
                 ])
             ),
 
             # turn onto black line
             turn_to_heading_right(90),
-            # turn_right().until(
-            #     on_black(Defs.front_right_ir_sensor, LINE_THRESHOLD)
-            # ),
 
             background(
                 seq([
@@ -94,7 +84,7 @@ class M040DriveToOtherPipeMission(Mission):
                 ki=0.4,
                 kd=0.1,
             ).until(
-                over_line(Defs.rear_left_ir_sensor, LINE_THRESHOLD, LINE_THRESHOLD)
+                over_line(Defs.rear_left_ir_sensor, LINE_THRESHOLD)
                 + after_cm(13)
             ),
 
