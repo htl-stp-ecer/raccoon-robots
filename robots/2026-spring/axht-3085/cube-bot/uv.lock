@@ -232,7 +232,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "raccoon-cli", specifier = "==0.1.168" },
+    { name = "raccoon-cli", specifier = "==0.1.169" },
     { name = "raccoon-library", specifier = "==1.0.139" },
 ]
 
@@ -862,7 +862,7 @@ wheels = [
 
 [[package]]
 name = "raccoon-cli"
-version = "0.1.168"
+version = "0.1.169"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "black" },
@@ -891,7 +891,7 @@ dependencies = [
     { name = "zstandard" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8a/39/4a3cf8369649d3adfd3b8f9b44b6ad0fcc078fa7d75abc1ebeaed90ac157/raccoon_cli-0.1.168-py3-none-any.whl", hash = "sha256:2b6fdd0de77d00b1703fc107bc39dc5bf5a8cc7ab9e97a71e714c8239be35fdb", size = 2031865, upload-time = "2026-07-12T21:20:10.774Z" },
+    { url = "https://files.pythonhosted.org/packages/7d/44/2f672858d5c32ba451d0c0fa404933dcf368982804ecbca6c543c7338edc/raccoon_cli-0.1.169-py3-none-any.whl", hash = "sha256:ac0f3e3d4e53a21e0471ea9eaa93e67c86c690f5887fda8fd761831941458547", size = 2032013, upload-time = "2026-07-13T20:28:14.041Z" },
 ]
 
 [[package]]
