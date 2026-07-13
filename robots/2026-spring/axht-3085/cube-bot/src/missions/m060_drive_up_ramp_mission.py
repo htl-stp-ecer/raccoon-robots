@@ -95,8 +95,8 @@ class M060DriveUpRampMission(Mission):
                 switch_calibration_set("upper"),
 
                 # magical drive up ramp
-                parallel(
-                    seq([
+                do_while_active(
+                    reference_step=seq([
                         drive_forward(heading=175).until(
                             (on_black(Defs.rear.left) | on_incline(13))
                         ),
@@ -106,7 +106,7 @@ class M060DriveUpRampMission(Mission):
                             + after_cm(5)
                         )
                     ]),
-                    seq([
+                    task=seq([
                         wait_for(
                             on_incline(13)
                             + after_cm(30)
