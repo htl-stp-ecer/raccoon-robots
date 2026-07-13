@@ -140,7 +140,7 @@ class M090PlaceSecondCubeMission(Mission):
                 name="move base"
             ),
 
-            drive_forward(cm=25),
+            drive_forward(cm=15),
             wait_for_background("move base"),
             wait_for_background("clap"),
 
