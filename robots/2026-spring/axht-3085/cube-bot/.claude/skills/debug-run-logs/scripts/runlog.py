@@ -54,8 +54,9 @@ _TICK_RE = re.compile(
     r"vx=(?P<vx>-?[\d.]+) vy=(?P<vy>-?[\d.]+) wz=(?P<wz>-?[\d.]+).*?"
     r"heading_err=(?P<hdg_err>-?[\d.]+)rad, dt=(?P<dt>[\d.]+)"
 )
+_NUM = r"-?[\d.]+(?:[eE][+-]?\d+)?"
 _SETVEL_RE = re.compile(
-    r"Drive::setVelocity vx=(?P<vx>-?[\d.eE]+), vy=(?P<vy>-?[\d.eE]+), wz=(?P<wz>-?[\d.eE]+)"
+    rf"Drive::setVelocity vx=(?P<vx>{_NUM}), vy=(?P<vy>{_NUM}), wz=(?P<wz>{_NUM})"
 )
 _LINUPD_RE = re.compile(
     r"LinearMotion update: primary=(?P<primary>-?[\d.]+) m, target=(?P<target>-?[\d.]+) m, "

@@ -61,8 +61,8 @@ motion_pid:
     integral_max: 10.0
     integral_deadband: 0.01
     derivative_lpf_alpha: 0.5
-    output_min: -10.0
-    output_max: 10.0
+    output_min: -1.8501
+    output_max: 1.8501
   velocity_ff: 1.0
   distance_tolerance_m: 0.005
   angle_tolerance_rad: 0.017
@@ -112,3 +112,5 @@ physical:
     x_cm: 41.753374983263264
     y_cm: 25.50040425247034
     theta_deg: 89.6811656291699
+turn:
+  kS: 0.35
