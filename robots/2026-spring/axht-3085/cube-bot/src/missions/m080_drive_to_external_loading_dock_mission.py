@@ -44,9 +44,8 @@ class M080DriveToExternalLoadingDockMission(Mission):
         return seq([
             timeout_or(
                 step=_follow().until(
-                    over_line(Defs.rear.left)
-                    + after_cm(90)
-                    + over_line(Defs.rear.left)
+                    after_cm(110)
+                    + (over_line(Defs.rear.left) | on_level(2))
                 ),
                 seconds=8,
                 # fallback if we miss the black line on the bottom, so we still try to finish the run
