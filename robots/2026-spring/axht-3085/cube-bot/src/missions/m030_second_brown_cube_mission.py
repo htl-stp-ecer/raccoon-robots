@@ -60,6 +60,10 @@ class M030SecondBrownCubeMission(Mission):
                     ]),
                 ),
             ),
+            # clear the residual heading error from the parallel arm phase first,
+            # so the strafe's heading hold doesn't stick-slip/oscillate
+            turn_to_heading_right(0),
+
             # go into correct lateral position for pickup
             timeout_or(
                 step=strafe_right(heading=0, speed=0.5).until(
