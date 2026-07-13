@@ -93,41 +93,41 @@ class M060DriveUpRampMission(Mission):
 
                 # align and switch calibration set
                 switch_calibration_set("upper"),
-
-                # magical drive up ramp
-                do_while_active(
-                    reference_step=seq([
-                        drive_forward(heading=175).until(
-                            (on_black(Defs.rear.left) | on_incline(13))
-                        ),
-                        follow_line().until(
-                            after_cm(110)
-                            + over_line(Defs.front.right)
-                            + after_cm(5)
-                        )
-                    ]),
-                    task=seq([
-                        wait_for(
-                            on_incline(13)
-                            + after_cm(30)
-                        ),
-                        parallel(
-                            arm.move_angles(7, 0, 0),
-                            Defs.arm_claw.open(),
-                        ),
-                        fully_disable_servos(),
-                        wait_for(on_level(3) + after_cm(15)),
-                        arm.move_angles(7, 5, -1),
-                        Defs.arm_claw.full_open(),
-                    ]),
-                ),
-                parallel(
-                    arm.move_angles(7, 90, -40),
-                    drive_backward(cm=10),
-                ),
-                Defs.arm_claw.grab(blocking=False),
-                turn_to_heading_right(0),
-
             ])
             .cut_corners(5, cut_until=True),
+
+            # magical drive up ramp
+            do_while_active(
+                reference_step=seq([
+                    drive_forward(heading=175).until(
+                        (on_black(Defs.rear.left) | on_incline(13))
+                    ),
+                    follow_line().until(
+                        after_cm(110)
+                        + over_line(Defs.front.right)
+                        + after_cm(5)
+                    )
+                ]),
+                task=seq([
+                    wait_for(
+                        on_incline(8)
+                        + after_cm(30)
+                    ),
+                    parallel(
+                        arm.move_angles(7, 0, 0),
+                        Defs.arm_claw.open(),
+                    ),
+                    fully_disable_servos(),
+                    wait_for(on_level(3) + after_cm(15)),
+                    arm.move_angles(7, 5, -1),
+                    Defs.arm_claw.full_open(),
+                ]),
+            ),
+            parallel(
+                arm.move_angles(7, 90, -40),
+                drive_backward(cm=10),
+            ),
+            Defs.arm_claw.grab(blocking=False),
+            turn_to_heading_right(0),
+
         ])
