@@ -19,4 +19,5 @@ class MissionParams(ParamSet):
         default=26.0,
         unit="cm",
         persist=False,
+        scoped=True
     )

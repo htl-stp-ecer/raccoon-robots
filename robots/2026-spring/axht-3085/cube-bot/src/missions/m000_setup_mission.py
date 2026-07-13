@@ -128,7 +128,12 @@ class M000SetupMission(SetupMission):
             pause_setup_timer(),
             fully_disable_servos(),
 
-            MissionParams.first_cube_line_gap.ask("Linienabstand (First-Cube)"),
+            configure_mission(
+                gametables=["Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6"],
+                params=[
+                    (MissionParams.first_cube_line_gap, "Linienabstand (First-Cube)"),
+                ],
+            ),
 
             wait_for_button("move servos into starting position"),
             start_setup_timer(),
