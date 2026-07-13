@@ -49,8 +49,8 @@ class M060DriveUpRampMission(Mission):
                 drive_backward(cm=10),
                 background(
                     seq([
-                        arm.move_angles(0, 90, -45, speed=100),
-                        arm.move_angles(0, 140, -40, speed=100),
+                        arm.move_angles(0, 90, -45, speed=90),
+                        arm.move_angles(0, 140, -40, speed=90),
                         Defs.arm_claw.grab(),
                     ]),
                 ),

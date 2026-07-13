@@ -4,11 +4,11 @@ from src.kinematics.arm import arm
 
 
 def grab_right_brown_cube_start_pos():
-    return arm.move_angles(87, 85, -70)  # rotate left to face correct direction
+    return arm.move_angles(87, 85, -70, speed=100)  # rotate left to face correct direction
                 # (giving base a bit of a turn so we don't hit the dor)
 
 def grab_left_brown_cube_start_pos():
-    return arm.move_angles(95, 85, -70)  # rotate left to face correct direction
+    return arm.move_angles(95, 85, -70, speed=120)  # rotate left to face correct direction
                 # (giving base a bit of a turn so we don't hit the dor)
 
 GRAB_OFFSET = 0
@@ -40,7 +40,7 @@ CONTAINER_BASE_OFFSET = 0
 
 def drop_cube_into_container():
     return seq([
-        arm.move_angles(CONTAINER_BASE_OFFSET, 90, 82, speed=100),      # move arm to drop cube into container position
+        arm.move_angles(CONTAINER_BASE_OFFSET, 100, 70, speed=120),  # move arm to drop cube into container position
         wait_for_seconds(0.2),
         Defs.arm_claw.full_open(),            # let go of cube
     ])

@@ -25,7 +25,6 @@ class M010MoveToCenterMission(Mission):
                     # make sure sholder and arm are enable before enabeling base so we dont get stuck with the claw
                     arm.move_angles(base_deg=0), #only use if we run allone
                     arm.move_angles(elbow_deg=-70),
-                    arm.move_angles(elbow_deg=-70),
                     arm.move_angles(sholder_deg=90),
                     grab_right_brown_cube_start_pos(),
                     Defs.arm_claw.idle(),  # make sure claw is closed
