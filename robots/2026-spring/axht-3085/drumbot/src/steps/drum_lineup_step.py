@@ -9,6 +9,19 @@ from src.hardware.defs import Defs
 # When the drum misses the pipe, back off, nudge forward this far and retry.
 FALLBACK_FORWARD_CM = 5.0
 
+# Restoring the captured heading (turning back after a missed sweep) can itself
+# jam: if the robot slipped, a wheel can catch on the wrong side and the turn
+# can no longer complete — it would hang or settle well short of the target. In
+# that case we free the chassis by backing up this far and then finish the turn.
+RESTORE_STUCK_BACKUP_CM = 2.0
+# A restore turn that ends this close to the captured heading counts as done. A
+# turn that completes normally settles to ~2°, so this cleanly separates success
+# from a jammed turn that was cancelled far from target.
+RESTORE_HEADING_TOL_DEG = 1.5
+# Max back-up-and-retry attempts for a jammed restore turn before giving up and
+# continuing the run anyway.
+RESTORE_MAX_ATTEMPTS = 3
+
 # Max degrees the search turn is allowed to sweep before giving up.
 MAX_SEARCH_TURN_DEG = 60.0
 
@@ -86,13 +99,60 @@ def lineup_drum_with_pipe():
         ).current_relative_deg()
         return run(lambda _: None)
 
-    def _restore_heading():
-        def _build(_):
+    def _heading_error_deg(robot):
+        # Signed [-180, 180] delta from the captured start heading to now.
+        if state["start_heading_deg"] is None:
+            return 0.0
+        svc = robot.get_service(HeadingReferenceService)
+        return (svc.current_relative_deg() - state["start_heading_deg"] + 180) % 360 - 180
+
+    def _restore_heading(attempt: int = 1):
+        # Turn back to the captured absolute heading. turn_to_heading_left restores
+        # it regardless of the reference's positive direction.
+        #
+        # The turn can physically jam: if the robot slipped, a wheel can catch on
+        # the wrong side and the heading turn can no longer complete, leaving the
+        # robot stuck. Guard the turn with the same heading-stuck detector used for
+        # the search sweep, run concurrently: the moment the robot stops rotating
+        # before reaching the target, the turn is cancelled instead of hanging.
+        # We then back up RESTORE_STUCK_BACKUP_CM to free the chassis and retry the
+        # turn, up to RESTORE_MAX_ATTEMPTS times.
+        def _build(robot):
             if state["start_heading_deg"] is None:
                 return run(lambda _: None)
-            # turn_to_heading_left(current_relative_deg) restores the captured
-            # absolute heading regardless of the reference's positive direction.
-            return turn_to_heading_left(state["start_heading_deg"])
+            # Already on target (e.g. the sweep barely moved) — nothing to restore.
+            if abs(_heading_error_deg(robot)) <= RESTORE_HEADING_TOL_DEG:
+                return run(lambda _: None)
+
+            guarded_turn = do_while_active(
+                reference_step=wait_for(
+                    _heading_stuck(grace_seconds=0.4, threshold_deg=3, stuck_duration=0.3)
+                ),
+                task=turn_to_heading_left(state["start_heading_deg"]),
+            )
+
+            def _after(robot2):
+                err = abs(_heading_error_deg(robot2))
+                svc = robot2.get_service(HeadingReferenceService)
+                if err <= RESTORE_HEADING_TOL_DEG:
+                    return run(lambda _: None)  # heading restored
+                if attempt >= RESTORE_MAX_ATTEMPTS:
+                    svc.warn(
+                        f"[lineup_drum_with_pipe] heading still {err:.0f}° off after "
+                        f"{attempt} restore attempts — continuing run anyway"
+                    )
+                    return run(lambda _: None)
+                svc.warn(
+                    f"[lineup_drum_with_pipe] restore turn jammed ({err:.0f}° off "
+                    f"target) — backing up {RESTORE_STUCK_BACKUP_CM:.0f}cm and "
+                    f"completing the turn (attempt {attempt + 1})"
+                )
+                return seq([
+                    drive_backward(RESTORE_STUCK_BACKUP_CM),
+                    _restore_heading(attempt + 1),
+                ])
+
+            return seq([guarded_turn, defer(_after)])
 
         return defer(_build)
 
