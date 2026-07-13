@@ -71,6 +71,6 @@ class M030DriveToPipeMission(Mission):
             lineup_drum_with_pipe(),
             drum_retreat(
                 count=4,
-                velocity_factor=0.6
+                velocity_factor=0.5
             ),
         ])
