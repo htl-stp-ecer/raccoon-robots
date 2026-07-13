@@ -11,7 +11,7 @@ def follow_line():
         .move(forward=1)
         .hold_heading(0)
         .correct_lateral()
-        .pid(kp=0.4, ki=0.05, kd=0)
+        .pid(kp=0.6, ki=0.1, kd=0)
     )
 
 
@@ -70,7 +70,7 @@ class M070GrabUpperCubeMission(Mission):
                 + on_white(Defs.rear.left)
             ),
             # put arm down
-            arm.move_angles(0, 0, 0, speed=120),
+            arm.move_angles(3, 0, 0, speed=120),
 
             # drive back to cube
             drive_forward(cm=12, heading=0),
