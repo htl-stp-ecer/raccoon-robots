@@ -2,6 +2,7 @@ from raccoon import *
 from src.kinematics.arm import arm
 from src.hardware.defs import Defs
 from src.steps.calibrate_analog_drive import calibrate_analog_drive
+from src.steps.run_supervised import run_supervised
 from src.steps.velocity_plot import PlotDriveVelocity
 from src.mission_params import MissionParams
 
@@ -90,7 +91,6 @@ def warehouse_floor_calibration():
 
 def move_into_starting_position():
     return seq([
-        wait_for_button("go to strart possiont"),
         mark_heading_reference(),
         # align on the black line on the right
         strafe_right(heading=0).until(
@@ -155,5 +155,11 @@ class M000SetupMission(SetupMission):
                 sample_duration=1.0
             ),
 
-            move_into_starting_position(),
+            wait_for_button("go to start position"),
+            run_supervised(
+                move_into_starting_position,
+                title="Starting Position",
+                text="Bot is driving into the starting position…",
+                done_text="Bot is in the starting position.",
+            ),
         ])
