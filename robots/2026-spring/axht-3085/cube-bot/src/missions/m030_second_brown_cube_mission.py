@@ -31,14 +31,9 @@ class M030SecondBrownCubeMission(Mission):
                 # drive backwards to 2nd cube pickup
                 timeout_or(
                     step=seq([
-                        _follow().until(
-                            on_black(Defs.front.right)
-                        ),
-                        drive_backward().until(
-                            on_white(Defs.front.right)
-                        ),
-                        _follow().until(
-                             after_cm(17 + (MissionParams.right_dor_distance.get() - 30))
+                        drive_backward(heading=0).until(
+                            over_line(Defs.front.right)
+                            + after_cm(19 + (MissionParams.right_dor_distance.get() - 30))
                         ),
                     ]),
                     seconds=5,
@@ -63,7 +58,8 @@ class M030SecondBrownCubeMission(Mission):
             ),
             # clear the residual heading error from the parallel arm phase first,
             # so the strafe's heading hold doesn't stick-slip/oscillate
-            turn_to_heading_right(0),
+            wait_for_seconds(0.2),
+            turn_to_heading_right(0, speed=0.4),
 
             # go into correct lateral position for pickup
             timeout_or(
@@ -84,6 +80,6 @@ class M030SecondBrownCubeMission(Mission):
             ),
 
             grab_brown_cube(LineSide.RIGHT, heading=0),
-            turn_to_heading_right(0),
-            drive_forward(cm=4,heading=0)
+            turn_to_heading_right(0, speed=0.4),
+            drive_forward(cm=4, heading=0)
         ])
