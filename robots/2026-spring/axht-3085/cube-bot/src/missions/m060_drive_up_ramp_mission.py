@@ -29,7 +29,7 @@ def follow_line():
         line_follow()
         .single(Defs.front.left, side=LineSide.RIGHT)
         .move(forward=1)
-        .hold_heading(180)
+        .hold_heading(179)#mall drive to the side so we dont hit the left railing of the ramp
         .correct_lateral()
         .pid(kp=0.6, ki=0.1, kd=0)
     )
@@ -99,7 +99,7 @@ class M060DriveUpRampMission(Mission):
             # magical drive up ramp
             do_while_active(
                 reference_step=seq([
-                    drive_forward(heading=175).until(
+                    drive_forward(heading=179).until( #mall drive to the side so we dont hit the left railing of the ramp
                         (on_black(Defs.rear.left) | on_incline(13))
                     ),
                     follow_line().until(
