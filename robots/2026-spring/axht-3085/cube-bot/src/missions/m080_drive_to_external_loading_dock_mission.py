@@ -11,7 +11,7 @@ def _follow():
         .move(forward=1)
         .correct_lateral()
         .hold_heading(0)
-        .pid(kp=0.5, ki=0.3, kd=0.0)
+        .pid(kp=0.8, ki=0.3, kd=0.01)
     )
 
 def weird_cube_drive():
@@ -46,6 +46,7 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 step=_follow().until(
                     after_cm(110)
                     + (over_line(Defs.rear.left) | on_level(2))
+                    + after_cm(1)
                 ),
                 seconds=8,
                 # fallback if we miss the black line on the bottom, so we still try to finish the run
@@ -59,8 +60,7 @@ class M080DriveToExternalLoadingDockMission(Mission):
                         fallback=seq([
                             timeout_or(
                                 step=_follow().until(
-                                    over_line(Defs.rear.left)
-                                    + after_cm(90)
+                                    after_cm(90)
                                     + over_line(Defs.rear.left)
                                 ),
                                 seconds=4,
@@ -80,6 +80,7 @@ class M080DriveToExternalLoadingDockMission(Mission):
                     strafe_left(cm=20, heading=0)
                 ])
             ),
+            drive_backward().until(on_black(Defs.rear.left)),
 
             switch_calibration_set("default"),
 
