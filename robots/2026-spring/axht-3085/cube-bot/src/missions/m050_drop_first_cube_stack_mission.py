@@ -81,5 +81,5 @@ class M050DropFirstCubeStackMission(Mission):
             # grab a gain, so if the stack is wonky we stop the momentum
             Defs.arm_claw.grab(),
             Defs.arm_claw.full_open(),
-            strafe_right(cm=5, speed=0.4),
+            strafe_right(cm=6, speed=0.4),
         ])
