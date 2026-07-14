@@ -54,7 +54,7 @@ class M040GrabRedCubeMission(Mission):
             ),
 
             # drive to red cube
-            turn_to_heading_left(0),
+            turn_to_heading_left(0, speed=0.4),
             forward_line_follow().until(
                 on_black(Defs.front.right)
                 + after_cm(1)
