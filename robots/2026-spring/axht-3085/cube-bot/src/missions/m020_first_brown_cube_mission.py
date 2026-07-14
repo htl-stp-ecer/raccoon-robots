@@ -44,7 +44,7 @@ class M020FirstBrownCubeMission(Mission):
             timeout_or(
                 strafe_left(heading=0).until(
                     on_black(Defs.front.left)
-                    + after_cm(4)
+                    + after_cm(2)
                 ),
                 seconds=3,
                 fallback=seq([
