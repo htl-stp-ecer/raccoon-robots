@@ -23,7 +23,7 @@ class M010MoveToCenterMission(Mission):
             background(
                 step=seq([
                     # make sure sholder and arm are enable before enabeling base so we dont get stuck with the claw
-                    arm.move_angles(base_deg=0), #only use if we run allone
+                    arm.move_angles(base_deg=0),  # only use if we run allone
                     arm.move_angles(elbow_deg=-70),
                     arm.move_angles(sholder_deg=90),
                     grab_right_brown_cube_start_pos(),
@@ -34,6 +34,7 @@ class M010MoveToCenterMission(Mission):
 
             drive_forward(heading=-90).until(
                 over_line(Defs.front.left)
+                + after_cm(20)
                 + on_black(Defs.front.left)
             ),
 
