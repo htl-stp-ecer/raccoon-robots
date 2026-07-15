@@ -96,8 +96,8 @@ class M080DriveToExternalLoadingDockMission(Mission):
                 speed=0.3,
                 accel_threshold=10,
                 settle_duration=0,
-                max_duration=0.6,
-                grace_period=0.6
+                max_duration=0.9,
+                grace_period=0.9
             ),
             mark_heading_reference(origin_offset_deg=-90),
 
