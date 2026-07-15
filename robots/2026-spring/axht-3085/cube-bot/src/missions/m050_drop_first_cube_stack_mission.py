@@ -3,6 +3,7 @@ from raccoon import *
 from src.mission_params import MissionParams
 from src.hardware.defs import Defs
 from src.kinematics.arm import arm
+from src.steps.mark_heading_if_aligned import mark_heading_if_aligned
 
 
 def _follow():
@@ -12,7 +13,7 @@ def _follow():
         .move(forward=1)
         .correct_lateral()
         .hold_heading(0)
-        .pid(kp=0.3, ki=0.2, kd=0.0)
+        .pid(kp=0.7, ki=0.2, kd=0.0)
     )
 
 
@@ -68,7 +69,7 @@ class M050DropFirstCubeStackMission(Mission):
                 ),
             ),
             wait_for_seconds(0.1),  # make sure we are not moving before starting to strafe the offest cm
-            mark_heading_reference(),
+            mark_heading_if_aligned(),
             defer(strafe_offset),
             turn_to_heading_right(0),
 
