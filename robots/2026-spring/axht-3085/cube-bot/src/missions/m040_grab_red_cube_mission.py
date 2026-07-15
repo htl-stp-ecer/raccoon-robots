@@ -66,7 +66,7 @@ class M040GrabRedCubeMission(Mission):
             arm.move_angles(sholder_deg=109, speed=150),
 
             # let cube go
-            Defs.arm_claw.full_open(180),
+            Defs.arm_claw.full_open(90),
             arm.move_angles(sholder_deg=120, speed=250),
             # make sure we move claw a bit back so we dont hit the lower cube
 
