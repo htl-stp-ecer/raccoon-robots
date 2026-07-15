@@ -51,8 +51,8 @@ class M060DriveUpRampMission(Mission):
                     seq([
                         arm.move_angles(base_deg=0, speed=90),
                         Defs.arm_claw.grab(),
-                        arm.move_angles(0, 140, 0, speed=100),
-                        arm.move_angles(0, 130, 0, speed=120),
+                        arm.move_angles(0, 140, 0, speed=80),
+                        arm.move_angles(0, 130, 0, speed=80),
                     ]),
                 ),
                 timeout_or(
@@ -115,10 +115,14 @@ class M060DriveUpRampMission(Mission):
                         on_incline(8)
                         + after_cm(30)
                     ),
-                    arm.move_angles(7, 0, 0),
+                    parallel(
+                        arm.move_angles(7, 0, 0),
+                        seq([
+                            wait_for_seconds(0.15),  # make sure that the fully disable sevos goes throw
+                            Defs.arm_claw.open(blocking=False),
+                        ])
+                    ),
                     fully_disable_servos(),
-                    wait_for_seconds(0.02), #make sure that the fully disable sevos goes throw
-                    Defs.arm_claw.open(blocking=False),
                     wait_for(on_level(3) + after_cm(15)),
                     arm.move_angles(7, 5, -1),
                     Defs.arm_claw.full_open(),
@@ -126,7 +130,7 @@ class M060DriveUpRampMission(Mission):
             ),
             parallel(
                 seq([
-                    arm.move_angles(0, 140, 0, speed=120),
+                    arm.move_angles(0, 140, 0, speed=90),
                     arm.move_angles(7, 90, -40, speed=100),
                 ]),
                 drive_backward(cm=10),
