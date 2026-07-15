@@ -23,7 +23,7 @@ class M030SecondBrownCubeMission(Mission):
                 # start moving arm by 90° as soon as black line was crossed
                 seq([
                     wait_for_background(name="drop_cube"),
-                    arm.move_angles(0, 65, 0, speed=110),
+                    arm.move_angles(0, 65, 0, speed=160),
                     Defs.arm_claw.idle(blocking=False),
                     grab_left_brown_cube_start_pos(),
                 ]),
