@@ -68,7 +68,6 @@ class M070GrabUpperCubeMission(Mission):
                 on_black(Defs.rear.left)
                 + after_cm(4)
                 + on_white(Defs.rear.left)
-                + after_cm(1)
             ),
             # put arm down
             arm.move_angles(3, 0, 0, speed=120),
