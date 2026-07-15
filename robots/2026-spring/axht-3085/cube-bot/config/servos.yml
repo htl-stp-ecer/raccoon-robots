@@ -38,4 +38,4 @@ arm_claw:
     full_open: 100
     grab_upper_cube: 120
     grab: 10
-    strong_grab: -10
+    strong_grab: -13
