@@ -77,12 +77,16 @@ class M080DriveToExternalLoadingDockMission(Mission):
                             ),
                         ]),
                     ),
-                    strafe_left(cm=20, heading=0)
+                    strafe_left(cm=10, heading=0)
                 ])
             ),
-            drive_backward().until(on_black(Defs.rear.left)),
 
             switch_calibration_set("default"),
+            timeout_or(
+                drive_backward().until(on_black(Defs.rear.left)),
+                seconds=1,
+                fallback=drive_forward(cm=5,)
+            ),
 
             # optimize([ #TODO: enable teh optimize
 
