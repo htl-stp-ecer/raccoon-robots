@@ -65,8 +65,11 @@ class M050DropFirstCubeStackMission(Mission):
                     after_seconds(0.7),
                 ),
                 arm.move_angles(
-                    base_deg=94, speed=80
+                    base_deg=93, speed=80
                 ),
+            ),
+            arm.move_angles(
+                base_deg=93.1, speed=80
             ),
             wait_for_seconds(0.1),  # make sure we are not moving before starting to strafe the offest cm
             mark_heading_reference(),

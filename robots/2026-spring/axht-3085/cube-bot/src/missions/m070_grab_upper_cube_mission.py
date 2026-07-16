@@ -83,7 +83,10 @@ class M070GrabUpperCubeMission(Mission):
 
             # move arm up
             background(
-                arm.move_angles(0, 90, 40, speed=70),
+                seq([
+                    arm.move_angles(0.1, 90.1, 40.1, speed=70),
+                    arm.move_angles(0, 90, 40, speed=70),
+                ])
             ),
             wait_for_seconds(0.3),  # wait a bit so the cube has lifted a bit before starting to move
             timeout(
