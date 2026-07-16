@@ -94,6 +94,44 @@ packing-bot/
 
 ---
 
+## Your Robot Will Fail — Build For It
+
+If you read this repo for one thing, read it for this.
+
+A pom slips. A wheel spins on a seam. The other robot is 3 cm off and yours pushes against it forever. **This is normal.** A mission that assumes success hangs, and a hung mission doesn't cost you one action — it costs you every action after it. So almost every risky step here carries an escape hatch.
+
+### The vocabulary
+
+Stop conditions compose with three operators, and the distinction matters:
+
+| Operator | Meaning | Used for |
+|:---------|:--------|:---------|
+| `A \| B` | **OR** — whichever happens first | the failsafe: *"the line, or 2 seconds, whichever comes first"* |
+| `A + B` | **THEN** — A becomes true, then B | precision: *"cross the line, then 7 cm more"* |
+| `A & B` | **AND** — both true | narrowing a stop to one exact state |
+
+Nearly every `| after_seconds(...)` in this repo is a bail-out. Nearly every `+` is real logic.
+
+### The layers
+
+| Layer | What it does | Where |
+|:------|:-------------|:------|
+| **Global run cap** | `shutdown_in: 120` — the whole run is dead at 120 s, no matter what | `config/robot.yml` |
+| **Mission budget** | `time_budget = 30.0` — this mission kills itself at 30 s and the run moves on | `m010_grab_first_poms_mission.py` |
+| **`timeout()` wrapper** | Wraps a step that could hang: `timeout(strafe_arc_left(radius_cm=45, degrees=70), seconds=5.5)` | `m070_retrun_baskets_mission.py` |
+| **Sensor + timeout** | `timeout(strafe_right().until(on_black(Defs.rear.right)), seconds=4)` — normally the line stops it; if the line never comes, 4 s does | `m070_retrun_baskets_mission.py` |
+| **OR-ed escape** | `turn_left().until(after_degrees(50) \| after_seconds(3.0))` — turn 50°, but never spin forever | `m040_drive_to_baskets_mission.py` |
+| **Runtime recovery** | `defer()` + a sensor check: *only* correct if we're actually wrong. `strafte_if_on_black()`, `drive_if_sensor_tirggerd()` | `m070`, `m010` |
+| **Shutdown hook** | `M999ShutdownMission` — registered as `shutdown`, runs even when things went badly | `config/missions.yml` |
+
+### The lesson
+
+Note the pattern in `timeout(strafe_right().until(on_black(...)), seconds=4)`. There are **two** stop conditions on one step: the one you want, and the one that saves you. The sensor is the plan; the clock is the promise that the plan ends.
+
+That's the whole idea. Every step that *could* not finish gets an answer to "and if it doesn't?" — because on the table, sooner or later, it doesn't.
+
+---
+
 ## Ideas Worth Stealing
 
 Even with the rough edges, a few patterns in here held up well and are still how we build robots today:
@@ -124,3 +162,19 @@ Even with the rough edges, a few patterns in here held up well and are still how
 ---
 
 Built by the Botball team at **HTL St. Pölten** for the Botball Spring Game 2026.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+Use it, copy it, build your competition robot on it. **You do not have to publish your own robot code because you read or reused this repo.** That's deliberate: MIT is what [raccoon-example](https://github.com/htl-stp-ecer/raccoon-example) uses, and the whole point of opening these robots up is that you *can* learn from them without strings attached.
+
+### A request, not a requirement
+
+We'd love it if you published your robot code **after your season ends** — not during it.
+
+That's a norm, not a licence clause, because no licence can express it. Copyleft triggers on *distribution*, not on a date, and driving a robot at a competition isn't distribution. So GPL wouldn't protect you during the season or oblige you after it — it would just make teams nervous enough to not learn from us at all.
+
+Keep your edge while you're competing. Then hand it forward, the way this repo does. That's how the next team starts further along than you did.
