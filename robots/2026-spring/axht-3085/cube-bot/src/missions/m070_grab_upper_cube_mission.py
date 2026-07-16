@@ -50,9 +50,9 @@ class M070GrabUpperCubeMission(Mission):
                 ),
             ]),
 
-            wait_for_seconds(0.3),  # make sure we are still beofre moving the arm
+            wait_for_seconds(0.3),  # make sure we are still before moving the arm
             arm.move_angles(base_deg=41, sholder_deg=90, elbow_deg=0, speed=150),
-            # enable al lservos again and move elbow up
+            # enable all servos again and move elbow up
             background(  # open claw to gab "cube + pallet"
                 Defs.arm_claw.grab_upper_cube(),
             ),
