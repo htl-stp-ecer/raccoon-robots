@@ -115,6 +115,19 @@ def move_into_starting_position():
         fully_disable_servos(),
     ])
 
+def test_base_servo_pos():
+    return seq([
+        arm.move_angles(0,3,0),
+        wait_for_button(),
+        seq([
+            seq([
+                arm.move_angles(base_deg=deg),
+                wait_for_button(f"base = {deg}deg"),
+            ])
+            for deg in [-90, 0, 3, 7, 28, 31, 41, 83, 87, 90, 93, 95]
+        ]),
+    ])
+
 
 class M000SetupMission(SetupMission):
     setup_time = 90
