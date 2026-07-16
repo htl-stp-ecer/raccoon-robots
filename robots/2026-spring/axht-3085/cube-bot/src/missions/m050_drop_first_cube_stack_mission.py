@@ -69,7 +69,7 @@ class M050DropFirstCubeStackMission(Mission):
                 ),
             ),
             wait_for_seconds(0.1),  # make sure we are not moving before starting to strafe the offest cm
-            mark_heading_if_aligned(),
+            mark_heading_reference(),
             defer(strafe_offset),
             turn_to_heading_right(0),
 
