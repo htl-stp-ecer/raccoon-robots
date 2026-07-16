@@ -117,3 +117,19 @@ Even a discarded prototype gets some things right:
 ---
 
 Built by the Botball team at **HTL St. Pölten** for the Botball Spring Game 2026.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+Use it, copy it, build your competition robot on it. **You do not have to publish your own robot code because you read or reused this repo.** That's deliberate: MIT is what [raccoon-example](https://github.com/htl-stp-ecer/raccoon-example) uses, and the whole point of opening these robots up is that you *can* learn from them without strings attached.
+
+### A request, not a requirement
+
+We'd love it if you published your robot code **after your season ends** — not during it.
+
+That's a norm, not a licence clause, because no licence can express it. Copyleft triggers on *distribution*, not on a date, and driving a robot at a competition isn't distribution. So GPL wouldn't protect you during the season or oblige you after it — it would just make teams nervous enough to not learn from us at all.
+
+Keep your edge while you're competing. Then hand it forward, the way this repo does. That's how the next team starts further along than you did.
