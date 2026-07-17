@@ -37,9 +37,9 @@ So this repo collects the real thing. Not tutorials, not tidied-up demos: the ac
 
 | Robot | Team | What's interesting about it |
 |:------|:-----|:----------------------------|
-| **[clawbot](robots/2026-spring/axht-3085/clawbot)** | HTL St. Pölten | 3-DOF arm with hand-rolled inverse kinematics — the code that convinced RaccoonOS to grow a real arm API. Mecanum, ramp navigation |
-| **[packing-bot](robots/2026-spring/axht-3085/packing-bot)** | HTL St. Pölten | Pom sorting and basket handling. The most complete failsafe layering in the collection — timeouts, budgets, `defer()` recovery |
-| **[cone-bot](robots/2026-spring/axht-3085/cone-bot)** | HTL St. Pölten | An honest early prototype, abandoned mid-season. Differential drive. What a robot looks like two weeks in, before it gets good |
+| **[clawbot](robots/2026-spring/axht-3085/clawbot)** | `axht-3085` | 3-DOF arm with hand-rolled inverse kinematics — the code that convinced RaccoonOS to grow a real arm API. Mecanum, ramp navigation |
+| **[packing-bot](robots/2026-spring/axht-3085/packing-bot)** | `axht-3085` | Pom sorting and basket handling. The most complete failsafe layering in the collection — timeouts, budgets, `defer()` recovery |
+| **[cone-bot](robots/2026-spring/axht-3085/cone-bot)** | `axht-3085` | An honest early prototype, abandoned mid-season. Differential drive. What a robot looks like two weeks in, before it gets good |
 
 *Your robot could be the next row. See [CONTRIBUTING.md](CONTRIBUTING.md).*
 

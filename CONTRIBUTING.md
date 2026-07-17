@@ -23,7 +23,7 @@ Keep your edge while you're competing. Nobody here wants you to hand your strate
 1. **Fork** this repo.
 2. **Copy your project** into `robots/<season>/<team>/<robot>/`
    - `<season>` — the game you competed in, e.g. `2026-spring`, `2027-spring`
-   - `<team>` — your team or school slug, e.g. `axht-3085`
+   - `<team>` — your Botball team number or slug, e.g. `axht-3085`
    - `<robot>` — your robot's name, e.g. `clawbot`
    - Keep the folder a **complete raccoon project** — `raccoon.project.yml`, `config/`, `src/`. Don't split it up.
 3. **Write a README** in your robot's folder (see below).

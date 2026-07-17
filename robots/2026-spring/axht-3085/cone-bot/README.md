@@ -23,7 +23,7 @@ Differential drive · Single arm + claw · Cone container · Botguy experiments
 
 This is an **early prototype** from the **Botball Spring Game 2026** season, published as a **historical reference**. It is the roughest of the three robots we've opened up.
 
-- **It is a work in progress, frozen mid-thought.** Whole missions are commented out (`M010DriveToConeMission` is one big comment block; `M027` and `M030` are disabled in `missions.yml`). It was superseded by [clawbot](https://github.com/htl-stp-ecer/clawbot) before the season ended.
+- **It is a work in progress, frozen mid-thought.** Whole missions are commented out (`M010DriveToConeMission` is one big comment block; `M027` and `M030` are disabled in `missions.yml`). It was superseded by [clawbot](../clawbot) before the season ended.
 - **It does not follow best practices.** Typos in filenames (`m060_drop_conees_mission.py`), hardcoded magic values with comments literally saying so, a stray unused `pydantic` import, and PID gains left at zero where nobody got around to tuning them.
 - **It uses an outdated RaccoonOS API.** A lot has changed since. Treat every call here as "how it *was*", not "how it works" — the [documentation](https://raccoon-docs.pages.dev/) is the truth.
 - **What it is good for:** seeing an honest early draft. This is what a robot program looks like two weeks in, before it gets good — including the parts we threw away.
@@ -110,26 +110,16 @@ Even a discarded prototype gets some things right:
 | [raccoon-example](https://github.com/htl-stp-ecer/raccoon-example) | Clean reference robot — **start here** |
 | [raccoon-lib](https://github.com/htl-stp-ecer/raccoon-lib) | The core robotics library |
 | [raccoon-cli](https://github.com/htl-stp-ecer/raccoon-cli) | `raccoon run`, `raccoon calibrate`, `raccoon create` |
-| [clawbot](https://github.com/htl-stp-ecer/clawbot) | The robot that replaced this one — 3-DOF arm with inverse kinematics |
-| [packing-bot](https://github.com/htl-stp-ecer/packing-bot) | Our other Spring 2026 robot — pom sorting and baskets |
+| [clawbot](../clawbot) | The robot that replaced this one — 3-DOF arm with inverse kinematics |
+| [packing-bot](../packing-bot) | Our other Spring 2026 robot — pom sorting and baskets |
 | [documentation](https://raccoon-docs.pages.dev/) | Full platform docs |
 
 ---
 
-Built by the Botball team at **HTL St. Pölten** for the Botball Spring Game 2026.
+Built by team **axht-3085** — the Botball team at **HTL St. Pölten** for the Botball Spring Game 2026.
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
-
-Use it, copy it, build your competition robot on it. **You do not have to publish your own robot code because you read or reused this repo.** That's deliberate: MIT is what [raccoon-example](https://github.com/htl-stp-ecer/raccoon-example) uses, and the whole point of opening these robots up is that you *can* learn from them without strings attached.
-
-### A request, not a requirement
-
-We'd love it if you published your robot code **after your season ends** — not during it.
-
-That's a norm, not a licence clause, because no licence can express it. Copyleft triggers on *distribution*, not on a date, and driving a robot at a competition isn't distribution. So GPL wouldn't protect you during the season or oblige you after it — it would just make teams nervous enough to not learn from us at all.
-
-Keep your edge while you're competing. Then hand it forward, the way this repo does. That's how the next team starts further along than you did.
+MIT — see the [LICENSE](../../../../LICENSE) at the root of this collection.
