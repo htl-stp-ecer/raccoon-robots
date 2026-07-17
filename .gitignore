@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# raccoon-cli
+.mission_snapshots/
+.raccoon_codegen_cache.json
+
+# Editors
+.idea/
+.vscode/
