@@ -1,0 +1,39 @@
+arm_base:
+  type: Servo
+  port: 0
+  offset: 0
+  positions:
+    _0deg: 110.3
+    p90deg: 13.6
+    max_left: -30
+    m90deg: 201.8
+    max_right: 207
+arm_sholder:
+  type: Servo
+  port: 1
+  offset: 22.4
+  positions:
+    max_down: 195.3
+    _0deg: 169.2
+    p90deg: 69
+    max_up: 20
+arm_elbow:
+  type: Servo
+  port: 2
+  offset: 0
+  positions:
+    _0deg: 92.2
+    p90deg: 187.3
+    max_max: 208.0
+    m90deg: -3.1
+    max_minus: -25
+arm_claw:
+  type: Servo
+  port: 3
+  offset: 0
+  positions:
+    closed: 50
+    soft_close: 60
+    p45deg: 97.8
+    p90deg: 137.3
+    p135deg: 180
