@@ -5,24 +5,24 @@
 - **Robot name:**
 - **Path:** `robots/<season>/<team>/<robot>/`
 
-## Tell us about it
+## What did it do?
 
-<!-- A sentence or two. What did it do? How did it go? -->
+<!-- A sentence or two. What was it for, and how did it go? -->
 
-## What should a reader NOT copy?
+## What should a reader not copy?
 
 <!-- The honest part. What's broken, hacky, or outdated in here?
-     This is genuinely the most useful field in this template. -->
+     This is the most useful field in the template. -->
 
 ## Checklist
 
 - [ ] It's a complete raccoon project (`raccoon.project.yml`, `config/`, `src/`)
 - [ ] It has a README in its folder
-- [ ] No secrets — I checked `config/connection.yml` for IPs / SSH details
+- [ ] No secrets. I checked `config/connection.yml` for IPs and SSH details
 - [ ] No `__pycache__/` or `.pyc` committed
-- [ ] **My season is over** — I'm not publishing mid-competition
+- [ ] My season is over, I'm not publishing mid-competition
 - [ ] I'm happy to license this under MIT
 
 ## Anything else?
 
-<!-- Optional. Photos and match videos are very welcome. -->
+<!-- Optional. Photos and match videos are welcome. -->

@@ -4,83 +4,83 @@
 
 # clawbot
 
-**Our 3-DOF arm robot from the Botball Spring Game 2026.**
+**3-DOF arm robot from the Botball Spring Game 2026.**
 
 Mecanum drive · Inverse kinematics arm · Line following · Ramp navigation
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=ffdd54)
 ![Platform](https://img.shields.io/badge/Platform-KIPR%20Wombat-orange)
-![Status](https://img.shields.io/badge/Status-Archived%20reference-lightgrey)
 ![Season](https://img.shields.io/badge/Season-Botball%20Spring%202026-8B6F47)
 
-> 📖 **Platform documentation at [raccoon-docs.pages.dev](https://raccoon-docs.pages.dev/)**
+> 📖 Platform documentation at [raccoon-docs.pages.dev](https://raccoon-docs.pages.dev/)
 
 </div>
 
 ---
 
-## ⚠️ Read This First
+## Before you read this
 
-This robot ran at the **Botball Spring Game 2026** and is published as a **historical reference**, not as a template.
+This robot ran at the Botball Spring Game 2026. It's competition code, written against a deadline and tuned on the game table. It was judged by whether it scored, not by whether it would pass a code review.
 
-- **It is competition code.** Written against a deadline, tuned on the game table, and judged by whether it scored — not by whether it would survive a code review.
-- **It does not always follow best practices.** Magic numbers, hand-measured calibration tables, commented-out experiments, and an auto-generated DSL file checked into the repo.
-- **It uses an outdated RaccoonOS API.** Development has moved on considerably since this season. Don't copy calls from here expecting them to still exist — check the [documentation](https://raccoon-docs.pages.dev/).
-- **What it is good for:** seeing how we *design* a robot program — mission decomposition, arm kinematics as its own layer, and reusable steps.
+A few things to know:
 
-If you are starting a new robot, start at **[raccoon-example](https://github.com/htl-stp-ecer/raccoon-example)**. Come here when you want to see the real thing, warts included.
+- It doesn't consistently follow best practices. There are magic numbers, hand-measured calibration tables, commented-out experiments, and an auto-generated DSL file checked into the repo.
+- It uses an outdated RaccoonOS API. Development has moved on a lot since this season, so don't copy calls from here and expect them to exist. Check the [documentation](https://raccoon-docs.pages.dev/).
+- What it's useful for is seeing how a robot program gets structured: mission decomposition, arm kinematics as a separate layer, reusable steps.
 
----
-
-## What This Robot Does
-
-ClawBot works the ramp side of the 2026 spring game:
-
-1. **Drive down the ramp** — leaves the starting box and descends onto the main field
-2. **Collect cones** — picks cones with the 3-DOF arm and claw
-3. **Collect drums** — grabs and repositions the drums
-4. **Collect Botguy** — the dedicated Botguy handling routine
-5. **Drive up the ramp** — returns to the scoring area before the run ends
-
-`M000SetupMission` runs as the setup hook, `M999ShutdownMission` as the shutdown hook, and `shutdown_in: 120` caps the whole run.
+If you're starting a new robot, [raccoon-example](https://github.com/htl-stp-ecer/raccoon-example) is the better starting point.
 
 ---
 
-## The Arm — The Interesting Part
+## What it does
 
-`src/kinematics/arm.py` is the piece worth reading. The arm has three joints (`arm_base`, `arm_sholder`, `arm_elbow`) plus a claw, and instead of hardcoding servo values per pose, it does real inverse kinematics:
+ClawBot handles the ramp side of the 2026 spring game:
 
-- **Link lengths in code** mirror the physical robot — upper arm 12.5 cm, forearm 24 cm, shoulder height 13.3 cm
-- **Calibration tables come from `config/servos.yml`**, not from the source — the YAML stays canonical and `Defs` feeds the interpolator
-- **Linear interpolation with extrapolation** maps a joint angle to a servo value between calibration points, and *extrapolates the outermost slope* beyond the calibrated span instead of snapping to the boundary — so IK can ask for an angle nobody measured and still get something sensible
-- **Hardware limits clamp the result**, so a bad IK solution can't drive a servo into the frame
+1. Drive down the ramp out of the starting box
+2. Collect cones with the arm and claw
+3. Collect drums
+4. Collect Botguy
+5. Drive back up the ramp to the scoring area
 
-That layering — physical geometry → calibration → servo value — is the part that aged well.
-
----
-
-## What This Became
-
-This file is why RaccoonOS has arm support at all.
-
-ClawBot's `arm.py` was hand-rolled: link lengths in Python, calibration tables in YAML, IK solved on the robot at match time. It worked — but it was ours alone. Every team with an arm would have had to write it again, and every one of them would have gotten the extrapolation and the clamping subtly wrong.
-
-So the platform grew a real version of it, generalised out of exactly what's in this repo:
-
-| ClawBot did it by hand | RaccoonOS does it now |
-|:-----------------------|:----------------------|
-| Link lengths hardcoded in `arm.py` | `type: ArmChain` in `raccoon.project.yml` — joints, link lengths, servo mappings, workspace limits |
-| Poses computed from IK on the robot | **Codegen IK** — `raccoon codegen` solves every named position offline with `ikpy`, validates it against workspace limits and forbidden zones, and emits literal servo angles into `defs.py`. No math and no IK dependency at match time |
-| Interpolation tables read from `Defs` | `ArmPreset` — generated, one method per named position: `Defs.arm.home()`, `Defs.arm.grab(speed=60)` |
-| Tuned by driving servos and watching the arm | **[Arm Visualizer](https://raccoon-docs.pages.dev/03-web-ide/13-arm-panel) in the WebIDE** — the arm chain rendered in a THREE.js 3D scene: drag the end-effector to solve IK, set joint angles for FK, see the workspace envelope and joint axes, save named positions, and push angles to the physical servos live |
-
-The trade the platform made is one this repo argued for: most arms only need a handful of named positions (home, grab, drop, handoff), so pre-solving them at build time costs nothing and catches an unreachable target on your laptop instead of on the table.
-
-ClawBot's approach didn't disappear, though — it's the documented escape hatch. When an arm's geometry doesn't fit `ArmChain`, or when it genuinely needs runtime IK because it's tracking something a sensor found, you write kinematics in project Python. The [arm kinematics docs](https://raccoon-docs.pages.dev/02-programming/20-arm-kinematics-and-codegen) name this robot as the example of it.
+`M000SetupMission` runs as the setup hook, `M999ShutdownMission` as the shutdown hook, and `shutdown_in: 120` caps the run.
 
 ---
 
-## Project Layout
+## The arm
+
+`src/kinematics/arm.py` is the part worth reading. The arm has three joints (`arm_base`, `arm_sholder`, `arm_elbow`) plus a claw. Rather than hardcoding servo values per pose, it runs inverse kinematics:
+
+- Link lengths in the code mirror the physical robot: upper arm 12.5 cm, forearm 24 cm, shoulder height 13.3 cm.
+- Calibration tables are read from `config/servos.yml` rather than being duplicated in the source, so the YAML stays canonical and `Defs` feeds the interpolator.
+- Joint angles map to servo values by linear interpolation between calibration points. Outside the calibrated range it extrapolates the outermost slope instead of snapping to the boundary, so IK can ask for an angle nobody measured and still get a sensible value.
+- Hardware limits clamp the result, so a bad IK solution can't drive a servo into the frame.
+
+The layering (physical geometry, then calibration, then servo value) is the part that held up.
+
+---
+
+## How this fed back into RaccoonOS
+
+RaccoonOS has arm support largely because of this file.
+
+ClawBot's `arm.py` was written by hand: link lengths in Python, calibration tables in YAML, IK solved on the robot at match time. It worked, but every team with an arm would have had to write the same thing, and most would have gotten the extrapolation and clamping wrong.
+
+The platform now has a general version of it:
+
+| ClawBot | RaccoonOS today |
+|:--------|:----------------|
+| Link lengths hardcoded in `arm.py` | `type: ArmChain` in `raccoon.project.yml`: joints, link lengths, servo mappings, workspace limits |
+| IK solved on the robot | Codegen IK. `raccoon codegen` solves each named position offline with `ikpy`, validates it against workspace limits and forbidden zones, and writes literal servo angles into `defs.py`. No math or IK dependency at match time |
+| Interpolation tables read from `Defs` | `ArmPreset`, generated, with one method per named position: `Defs.arm.home()`, `Defs.arm.grab(speed=60)` |
+| Tuned by driving servos and watching | The [Arm Visualizer](https://raccoon-docs.pages.dev/03-web-ide/13-arm-panel) in the WebIDE renders the chain in a THREE.js scene: drag the end effector to solve IK, set joint angles for FK, see the workspace envelope and joint axes, save named positions, push angles to the servos live |
+
+The reasoning behind codegen IK is that most arms only need a handful of named positions (home, grab, drop, handoff), so solving them at build time is cheap and catches an unreachable target on your laptop instead of on the table.
+
+ClawBot's approach is still supported as the fallback. If an arm's geometry doesn't fit `ArmChain`, or it genuinely needs runtime IK because it's tracking something a sensor found, you write kinematics in project Python. The [arm kinematics docs](https://raccoon-docs.pages.dev/02-programming/20-arm-kinematics-and-codegen) use this robot as the example.
+
+---
+
+## Project layout
 
 ```
 clawbot/
@@ -109,7 +109,7 @@ clawbot/
     └── steps/
         ├── arm_steps.py               # Reusable arm sequences
         ├── line_follow.py             # Custom line-following steps
-        ├── line_follow_dsl.py         # Auto-generated builders — do not edit
+        ├── line_follow_dsl.py         # Auto-generated builders, do not edit
         └── line_cross_detecting_turn.py
 ```
 
@@ -119,61 +119,53 @@ clawbot/
 
 | Part | Setup |
 |:-----|:------|
-| **Drivetrain** | Mecanum — 4 motors, wheel radius 37.5 mm, track width 200 mm, wheelbase 125 mm |
-| **Arm** | 3 DOF (base / shoulder / elbow) + claw, driven by inverse kinematics |
-| **Sensors** | IMU, start button, 3 IR line sensors (grouped as `front` / `rear`), light sensor for the start-light |
-| **Motion tuning** | Separate saturation derating for distance and heading — the robot gives up heading authority gracefully instead of oscillating |
+| Drivetrain | Mecanum, 4 motors, wheel radius 37.5 mm, track width 200 mm, wheelbase 125 mm |
+| Arm | 3 DOF (base / shoulder / elbow) plus claw, driven by inverse kinematics |
+| Sensors | IMU, start button, 3 IR line sensors (grouped as `front` / `rear`), light sensor for the start light |
+| Motion tuning | Separate saturation derating for distance and heading, so the robot gives up heading authority gradually instead of oscillating |
 
 ---
 
-## Your Robot Will Fail — Build For It
+## Failure handling
 
-If you read this repo for one thing, read it for this.
+This is probably the most useful thing to take from the repo.
 
-A drum sits 2 cm off. The ramp gives one wheel less grip than the other. The arm closes on air. **This is normal.** A mission that assumes success hangs, and a hung mission doesn't cost you one action — it costs you every action after it. So almost every risky step here carries an escape hatch.
+A drum sits 2 cm off. The ramp gives one wheel less grip than the other. The arm closes on air. This is normal, and a mission that assumes success will hang. A hung mission doesn't just cost you that action, it costs everything scheduled after it. So most risky steps here have an escape hatch.
 
-### The vocabulary
+Stop conditions compose with three operators, and the difference matters:
 
-Stop conditions compose with three operators, and the distinction matters:
+| Operator | Meaning | Typical use |
+|:---------|:--------|:------------|
+| `A \| B` | OR, whichever happens first | the failsafe: the line, or 2 seconds, whichever comes first |
+| `A + B` | THEN, A becomes true, then B | precision: cross both sensors, then 6 cm more |
+| `A & B` | AND, both true | narrowing a stop to one exact state |
 
-| Operator | Meaning | Used for |
-|:---------|:--------|:---------|
-| `A \| B` | **OR** — whichever happens first | the failsafe: *"the line, or 2 seconds, whichever comes first"* |
-| `A + B` | **THEN** — A becomes true, then B | precision: *"cross both sensors, then 6 cm more"* |
-| `A & B` | **AND** — both true | narrowing a stop to one exact state |
-
-Nearly every `| after_seconds(...)` in this repo is a bail-out. Nearly every `+` is real logic.
-
-### The layers
+Most `| after_seconds(...)` in this repo is a bail-out. Most `+` is actual logic.
 
 | Layer | What it does | Where |
 |:------|:-------------|:------|
-| **Global run cap** | `shutdown_in: 120` — the whole run is dead at 120 s, no matter what | `config/robot.yml` |
-| **`timeout()` wrapper** | `timeout(drive_forward().until(on_black(Defs.front.left)), seconds=0.5)` — the line is normally *right there*; if it isn't, half a second and we move on rather than driving into the wall | `m030_collect_drums_mission.py` |
-| **OR-ed escape** | `strafe_left(heading=0).until(on_black(Defs.front.left) \| after_seconds(2))` | `m050_drive_up_the_ramp_mission.py` |
-| **`background()`** | Return the tray *while* the robot drives on. Cleanup never blocks the next scoring action | `m030_collect_drums_mission.py` |
-| **Checkpoint sync** | `wait_for_checkpoint(68)` — wait on the wall clock for the other robot, don't assume it's done | `m030_collect_drums_mission.py` |
-| **Shutdown hook** | `M999ShutdownMission` — registered as `shutdown`, runs even when things went badly | `config/missions.yml` |
-| **IK clamping** | A bad IK solution gets clamped to the servo's hardware limits instead of driving the arm into the frame | `kinematics/arm.py` |
+| Global run cap | `shutdown_in: 120`, the run is dead at 120 s regardless | `config/robot.yml` |
+| `timeout()` wrapper | `timeout(drive_forward().until(on_black(Defs.front.left)), seconds=0.5)`. The line is normally right there; if it isn't, half a second and we move on rather than driving into the wall | `m030_collect_drums_mission.py` |
+| OR-ed escape | `strafe_left(heading=0).until(on_black(Defs.front.left) \| after_seconds(2))` | `m050_drive_up_the_ramp_mission.py` |
+| `background()` | Return the tray while the robot drives on, so cleanup doesn't block the next scoring action | `m030_collect_drums_mission.py` |
+| Checkpoint sync | `wait_for_checkpoint(68)` waits on the clock for the other robot instead of assuming it's done | `m030_collect_drums_mission.py` |
+| Shutdown hook | `M999ShutdownMission`, registered as `shutdown`, runs even after a bad run | `config/missions.yml` |
+| IK clamping | A bad IK solution gets clamped to the servo's hardware limits instead of driving the arm into the frame | `kinematics/arm.py` |
 
-### The lesson
-
-Note the pattern in `timeout(drive_forward().until(on_black(...)), seconds=0.5)`. There are **two** stop conditions on one step: the one you want, and the one that saves you. The sensor is the plan; the clock is the promise that the plan ends.
-
-That's the whole idea. Every step that *could* not finish gets an answer to "and if it doesn't?" — because on the table, sooner or later, it doesn't.
+The pattern to notice is `timeout(drive_forward().until(on_black(...)), seconds=0.5)`: two stop conditions on one step. The sensor is what you want to happen, the timeout is what guarantees the step ends either way.
 
 ---
 
-## Ideas Worth Stealing
+## Patterns worth copying
 
 | Pattern | Where to look |
 |:--------|:--------------|
-| **Kinematics as its own layer** — missions ask for a position, not for servo values | `kinematics/arm.py` |
-| **Calibration lives in YAML, code reads it** — one place to re-measure after a rebuild | `config/servos.yml` + `arm.py` |
-| **Custom step classes with a generated DSL** — write the `Step`, get a fluent builder for free | `steps/line_follow.py` → `line_follow_dsl.py` |
-| **Named servo positions** — `Defs.arm_claw.soft_close()` beats `set_servo(3, 60)` | `config/servos.yml` |
-| **One mission = one scoring action**, numbered in tens so you can insert without renaming | `config/missions.yml` |
-| **Saturation handling in the motion PID** — what to do when the controller asks for more than the motors have | `config/robot.yml` |
+| Kinematics as its own layer, so missions ask for a position rather than servo values | `kinematics/arm.py` |
+| Calibration in YAML, read by code, so there's one place to remeasure after a rebuild | `config/servos.yml` + `arm.py` |
+| Custom step classes with a generated DSL: write the `Step`, get a fluent builder | `steps/line_follow.py` → `line_follow_dsl.py` |
+| Named servo positions: `Defs.arm_claw.soft_close()` instead of `set_servo(3, 60)` | `config/servos.yml` |
+| One mission per scoring action, numbered in tens so you can insert without renaming | `config/missions.yml` |
+| Saturation handling in the motion PID, for when the controller asks for more than the motors have | `config/robot.yml` |
 
 ---
 
@@ -181,20 +173,20 @@ That's the whole idea. Every step that *could* not finish gets an answer to "and
 
 | Repository | What it is |
 |:-----------|:-----------|
-| [raccoon-example](https://github.com/htl-stp-ecer/raccoon-example) | Clean reference robot — **start here** |
+| [raccoon-example](https://github.com/htl-stp-ecer/raccoon-example) | Clean reference robot, start here |
 | [raccoon-lib](https://github.com/htl-stp-ecer/raccoon-lib) | The core robotics library |
 | [raccoon-cli](https://github.com/htl-stp-ecer/raccoon-cli) | `raccoon run`, `raccoon calibrate`, `raccoon create` |
-| [WebIDE](https://github.com/htl-stp-ecer/WebIDE) | Visual editor — home of the 3D Arm Visualizer this robot inspired |
-| [packing-bot](../packing-bot) | Our other Spring 2026 robot — pom sorting and baskets |
+| [WebIDE](https://github.com/htl-stp-ecer/WebIDE) | Visual editor, home of the 3D arm visualiser this robot led to |
+| [packing-bot](../packing-bot) | Our other Spring 2026 robot, pom sorting and baskets |
 | [cone-bot](../cone-bot) | Earlier Spring 2026 prototype |
 | [documentation](https://raccoon-docs.pages.dev/) | Full platform docs |
 
 ---
 
-Built by team **axht-3085** — the Botball team at **HTL St. Pölten** for the Botball Spring Game 2026.
+Built by team `axht-3085`, the Botball team at HTL St. Pölten, for the Botball Spring Game 2026.
 
 ---
 
 ## License
 
-MIT — see the [LICENSE](../../../../LICENSE) at the root of this collection.
+MIT, see the [LICENSE](../../../../LICENSE) at the root of this collection.
