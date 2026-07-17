@@ -21,7 +21,7 @@ A growing collection of robot programs built with [RaccoonOS](https://github.com
 
 ## Why This Exists
 
-Every Botball season, dozens of teams write a robot program, drive it for two days, and then it dies on a laptop somewhere. The next team starts from an empty folder and rediscovers the same things: that hardcoded distances drift, that a mission without a timeout hangs forever, that servo angles belong in config and not in your source.
+Every Botball season, dozens of teams write a robot program, drive it, and then it dies somewhere. The next team starts from an empty folder and rediscovers the same things: that hardcoded distances drift, that a mission without a timeout hangs forever, that servo angles belong in config and not in your source.
 
 **That's a waste.** Not of code — of learning.
 
