@@ -1,0 +1,7 @@
+name: ConeBot
+uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+robot: !include 'config/robot.yml'
+missions: !include 'config/missions.yml'
+definitions: !include 'config/hardware.yml'
+connection: !include 'config/connection.yml'

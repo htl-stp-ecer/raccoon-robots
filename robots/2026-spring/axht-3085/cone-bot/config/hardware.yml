@@ -1,0 +1,16 @@
+button:
+  type: DigitalSensor
+  port: 10
+imu:
+  type: IMU
+front_right_ir_sensor:
+  type: IRSensor
+  port: 0
+wait_for_light_sensor:
+  type: AnalogSensor
+  port: 5
+front:
+  type: SensorGroup
+  right: front_right_ir_sensor
+_motors: !include-merge 'motors.yml'
+_servos: !include-merge 'servos.yml'

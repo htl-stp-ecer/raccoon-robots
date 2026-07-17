@@ -1,0 +1,99 @@
+shutdown_in: 120
+drive:
+  kinematics:
+    type: differential
+    wheel_radius: 0.0345
+    wheelbase: 0.16
+    left_motor: front_left_motor
+    right_motor: front_right_motor
+  vel_config:
+    vx:
+      pid:
+        kp: 0.0
+        ki: 0.0
+        kd: 0.0
+      ff:
+        kS: 0.0
+        kV: 1.0
+        kA: 0.0
+    vy:
+      pid:
+        kp: 0.0
+        ki: 0.0
+        kd: 0.0
+      ff:
+        kS: 0.0
+        kV: 1.0
+        kA: 0.0
+    wz:
+      pid:
+        kp: 0.0
+        ki: 0.0
+        kd: 0.0
+      ff:
+        kS: 0.0
+        kV: 1.0
+        kA: 0.0
+odometry:
+  type: FusedOdometry
+  config:
+    bemf_trust: 1.0
+motion_pid:
+  distance:
+    kp: 7.875
+    ki: 0.0
+    kd: 0.0
+    integral_max: 10.0
+    integral_deadband: 0.01
+    derivative_lpf_alpha: 0.5
+    output_min: -10.0
+    output_max: 10.0
+  heading:
+    kp: 7.875
+    ki: 0.0
+    kd: 0.0625
+    integral_max: 10.0
+    integral_deadband: 0.01
+    derivative_lpf_alpha: 0.5
+    output_min: -10.0
+    output_max: 10.0
+  velocity_ff: 1.0
+  distance_tolerance_m: 0.005
+  angle_tolerance_rad: 0.017
+  saturation_derating_factor: 0.85
+  saturation_min_scale: 0.2
+  saturation_recovery_rate: 0.02
+  saturation_hold_cycles: 5
+  saturation_recovery_threshold: 0.95
+  heading_saturation_derating_factor: 0.85
+  heading_min_scale: 0.25
+  heading_recovery_rate: 0.05
+  heading_saturation_error_rad: 0.01
+  heading_recovery_error_rad: 0.005
+  linear:
+    max_velocity: 0.2368
+    acceleration: 0.2798
+    deceleration: 2.0532
+  lateral:
+    max_velocity: 0.2145
+    acceleration: 0.3922
+    deceleration: 0.6504
+  angular:
+    max_velocity: 2.9424
+    acceleration: 14.6122
+    deceleration: 7156.1491
+physical:
+  width_cm: 13.0
+  length_cm: 19.0
+  sensors:
+  - name: front_right_ir_sensor
+    x_cm: 13.75
+    y_cm: 17.0
+    clearance_cm: 1.0
+  rotation_center:
+    x_cm: 6.5
+    y_cm: 5.5
+  start_pose:
+    x_cm: 30.0
+    y_cm: 20.0
+    theta_deg: 90.0
