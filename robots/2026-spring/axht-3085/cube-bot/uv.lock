@@ -227,13 +227,13 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "raccoon-cli" },
-    { name = "raccoon-library" },
+    { name = "raccoon-library", extra = ["sim"] },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "raccoon-cli", specifier = "==0.1.169" },
-    { name = "raccoon-library", specifier = "==1.0.139" },
+    { name = "raccoon-library", extras = ["sim"], specifier = "==1.0.143" },
 ]
 
 [[package]]
@@ -896,7 +896,20 @@ wheels = [
 
 [[package]]
 name = "raccoon-library"
-version = "1.0.139"
+version = "1.0.143"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e4/63/87afba5c5d36eb89103430a6df95e237ac590f667793eee2655470de0040/raccoon_library-1.0.143-py3-none-any.whl", hash = "sha256:38f20cada9a1bce78d893326bfc76f4198bb710a16abc43988add0daaaf73d09", size = 263698, upload-time = "2026-07-18T06:51:54.553Z" },
+]
+
+[package.optional-dependencies]
+sim = [
+    { name = "raccoon-sim" },
+]
+
+[[package]]
+name = "raccoon-sim"
+version = "1.0.143"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiosqlite" },
@@ -904,10 +917,10 @@ dependencies = [
     { name = "raccoon-transport" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/db/ad1b3900d5ab5ce020860fe96fbb5b2cab99366b2403033779bd5b5d8ccd/raccoon_library-1.0.139-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:abc5d3406c9ad5d9bfb40dc39d9523aa958af78f5d6874423435bd9725bbb846", size = 9255754, upload-time = "2026-07-04T15:06:07.364Z" },
-    { url = "https://files.pythonhosted.org/packages/f5/80/e7509ad594b5855af00adff43f13814aa8f085e4f03763b1e9f8b7fb2d6a/raccoon_library-1.0.139-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:4ad57420efe2cc2c931439c426f693251edcff83e52a9e8f2f218ba188dc9e06", size = 6866951, upload-time = "2026-07-04T15:06:09.767Z" },
-    { url = "https://files.pythonhosted.org/packages/ae/5c/aaf9726d4d200d5c6ec34f5f2ba8b79a82939d18406288fe483eceb4de8e/raccoon_library-1.0.139-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:0facdfcb27c1f2b998ccd3523f6d9d6b9c24485367e91a9734298d2cefdd98be", size = 7307128, upload-time = "2026-07-04T15:06:11.87Z" },
-    { url = "https://files.pythonhosted.org/packages/de/af/b290442832175fa3044217f69263ede48bb5f44b3ed3b4df6dd8cf337dce/raccoon_library-1.0.139-cp313-cp313-win_amd64.whl", hash = "sha256:8c84eeca4b4a7ac5ab79b49447c79a28da9a8887968a98656bffe221b35132f1", size = 6042576, upload-time = "2026-07-04T15:06:13.882Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/35/b74c191c99fe82df02fe82338027472e79e40f0673715ca91fd9388d9c74/raccoon_sim-1.0.143-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:5742700066f176f942a84c81f6b11d98e01157d4b09fcf1439f417899ea7c33e", size = 9005563, upload-time = "2026-07-18T06:50:32.463Z" },
+    { url = "https://files.pythonhosted.org/packages/09/2f/34b6629923ac0fb92db4080be1e1f93dd316373ea92103d456209fd71714/raccoon_sim-1.0.143-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:224e0539e6e8b788a526fc27daea89513a84eb5b1c647b5275594028449386fc", size = 6679741, upload-time = "2026-07-18T06:50:34.802Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/59/56137fe4748346ac3b55d546466578d5045bc99b61a2371fb86d848d9bb4/raccoon_sim-1.0.143-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:36c01b27454ad5461973821baa457c1443111f7aa161ef727845cccda98765d0", size = 7114783, upload-time = "2026-07-18T06:50:36.412Z" },
+    { url = "https://files.pythonhosted.org/packages/29/82/7d20d2ac3f5c529cad25af2cb6668c96a101fb675a4c53084b4ed12267c8/raccoon_sim-1.0.143-cp313-cp313-win_amd64.whl", hash = "sha256:74c9d4f7c8aba0a73bbb40b3238741c71badacf0c2b49ffea8d118143db03089", size = 5830469, upload-time = "2026-07-18T06:50:38.322Z" },
 ]
 
 [[package]]
