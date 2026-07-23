@@ -1,0 +1,40 @@
+dev:
+  name: dev
+  description: 'Fast iteration: --dev --no-checkpoints'
+  target: auto
+  dev: true
+  no_calibrate: false
+  no_checkpoints: true
+  no_codegen: false
+  no_sync: false
+  record_localization: false
+  record_hz:
+  args: []
+dev-nc:
+  name: dev-nc
+  description: 'Fast iteration: --dev --no-calibrate --no-checkpoints'
+  target: auto
+  dev: true
+  no_calibrate: true
+  no_checkpoints: true
+  no_codegen: false
+  no_sync: false
+  record_localization: false
+  record_hz:
+  args: [ ]
+
+profile:
+    name: profile
+    description: 'Profile the robot code'
+    target: auto
+    dev: false
+    no_calibrate: false
+    no_checkpoints: false
+    no_codegen: false
+    no_sync: false
+    record_localization: false
+    record_hz:
+    args: []
+    env:
+      RACCOON_PROFILE: 1
+      RACCOON_CMD_TRACE: "/tmp/send.jsonl"

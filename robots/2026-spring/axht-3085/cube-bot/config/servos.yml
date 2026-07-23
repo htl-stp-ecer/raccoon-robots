@@ -1,0 +1,41 @@
+arm_base:
+  type: Servo
+  port: 0
+  offset: -3
+  positions:
+    _0deg: 100.0
+    p90deg: 2.0
+    max_left: -30
+    m90deg: 195
+    max_right: 207
+arm_sholder:
+  type: Servo
+  port: 1
+  offset: 2.5
+  positions:
+    max_down: 210
+    _0deg: 185
+    p90deg: 87.5
+    max_up: 20
+arm_elbow:
+  type: Servo
+  port: 2
+  offset: 5.8
+  positions:
+    _0deg: 91.2
+    p90deg: 188
+    max_max: 208.0
+    m90deg: -8 #no longer acutall -90 deg since not important
+    max_minus: -26
+arm_claw:
+  type: Servo
+  port: 3
+  offset: 64
+  positions:
+    idle: 10
+    cube_stack_regrab_open: 60
+    open: 65
+    full_open: 100
+    grab_upper_cube: 120
+    grab: 10
+    strong_grab: -13

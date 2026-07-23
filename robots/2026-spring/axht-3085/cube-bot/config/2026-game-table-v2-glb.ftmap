@@ -1,0 +1,168 @@
+{
+  "format": "flowchart-table-map",
+  "version": 2,
+  "table": {
+    "widthCm": 236.4232,
+    "heightCm": 105.918
+  },
+  "layers": [
+    {
+      "id": "ground",
+      "name": "Ground",
+      "zCm": 0,
+      "lines": [
+        {
+          "startX": 120.7,
+          "startY": 2.32,
+          "endX": 120.7,
+          "endY": 65.82,
+          "widthCm": 5.55,
+          "kind": "line"
+        },
+        {
+          "startX": 1.95,
+          "startY": 30.97,
+          "endX": 239.44,
+          "endY": 30.97,
+          "widthCm": 5.55,
+          "kind": "line"
+        },
+        {
+          "startX": 1.95,
+          "startY": 63.85,
+          "endX": 239.44,
+          "endY": 63.85,
+          "widthCm": 4.76,
+          "kind": "line"
+        },
+        {
+          "startX": 181.81,
+          "startY": 2.32,
+          "endX": 181.81,
+          "endY": 74.71,
+          "widthCm": 4.76,
+          "kind": "line"
+        },
+        {
+          "startX": 61.06,
+          "startY": 63.79,
+          "endX": 61.06,
+          "endY": 108.24,
+          "widthCm": 4.76,
+          "kind": "line"
+        }
+      ]
+    },
+    {
+      "id": "layer-2",
+      "name": "Rampe",
+      "zCm": 17.6,
+      "lines": [
+        {
+          "startX": 122.6,
+          "startY": 94.65,
+          "endX": 211.5,
+          "endY": 94.65,
+          "widthCm": 4.76,
+          "kind": "line"
+        },
+        {
+          "startX": 209.75,
+          "startY": 66.23,
+          "endX": 209.75,
+          "endY": 111.95,
+          "widthCm": 4.76,
+          "kind": "line"
+        },
+        {
+          "startX": 80.8,
+          "startY": 83.2,
+          "endX": 121.4,
+          "endY": 83.2,
+          "widthCm": 2.0,
+          "kind": "wall"
+        },
+        {
+          "startX": 80.8,
+          "startY": 101.3,
+          "endX": 121.4,
+          "endY": 101.3,
+          "widthCm": 2.0,
+          "kind": "wall"
+        },
+        {
+          "startX": 99.9,
+          "startY": 0.0,
+          "endX": 140.6,
+          "endY": 0.0,
+          "widthCm": 2.0,
+          "kind": "wall"
+        },
+        {
+          "startX": 236.4,
+          "startY": 66.2,
+          "endX": 236.4,
+          "endY": 105.9,
+          "widthCm": 2.0,
+          "kind": "wall"
+        },
+        {
+          "startX": 78.8,
+          "startY": 105.9,
+          "endX": 236.4,
+          "endY": 105.9,
+          "widthCm": 2.0,
+          "kind": "wall"
+        },
+        {
+          "startX": 78.8,
+          "startY": 81.1,
+          "endX": 122.6,
+          "endY": 81.1,
+          "widthCm": 2.0,
+          "kind": "wall"
+        },
+        {
+          "startX": 120.3,
+          "startY": 66.2,
+          "endX": 120.3,
+          "endY": 81.0,
+          "widthCm": 2.0,
+          "kind": "wall"
+        },
+        {
+          "startX": 120.7,
+          "startY": 65.9,
+          "endX": 236.4,
+          "endY": 65.9,
+          "widthCm": 2.0,
+          "kind": "wall"
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "ramp-1-glb",
+      "name": "Ramp 1 (glb)",
+      "fromLayer": "ground",
+      "toLayer": "layer-2",
+      "from": {
+        "startX": 79.6,
+        "startY": 66.23250049999979,
+        "endX": 79.6,
+        "endY": 105.918
+      },
+      "to": {
+        "startX": 122.6,
+        "startY": 66.23250049999979,
+        "endX": 122.6,
+        "endY": 105.918
+      },
+      "bidirectional": true,
+      "costMultiplier": 1,
+      "widthCm": 15
+    }
+  ],
+  "activeLayerId": "ground"
+}
