@@ -38,6 +38,8 @@ If you want a clean starting point, use [raccoon-example](https://github.com/htl
 | **[clawbot](robots/2026-spring/axht-3085/clawbot)** | `axht-3085` | 3-DOF arm with hand-written inverse kinematics. Mecanum drive, ramp navigation. This code is why RaccoonOS later grew a proper arm API |
 | **[packing-bot](robots/2026-spring/axht-3085/packing-bot)** | `axht-3085` | Pom sorting and basket handling. Has the most thorough failsafe handling of the three: timeouts, mission budgets, `defer()` recovery |
 | **[cone-bot](robots/2026-spring/axht-3085/cone-bot)** | `axht-3085` | An early prototype that was abandoned mid-season. Differential drive. Useful as a look at an unfinished robot rather than a polished one |
+| **[drumbot](robots/2026-spring/axht-3085/drumbot)** | `axht-3085` | The most mechanically ambitious of the set: a USB camera identifies coloured drums and sorts them into an 8-pocket revolver. Vision daemon, learned drum-motor timing, a real `src/service/` layer — and the messiest history of them all |
+| **[cube-bot](robots/2026-spring/axht-3085/cube-bot)** | `axht-3085` | Mecanum drive + a 3-DOF arm (`src/kinematics/arm.py`). Grabs and stacks cubes, climbs a ramp. Structurally the cleanest — it introduced the `ParamSet` and `TableMap` patterns |
 
 Your robot can be the next row. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -72,7 +74,37 @@ robots/
 
 Each robot folder is a complete raccoon project, the same shape `raccoon create` produces.
 
-Git history is preserved. Every robot was imported with its original commits, so `git log` on a robot folder shows how it actually developed.
+---
+
+## ⚠️ The commit history is really, really, *reaaaaally* bad
+
+We say this up front so you calibrate your expectations before you open `git log`.
+
+Git history **is** preserved — every robot was imported with its original commits, so
+`git log robots/2026-spring/axht-3085/<robot>` shows how it actually developed. That's the
+point. But "how it actually developed" means hundreds of commits written at the table,
+mid-tournament, at 2am, by a rotating cast of teenagers. It is **not** a curated example of
+good version control. A representative sample:
+
+- `anti-fix: idk`
+- `scheißbot >:(`
+- `verschlimmbesserung: retreat should now not redo all moves on stall but broken :)`
+- `dont do that, was just for home not gcer`
+- `fix: add missing _`
+- and dozens of typo-ridden "so we don't crash / so we defently are on the cube" one-liners, in a cheerful German-English blend
+
+So:
+
+- **Read the messages for the *reasoning*, not as a model.** "strafing a cm more so we push
+  the cube stack further in some edge cases" tells you something real about the table. The
+  spelling does not.
+- **If a commit message contradicts the code, trust the code.** Several "fixes" made things
+  worse and were reverted (or re-broken) a few commits later.
+- **Don't @ us about it.** It's preserved on purpose. Cleaning it up would delete the actual
+  history of a competition robot, which is the one thing you can't get from
+  [raccoon-example](https://github.com/htl-stp-ecer/raccoon-example).
+
+Each robot's own README has a matching, more specific warning.
 
 ---
 
