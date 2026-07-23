@@ -1,0 +1,32 @@
+drum_pusher_servo:
+  type: Servo
+  port: 0
+  offset: 0
+  positions:
+    close: 17
+    hold: 21
+    open: 185
+    block_angle: 60
+    
+pom_remover_servo:
+  type: Servo
+  port: 3
+  positions:
+    far_right: -20
+    right: -10
+    middle: 45
+    left: 110
+    far_left: 195
+
+lift_drums_servo:
+  type: Servo
+  port: 1
+  positions:
+    up: 180
+    over_limit: 210
+    align_on_back: 70
+    eject_position: 113
+    seek_position: 170
+    down: -12
+    remove_D: 38
+    remove_M: 70

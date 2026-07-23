@@ -1,0 +1,308 @@
+import time
+
+from raccoon import GenericRobot, dsl
+from raccoon.step import Step
+
+from src.service.color_detection_service import ColorDetectionService
+from src.service.drum_motor_service import DrumMotorService, MotorStalledError, NUM_POCKETS
+from src.service.sorting_service import SortingService
+
+DEADLINE_WARNING_SECS = 6.0
+
+# Physical slot index where the ejection hole is located.
+EJECT_HOLE_SLOT = 5
+
+# Shared timestamp set by BlockTimerStartStep, checked by BlockTimerCheckStep
+_block_start_time: float = 0.0
+
+
+@dsl(hidden=True)
+class SortIntoSlotStep(Step):
+    """Detect drum color, compute target slot, rotate revolver there."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        color_service = robot.get_service(ColorDetectionService)
+        sorting_service = robot.get_service(SortingService)
+        drum_service = robot.get_service(DrumMotorService)
+
+        color = await color_service.detect_color()
+        if color is None:
+            color = sorting_service.guess_color(current_pocket=drum_service.current_pocket)
+            self.warn(f"Camera failed — guessed color: {color}")
+        target = sorting_service.assign_slot(color, current_pocket=drum_service.current_pocket)
+        # Avoid rotating across pockets that already hold a sorted drum — the
+        # loading-position opening would let them fall back out. Exclude the
+        # target itself (assign_slot already marked it, but it is still
+        # physically empty until we arrive).
+        occupied = {i for i, s in enumerate(sorting_service.slots) if s is not None and i != target}
+        await drum_service.go_to_pocket(target, precise=False, occupied=occupied)
+
+
+@dsl(hidden=True)
+class BlockTimerStartStep(Step):
+    """Record the start time of a collection block."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        global _block_start_time
+        _block_start_time = time.monotonic()
+
+
+@dsl(hidden=True)
+class BlockTimerCheckStep(Step):
+    """Check elapsed time since block start and warn if over deadline."""
+
+    def __init__(self, drum_number: int):
+        super().__init__()
+        self.drum_number = drum_number
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        elapsed = time.monotonic() - _block_start_time
+        drum_service = robot.get_service(DrumMotorService)
+        drum_service.info(f"Block drum #{self.drum_number} complete: {elapsed:.2f}s")
+        if elapsed > DEADLINE_WARNING_SECS:
+            drum_service.warn(
+                f"TIMING CRITICAL: drum #{self.drum_number} block took {elapsed:.2f}s "
+                f"(> {DEADLINE_WARNING_SECS}s) — next drum checkpoint at risk!",
+            )
+
+
+@dsl(hidden=True)
+class AdvanceToMidpointStep(Step):
+    """Advance one pocket so the opening sits on the divider, preventing drums from falling out."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        drum_service = robot.get_service(DrumMotorService)
+        drum_service.info("Moving to midpoint (cover opening during lift)")
+        await drum_service.move_to_midpoint()
+
+
+@dsl(hidden=True)
+class RetreatFromMidpointStep(Step):
+    """Retreat one pocket back from midpoint to proper slot alignment."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        drum_service = robot.get_service(DrumMotorService)
+        drum_service.info("Returning from midpoint (restore slot alignment)")
+        await drum_service.move_from_midpoint()
+
+
+@dsl(hidden=True)
+class RotateToNextEmptyPocketStep(Step):
+    """Rotate the revolver to the nearest empty pocket.
+
+    Run before opening the drum pusher: if the current pocket already
+    holds a sorted drum, opening the loading hole over it would let
+    the drum fall back out. Routes around occupied pockets to avoid
+    exposing them to the loading hole during transit.
+    """
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        sorting_service = robot.get_service(SortingService)
+        drum_service = robot.get_service(DrumMotorService)
+
+        cur = drum_service.current_pocket
+        target = sorting_service.nearest_empty_pocket(cur)
+        if target is None:
+            drum_service.warn("No empty pocket available — skipping pre-open rotation")
+            return
+        if target == cur:
+            return
+
+        occupied = {i for i, s in enumerate(sorting_service.slots) if s is not None}
+        drum_service.info(f"Rotating to next empty pocket: {cur} → {target}")
+        await drum_service.go_to_pocket(target, precise=False, occupied=occupied)
+
+
+@dsl()
+def rotate_to_next_empty_pocket() -> RotateToNextEmptyPocketStep:
+    """Rotate to nearest empty pocket so opening the pusher doesn't drop a sorted drum."""
+    return RotateToNextEmptyPocketStep()
+
+
+@dsl()
+def advance_to_midpoint() -> AdvanceToMidpointStep:
+    """Advance one pocket to midpoint to prevent drums from falling out during lift."""
+    return AdvanceToMidpointStep()
+
+
+@dsl()
+def retreat_from_midpoint() -> RetreatFromMidpointStep:
+    """Retreat one pocket from midpoint back to proper slot alignment."""
+    return RetreatFromMidpointStep()
+
+
+@dsl()
+def sort_into_slot() -> SortIntoSlotStep:
+    """Detect color and sort the current drum into the correct slot."""
+    return SortIntoSlotStep()
+
+
+def _nearest_color_group(sorting_service: "SortingService"):
+    """Pick the color group whose nearest slot is closest to the eject hole.
+
+    Returns ``(sorted_slots, color)`` or ``(None, None)`` when there is
+    nothing to eject. The group nearest the hole is ejected first because it
+    is already sitting over the 5→6 transition.
+    """
+    blue = sorting_service.blue_slots
+    pink = sorting_service.pink_slots
+    if not blue and not pink:
+        return None, None
+
+    def nearest_dist(slots):
+        return min(
+            min(abs(EJECT_HOLE_SLOT - s), NUM_POCKETS - abs(EJECT_HOLE_SLOT - s))
+            for s in slots
+        ) if slots else float("inf")
+
+    if not pink or nearest_dist(blue) <= nearest_dist(pink):
+        return sorted(blue), "blue"
+    return sorted(pink), "pink"
+
+
+def _eject_start(slots, cur: int):
+    """Compute ``(start_slot, forward)`` for a single-direction eject sweep.
+
+    Direction is forced to backward (retreat through ``hi``..``lo``). Start a few
+    pockets *after* ``hi`` so a sweep of exactly ``len(slots)`` steps brings every
+    group pocket — and only those — across the eject hole.
+
+    The two color groups are ejected as one continuous backward sweep, split
+    across two calls: the group nearest the hole goes first, and the second group
+    sits immediately behind it in the same backward direction.
+
+    The lead-in is NOT a single constant. The second group is a continuation of
+    the same backward sweep, so it needs one LESS lead-in than the first; with an
+    equal lead-in it lands one pocket too far advanced. The two values below are
+    hardware-calibrated: with lead = 2/1 both groups started one pocket too far
+    BACKWARD (and the second over-ejected one extra), so both were bumped by one.
+
+    The first group is, by construction, the one nearest the hole, so a group
+    whose nearest pocket is >=2 away from the hole is the second one. Groups are
+    always contiguous, non-wrapping blocks (0-3 and 4-7) with the hole at slot
+    ``EJECT_HOLE_SLOT``. `cur` is intentionally unused now that direction is
+    fixed; both the pre-position step and the sweep re-derive the same start.
+    """
+    # def ring_dist(a: int, b: int) -> int:
+    #     d = abs(a - b)
+    #     return min(d, NUM_POCKETS - d)
+
+    lo, hi = min(slots), max(slots)
+    # is_second_group = min(ring_dist(s, EJECT_HOLE_SLOT) for s in slots) >= 2
+    # lead = 2 if is_second_group else 3
+    return (hi + 2) % NUM_POCKETS, False  # advance-side lead-in; retreat hi..lo
+
+
+@dsl(hidden=True)
+class RotateToEjectStartStep(Step):
+    """Pre-position the revolver one pocket before the nearest color group.
+
+    This MUST run *before* the drum is lifted to eject position. With the
+    eject mechanism still disengaged, this rotation drops nothing — it merely
+    parks the revolver so the subsequent lift + single-direction sweep ejects
+    the whole group cleanly. Moving here while lifted would drop a wrong-color
+    drum, because the prep move crosses a pocket of the other group.
+    """
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        sorting_service = robot.get_service(SortingService)
+        drum_service = robot.get_service(DrumMotorService)
+
+        slots, color = _nearest_color_group(sorting_service)
+        if slots is None:
+            drum_service.warn("No drums to eject — skipping eject pre-position")
+            return
+
+        # Enter the eject phase so an emergency motor-lock is bypassed and the
+        # retry budget is chosen by cause (see DrumMotorService.begin_eject).
+        drum_service.begin_eject()
+
+        if drum_service.at_midpoint:
+            await drum_service.move_from_midpoint()
+
+        start_slot, _ = _eject_start(slots, drum_service.current_pocket)
+        drum_service.info(f"Pre-positioning for {color} eject: go to slot {start_slot}")
+        await drum_service.go_to_pocket(start_slot, precise=False)
+
+
+@dsl(hidden=True)
+class EjectNearestColorStep(Step):
+    """Sweep through all slots of the nearest color group in one continuous motion."""
+
+    async def _execute_step(self, robot: "GenericRobot") -> None:
+        sorting_service = robot.get_service(SortingService)
+        drum_service = robot.get_service(DrumMotorService)
+
+        slots, color = _nearest_color_group(sorting_service)
+        if slots is None:
+            drum_service.warn("No drums assigned yet — nothing to eject")
+            return
+
+        # Enter the eject phase so an emergency motor-lock is bypassed and the
+        # retry budget is chosen by cause (see DrumMotorService.begin_eject).
+        drum_service.begin_eject()
+
+        try:
+            # Retreat from midpoint first to get clean slot alignment.
+            if drum_service.at_midpoint:
+                drum_service.info("Retreating from midpoint before ejection")
+                await drum_service.move_from_midpoint()
+
+            start_slot, forward = _eject_start(slots, drum_service.current_pocket)
+
+            # One clean drop per group pocket. We start one pocket before the
+            # group (parked there by RotateToEjectStartStep before the lift), so
+            # a sweep of exactly len(slots) steps brings every group pocket —
+            # and only those — across the eject hole.
+            pockets_to_eject = len(slots)
+            drum_service.info(
+                f"Ejecting {color}: ensure slot {start_slot}, "
+                f"then sweep {'forward' if forward else 'backward'} "
+                f"{pockets_to_eject} pocket(s)"
+            )
+            # No-op in the real flow (RotateToEjectStartStep already parked us
+            # here before the lift); kept so bench use without the prep step
+            # still positions correctly.
+            await drum_service.go_to_pocket(start_slot, precise=False)
+            for _ in range(pockets_to_eject):
+                if forward:
+                    await drum_service.advance(1)
+                else:
+                    await drum_service.retreat(1)
+
+            # Mark ejected slots as empty so the next eject call picks the other color.
+            for s in slots:
+                sorting_service.slots[s] = None
+            drum_service.info(f"Cleared {color} slots {slots} → {sorting_service.slots}")
+        except MotorStalledError as e:
+            # Eject must never kill the program — mark this attempt as flawed and
+            # let the mission sequence continue. Retries (self.stall_retries) are
+            # exhausted by the time we get here.
+            drum_service.motor.brake()
+            drum_service.warn(
+                f"Eject ({color}) FAILED after retries — marking attempt as flawed and continuing: {e}"
+            )
+
+
+@dsl()
+def rotate_to_eject_start() -> RotateToEjectStartStep:
+    """Pre-position before the nearest color group, BEFORE lifting (drops nothing)."""
+    return RotateToEjectStartStep()
+
+
+@dsl()
+def eject_nearest_color() -> EjectNearestColorStep:
+    """Navigate to each slot of the nearest color group and eject all four drums."""
+    return EjectNearestColorStep()
+
+
+@dsl()
+def block_timer_start() -> BlockTimerStartStep:
+    """Start timing a collection block."""
+    return BlockTimerStartStep()
+
+
+@dsl()
+def block_timer_check(drum_number: int) -> BlockTimerCheckStep:
+    """Check and log elapsed time for a collection block."""
+    return BlockTimerCheckStep(drum_number=drum_number)

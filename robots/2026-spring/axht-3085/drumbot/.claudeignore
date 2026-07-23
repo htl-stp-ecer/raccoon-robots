@@ -1,0 +1,7 @@
+.git
+.github
+.gitlab
+.idea
+.venv
+logs
+drum_detections

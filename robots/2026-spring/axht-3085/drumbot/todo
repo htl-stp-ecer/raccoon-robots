@@ -1,0 +1,16 @@
+- Wenn die Kamera failed die Farbe zu detected, soll anhand der vergangenen gelernten Werte wie lan nach den 10s trigger es braucht das die Drum kommt, der closer trotzdemausgelöst werden und beim SOrting soll die Farbe anhand von wahrscheinlichkeitsrechnung besser erraten werden als immer Blau
+
+Add stalling detection to the drum motor to retry if stuff gets stuck.
+
+To prevent hardware from breaking, if the time window is fucked up aka new drum arrived while other wasn't ready,   disable all drum stuff and don't close servo, etc to prevent the hardware from getting destroyed
+
+orrupt JPEG data: 1 extraneous bytes before marker 0xd6
+Corrupt JPEG data: 1 extraneous bytes before marker 0xd1
+Corrupt JPEG data: 3 extraneous bytes before marker 0xd4
+Corrupt JPEG data: 3 extraneous bytes before marker 0xd4
+Corrupt JPEG data: 3 extraneous bytes before marker 0xd3
+Corrupt JPEG data: 1 extraneous bytes before marker 0xd5
+Corrupt JPEG data: 1 extraneous bytes before marker 0xd6
+Corrupt JPEG data: 1 extraneous bytes before marker 0xd3
+Corrupt JPEG data: 2 extraneous bytes before marker 0xd9
+Corrupt JPEG data: 1 extraneous bytes before marker 0xd2

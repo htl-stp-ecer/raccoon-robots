@@ -1,0 +1,18 @@
+[project]
+name = "drumbot"
+version = "0.1.0"
+requires-python = "==3.13.*"
+dependencies = [
+    "raccoon-cli==0.1.164",
+    "raccoon-library==1.0.138",
+]
+
+[project.scripts]
+start = "src.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
